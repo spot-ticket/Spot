@@ -4,6 +4,7 @@ src/main/resources/application.yaml
 ### Gradle ###
 .gradle/
 build/
+postgres_data/
 
 ### Maven ###
 target/
