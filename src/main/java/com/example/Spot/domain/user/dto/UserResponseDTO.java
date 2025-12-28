@@ -1,4 +1,4 @@
-package com.example.Spot.dto;
+package com.example.Spot.domain.user.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;

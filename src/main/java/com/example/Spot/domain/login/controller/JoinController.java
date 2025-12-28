@@ -1,7 +1,7 @@
-package com.example.Spot.controller;
+package com.example.Spot.domain.login.controller;
 
-import com.example.Spot.dto.JoinDTO;
-import com.example.Spot.service.JoinService;
+import com.example.Spot.domain.login.dto.JoinDTO;
+import com.example.Spot.domain.login.service.JoinService;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;

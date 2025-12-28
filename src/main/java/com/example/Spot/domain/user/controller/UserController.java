@@ -1,7 +1,7 @@
-package com.example.Spot.controller;
+package com.example.Spot.domain.user.controller;
 
-import com.example.Spot.dto.UserResponseDTO;
-import com.example.Spot.service.JoinService;
+import com.example.Spot.domain.user.dto.UserResponseDTO;
+import com.example.Spot.domain.login.service.JoinService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;
 
