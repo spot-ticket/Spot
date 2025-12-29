@@ -1,7 +1,7 @@
 package com.example.Spot.domain.login.service;
 
+import com.example.Spot.domain.login.dto.UserResponseDTO;
 import com.example.Spot.domain.login.dto.JoinDTO;
-import com.example.Spot.domain.user.dto.UserResponseDTO;
 import com.example.Spot.domain.user.entity.UserEntity;
 import com.example.Spot.domain.user.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -39,10 +39,10 @@ public class JoinService {
     }
 
     // GET API용: username으로 유저 조회 (비밀번호 제외)
-    public UserResponseDTO getUser(String username) {
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
-
-        return new UserResponseDTO(user.getId(), user.getUsername(), user.getRole());
-    }
+//    public UserResponseDTO getUser(String username) {
+//        UserEntity user = userRepository.findByUsername(username)
+//                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
+//
+//        return new UserResponseDTO(user.getId(), user.getUsername(), user.getRole());
+//    }
 }
