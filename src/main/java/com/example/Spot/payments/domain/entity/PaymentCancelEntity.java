@@ -3,13 +3,15 @@ package com.example.Spot.payments.domain.entity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
 
-import org.springframework.data.annotation.createdDate;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
+
+import java.util.UUID;
 
 @Entity
 @Table(name="p_payment_cancel")
