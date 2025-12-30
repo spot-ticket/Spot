@@ -24,6 +24,10 @@ public class PaymentCancelEntity {
     @Column(columnDefinition="BINARY(16)")
     private UUID id;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name="payment_items_id")
+    private PaymentItemEntity paymentItem;
+
     @Column(name="cancel_idempotency", updatable=false)
     private UUID CancelIdempotency;
 
