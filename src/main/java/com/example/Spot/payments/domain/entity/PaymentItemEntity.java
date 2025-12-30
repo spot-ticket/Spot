@@ -5,6 +5,8 @@ import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
 import java.time.LocalDateTime;
 
 import java.util.UUID;
@@ -13,6 +15,7 @@ import java.util.UUID;
 @Table(name="p_payment_item")
 @Getter
 @EntityListeners(AuditingListener.class)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PaymentItemEntity {
     @Id
     @GeneratedValue
