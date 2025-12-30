@@ -1,4 +1,4 @@
-package com.example.Spot.global.exception;
+package com.example.Spot.global.presentation.advice;
 
 public class DuplicateUserException extends RuntimeException {
 
