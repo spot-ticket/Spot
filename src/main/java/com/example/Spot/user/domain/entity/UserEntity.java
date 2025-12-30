@@ -1,15 +1,14 @@
 package com.example.Spot.user.domain.entity;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import com.example.Spot.user.presentation.dto.request.JoinDTO;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
 
 @Entity
 @Getter
+
 @Setter
 public class UserEntity {
 
@@ -19,6 +18,17 @@ public class UserEntity {
 
     private String username;
     private String password;
-    private String role;
+    private String nickname;
+    private String email;
 
+    private boolean male;
+    private int age;
+    private String address;
+
+
+    @Enumerated(EnumType.STRING)
+    private JoinDTO.Role role;
+
+    // created at
 }
+

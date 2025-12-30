@@ -1,9 +1,9 @@
 package com.example.Spot.user.application.service;
 
 import com.example.Spot.user.presentation.dto.request.JoinDTO;
-import com.example.Spot.user.presentation.dto.request.UserResponseDTO;
 import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.repository.UserRepository;
+import com.example.Spot.global.exception.DuplicateUserException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,27 +22,30 @@ public class JoinService {
     public void joinProcess(JoinDTO joinDTO) {
         String username = joinDTO.getUsername();
         String password = joinDTO.getPassword();
+        String nickname = joinDTO.getNickname();
+        String email = joinDTO.getEmail();
+        boolean male = joinDTO.isMale();
+        int age = joinDTO.getAge();
+        String address = joinDTO.getAddress();
+        JoinDTO.Role role = joinDTO.getRole();
 
         // 존재하는 ID인지 확인
-        Boolean isExist = userRepository.existsByUsername(username);
-        if (isExist) {
-            return; // 이미 존재하면 종료(원하면 예외로 바꿀 수 있음)
+        if (userRepository.existsByUsername(joinDTO.getUsername())) {
+            throw new DuplicateUserException("USERNAME_ALREADY_EXISTS");
         }
 
-        // 저장
+        // userEntity 저장
         UserEntity data = new UserEntity();
         data.setUsername(username);
         data.setPassword(bCryptPasswordEncoder.encode(password));
-        data.setRole("ROLE_ADMIN"); // 필요하면 ROLE_USER로 변경
+        data.setNickname(nickname);
+        data.setEmail(email);
+        data.setMale(male);
+        data.setAge(age);
+        data.setAddress(address);
+        data.setRole(role);
 
         userRepository.save(data);
     }
 
-    // GET API용: username으로 유저 조회 (비밀번호 제외)
-    public UserResponseDTO getUser(String username) {
-        UserEntity user = userRepository.findByUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + username));
-
-        return new UserResponseDTO(user.getId(), user.getUsername(), user.getRole());
-    }
 }
