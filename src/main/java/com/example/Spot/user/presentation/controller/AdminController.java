@@ -1,4 +1,5 @@
-package com.example.Spot.controller;
+
+package com.example.Spot.domain.user.presentation.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -6,11 +7,11 @@ import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 @ResponseBody
-public class MainController {
+public class AdminController {
 
-    @GetMapping("/")
-    public String mainP() {
+    @GetMapping("/admin")
+    public String adminP() {
 
-        return "main Controller";
+        return "admin Controller";
     }
 }
