@@ -1,0 +1,43 @@
+package com.example.Spot.infra.auth.security;
+
+import com.example.Spot.user.domain.entity.UserEntity;
+import com.example.Spot.user.domain.entity.UserAuthEntity;
+import com.example.Spot.user.domain.repository.UserRepository;
+import com.example.Spot.user.domain.repository.UserAuthRepository;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Service;
+
+@Service
+public class CustomUserDetailsService implements UserDetailsService {
+
+    private final UserRepository userRepository;
+    private final UserAuthRepository userAuthRepository;
+
+    public CustomUserDetailsService(UserRepository userRepository, UserAuthRepository userAuthRepository){
+        this.userRepository = userRepository;
+        this.userAuthRepository = userAuthRepository;
+    }
+
+
+    @Override
+    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{
+
+        // 1) p_user 조회
+        UserEntity user = userRepository.findByUsername(username);
+        if (user == null) {
+            throw new UsernameNotFoundException("USER_NOT_FOUND");
+        }
+
+        // 2) p_user_auth 조회 (비밀번호 해시)
+        UserAuthEntity auth = userAuthRepository.findByUser_Username(username);
+        if (auth == null) {
+            throw new UsernameNotFoundException("AUTH_NOT_FOUND");
+        }
+
+        // 3) UserDetails 반환
+        return null;
+    }
+
+}
