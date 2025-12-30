@@ -1,9 +1,9 @@
-package com.example.Spot.domain.login.service;
+package com.example.Spot.user.application.service;
 
-import com.example.Spot.domain.login.dto.JoinDTO;
-import com.example.Spot.domain.user.dto.UserResponseDTO;
-import com.example.Spot.domain.user.entity.UserEntity;
-import com.example.Spot.domain.user.repository.UserRepository;
+import com.example.Spot.user.presentation.dto.request.JoinDTO;
+import com.example.Spot.user.presentation.dto.request.UserResponseDTO;
+import com.example.Spot.user.domain.entity.UserEntity;
+import com.example.Spot.user.domain.repository.UserRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 

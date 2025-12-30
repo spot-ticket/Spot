@@ -1,7 +1,7 @@
 package com.example.Spot.infra.auth.security;
 
-import com.example.Spot.domain.user.domain.entity.UserEntity;
-import com.example.Spot.domain.user.domain.repository.UserRepository;
+import com.example.Spot.user.domain.entity.UserEntity;
+import com.example.Spot.user.domain.repository.UserRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;

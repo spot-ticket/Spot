@@ -1,7 +1,7 @@
 package com.example.Spot.infra.auth.jwt;
 
-import com.example.Spot.domain.user.presentation.dto.request.JoinDTO;
-import com.example.Spot.domain.user.domain.entity.UserEntity;
+import com.example.Spot.user.presentation.dto.request.JoinDTO;
+import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.infra.auth.security.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;

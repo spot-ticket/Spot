@@ -1,5 +1,5 @@
 
-package com.example.Spot.domain.user.presentation.controller;
+package com.example.Spot.user.presentation.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
