@@ -1,5 +1,6 @@
 package com.example.Spot.menu.domain.entity;
 
+import com.example.Spot.store.domain.entity.StoreEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -43,6 +44,9 @@ public class MenuEntity {
     @Column(name = "is_deleted")
     private Boolean isDeleted = false;
 
+    @Column(name = "is_hidden")
+    private Boolean isHidden = false;
+
     @CreatedDate
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -67,6 +71,10 @@ public class MenuEntity {
 
     public void changeAvailable(Boolean isAvailable){
         this.isAvailable = isAvailable;
+    }
+
+    public void changeHidden(Boolean isHidden){
+        this.isHidden = isHidden;
     }
 
     public void delete(){
