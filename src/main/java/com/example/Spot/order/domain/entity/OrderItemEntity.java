@@ -3,11 +3,14 @@ package com.example.Spot.order.domain.entity;
 import jakarta.persistence.*;
 import lombok.Getter;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import com.example.Spot.menu.domain.entity.MenuEntity;
+import org.springframework.data.annotation.LastModifiedDate;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 import org.hibernate.annotations.UuidGenerator;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -17,7 +20,7 @@ import java.util.UUID;
 @Getter
 @Table(name = "p_order_item")
 @EntityListeners(AuditingEntityListener.class)
-@SuperBuilder
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderItemEntity {
