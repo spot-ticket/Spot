@@ -1,7 +1,9 @@
 package com.example.Spot.payments.domain.entity;
 
+import com.example.Spot.order.domain.entity.OrderEntity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import lombok.Getter;
@@ -31,7 +33,7 @@ public class PaymentItemEntity {
     @JoinColumn(name="order_id")
     private OrderEntity order;
 
-    @CreateDate
+    @CreatedDate
     @Column(name="created_at")
-    private LocaDateTime createdAt;
+    private LocalDateTime createdAt;
 }
