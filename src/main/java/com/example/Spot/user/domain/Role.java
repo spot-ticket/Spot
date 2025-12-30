@@ -3,7 +3,8 @@ public enum Role {
     CUSTOMER,
     OWNER,
     CHEF,
-    ADMIN;
+    MANAGER,
+    MASTER;
 
     public String getAuthority(){
         return "ROLE_" +this.name();

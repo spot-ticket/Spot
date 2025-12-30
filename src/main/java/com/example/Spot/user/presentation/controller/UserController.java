@@ -1,6 +1,6 @@
 package com.example.Spot.user.presentation.controller;
 
-import com.example.Spot.domain.user.dto.UserResponseDTO;
+import com.example.Spot.user.presentation.dto.request.UserResponseDTO;
 import com.example.Spot.user.application.service.JoinService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
