@@ -1,5 +1,5 @@
 package com.example.Spot.infra.auth.jwt;
-
+import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.presentation.dto.request.JoinDTO;
 import com.example.Spot.infra.auth.security.CustomUserDetails;
 import jakarta.servlet.FilterChain;
@@ -57,7 +57,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
         String authority = auth.getAuthority();
         String roleName = authority.replace("ROLE_","" );
-        String token = jwtUtil.createJwt(username, JoinDTO.Role.valueOf(roleName), 60*60*10L);
+        String token = jwtUtil.createJwt(username, Role.valueOf(roleName), 60*60*10L);
 
         response.addHeader("Authorization", "Bearer "+token);
     }

@@ -1,5 +1,6 @@
 package com.example.Spot.infra.auth.jwt;
 
+import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.presentation.dto.request.JoinDTO;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
@@ -29,7 +30,7 @@ public class JWTUtil {
     }
 
     // Role enum으로 리턴
-    public JoinDTO.Role getRole(String token) {
+    public Role getRole(String token) {
         String roleStr = Jwts.parser()
                 .verifyWith(secretKey)
                 .build()
@@ -37,7 +38,7 @@ public class JWTUtil {
                 .getPayload()
                 .get("role", String.class);
 
-        return JoinDTO.Role.valueOf(roleStr);
+        return Role.valueOf(roleStr);
     }
 
 
@@ -49,7 +50,7 @@ public class JWTUtil {
 
 
     // 토큰 생성 메소드
-    public String createJwt(String username, JoinDTO.Role role, Long expiredMs) {
+    public String createJwt(String username, Role role, Long expiredMs) {
 
         return Jwts.builder()
                 .claim("username", username)
