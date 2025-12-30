@@ -1,6 +1,6 @@
-package com.example.Spot.domain.user.repository;
+package com.example.Spot.user.domain.repository;
 
-import com.example.Spot.entity.UserEntity;
+import com.example.Spot.user.domain.entity.UserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.Optional;
