@@ -15,6 +15,7 @@ import java.util.UUID;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
@@ -25,7 +26,6 @@ public class OriginEntity {
 
     @Id
     @UuidGenerator
-    @Column(columnDefinition="BINARY(16)")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)

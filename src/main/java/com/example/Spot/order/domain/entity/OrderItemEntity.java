@@ -6,11 +6,14 @@ import lombok.Getter;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import com.example.Spot.menu.domain.entity.MenuEntity;
+import org.springframework.data.annotation.LastModifiedDate;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.experimental.SuperBuilder;
+import lombok.Builder;
 import org.hibernate.annotations.UuidGenerator;
+import org.springframework.data.annotation.CreatedDate;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -20,19 +23,18 @@ import java.util.UUID;
 @Getter
 @Table(name = "p_order_item")
 @EntityListeners(AuditingEntityListener.class)
-@SuperBuilder
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderItemEntity {
 
     @Id
     @UuidGenerator
-    @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id")
-    private UUID orderId;
+    private OrderEntity order;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "menu_id", nullable = false)
@@ -44,6 +46,7 @@ public class OrderItemEntity {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
+    @Builder.Default
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 

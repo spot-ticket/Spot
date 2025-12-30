@@ -5,12 +5,15 @@ import jakarta.persistence.*;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import com.example.Spot.store.domain.entity.StoreEntity;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
-import lombok.experimental.SuperBuilder;
+import org.springframework.data.annotation.CreatedDate;
+import lombok.Builder;
 import org.hibernate.annotations.UuidGenerator;
+import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -21,14 +24,13 @@ import java.util.UUID;
 @Getter
 @Table(name = "p_order")
 @EntityListeners(AuditingEntityListener.class)
-@SuperBuilder
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderEntity {
 
     @Id
     @UuidGenerator
-    @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -44,12 +46,14 @@ public class OrderEntity {
     @Column(name = "request", columnDefinition = "TEXT")
     private String request;
 
+    @Builder.Default
     @Column(name = "need_disposables", nullable = false)
     private Boolean needDisposables = false;
 
     @Column(name = "pickup_time", nullable = false)
     private LocalDateTime pickupTime;
 
+    @Builder.Default
     @Column(name = "order_status", nullable = false)
     @Enumerated(EnumType.STRING)
     private OrderStatus orderStatus = OrderStatus.PENDING;
@@ -63,6 +67,7 @@ public class OrderEntity {
     @Column(name = "estimated_time")
     private Integer estimatedTime; // 조리 예상 시간 (분)
 
+    @Builder.Default
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
@@ -77,6 +82,7 @@ public class OrderEntity {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
 
+    @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true) 
     private List<OrderItemEntity> orderItems = new ArrayList<>();
 
