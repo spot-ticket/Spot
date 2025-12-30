@@ -14,6 +14,7 @@ import java.util.UUID;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter

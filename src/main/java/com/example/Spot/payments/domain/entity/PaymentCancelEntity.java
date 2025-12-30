@@ -13,6 +13,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
 
+import java.util.UUID;
+
 @Entity
 @Table(name="p_payment_cancel")
 @Getter
