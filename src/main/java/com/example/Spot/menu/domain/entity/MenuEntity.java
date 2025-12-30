@@ -1,0 +1,75 @@
+package com.example.Spot.menu.domain.entity;
+
+import jakarta.persistence.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+@Entity
+@Table(name = "p_menu")
+@Getter
+@EntityListeners(AuditingEntityListener.class)
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+
+public class MenuEntity {
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(columnDefinition = "BINARY(16)")
+    private UUID id;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id")     // DB 테이블에 생길 컬럼 이름
+    private StoreEntity store;
+
+    @Column(nullable = false, length = 50)
+    private String name;
+
+    @Column(nullable = false, length = 50)
+    private String category;
+
+    @Column(nullable = false)
+    private int price;
+
+    @Column(name = "is_available")
+    private Boolean isAvailable = true;
+
+    @Column(name = "is_deleted")
+    private Boolean isDeleted = false;
+
+    @CreatedDate
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @LastModifiedDate
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
+    @Builder
+    public MenuEntity(StoreEntity store, String name, String category, int price) {
+        this.store = store;
+        this.name = name;
+        this.category = category;
+        this.price = price;
+    }
+
+    public void updateMenu(String name, int price, String category){
+        this.name = name;
+        this.price = price;
+        this.category = category;
+    }
+
+    public void changeAvailable(Boolean isAvailable){
+        this.isAvailable = isAvailable;
+    }
+
+    public void delete(){
+        this.isDeleted = true;
+    }
+}
