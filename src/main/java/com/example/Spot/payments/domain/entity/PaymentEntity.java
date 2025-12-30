@@ -5,7 +5,7 @@ import org.hibernate.annotations.UuidGenerator;
 import lombok.Getter;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.createdDate;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.example.Spot.user.domain.entity.UserEntity;
