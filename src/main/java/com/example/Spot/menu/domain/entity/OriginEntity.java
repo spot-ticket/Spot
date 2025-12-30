@@ -25,7 +25,6 @@ public class OriginEntity {
 
     @Id
     @UuidGenerator
-    @Column(columnDefinition="BINARY(16)")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
