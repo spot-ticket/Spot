@@ -1,6 +1,6 @@
 package com.example.Spot.infra.auth.security;
 
-import com.example.Spot.domain.user.entity.UserEntity;
+import com.example.Spot.domain.user.domain.entity.UserEntity;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -27,7 +27,7 @@ public class CustomUserDetails implements UserDetails {
             @Override
             public String getAuthority() {
 
-                return userEntity.getRole();
+                return String.valueOf(userEntity.getRole());
             }
         });
 

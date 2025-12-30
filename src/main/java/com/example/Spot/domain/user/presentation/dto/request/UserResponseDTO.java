@@ -1,4 +1,4 @@
-package com.example.Spot.domain.login.dto;
+package com.example.Spot.domain.user.presentation.dto.request;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
