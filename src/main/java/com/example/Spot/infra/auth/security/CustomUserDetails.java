@@ -1,6 +1,8 @@
 package com.example.Spot.infra.auth.security;
 
 import com.example.Spot.user.domain.entity.UserEntity;
+import com.example.Spot.user.domain.entity.UserAuthEntity;
+import com.example.Spot.user.domain.repository.UserAuthRepository;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -10,10 +12,17 @@ import java.util.Collection;
 public class CustomUserDetails implements UserDetails {
 
     private final UserEntity userEntity;
+    private final UserAuthEntity userAuthEntity;
 
-    public CustomUserDetails(UserEntity userEntity) {
-
+    public CustomUserDetails(UserEntity userEntity,UserAuthEntity userAuthEntity) {
         this.userEntity = userEntity;
+        this.userAuthEntity = userAuthEntity;
+    }
+
+    //JWT filter용
+    public CustomUserDetails(UserEntity userEntity) {
+        this.userEntity = userEntity;
+        this.userAuthEntity = null;
     }
 
     // role값 반환
@@ -36,9 +45,9 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public String getPassword() {
-
-        return userEntity.getPassword();
+        return (userAuthEntity == null) ? "" : userAuthEntity.getHashedPassword();
     }
+
 
     @Override
     public String getUsername() {

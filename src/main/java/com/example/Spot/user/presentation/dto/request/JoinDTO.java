@@ -1,34 +1,25 @@
 package com.example.Spot.user.presentation.dto.request;
 
 
+import com.example.Spot.user.domain.Role;
 import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.util.UUID;
+
 @Setter
 @Getter
-
-
 public class JoinDTO {
-    public enum Role {
-        CUSTOMER,
-        OWNER,
-        CHEF,
-        ADMIN;
 
-        public String getAuthority(){
-            return "ROLE_" +this.name();
-        }
-    }
 
 
     private String username;
     private String password;
 
-    @Column(unique = true, nullable = false)
     private String nickname;
 
-    @Column(unique = true, nullable = false)
     private String email;
 
     private boolean male;

@@ -1,7 +1,9 @@
 package com.example.Spot.infra.auth.jwt;
 
+import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.presentation.dto.request.JoinDTO;
 import com.example.Spot.user.domain.entity.UserEntity;
+import com.example.Spot.user.domain.entity.UserAuthEntity;
 import com.example.Spot.infra.auth.security.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
@@ -57,13 +59,13 @@ public class JWTFilter extends OncePerRequestFilter {
 
         //토큰에서 username과 role 획득
         String username = jwtUtil.getUsername(token);
-        JoinDTO.Role role = jwtUtil.getRole(token);
+        Role role = jwtUtil.getRole(token);
 
         //userEntity를 생성하여 값 set
-        UserEntity userEntity = new UserEntity();
+        UserEntity userEntity = UserEntity.forAuthentication(username, role);
         userEntity.setUsername(username);
-        userEntity.setPassword("temppassword");
         userEntity.setRole(role);
+
 
         //UserDetails에 회원 정보 객체 담기
         CustomUserDetails customUserDetails = new CustomUserDetails(userEntity);
