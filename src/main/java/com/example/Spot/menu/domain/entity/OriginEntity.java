@@ -43,13 +43,31 @@ public class OriginEntity extends UpdateBaseEntity{
 
     @Builder
     public OriginEntity(MenuEntity menu, String origiinName, String ingredientName){
+        validateNames(originName, ingredientName);
+
         this.menu = menu;
         this.originName = originName;
         this.ingredientName = ingredientName;
     }
 
     public void updateInfo(String originName, String ingredientName){
-        this.originName = originName;
-        this.ingredientName = ingredientName;
+        validateNames(originName, ingredientName);
+
+        if (originName != null && !originName.isBlank()) {
+            this.originName = originName;
+        }
+        if (ingredientName != null && !ingredientName.isBlank()) {
+            this.ingredientName = ingredientName;
+        }
     }
+
+    private void validateNames(String originName, String ingredientName) {
+        boolean isOriginBlank = (originName == null || originName.isBlank());
+        boolean isIngredientBlank = (ingredientName == null || ingredientName.isBlank());
+
+        if (isOriginBlank && isIngredientBlank) {
+            throw new IllegalArgumentException("원산지 이름과 재료 이름 중 적어도 하나는 입력되어야 합니다.");
+        }
+    }
+}
 }
