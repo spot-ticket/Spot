@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 @ResponseBody
 public class JoinController {
 
+
     private final JoinService joinService;
 
     public JoinController(JoinService joinService) {

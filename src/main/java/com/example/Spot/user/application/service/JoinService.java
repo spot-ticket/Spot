@@ -1,5 +1,6 @@
 package com.example.Spot.user.application.service;
 
+import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.presentation.dto.request.JoinDTO;
 import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.entity.UserAuthEntity;
@@ -19,6 +20,7 @@ public class JoinService {
     public JoinService(UserRepository userRepository, BCryptPasswordEncoder bCryptPasswordEncoder, UserAuthRepository userAuthRepository) {
         this.userRepository = userRepository;
         this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.userAuthRepository = userAuthRepository;
     }
 
     // 회원가입
