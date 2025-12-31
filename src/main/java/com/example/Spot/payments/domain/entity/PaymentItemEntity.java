@@ -1,5 +1,6 @@
 package com.example.Spot.payments.domain.entity;
 
+import com.example.Spot.order.domain.entity.OrderEntity;
 import jakarta.persistence.*;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedDate;
