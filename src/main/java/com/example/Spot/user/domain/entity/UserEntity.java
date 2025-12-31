@@ -1,4 +1,5 @@
 package com.example.Spot.user.domain.entity;
+import com.example.Spot.global.common.UpdateBaseEntity;
 import com.example.Spot.user.domain.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -14,13 +15,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 
-@Entity
+
 @EntityListeners(AuditingEntityListener.class)
 @Getter
-@Setter
-@Table(name="p_user")
+//@Table(name="p_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserEntity {
+public class UserEntity extends UpdateBaseEntity {
 
     @Id
     @UuidGenerator
@@ -29,9 +29,6 @@ public class UserEntity {
 
     @Column(name="name", nullable=false)
     private String username;
-
-//    @Column(name="password" ,nullable=false)
-//    private String password;
 
     @Column(name="nickname" ,nullable=false)
     private String nickname;
@@ -51,17 +48,6 @@ public class UserEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(name="is_deleted", nullable=false)
-    private Boolean isDeleted=false;
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
 
     public UserEntity(String username, String nickname, String address, String email, Role role) {
         this.username = username;
@@ -79,10 +65,6 @@ public class UserEntity {
         return user;
     }
 
-
-    public void delete(){
-        this.isDeleted = true;
-    }
     public void ismale(){
         this.male = true;
     }
