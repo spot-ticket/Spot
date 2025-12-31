@@ -1,7 +1,6 @@
 package com.example.Spot.menu.domain.entity;
 
 import com.example.Spot.store.domain.entity.StoreEntity;
-import com.example.Spot.global.common.UpdateBaseEntity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
