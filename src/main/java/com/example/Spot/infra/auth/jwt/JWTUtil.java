@@ -1,6 +1,7 @@
 package com.example.Spot.infra.auth.jwt;
 
 import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.presentation.dto.request.JoinDTO;
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;

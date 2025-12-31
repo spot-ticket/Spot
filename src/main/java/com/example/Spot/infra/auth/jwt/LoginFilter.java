@@ -1,5 +1,6 @@
 package com.example.Spot.infra.auth.jwt;
 import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.presentation.dto.request.JoinDTO;
 import com.example.Spot.infra.auth.security.CustomUserDetails;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
