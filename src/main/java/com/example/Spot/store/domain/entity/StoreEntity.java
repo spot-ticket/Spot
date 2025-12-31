@@ -1,21 +1,20 @@
 package com.example.Spot.store.domain.entity;
 
+import com.example.Spot.global.common.UpdateBaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.UUID;
 
 @Entity
-@EntityListeners(AuditingEntityListener.class)
 @Table(name = "p_stores")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class StoreEntity {
+public class StoreEntity extends UpdateBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -36,23 +35,13 @@ public class StoreEntity {
     @Column(name = "close_time")
     private LocalTime closeTime;
 
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;
-
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
+    @Builder
+    public StoreEntity(String name, String address, String phoneNumber,
+                       LocalTime openTime, LocalTime closeTime) {
+        this.name = name;
+        this.address = address;
+        this.phoneNumber = phoneNumber;
+        this.openTime = openTime;
+        this.closeTime = closeTime;
     }
 }
