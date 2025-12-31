@@ -1,47 +1,40 @@
 package com.example.Spot.store.domain.entity;
-
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
 import java.util.UUID;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "p_stores")
+@Table(name = "p_store_view")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class StoreEntity {
-
+public class StoreViewEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(nullable = false)
-    private String name;
+    @ManyToOne(fetch=FetchType.LAZY)
+    @JoinColumn(name = "store_id", nullable = false)
+    private StoreEntity store;
 
-    @Column(nullable = false)
-    private String address;
-
-    @Column(name = "phone_number")
-    private String phoneNumber;
-
-    @Column(name = "open_time")
-    private LocalTime openTime;
-
-    @Column(name = "close_time")
-    private LocalTime closeTime;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_category_id", nullable = false)
+    private CategoryEntity category;
 
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
+    @CreatedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
@@ -55,4 +48,14 @@ public class StoreEntity {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    public StoreViewEntity(StoreEntity store, CategoryEntity category) {
+        this.store = store;
+        this.category = category;
+    }
+
+    public void softDelete() {
+        this.isDeleted = true;
+    }
+
 }
