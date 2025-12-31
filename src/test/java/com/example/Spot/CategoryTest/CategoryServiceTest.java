@@ -3,6 +3,9 @@ package com.example.Spot.CategoryTest;
 import com.example.Spot.store.domain.entity.CategoryEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.entity.StoreViewEntity;
+import com.example.Spot.store.domain.repository.CategoryRepository;
+import com.example.Spot.store.domain.repository.StoreRepository;
+import com.example.Spot.store.domain.repository.StoreViewRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
@@ -14,7 +17,7 @@ import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 
 @DataJpaTest
-class StoreCategoryRepositoryTest {
+class CategoryServiceTest {
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -56,12 +59,12 @@ class StoreCategoryRepositoryTest {
 
         StoreViewEntity view1 = StoreViewEntity.builder()
                 .store(bbq)
-                .storeCategory(chicken)
+                .category(chicken)
                 .build();
 
         StoreViewEntity view2 = StoreViewEntity.builder()
                 .store(kyochon)
-                .storeCategory(chicken)
+                .category(chicken)
                 .build();
 
         storeViewRepository.save(view1);
@@ -80,7 +83,7 @@ class StoreCategoryRepositoryTest {
                 .orElseThrow();
 
         List<StoreViewEntity> chickenStores =
-                storeViewRepository.findByStoreCategoryAndIsDeletedFalse(foundChicken);
+                storeViewRepository.findByCategoryAndIsDeletedFalse(foundChicken);
 
         assertThat(chickenStores)
                 .hasSize(2)
@@ -119,7 +122,7 @@ class StoreCategoryRepositoryTest {
         CategoryEntity savedCategory =
                 categoryRepository.save(category);
 
-        savedCategory.delete(); // soft delete
+        savedCategory.softDelete(); // soft delete
         categoryRepository.save(savedCategory);
 
         // when
@@ -156,12 +159,12 @@ class StoreCategoryRepositoryTest {
 
         StoreViewEntity view1 = StoreViewEntity.builder()
                 .store(store1)
-                .storeCategory(category)
+                .category(category)
                 .build();
 
         StoreViewEntity view2 = StoreViewEntity.builder()
                 .store(store2)
-                .storeCategory(category)
+                .category(category)
                 .build();
 
         storeViewRepository.save(view1);
@@ -173,7 +176,7 @@ class StoreCategoryRepositoryTest {
                         .orElseThrow();
 
         List<StoreViewEntity> stores =
-                storeViewRepository.findByStoreCategoryAndIsDeletedFalse(foundCategory);
+                storeViewRepository.findByCategoryAndIsDeletedFalse(foundCategory);
 
         // then
         assertThat(stores)
@@ -206,26 +209,26 @@ class StoreCategoryRepositoryTest {
         storeRepository.save(activeStore);
 
         StoreEntity savedDeletedStore = storeRepository.save(deletedStore);
-        savedDeletedStore.delete();
+        savedDeletedStore.softDelete();
         storeRepository.save(savedDeletedStore);
 
         storeViewRepository.save(
                 StoreViewEntity.builder()
                         .store(activeStore)
-                        .storeCategory(category)
+                        .category(category)
                         .build()
         );
 
         storeViewRepository.save(
                 StoreViewEntity.builder()
                         .store(savedDeletedStore)
-                        .storeCategory(category)
+                        .category(category)
                         .build()
         );
 
         // when
         List<StoreViewEntity> stores =
-                storeViewRepository.findByStoreCategoryAndIsDeletedFalse(category);
+                storeViewRepository.findByCategoryAndIsDeletedFalse(category);
 
         // then
         assertThat(stores)
@@ -328,7 +331,7 @@ class StoreCategoryRepositoryTest {
         CategoryEntity saved =
                 categoryRepository.save(category);
 
-        saved.delete();
+        saved.softDelete();
         categoryRepository.save(saved);
 
         // when
@@ -351,7 +354,7 @@ class StoreCategoryRepositoryTest {
                 categoryRepository.save(category);
 
         // when
-        saved.delete();
+        saved.softDelete();
         categoryRepository.save(saved);
 
         // then
@@ -376,7 +379,7 @@ class StoreCategoryRepositoryTest {
 
         CategoryEntity savedDeleted =
                 categoryRepository.save(deleted);
-        savedDeleted.delete();
+        savedDeleted.softDelete();
         categoryRepository.save(savedDeleted);
 
         // when
@@ -392,28 +395,6 @@ class StoreCategoryRepositoryTest {
                     assertThat(category.getIsDeleted()).isFalse();
                 });
     }
-
-    @Test
-    void 삭제된_카테고리는_ID로_조회되지_않는다() {
-        // given
-        CategoryEntity category = CategoryEntity.builder()
-                .name("치킨")
-                .build();
-
-        CategoryEntity saved =
-                categoryRepository.save(category);
-
-        saved.delete();
-        categoryRepository.save(saved);
-
-        // when
-        Optional<CategoryEntity> found =
-                categoryRepository.findByIdAndIsDeletedFalse(saved.getId());
-
-        // then
-        assertThat(found).isEmpty();
-    }
-
 
 
 }

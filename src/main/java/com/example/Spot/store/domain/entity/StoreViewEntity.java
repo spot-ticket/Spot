@@ -3,6 +3,7 @@ package com.example.Spot.store.domain.entity;
 import com.example.Spot.global.common.UpdateBaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -26,6 +27,7 @@ public class StoreViewEntity extends UpdateBaseEntity {
     @JoinColumn(name = "store_category_id", nullable = false)
     private CategoryEntity category;
 
+    @Builder
     public StoreViewEntity(StoreEntity store, CategoryEntity category) {
         this.store = store;
         this.category = category;
