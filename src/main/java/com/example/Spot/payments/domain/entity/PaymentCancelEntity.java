@@ -34,14 +34,19 @@ public class PaymentCancelEntity extends BaseEntity{
     private PaymentItemEntity paymentItem;
 
     @Column(name="cancel_idempotency", updatable=false)
-    private UUID CancelIdempotency;
+    private UUID cancelIdempotency;
 
     @Column(nullable=false, updatable=false)
     private String reason;
 
     @Builder
-    public PaymentCancelEntity(PaymentItemEntity paymentItem, String reason){
+    public PaymentCancelEntity(PaymentItemEntity paymentItem, String reason, UUID cancelIdempotency){
+        
+        if (reason == null || reason.isBlank()) throw new IllegalArgumentException("취소 사유는 필수입니다.");
+        if (paymentItem == null) throw new IllegalArgumentException("취소 대상 아이템은 필수입니다.");
+
         this.paymentItem = paymentItem;
         this.reason = reason;
+        this.cancelIdempotency = cancelIdempotency;
     }
 }

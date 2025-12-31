@@ -38,6 +38,10 @@ public class PaymentItemEntity extends BaseEntity {
 
     @Builder
     public PaymentItemEntity(PaymentEntity payment, OrderEntity order){
+        
+        if (payment == null) throw new IllegalArgumentException("사전에 등록된 결제가 있어야 합니다.");
+        if (order == null) throw new IllegalArgumentException("사전에 등록된 주문이 있어야 합니다.");
+
         this.payment = payment;
         this.order = order;
     }
