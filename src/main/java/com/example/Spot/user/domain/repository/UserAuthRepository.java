@@ -9,7 +9,7 @@ import java.util.UUID;
 public interface UserAuthRepository extends JpaRepository<UserAuthEntity, UUID> {
 
 
-    boolean existsByUser_Id(UUID userId);
+    boolean existsByUser_Id(Integer userId);
 
     // 로그인용: username으로 auth 조회
     Optional<UserAuthEntity> findByUser_Username(String username);

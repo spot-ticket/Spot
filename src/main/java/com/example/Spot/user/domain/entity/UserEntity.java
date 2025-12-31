@@ -4,28 +4,23 @@ import com.example.Spot.global.common.UpdateBaseEntity;
 import com.example.Spot.store.domain.entity.StoreStaffEntity;
 import com.example.Spot.user.domain.Role;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.hibernate.annotations.UuidGenerator;
+import lombok.*;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Getter
-@Table(name="p_user")
+@Setter
+@Table(name = "p_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity extends UpdateBaseEntity {
 
     @Id
-    @UuidGenerator
-    private UUID id;
+    private Integer id;
 
     @Column(name = "name", nullable = false)
     private String username;
