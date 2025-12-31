@@ -1,7 +1,10 @@
 package com.example.Spot.order.domain.entity;
 
+import com.example.Spot.menu.domain.entity.MenuEntity;
 import jakarta.persistence.*;
 import lombok.Getter;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -35,7 +38,7 @@ public class OrderItemEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "menu_id", nullable = false)
-    private MenuEntity menu; 
+    private MenuEntity menu;
 
     @Column(name = "menu_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal menuPrice;
