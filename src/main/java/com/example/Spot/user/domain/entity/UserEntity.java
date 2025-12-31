@@ -2,10 +2,7 @@ package com.example.Spot.user.domain.entity;
 import com.example.Spot.global.common.UpdateBaseEntity;
 import com.example.Spot.user.domain.Role;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -50,6 +47,7 @@ public class UserEntity extends UpdateBaseEntity {
     private Role role;
 
 
+    @Builder
     public UserEntity(String username, String nickname, String address, String email, Role role) {
         this.username = username;
         this.nickname = nickname;
@@ -59,6 +57,7 @@ public class UserEntity extends UpdateBaseEntity {
     }
 
 
+    @Builder
     public static UserEntity forAuthentication(String username, Role role) {
         UserEntity user = new UserEntity(); // protected 생성자 → 같은 클래스라서 가능
         user.username = username;
@@ -66,6 +65,7 @@ public class UserEntity extends UpdateBaseEntity {
         return user;
     }
 
+    @Builder
     public void ismale(){
         this.male = true;
     }

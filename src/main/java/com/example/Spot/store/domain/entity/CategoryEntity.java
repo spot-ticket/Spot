@@ -3,6 +3,7 @@ package com.example.Spot.store.domain.entity;
 import com.example.Spot.global.common.UpdateBaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.springframework.data.annotation.CreatedDate;
@@ -14,6 +15,7 @@ import java.util.Set;
 
 
 @Getter
+@Entity
 @EntityListeners(AuditingEntityListener.class)
 //@Table(name = "p_store_category")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -30,6 +32,7 @@ public class CategoryEntity extends UpdateBaseEntity {
 
     // 도메인 메서드
 
+    @Builder
     public CategoryEntity(String name) {
         this.name = name;
     }

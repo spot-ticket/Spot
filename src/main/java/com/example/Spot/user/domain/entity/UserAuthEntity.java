@@ -2,10 +2,7 @@ package com.example.Spot.user.domain.entity;
 
 import com.example.Spot.global.common.UpdateBaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.annotation.LastModifiedDate;
@@ -35,11 +32,13 @@ public class UserAuthEntity extends UpdateBaseEntity {
     private String hashedPassword;
 
 
+    @Builder
     public UserAuthEntity(UserEntity user, String hashedPassword) {
         this.user = user;
         this.hashedPassword = hashedPassword;
     }
 
+    @Builder
     public void changePassword(String newHashedPassword) {
         this.hashedPassword = newHashedPassword;
     }
