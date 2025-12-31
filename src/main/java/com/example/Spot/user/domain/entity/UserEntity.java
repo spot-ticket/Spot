@@ -1,6 +1,7 @@
 package com.example.Spot.user.domain.entity;
 
 import com.example.Spot.global.common.UpdateBaseEntity;
+import com.example.Spot.store.domain.entity.StoreStaffEntity;
 import com.example.Spot.user.domain.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -10,12 +11,14 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 
-@Entity
 @EntityListeners(AuditingEntityListener.class)
 @Getter
+
 //@Table(name="p_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity extends UpdateBaseEntity {
@@ -43,9 +46,11 @@ public class UserEntity extends UpdateBaseEntity {
     @Column(name = "email")
     private String email;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    private List<StoreStaffEntity> staffs = new ArrayList<>();
+
     @Enumerated(EnumType.STRING)
     private Role role;
-
 
     @Builder
     public UserEntity(String username, String nickname, String address, String email, Role role) {
