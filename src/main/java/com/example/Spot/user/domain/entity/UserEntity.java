@@ -1,17 +1,15 @@
 package com.example.Spot.user.domain.entity;
+
 import com.example.Spot.global.common.UpdateBaseEntity;
-import com.example.Spot.store.domain.entity.StoreStaffEntity;
 import com.example.Spot.user.domain.Role;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.UUID;
 
 
@@ -24,30 +22,29 @@ public class UserEntity extends UpdateBaseEntity {
 
     @Id
     @UuidGenerator
-    @Column(columnDefinition="BINARY(16)")
+    @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
-    @Column(name="name", nullable=false)
+    @Column(name = "name", nullable = false)
     private String username;
 
-    @Column(name="nickname" ,nullable=false)
+    @Column(name = "nickname", nullable = false)
     private String nickname;
 
-    @Column(name="sex")
+    @Column(name = "sex")
     private boolean male;
 
-    @Column(name="age")
+    @Column(name = "age")
     private int age;
 
-    @Column(name="address")
+    @Column(name = "address")
     private String address;
 
-    @Column(name="email")
+    @Column(name = "email")
     private String email;
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
 
 
     @Builder
@@ -69,7 +66,7 @@ public class UserEntity extends UpdateBaseEntity {
     }
 
     @Builder
-    public void ismale(){
+    public void ismale() {
         this.male = true;
     }
 
