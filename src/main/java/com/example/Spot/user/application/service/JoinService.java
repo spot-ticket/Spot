@@ -1,6 +1,5 @@
 package com.example.Spot.user.application.service;
 
-import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.presentation.dto.request.JoinDTO;
 import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.entity.UserAuthEntity;

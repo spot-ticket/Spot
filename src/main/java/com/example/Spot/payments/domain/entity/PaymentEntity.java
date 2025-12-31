@@ -80,6 +80,14 @@ public class PaymentEntity extends BaseEntity{
     }
 
     public void updateStatus(PaymentStatus status){
+        
+        if (this.paymentStatus == PaymentStatus.SUCCESS   || 
+            this.paymentStatus == PaymentStatus.CANCELLED || 
+            this.paymentStatus == PaymentStatus.FAILED) 
+        {
+            throw new IllegalStateException("이미 완료된 결제 상태는 변경할 수 없습니다.");
+        }
+
         this.paymentStatus = status;
     }
 }
