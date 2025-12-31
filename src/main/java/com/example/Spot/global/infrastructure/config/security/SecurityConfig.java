@@ -1,4 +1,4 @@
-package com.example.Spot.config;
+package com.example.Spot.global.infrastructure.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
