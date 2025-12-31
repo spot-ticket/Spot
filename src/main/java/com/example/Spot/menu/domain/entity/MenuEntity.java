@@ -1,5 +1,6 @@
 package com.example.Spot.menu.domain.entity;
 
+import com.example.Spot.global.common.UpdateBaseEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -18,7 +19,7 @@ import java.util.UUID;
 @Getter
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MenuEntity {
+public class MenuEntity extends UpdateBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -39,19 +40,8 @@ public class MenuEntity {
     @Column(name = "is_available")
     private Boolean isAvailable = true;
 
-    @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
-
     @Column(name = "is_hidden")
     private Boolean isHidden = false;
-
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     @Builder
     public MenuEntity(StoreEntity store, String name, String category, int price) {
@@ -73,9 +63,5 @@ public class MenuEntity {
 
     public void changeHidden(Boolean isHidden){
         this.isHidden = isHidden;
-    }
-
-    public void delete(){
-        this.isDeleted = true;
     }
 }
