@@ -3,7 +3,7 @@ version: '3.8'
 services:
   db:
     image: postgres:15-alpine
-    container_name: postgres_db
+    container_name: local-postgres_db
     environment:
       - POSTGRES_DB=myapp_db
       - POSTGRES_USER=admin
