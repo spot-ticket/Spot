@@ -11,6 +11,7 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+@Entity
 @Getter
 @EntityListeners(AuditingEntityListener.class)
 //@Table(name = "p_user_auth",
@@ -23,7 +24,6 @@ public class UserAuthEntity extends UpdateBaseEntity {
     @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
-    // p_user_auth.user_id -> p_user.id (1:1)
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
