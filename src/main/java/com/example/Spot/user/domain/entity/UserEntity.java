@@ -1,6 +1,7 @@
 package com.example.Spot.user.domain.entity;
 
 import com.example.Spot.global.common.UpdateBaseEntity;
+import com.example.Spot.store.domain.entity.StoreStaffEntity;
 import com.example.Spot.user.domain.Role;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
@@ -10,42 +11,45 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Getter
-//@Table(name="p_user")
+@Table(name = "p_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity extends UpdateBaseEntity {
 
     @Id
     @UuidGenerator
-    @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
     @Column(name = "name", nullable = false)
     private String username;
 
-    @Column(name = "nickname", nullable = false)
+    @Column(nullable = false)
     private String nickname;
 
-    @Column(name = "sex")
+    @Column(nullable = false)
     private boolean male;
 
-    @Column(name = "age")
+    @Column(nullable = false)
     private int age;
 
-    @Column(name = "address")
+    @Column(nullable = false)
     private String address;
 
-    @Column(name = "email")
+    @Column(nullable = false)
     private String email;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    private List<StoreStaffEntity> staffs = new ArrayList<>();
 
     @Builder
     public UserEntity(String username, String nickname, String address, String email, Role role) {
