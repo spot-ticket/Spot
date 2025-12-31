@@ -18,31 +18,30 @@ import java.util.UUID;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Getter
-//@Table(name="p_user")
+@Table(name="p_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity extends UpdateBaseEntity {
 
     @Id
     @UuidGenerator
-    @Column(columnDefinition="BINARY(16)")
     private UUID id;
 
     @Column(name="name", nullable=false)
     private String username;
 
-    @Column(name="nickname" ,nullable=false)
+    @Column(nullable=false)
     private String nickname;
 
-    @Column(name="sex")
+    @Column(nullable=false)
     private boolean male;
 
-    @Column(name="age")
+    @Column(nullable=false)
     private int age;
 
-    @Column(name="address")
+    @Column(nullable=false)
     private String address;
 
-    @Column(name="email")
+    @Column(nullable=false)
     private String email;
 
     @Enumerated(EnumType.STRING)

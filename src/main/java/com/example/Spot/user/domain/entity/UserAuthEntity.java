@@ -14,21 +14,20 @@ import java.util.UUID;
 @Entity
 @Getter
 @EntityListeners(AuditingEntityListener.class)
-//@Table(name = "p_user_auth",
-//        uniqueConstraints = @UniqueConstraint(name = "uk_user_auth_user_id", columnNames = "user_id"))
+@Table(name = "p_user_auth",
+        uniqueConstraints = @UniqueConstraint(name = "uk_user_auth_user_id", columnNames = "user_id"))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserAuthEntity extends UpdateBaseEntity {
 
     @Id
     @UuidGenerator
-    @Column(columnDefinition = "BINARY(16)")
     private UUID id;
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
     private UserEntity user;
 
-    @Column(name = "hashed_password", nullable = false)
+    @Column(nullable = false)
     private String hashedPassword;
 
 
