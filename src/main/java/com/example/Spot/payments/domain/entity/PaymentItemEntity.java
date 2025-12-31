@@ -7,10 +7,12 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import lombok.Getter;
+import lombok.Builder;
 import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
 import java.time.LocalDateTime;
 import com.example.Spot.order.domain.entity.OrderEntity;
+import com.example.Spot.global.common.BaseEntity;
 import java.util.UUID;
 
 @Entity
@@ -18,10 +20,12 @@ import java.util.UUID;
 @Getter
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PaymentItemEntity {
+public class PaymentItemEntity extends BaseEntity {
+
     @Id
     @GeneratedValue
     @UuidGenerator
+    @Column(columnDefinition = "UUID")
     private UUID id;
 
     @ManyToOne(fetch=FetchType.LAZY)
@@ -32,7 +36,9 @@ public class PaymentItemEntity {
     @JoinColumn(name="order_id")
     private OrderEntity order;
 
-    @CreatedDate
-    @Column(name="created_at")
-    private LocalDateTime createdAt;
+    @Builder
+    public PaymentItemEntity(PaymentEntity payment, OrderEntity order){
+        this.payment = payment;
+        this.order = order;
+    }
 }
