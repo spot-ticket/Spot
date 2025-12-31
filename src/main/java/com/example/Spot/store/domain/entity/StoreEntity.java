@@ -8,7 +8,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalTime;
-import java.util.UUID;
+import java.util.*;
 
 @Entity
 @Table(name = "p_stores")
@@ -34,6 +34,13 @@ public class StoreEntity extends UpdateBaseEntity {
 
     @Column(name = "close_time")
     private LocalTime closeTime;
+
+    @OneToMany(mappedBy = "store", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    private List<StoreStaffEntity> staffs = new ArrayList<>();
+
+    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    private Set<StoreViewEntity> storeCategoryMaps = new HashSet<>();
+
 
     @Builder
     public StoreEntity(String name, String address, String phoneNumber,
