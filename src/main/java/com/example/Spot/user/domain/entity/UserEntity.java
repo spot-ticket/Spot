@@ -1,5 +1,6 @@
 package com.example.Spot.user.domain.entity;
 import com.example.Spot.global.common.UpdateBaseEntity;
+import com.example.Spot.store.domain.entity.StoreStaffEntity;
 import com.example.Spot.user.domain.Role;
 import jakarta.persistence.*;
 import lombok.*;
@@ -9,13 +10,14 @@ import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 
-
+@Entity
 @EntityListeners(AuditingEntityListener.class)
 @Getter
-
 //@Table(name="p_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity extends UpdateBaseEntity {
@@ -45,6 +47,7 @@ public class UserEntity extends UpdateBaseEntity {
 
     @Enumerated(EnumType.STRING)
     private Role role;
+
 
 
     @Builder
