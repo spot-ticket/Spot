@@ -1,5 +1,6 @@
 package com.example.Spot.user.domain.entity;
 
+import com.example.Spot.global.common.UpdateBaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -13,14 +14,12 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-@Entity
-@EntityListeners(AuditingEntityListener.class)
-@Table(name = "p_user_auth",
-        uniqueConstraints = @UniqueConstraint(name = "uk_user_auth_user_id", columnNames = "user_id"))
 @Getter
-@Setter
+@EntityListeners(AuditingEntityListener.class)
+//@Table(name = "p_user_auth",
+//        uniqueConstraints = @UniqueConstraint(name = "uk_user_auth_user_id", columnNames = "user_id"))
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserAuthEntity {
+public class UserAuthEntity extends UpdateBaseEntity {
 
     @Id
     @UuidGenerator
@@ -35,16 +34,6 @@ public class UserAuthEntity {
     @Column(name = "hashed_password", nullable = false)
     private String hashedPassword;
 
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
 
     public UserAuthEntity(UserEntity user, String hashedPassword) {
         this.user = user;
@@ -55,7 +44,4 @@ public class UserAuthEntity {
         this.hashedPassword = newHashedPassword;
     }
 
-    public void delete() {
-        this.isDeleted = true;
-    }
 }
