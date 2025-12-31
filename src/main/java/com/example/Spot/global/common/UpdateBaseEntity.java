@@ -14,4 +14,7 @@ public abstract class UpdateBaseEntity extends BaseEntity {
     @LastModifiedDate
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt;
+
+    @Column(name = "is_deleted", nullable = false)
+    private Boolean isDeleted = false;
 }

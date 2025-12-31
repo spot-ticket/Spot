@@ -17,7 +17,4 @@ public abstract class BaseEntity {
     @CreatedDate
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
-
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;
 }
