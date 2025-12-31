@@ -1,19 +1,10 @@
 package com.example.Spot.order.domain.entity;
 
+import com.example.Spot.global.common.BaseEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import jakarta.persistence.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-import com.example.Spot.store.domain.entity.StoreEntity;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import lombok.Builder;
+import lombok.*;
 import org.hibernate.annotations.UuidGenerator;
-import org.springframework.data.annotation.LastModifiedDate;
 
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -23,40 +14,37 @@ import java.util.UUID;
 @Entity
 @Getter
 @Table(name = "p_order")
-@EntityListeners(AuditingEntityListener.class)
-@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@AllArgsConstructor(access = AccessLevel.PROTECTED)
-public class OrderEntity {
+public class OrderEntity extends BaseEntity {
 
     @Id
+    @GeneratedValue
     @UuidGenerator
+    @Column(columnDefinition = "UUID")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id")
+    @JoinColumn(name = "store_id", nullable = false)
     private StoreEntity store;
 
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
-    @Column(name = "order_number", nullable = false, unique = true)
+    @Column(name = "order_number", nullable = false, unique = true, length = 50)
     private String orderNumber;
 
     @Column(name = "request", columnDefinition = "TEXT")
     private String request;
 
-    @Builder.Default
     @Column(name = "need_disposables", nullable = false)
-    private Boolean needDisposables = false;
+    private Boolean needDisposables;
 
     @Column(name = "pickup_time", nullable = false)
     private LocalDateTime pickupTime;
 
-    @Builder.Default
-    @Column(name = "order_status", nullable = false)
     @Enumerated(EnumType.STRING)
-    private OrderStatus orderStatus = OrderStatus.PENDING;
+    @Column(name = "order_status", nullable = false, length = 20)
+    private OrderStatus orderStatus;
 
     @Column(name = "cooking_started_at")
     private LocalDateTime cookingStartedAt;
@@ -67,24 +55,28 @@ public class OrderEntity {
     @Column(name = "estimated_time")
     private Integer estimatedTime; // 조리 예상 시간 (분)
 
-    @Builder.Default
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;
-
     @Column(name = "reason", columnDefinition = "TEXT")
     private String reason; // 주문 취소/거절 이유
 
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cancelled_by", length = 20)
+    private CancelledBy cancelledBy;
 
-    @LastModifiedDate
-    @Column(name = "updated_at", nullable = false)
-    private LocalDateTime updatedAt;
-
-    @Builder.Default
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true) 
-    private List<OrderItemEntity> orderItems = new ArrayList<>();
+    private List<OrderItemEntity> orderItems;
+
+    @Builder
+    public OrderEntity(StoreEntity store, Long userId, String orderNumber, 
+                      String request, Boolean needDisposables, LocalDateTime pickupTime) {
+        this.store = store;
+        this.userId = userId;
+        this.orderNumber = orderNumber;
+        this.request = request;
+        this.needDisposables = needDisposables != null ? needDisposables : false;
+        this.pickupTime = pickupTime;
+        this.orderStatus = OrderStatus.PENDING;
+        this.orderItems = new ArrayList<>();
+    }
 
     public enum OrderStatus {
         PENDING,              // 주문 수락 대기
@@ -95,5 +87,10 @@ public class OrderEntity {
         COMPLETED,            // 픽업 완료
         CANCELLED             // 주문 취소
     }
-}
 
+    public enum CancelledBy {
+        CUSTOMER,             // 고객 취소
+        STORE,                // 매장 취소
+        SYSTEM                // 시스템 자동 취소 (결제 실패 등)
+    }
+}
