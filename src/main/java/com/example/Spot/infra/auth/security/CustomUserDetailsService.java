@@ -22,22 +22,24 @@ public class CustomUserDetailsService implements UserDetailsService {
 
 
     @Override
-    public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException{
+    public UserDetails loadUserByUsername(String username)
+            throws UsernameNotFoundException {
 
-        // 1) p_user 조회
-        UserEntity user = userRepository.findByUsername(username);
-        if (user == null) {
-            throw new UsernameNotFoundException("USER_NOT_FOUND");
-        }
+        // p_user 조회
+        UserEntity user = userRepository.findByUsername(username)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("USER_NOT_FOUND")
+                );
 
-        // 2) p_user_auth 조회 (비밀번호 해시)
-        UserAuthEntity auth = userAuthRepository.findByUser_Username(username);
-        if (auth == null) {
-            throw new UsernameNotFoundException("AUTH_NOT_FOUND");
-        }
+        // p_user_auth 조회 (비밀번호 해시)
+        UserAuthEntity auth = userAuthRepository.findByUser_Username(username)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException("AUTH_NOT_FOUND")
+                );
 
-        // 3) UserDetails 반환
-        return null;
+        // UserDetails 반환
+        return new CustomUserDetails(user, auth);
     }
 
 }
+
