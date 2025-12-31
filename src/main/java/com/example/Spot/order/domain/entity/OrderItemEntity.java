@@ -32,6 +32,9 @@ public class OrderItemEntity extends BaseEntity {
     @Column(name = "menu_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal menuPrice;
 
+
+
+
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
