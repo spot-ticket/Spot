@@ -4,46 +4,40 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
-import java.time.LocalTime;
-import java.util.UUID;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 @EntityListeners(AuditingEntityListener.class)
-@Table(name = "p_stores")
+@Table(name = "p_store_category")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class StoreEntity {
 
+public class CategoryEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    private UUID id;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
 
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private String address;
-
-    @Column(name = "phone_number")
-    private String phoneNumber;
-
-    @Column(name = "open_time")
-    private LocalTime openTime;
-
-    @Column(name = "close_time")
-    private LocalTime closeTime;
-
     @Column(name = "is_deleted", nullable = false)
     private Boolean isDeleted = false;
 
+    @CreatedDate
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
+    @CreatedDate
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
+
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    private Set<StoreViewEntity> storeCategoryMaps = new HashSet<>();
 
     @PrePersist
     protected void onCreate() {
@@ -55,4 +49,19 @@ public class StoreEntity {
     protected void onUpdate() {
         this.updatedAt = LocalDateTime.now();
     }
+
+    // 도메인 메서드
+
+    public CategoryEntity(String name) {
+        this.name = name;
+    }
+
+    public void updateName(String name) {
+        this.name = name;
+    }
+
+    public void softDelete() {
+        this.isDeleted = true;
+    }
+
 }
