@@ -11,7 +11,7 @@ class PaymentItemEntityTest {
 
     @Test
     @DisplayName("정상: 결제와 주문 정보가 모두 있으면 생성에 성공한다")
-    void createPaymentItemSuccess() {
+    void 결제_Item_정상_생성_테스트() {
 
         PaymentEntity mockPayment = Mockito.mock(PaymentEntity.class);
         OrderEntity mockOrder = Mockito.mock(OrderEntity.class);
@@ -27,7 +27,7 @@ class PaymentItemEntityTest {
 
     @Test
     @DisplayName("예외: 결제 정보가 null이면 IllegalArgumentException이 발생한다")
-    void throwExceptionWhenPaymentIsNull() {
+    void 결제_정보_부재_예외_테스트() {
 
         OrderEntity mockOrder = Mockito.mock(OrderEntity.class);
 
@@ -41,7 +41,7 @@ class PaymentItemEntityTest {
 
     @Test
     @DisplayName("예외: 주문 정보가 null이면 IllegalArgumentException이 발생한다")
-    void throwExceptionWhenOrderIsNull() {
+    void 결제_주문_정보_부재_예외_테스트() {
 
         PaymentEntity mockPayment = Mockito.mock(PaymentEntity.class);
 

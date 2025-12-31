@@ -13,7 +13,7 @@ public class PaymentCancelEntityUnitTest {
 
     @Test
     @DisplayName("정상: 결제 취소 엔티티가 모든 정보를 포함하여 생성되어야 한다")
-    void createPaymentCancelTest() {
+    void 결제_취소_정보_부재_테스트() {
         UUID idempotency = UUID.randomUUID();
         String reason = "고객 변심";
 
