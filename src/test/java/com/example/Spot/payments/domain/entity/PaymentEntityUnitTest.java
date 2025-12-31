@@ -21,7 +21,7 @@ public class PaymentEntityUnitTest {
 
     @Test
     @DisplayName("정상 : 상태 변경이 정상적으로 수행되어야 한다")
-    void updateStatusTest() {
+    void 결제_변경_정상_테스트() {
         PaymentEntity toSuccess = createReadyPayment();
         toSuccess.updateStatus(PaymentStatus.SUCCESS);
         assertThat(toSuccess.getPaymentStatus()).isEqualTo(PaymentStatus.SUCCESS);
@@ -38,7 +38,7 @@ public class PaymentEntityUnitTest {
     @ParameterizedTest
     @EnumSource(value = PaymentStatus.class, names = {"READY", "FAILED", "CANCELLED"})
     @DisplayName("예외 : 이미 성공한 결제는 상태를 변경할 수 없다")
-    void successStatusTransitionTest(PaymentStatus targetStatus) {
+    void 결제_성공_후_변경_테스트(PaymentStatus targetStatus) {
 
         PaymentEntity payment = PaymentEntity.builder()
                 .paymentStatus(PaymentEntity.PaymentStatus.SUCCESS)
@@ -51,7 +51,7 @@ public class PaymentEntityUnitTest {
     @ParameterizedTest
     @EnumSource(value = PaymentStatus.class, names = {"READY", "FAILED", "CANCELLED"})
     @DisplayName("예외 : 이미 실패한 결제는 다른 상태로 변경할 수 없다")
-    void failStatusTransitionTest(PaymentStatus targetStatus) {
+    void 결제_실패_후_변경_테스트(PaymentStatus targetStatus) {
 
         PaymentEntity payment = PaymentEntity.builder()
                 .paymentStatus(PaymentEntity.PaymentStatus.FAILED)
@@ -64,7 +64,7 @@ public class PaymentEntityUnitTest {
     @ParameterizedTest
     @EnumSource(value = PaymentStatus.class, names = {"READY", "FAILED", "CANCELLED"})
     @DisplayName("예외 : 이미 취소한 결제는 다른 상태로 변경할 수 없다")
-    void cancelStatusTransitionTest(PaymentStatus targetStatus) {
+    void 결제_취소_후_변경_테스트(PaymentStatus targetStatus) {
 
         PaymentEntity payment = PaymentEntity.builder()
                 .paymentStatus(PaymentEntity.PaymentStatus.CANCELLED)
