@@ -1,15 +1,13 @@
 package com.example.Spot.menu.domain.entity;
 
+import com.example.Spot.global.common.UpdateBaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -18,7 +16,7 @@ import java.util.UUID;
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 
-public class MenuOptionEntity {
+public class MenuOptionEntity extends UpdateBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -39,16 +37,6 @@ public class MenuOptionEntity {
     @Column(name = "is_available")
     private Boolean isAvailable = true;
 
-    @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
-
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     @Builder
     public MenuOptionEntity(MenuEntity menu, String name, String detail, int price) {
@@ -66,9 +54,5 @@ public class MenuOptionEntity {
 
     public void changeAvailable(Boolean isAvailable){
         this.isAvailable = isAvailable;
-    }
-
-    public void delete(){
-        this.isDeleted = true;
     }
 }
