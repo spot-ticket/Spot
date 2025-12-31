@@ -1,5 +1,6 @@
 package com.example.Spot.store.domain.entity;
 
+import com.example.Spot.global.common.UpdateBaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -11,13 +12,12 @@ import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
 
-@Entity
-@EntityListeners(AuditingEntityListener.class)
-@Table(name = "p_store_category")
-@Getter
-@NoArgsConstructor(access = AccessLevel.PROTECTED)
 
-public class CategoryEntity {
+@Getter
+@EntityListeners(AuditingEntityListener.class)
+//@Table(name = "p_store_category")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+public class CategoryEntity extends UpdateBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -25,30 +25,8 @@ public class CategoryEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;
-
-    @CreatedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
     private Set<StoreViewEntity> storeCategoryMaps = new HashSet<>();
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
 
     // 도메인 메서드
 
@@ -60,8 +38,5 @@ public class CategoryEntity {
         this.name = name;
     }
 
-    public void softDelete() {
-        this.isDeleted = true;
-    }
 
 }
