@@ -13,7 +13,7 @@ import java.util.UUID;
 
 @Entity
 @Table(name = "p_menu")
-@Getterㅕㄴ 제
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MenuEntity extends UpdateBaseEntity {
     @Id
