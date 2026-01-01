@@ -14,7 +14,6 @@ import java.util.UUID;
 @Entity
 @Table(name = "p_menu")
 @Getter
-@EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MenuEntity extends UpdateBaseEntity {
     @Id
