@@ -1,6 +1,5 @@
 package com.example.Spot.user.domain.entity;
 import com.example.Spot.global.common.UpdateBaseEntity;
-import com.example.Spot.store.domain.entity.StoreStaffEntity;
 import com.example.Spot.user.domain.Role;
 import jakarta.persistence.*;
 import lombok.*;
@@ -18,6 +17,7 @@ import java.util.UUID;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Getter
+@Setter
 @Table(name="p_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity extends UpdateBaseEntity {
@@ -32,7 +32,7 @@ public class UserEntity extends UpdateBaseEntity {
     @Column(nullable=false)
     private String nickname;
 
-    @Column(nullable=false)
+
     private boolean male;
 
     @Column(nullable=false)

@@ -5,9 +5,9 @@ services:
     image: postgres:15-alpine
     container_name: local-postgres_db
     environment:
-      - POSTGRES_DB=myapp_db
-      - POSTGRES_USER=admin
-      - POSTGRES_PASSWORD=secret
+      - POSTGRES_DB=spotdb
+      - POSTGRES_USER=spotuser
+      - POSTGRES_PASSWORD=spotpw
     ports:
       - "5432:5432"
     volumes:
