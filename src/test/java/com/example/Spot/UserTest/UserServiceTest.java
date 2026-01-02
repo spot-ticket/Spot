@@ -1,7 +1,6 @@
 package com.example.Spot.UserTest;
 
 import jakarta.transaction.Transactional;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
