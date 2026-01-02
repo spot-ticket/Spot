@@ -1,13 +1,14 @@
 package com.example.Spot.menu.domain.repository;
 
-import com.example.Spot.menu.domain.entity.MenuEntity;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import com.example.Spot.menu.domain.entity.MenuEntity;
 
 public interface MenuRepository extends JpaRepository<MenuEntity, UUID> {
 
