@@ -1,14 +1,15 @@
 package com.example.Spot.order.domain.entity;
 
-import com.example.Spot.menu.domain.entity.MenuEntity;
-import com.example.Spot.store.domain.entity.StoreEntity;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.Nested;
-
 import java.math.BigDecimal;
 
-import static org.assertj.core.api.Assertions.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
+
+import com.example.Spot.menu.domain.entity.MenuEntity;
+import com.example.Spot.store.domain.entity.StoreEntity;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("OrderItemEntity 테스트")
 class OrderItemEntityTest {
