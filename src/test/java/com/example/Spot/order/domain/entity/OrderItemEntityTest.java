@@ -1,5 +1,6 @@
 package com.example.Spot.order.domain.entity;
 
+import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.DisplayName;
