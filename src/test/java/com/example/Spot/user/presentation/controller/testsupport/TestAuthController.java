@@ -1,4 +1,4 @@
-package com.example.Spot.testsupport;
+package com.example.Spot.user.presentation.controller.testsupport;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
