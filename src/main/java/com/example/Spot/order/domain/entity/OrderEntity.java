@@ -71,12 +71,6 @@ public class OrderEntity extends BaseEntity {
     @Column(name = "rejected_at")
     private LocalDateTime rejectedAt;
 
-    @Column(name = "accepted_at")
-    private LocalDateTime acceptedAt;
-
-    @Column(name = "rejected_at")
-    private LocalDateTime rejectedAt;
-
     @Column(name = "cooking_started_at")
     private LocalDateTime cookingStartedAt;
 
