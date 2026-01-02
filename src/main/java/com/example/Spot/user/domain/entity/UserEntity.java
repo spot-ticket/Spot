@@ -29,19 +29,26 @@ public class UserEntity extends UpdateBaseEntity {
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private final List<StoreUserEntity> staffs = new ArrayList<>();
+
     @Id
     private Integer id;
+
     @Column(name = "name", nullable = false)
     private String username;
+
     @Column(nullable = false)
     private String nickname;
     private boolean male;
+
     @Column(nullable = false)
     private int age;
+
     @Column(nullable = false)
     private String address;
+
     @Column(nullable = false)
     private String email;
+
     @Enumerated(EnumType.STRING)
     private Role role;
 
