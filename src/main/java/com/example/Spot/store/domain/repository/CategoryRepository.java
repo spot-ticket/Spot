@@ -1,10 +1,11 @@
 package com.example.Spot.store.domain.repository;
 
-import com.example.Spot.store.domain.entity.CategoryEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-
 import java.util.List;
 import java.util.Optional;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+
+import com.example.Spot.store.domain.entity.CategoryEntity;
 
 public interface CategoryRepository extends JpaRepository<CategoryEntity, Long> {
 

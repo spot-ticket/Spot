@@ -1,13 +1,13 @@
 package com.example.Spot.payments.domain.entity;
 
 import com.example.Spot.order.domain.entity.OrderEntity;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import static org.assertj.core.api.Assertions.*;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class PaymentCancelEntityUnitTest {
 
