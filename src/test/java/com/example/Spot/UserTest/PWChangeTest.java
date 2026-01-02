@@ -1,5 +1,11 @@
 package com.example.Spot.UserTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import jakarta.transaction.Transactional;
 
 import org.junit.jupiter.api.Disabled;
@@ -19,12 +25,6 @@ import com.example.Spot.user.domain.entity.UserAuthEntity;
 import com.example.Spot.user.domain.repository.UserAuthRepository;
 import com.example.Spot.user.domain.repository.UserRepository;
 import com.example.Spot.user.presentation.dto.request.JoinDTO;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
 @AutoConfigureMockMvc

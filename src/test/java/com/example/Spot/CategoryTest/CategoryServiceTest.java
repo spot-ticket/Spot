@@ -1,5 +1,7 @@
 package com.example.Spot.CategoryTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.util.List;
 import java.util.Optional;
 
@@ -14,8 +16,6 @@ import com.example.Spot.store.domain.entity.StoreViewEntity;
 import com.example.Spot.store.domain.repository.CategoryRepository;
 import com.example.Spot.store.domain.repository.StoreRepository;
 import com.example.Spot.store.domain.repository.StoreViewRepository;
-
-import static org.assertj.core.api.AssertionsForInterfaceTypes.assertThat;
 
 @DataJpaTest
 class CategoryServiceTest {

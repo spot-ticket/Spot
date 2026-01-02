@@ -1,5 +1,7 @@
 package com.example.Spot.order.domain.entity;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
@@ -9,8 +11,6 @@ import org.junit.jupiter.api.Test;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DisplayName("OrderEntity 테스트")
 class OrderEntityTest {
