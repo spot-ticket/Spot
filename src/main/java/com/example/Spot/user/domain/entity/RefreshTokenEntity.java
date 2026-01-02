@@ -35,7 +35,7 @@ public class RefreshTokenEntity extends UpdateBaseEntity {
 
 
     public boolean isActive(LocalDateTime now) {
-        return !isDeleted()
+        return !getIsDeleted()
                 && revokedAt == null
                 && expiresAt.isAfter(now);
     }
