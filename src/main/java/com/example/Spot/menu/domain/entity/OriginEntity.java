@@ -5,7 +5,6 @@ import java.util.UUID;
 import org.hibernate.annotations.UuidGenerator;
 
 import com.example.Spot.global.common.UpdateBaseEntity;
-import com.example.Spot.menu.domain.entity.MenuEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

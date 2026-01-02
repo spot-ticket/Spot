@@ -3,8 +3,8 @@ package com.example.Spot.user.presentation.dto.request;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.repository.UserRepository;
