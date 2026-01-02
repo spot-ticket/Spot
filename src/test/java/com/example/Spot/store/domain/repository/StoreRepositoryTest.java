@@ -1,6 +1,7 @@
 package com.example.Spot.store.domain.repository;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
