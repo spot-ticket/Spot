@@ -1,15 +1,12 @@
 package com.example.Spot.menu.domain.repository;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 
-public interface MenuRepository extends JpaRepository<MenuEntity, UUID>{
+public interface MenuRepository extends JpaRepository<MenuEntity, UUID> {
 
     // [손님용] 가게 메뉴 조회 (삭제 X, 숨김 X)
     @Query("select m from MenuEntity m where m.store.id = :storeId AND m.isDeleted = false AND m.isHidden = false")
@@ -21,3 +18,4 @@ public interface MenuRepository extends JpaRepository<MenuEntity, UUID>{
 
     // [가게 주인용] 가게 메뉴 조회 (삭제 X, 숨김 O)
     List<MenuEntity> findAllByStoreIdAndIsDeletedFalse(UUID storeId);
+}
