@@ -1,68 +1,59 @@
 package com.example.Spot.user.domain.entity;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import com.example.Spot.global.common.UpdateBaseEntity;
+import com.example.Spot.store.domain.entity.StoreStaffEntity;
 import com.example.Spot.user.domain.Role;
-import jakarta.persistence.*;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
-import org.hibernate.annotations.UuidGenerator;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
-
 
 @Entity
-@EntityListeners(AuditingEntityListener.class)
 @Getter
-@Setter
-@Table(name="p_user")
+@Table(name = "p_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class UserEntity {
+public class UserEntity extends UpdateBaseEntity {
 
     @Id
-    @UuidGenerator
-    @Column(columnDefinition="BINARY(16)")
-    private UUID id;
+    private Integer id;
 
-    @Column(name="name", nullable=false)
+    @Column(name = "name", nullable = false)
     private String username;
 
-//    @Column(name="password" ,nullable=false)
-//    private String password;
-
-    @Column(name="nickname" ,nullable=false)
+    @Column(nullable = false)
     private String nickname;
 
-    @Column(name="sex")
     private boolean male;
 
-    @Column(name="age")
+    @Column(nullable = false)
     private int age;
 
-    @Column(name="address")
+    @Column(nullable = false)
     private String address;
 
-    @Column(name="email")
+    @Column(nullable = false)
     private String email;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
-    @Column(name="is_deleted", nullable=false)
-    private Boolean isDeleted=false;
+    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    private List<StoreStaffEntity> staffs = new ArrayList<>();
 
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-
+    @Builder
     public UserEntity(String username, String nickname, String address, String email, Role role) {
         this.username = username;
         this.nickname = nickname;
@@ -73,20 +64,31 @@ public class UserEntity {
 
 
     public static UserEntity forAuthentication(String username, Role role) {
-        UserEntity user = new UserEntity(); // protected 생성자 → 같은 클래스라서 가능
+        UserEntity user = new UserEntity();
         user.username = username;
         user.role = role;
         return user;
     }
 
-
-    public void delete(){
-        this.isDeleted = true;
-    }
-    public void ismale(){
+    public void ismale() {
         this.male = true;
     }
 
+    // Setter methods
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public void setMale(boolean male) {
+        this.male = male;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
 
 }
-

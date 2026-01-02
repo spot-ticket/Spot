@@ -147,3 +147,4 @@ public class OrderEntity extends BaseEntity {
         this.orderStatus = OrderStatus.COMPLETED;
         this.pickedUpAt = LocalDateTime.now();
     }
+}

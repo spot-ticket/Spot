@@ -1,14 +1,14 @@
 package com.example.Spot.user.application.service;
 
-import com.example.Spot.user.domain.Role;
-import com.example.Spot.user.presentation.dto.request.JoinDTO;
-import com.example.Spot.user.domain.entity.UserEntity;
-import com.example.Spot.user.domain.entity.UserAuthEntity;
-import com.example.Spot.user.domain.repository.UserRepository;
-import com.example.Spot.user.domain.repository.UserAuthRepository;
-import com.example.Spot.global.presentation.advice.DuplicateUserException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import com.example.Spot.global.presentation.advice.DuplicateUserException;
+import com.example.Spot.user.domain.entity.UserAuthEntity;
+import com.example.Spot.user.domain.entity.UserEntity;
+import com.example.Spot.user.domain.repository.UserAuthRepository;
+import com.example.Spot.user.domain.repository.UserRepository;
+import com.example.Spot.user.presentation.dto.request.JoinDTO;
 
 @Service
 public class JoinService {

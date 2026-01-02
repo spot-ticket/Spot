@@ -1,20 +1,20 @@
 package com.example.Spot.infra.auth.security;
 
-import com.example.Spot.user.domain.entity.UserEntity;
-import com.example.Spot.user.domain.entity.UserAuthEntity;
-import com.example.Spot.user.domain.repository.UserAuthRepository;
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import com.example.Spot.user.domain.entity.UserAuthEntity;
+import com.example.Spot.user.domain.entity.UserEntity;
 
 public class CustomUserDetails implements UserDetails {
 
     private final UserEntity userEntity;
     private final UserAuthEntity userAuthEntity;
 
-    public CustomUserDetails(UserEntity userEntity,UserAuthEntity userAuthEntity) {
+    public CustomUserDetails(UserEntity userEntity, UserAuthEntity userAuthEntity) {
         this.userEntity = userEntity;
         this.userAuthEntity = userAuthEntity;
     }
@@ -31,14 +31,15 @@ public class CustomUserDetails implements UserDetails {
 
         Collection<GrantedAuthority> collection = new ArrayList<>();
 
-        collection.add(new GrantedAuthority() {
-
-            @Override
-            public String getAuthority() {
-
-                return String.valueOf(userEntity.getRole());
-            }
-        });
+        collection.add(() -> "ROLE_" + userEntity.getRole().name());
+//        collection.add(new GrantedAuthority() {
+//
+//            @Override
+//            public String getAuthority() {
+//
+//                return String.valueOf(userEntity.getRole());
+//            }
+//        });
 
         return collection;
     }
