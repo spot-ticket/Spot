@@ -1,7 +1,12 @@
 package com.example.Spot.UserTest;
 
+import com.example.Spot.user.application.service.JoinService;
+import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.domain.entity.UserAuthEntity;
+import com.example.Spot.user.domain.repository.UserAuthRepository;
+import com.example.Spot.user.domain.repository.UserRepository;
+import com.example.Spot.user.presentation.dto.request.JoinDTO;
 import jakarta.transaction.Transactional;
-
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
