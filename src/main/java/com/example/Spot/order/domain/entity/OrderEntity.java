@@ -8,6 +8,8 @@ import java.util.UUID;
 import org.hibernate.annotations.UuidGenerator;
 
 import com.example.Spot.global.common.BaseEntity;
+import com.example.Spot.order.domain.enums.CancelledBy;
+import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.store.domain.entity.StoreEntity;
 
 import jakarta.persistence.CascadeType;
@@ -62,11 +64,23 @@ public class OrderEntity extends BaseEntity {
     @Column(name = "order_status", nullable = false, length = 20)
     private OrderStatus orderStatus;
 
+    @Column(name = "accepted_at")
+    private LocalDateTime acceptedAt;
+
+    @Column(name = "rejected_at")
+    private LocalDateTime rejectedAt;
+
     @Column(name = "cooking_started_at")
     private LocalDateTime cookingStartedAt;
 
     @Column(name = "cooking_completed_at")
     private LocalDateTime cookingCompletedAt;
+
+    @Column(name = "picked_up_at")
+    private LocalDateTime pickedUpAt;
+
+    @Column(name = "cancelled_at")
+    private LocalDateTime cancelledAt;
 
     @Column(name = "estimated_time")
     private Integer estimatedTime; // 조리 예상 시간 (분)
@@ -83,7 +97,7 @@ public class OrderEntity extends BaseEntity {
 
     @Builder
     public OrderEntity(StoreEntity store, Long userId, String orderNumber,
-                      String request, Boolean needDisposables, LocalDateTime pickupTime) {
+                       String request, Boolean needDisposables, LocalDateTime pickupTime) {
         this.store = store;
         this.userId = userId;
         this.orderNumber = orderNumber;
@@ -94,19 +108,43 @@ public class OrderEntity extends BaseEntity {
         this.orderItems = new ArrayList<>();
     }
 
-    public enum OrderStatus {
-        PENDING,              // 주문 수락 대기
-        ACCEPTED,             // 주문 수락
-        REJECTED,             // 주문 거절
-        COOKING,              // 조리중
-        READY,                // 픽업 대기
-        COMPLETED,            // 픽업 완료
-        CANCELLED             // 주문 취소
+    // 주문 수락 (OWNER)
+    public void acceptOrder(Integer estimatedTime) {
+        this.orderStatus = OrderStatus.ACCEPTED;
+        this.acceptedAt = LocalDateTime.now();
+        this.estimatedTime = estimatedTime;
     }
 
-    public enum CancelledBy {
-        CUSTOMER,             // 고객 취소
-        STORE,                // 매장 취소
-        SYSTEM                // 시스템 자동 취소 (결제 실패 등)
+    // 주문 거절 (OWNER)
+    public void rejectOrder(String reason) {
+        this.orderStatus = OrderStatus.REJECTED;
+        this.rejectedAt = LocalDateTime.now();
+        this.reason = reason;
+    }
+
+    // 주문 취소 (OWNER, CUSTOMER)
+    public void cancelOrder(String reason, CancelledBy cancelledBy) {
+        this.orderStatus = OrderStatus.CANCELLED;
+        this.cancelledAt = LocalDateTime.now();
+        this.reason = reason;
+        this.cancelledBy = cancelledBy;
+    }
+
+    // 조리 시작 (CHEF)
+    public void startCooking() {
+        this.orderStatus = OrderStatus.COOKING;
+        this.cookingStartedAt = LocalDateTime.now();
+    }
+
+    // 조리 완료 = 픽업 대기 (CHEF)
+    public void readyForPickup() {
+        this.orderStatus = OrderStatus.READY;
+        this.cookingCompletedAt = LocalDateTime.now();
+    }
+
+    // 픽업 완료 (CUSTOMER)
+    public void completeOrder() {
+        this.orderStatus = OrderStatus.COMPLETED;
+        this.pickedUpAt = LocalDateTime.now();
     }
 }
