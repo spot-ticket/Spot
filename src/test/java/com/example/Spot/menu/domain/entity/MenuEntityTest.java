@@ -1,11 +1,12 @@
 package com.example.Spot.menu.domain.entity;
 
-import com.example.Spot.store.domain.entity.StoreEntity;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.example.Spot.store.domain.entity.StoreEntity;
 
 class MenuEntityTest {
 
