@@ -21,7 +21,6 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
 @Entity
 @Getter
 @Table(name = "p_user")
@@ -65,7 +64,7 @@ public class UserEntity extends UpdateBaseEntity {
 
 
     public static UserEntity forAuthentication(String username, Role role) {
-        UserEntity user = new UserEntity(); // protected 생성자 → 같은 클래스라서 가능
+        UserEntity user = new UserEntity();
         user.username = username;
         user.role = role;
         return user;

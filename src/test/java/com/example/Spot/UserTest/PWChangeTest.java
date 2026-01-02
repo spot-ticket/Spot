@@ -141,7 +141,7 @@ class PasswordResetFlowTest {
         String needle = "\"" + key + "\":";
         int idx = json.indexOf(needle);
         if (idx == -1) {
-            return "";
+                return "";
         }
         int start = json.indexOf("\"", idx + needle.length());
         int end = json.indexOf("\"", start + 1);

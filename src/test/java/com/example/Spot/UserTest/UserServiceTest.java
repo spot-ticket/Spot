@@ -413,3 +413,4 @@ class UserServiceTest {
                 .andExpect(status().isForbidden()); // 또는 isNotFound()
     }
 }
+

@@ -83,7 +83,7 @@ public class OrderEntity extends BaseEntity {
 
     @Builder
     public OrderEntity(StoreEntity store, Long userId, String orderNumber,
-                       String request, Boolean needDisposables, LocalDateTime pickupTime) {
+                      String request, Boolean needDisposables, LocalDateTime pickupTime) {
         this.store = store;
         this.userId = userId;
         this.orderNumber = orderNumber;
