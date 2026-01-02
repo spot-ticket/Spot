@@ -15,7 +15,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
-import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -43,18 +42,6 @@ public class RefreshTokenEntity extends UpdateBaseEntity {
 
     @Column(name = "revoked_at")
     private LocalDateTime revokedAt;
-
-    @Builder
-    public RefreshTokenEntity(
-            UserAuthEntity auth,
-            String refreshTokenHash,
-            LocalDateTime expiresAt
-    ) {
-        this.auth = auth;
-        this.refreshTokenHash = refreshTokenHash;
-        this.expiresAt = expiresAt;
-    }
-
 
     public boolean isActive(LocalDateTime now) {
         return !getIsDeleted()
