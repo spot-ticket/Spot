@@ -1,4 +1,5 @@
 package com.example.Spot.user.domain;
+
 public enum Role {
     CUSTOMER,
     OWNER,

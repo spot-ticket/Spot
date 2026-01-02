@@ -23,8 +23,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@Table(name = "p_payment_cancel")
 @Getter
+@Table(name = "p_payment_cancel")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PaymentCancelEntity extends BaseEntity {

@@ -3,18 +3,26 @@ package com.example.Spot.user.domain.entity;
 import com.example.Spot.global.common.UpdateBaseEntity;
 import com.example.Spot.store.domain.entity.StoreStaffEntity;
 import com.example.Spot.user.domain.Role;
-import jakarta.persistence.*;
-import lombok.*;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Table;
+import jakarta.persistence.CascadeType;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.util.ArrayList;
 import java.util.List;
 
 
 @Entity
-@EntityListeners(AuditingEntityListener.class)
 @Getter
-@Setter
 @Table(name = "p_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity extends UpdateBaseEntity {
@@ -69,6 +77,21 @@ public class UserEntity extends UpdateBaseEntity {
         this.male = true;
     }
 
+    // Setter methods
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public void setMale(boolean male) {
+        this.male = male;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
 
 }
-
