@@ -1,12 +1,11 @@
 package com.example.Spot.UserTest;
 
-import com.example.Spot.user.application.service.JoinService;
-import com.example.Spot.user.domain.Role;
-import com.example.Spot.user.domain.entity.UserAuthEntity;
-import com.example.Spot.user.domain.repository.UserAuthRepository;
-import com.example.Spot.user.domain.repository.UserRepository;
-import com.example.Spot.user.presentation.dto.request.JoinDTO;
-import jakarta.transaction.Transactional;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,11 +17,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import com.example.Spot.user.application.service.JoinService;
+import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.domain.entity.UserAuthEntity;
+import com.example.Spot.user.domain.repository.UserAuthRepository;
+import com.example.Spot.user.domain.repository.UserRepository;
+import com.example.Spot.user.presentation.dto.request.JoinDTO;
+
+import jakarta.transaction.Transactional;
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -139,7 +141,7 @@ class PWChangeTest {
         String needle = "\"" + key + "\":";
         int idx = json.indexOf(needle);
         if (idx == -1) {
-            return "";
+                return "";
         }
         int start = json.indexOf("\"", idx + needle.length());
         int end = json.indexOf("\"", start + 1);
