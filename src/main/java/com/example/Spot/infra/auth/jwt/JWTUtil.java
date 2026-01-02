@@ -14,7 +14,6 @@ import java.util.Date;
 @Component
 public class JWTUtil {
 
-
     // jwt secret값 불러와서 암호화
     private SecretKey secretKey;
 
@@ -22,10 +21,8 @@ public class JWTUtil {
         this.secretKey = new SecretKeySpec(secret.getBytes(StandardCharsets.UTF_8), Jwts.SIG.HS256.key().build().getAlgorithm());
     }
 
-
     // 검증 메소드들
     public String getUsername(String token) {
-
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().get("username", String.class);
     }
 
@@ -41,17 +38,12 @@ public class JWTUtil {
         return Role.valueOf(roleStr);
     }
 
-
-
     public Boolean isExpired(String token) {
-
         return Jwts.parser().verifyWith(secretKey).build().parseSignedClaims(token).getPayload().getExpiration().before(new Date());
     }
 
-
     // 토큰 생성 메소드
     public String createJwt(String username, Role role, Long expiredMs) {
-
         return Jwts.builder()
                 .claim("username", username)
                 .claim("role", role.name())

@@ -1,5 +1,6 @@
 package com.example.Spot.global.infrastructure.config.security;
 
+import com.example.Spot.infra.auth.jwt.JWTFilter;
 import com.example.Spot.infra.auth.jwt.JWTUtil;
 import com.example.Spot.infra.auth.jwt.LoginFilter;
 import org.springframework.context.annotation.Bean;
@@ -59,7 +60,7 @@ public class SecurityConfig {
         // 경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/login", "/", "/join","/users/**").permitAll()
+                        .requestMatchers("/login", "/", "/join").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
 

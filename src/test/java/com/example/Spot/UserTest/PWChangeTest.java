@@ -139,7 +139,9 @@ class PasswordResetFlowTest {
         // 예: {"resetToken":"abc"} 형태를 가정
         String needle = "\"" + key + "\":";
         int idx = json.indexOf(needle);
-        if (idx == -1) return "";
+        if (idx == -1) {
+                return "";
+        }
         int start = json.indexOf("\"", idx + needle.length());
         int end = json.indexOf("\"", start + 1);
         return (start == -1 || end == -1) ? "" : json.substring(start + 1, end);
@@ -151,7 +153,7 @@ class PasswordResetFlowTest {
 
 
     @Test
-    void 패스워드변경_로그인상태_이메일인증() throws Exception{
+    void 패스워드변경_로그인상태_이메일인증() throws Exception {
         // given-1: 회원 생성
         JoinDTO join = new JoinDTO();
         join.setUsername("Testuser");

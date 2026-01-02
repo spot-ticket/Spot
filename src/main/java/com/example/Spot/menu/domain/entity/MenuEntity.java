@@ -23,6 +23,7 @@ import java.util.UUID;
 @Table(name = "p_menu")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class MenuEntity extends UpdateBaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
