@@ -1,4 +1,4 @@
-package com.example.Spot.CategoryTest;
+package com.example.Spot.store.presentation.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
