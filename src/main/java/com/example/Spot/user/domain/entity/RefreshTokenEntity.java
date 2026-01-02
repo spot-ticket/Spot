@@ -61,6 +61,4 @@ public class RefreshTokenEntity extends UpdateBaseEntity {
         this.revokedAt = LocalDateTime.now();
         softDelete();
     }
-
-
 }
