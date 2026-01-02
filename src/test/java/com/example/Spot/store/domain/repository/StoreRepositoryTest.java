@@ -1,13 +1,12 @@
 package com.example.Spot.store.domain.repository;
 
 import com.example.Spot.store.domain.entity.StoreEntity;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-
 import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -63,8 +62,9 @@ class StoreRepositoryTest {
 
         //then
         assertThat(stores).hasSize(2);
-        assertThat(stores).extracting("name")
-                .containExactlyInAnyOrder("치킨집", "피자집");
+        assertThat(stores)
+                .extracting(StoreEntity::getName)
+                .containsExactlyInAnyOrder("치킨집", "피자집");
 
     }
 
@@ -111,7 +111,7 @@ class StoreRepositoryTest {
                 .closeTime(LocalTime.of(2, 0))
                 .build();
 
-        StoreRepository.save(activeStore);
+        storeRepository.save(activeStore);
 
         StoreEntity saved = storeRepository.save(deletedStore);
         saved.softDelete();
@@ -150,7 +150,7 @@ class StoreRepositoryTest {
     @Test
     void 삭제된_가게는_ID로_조회되지_않는다() {
         //given
-        StoreEntity Store = StoreEntity.builder()
+        StoreEntity store = StoreEntity.builder()
                 .name("삭제된 가게")
                 .address("서울시 강남구")
                 .phoneNumber("02-1234-5678")

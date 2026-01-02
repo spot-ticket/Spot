@@ -1,20 +1,20 @@
 package com.example.Spot.infra.auth.jwt;
 
-import com.example.Spot.user.domain.Role;
-import com.example.Spot.user.presentation.dto.request.JoinDTO;
-import com.example.Spot.user.domain.entity.UserEntity;
-import com.example.Spot.user.domain.entity.UserAuthEntity;
-import com.example.Spot.infra.auth.security.CustomUserDetails;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
+
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import java.io.IOException;
+import com.example.Spot.infra.auth.security.CustomUserDetails;
+import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.domain.entity.UserEntity;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 public class JWTFilter extends OncePerRequestFilter {
     // jwtUtil을 주입받음
@@ -24,12 +24,11 @@ public class JWTFilter extends OncePerRequestFilter {
         this.jwtUtil = jwtUtil;
     }
 
-
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
 
         //request에서 Authorization 헤더를 찾음
-        String authorization= request.getHeader("Authorization");
+        String authorization = request.getHeader("Authorization");
 
         //Authorization 헤더 검증
         if (authorization == null || !authorization.startsWith("Bearer ")) {
@@ -77,6 +76,4 @@ public class JWTFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
-
-
 }
