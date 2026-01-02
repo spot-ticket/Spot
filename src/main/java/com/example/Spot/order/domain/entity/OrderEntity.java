@@ -94,27 +94,46 @@ public class OrderEntity extends BaseEntity {
     private CancelledBy cancelledBy;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItemEntity> orderItems = new ArrayList<>();
+    private List<OrderItemEntity> orderItems;
 
     @Builder
     public OrderEntity(StoreEntity store, Long userId, String orderNumber,
                        String request, boolean needDisposables, LocalDateTime pickupTime) {
+        if (store == null) {
+            throw new IllegalArgumentException("가게 정보는 필수입니다.");
+        }
+        if (userId == null) {
+            throw new IllegalArgumentException("사용자 ID는 필수입니다.");
+        }
+        if (orderNumber == null || orderNumber.trim().isEmpty()) {
+            throw new IllegalArgumentException("주문 번호는 필수입니다.");
+        }
+        if (pickupTime == null) {
+            throw new IllegalArgumentException("픽업 시간은 필수입니다.");
+        }
+        
         this.store = store;
         this.userId = userId;
         this.orderNumber = orderNumber;
         this.request = request;
         this.needDisposables = needDisposables;
         this.pickupTime = pickupTime;
+        this.orderItems = new ArrayList<>();
     }
 
     public void addOrderItem(OrderItemEntity orderItem) {
+        if (orderItem == null) {
+            throw new IllegalArgumentException("주문 항목은 null일 수 없습니다.");
+        }
         this.orderItems.add(orderItem);
         orderItem.setOrder(this);
     }
 
     public void removeOrderItem(OrderItemEntity orderItem) {
+        if (orderItem == null) {
+            return;
+        }
         this.orderItems.remove(orderItem);
-        orderItem.setOrder(null);
     }
 
     // 주문 수락 (OWNER)

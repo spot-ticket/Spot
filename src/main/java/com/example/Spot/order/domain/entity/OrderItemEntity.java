@@ -36,9 +36,17 @@ public class OrderItemEntity extends BaseEntity {
     private Integer quantity;
 
     @Builder
-    public OrderItemEntity(OrderEntity order, MenuEntity menu, 
-                          BigDecimal menuPrice, Integer quantity) {
-        this.order = order;
+    public OrderItemEntity(MenuEntity menu, BigDecimal menuPrice, Integer quantity) {
+        if (menu == null) {
+            throw new IllegalArgumentException("메뉴는 필수입니다.");
+        }
+        if (menuPrice == null || menuPrice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("메뉴 가격은 0 이상이어야 합니다.");
+        }
+        if (quantity == null || quantity <= 0) {
+            throw new IllegalArgumentException("수량은 1 이상이어야 합니다.");
+        }
+        
         this.menu = menu;
         this.menuPrice = menuPrice;
         this.quantity = quantity;
