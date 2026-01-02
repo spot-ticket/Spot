@@ -2,8 +2,8 @@ package com.example.Spot.menu.domain.entity;
 
 import java.util.UUID;
 
-import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.global.common.UpdateBaseEntity;
+import com.example.Spot.store.domain.entity.StoreEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

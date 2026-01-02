@@ -6,16 +6,15 @@ import java.util.Collection;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.entity.UserAuthEntity;
-import com.example.Spot.user.domain.repository.UserAuthRepository;
+import com.example.Spot.user.domain.entity.UserEntity;
 
 public class CustomUserDetails implements UserDetails {
 
     private final UserEntity userEntity;
     private final UserAuthEntity userAuthEntity;
 
-    public CustomUserDetails(UserEntity userEntity,UserAuthEntity userAuthEntity) {
+    public CustomUserDetails(UserEntity userEntity, UserAuthEntity userAuthEntity) {
         this.userEntity = userEntity;
         this.userAuthEntity = userAuthEntity;
     }

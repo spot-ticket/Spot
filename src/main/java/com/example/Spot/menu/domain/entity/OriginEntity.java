@@ -2,8 +2,10 @@ package com.example.Spot.menu.domain.entity;
 
 import java.util.UUID;
 
-import com.example.Spot.menu.domain.entity.MenuEntity;
+import org.hibernate.annotations.UuidGenerator;
+
 import com.example.Spot.global.common.UpdateBaseEntity;
+import com.example.Spot.menu.domain.entity.MenuEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,8 +19,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Getter
@@ -63,8 +63,8 @@ public class OriginEntity extends UpdateBaseEntity {
     }
 
     private void validateNames(String originName, String ingredientName) {
-        boolean isOriginBlank = (originName == null || originName.isBlank());
-        boolean isIngredientBlank = (ingredientName == null || ingredientName.isBlank());
+        boolean isOriginBlank = originName == null || originName.isBlank();
+        boolean isIngredientBlank = ingredientName == null || ingredientName.isBlank();
 
         if (isOriginBlank && isIngredientBlank) {
             throw new IllegalArgumentException("원산지 이름과 재료 이름 중 적어도 하나는 입력되어야 합니다.");

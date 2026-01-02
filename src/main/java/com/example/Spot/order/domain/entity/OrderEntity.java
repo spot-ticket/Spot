@@ -5,6 +5,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
+import org.hibernate.annotations.UuidGenerator;
+
+import com.example.Spot.global.common.BaseEntity;
+import com.example.Spot.store.domain.entity.StoreEntity;
+
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -17,12 +22,6 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-
-import org.hibernate.annotations.UuidGenerator;
-
-import com.example.Spot.global.common.BaseEntity;
-import com.example.Spot.store.domain.entity.StoreEntity;
-
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

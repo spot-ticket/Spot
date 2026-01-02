@@ -3,20 +3,19 @@ package com.example.Spot.infra.auth.jwt;
 import java.util.Collection;
 import java.util.Iterator;
 
-import com.example.Spot.user.domain.Role;
-import com.example.Spot.user.presentation.dto.request.JoinDTO;
-import com.example.Spot.infra.auth.security.CustomUserDetails;
-
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+
+import com.example.Spot.infra.auth.security.CustomUserDetails;
+import com.example.Spot.user.domain.Role;
+
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
@@ -29,7 +28,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
         this.authenticationManager = authenticationManager;
-        this.jwtUtil= jwtUtil;
+        this.jwtUtil = jwtUtil;
     }
 
 
@@ -59,10 +58,10 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         GrantedAuthority auth = iterator.next();
 
         String authority = auth.getAuthority();
-        String roleName = authority.replace("ROLE_","" );
-        String token = jwtUtil.createJwt(username, Role.valueOf(roleName), 60*60*10L);
+        String roleName = authority.replace("ROLE_", "");
+        String token = jwtUtil.createJwt(username, Role.valueOf(roleName), 60 * 60 * 10L);
 
-        response.addHeader("Authorization", "Bearer "+token);
+        response.addHeader("Authorization", "Bearer " + token);
     }
 
     // 로그인 실패시 실행하는 메소드
