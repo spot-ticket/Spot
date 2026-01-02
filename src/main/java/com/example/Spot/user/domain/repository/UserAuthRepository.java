@@ -1,11 +1,10 @@
 package com.example.Spot.user.domain.repository;
 
-import java.util.Optional;
-import java.util.UUID;
-
+import com.example.Spot.user.domain.entity.UserAuthEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import com.example.Spot.user.domain.entity.UserAuthEntity;
+import java.util.Optional;
+import java.util.UUID;
 
 public interface UserAuthRepository extends JpaRepository<UserAuthEntity, UUID> {
 

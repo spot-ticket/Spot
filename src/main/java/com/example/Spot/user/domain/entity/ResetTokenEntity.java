@@ -10,10 +10,10 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name="p_reset_token")
+@Table(name = "p_reset_token")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ResetTokenEntity extends UpdateBaseEntity{
+public class ResetTokenEntity extends UpdateBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -23,7 +23,23 @@ public class ResetTokenEntity extends UpdateBaseEntity{
     @JoinColumn(name = "auth_id", nullable = false)
     private UserAuthEntity auth;
 
-    @Column(name = "reset_token_hash", nullable = false, length = 128, unique = true)
-    private String resetTokenHash;
+    @Column(name = "reset_token", nullable = false, unique = true)
+    private String resetToken;
 
+    @Column(name = "expires_at", nullable = false)
+    private LocalDateTime expiresAt;
+
+    @Column(name = "used_at")
+    private LocalDateTime usedAt;
+
+    public boolean isUsable(LocalDateTime now) {
+        return !getIsDeleted()
+                && usedAt == null
+                && expiresAt.isAfter(now);
+    }
+
+    public void markUsed() {
+        this.usedAt = LocalDateTime.now();
+        softDelete();
+    }
 }

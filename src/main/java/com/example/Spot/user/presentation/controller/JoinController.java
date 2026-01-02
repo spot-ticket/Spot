@@ -1,11 +1,10 @@
 package com.example.Spot.user.presentation.controller;
 
+import com.example.Spot.user.application.service.JoinService;
+import com.example.Spot.user.presentation.dto.request.JoinDTO;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-
-import com.example.Spot.user.application.service.JoinService;
-import com.example.Spot.user.presentation.dto.request.JoinDTO;
 
 @Controller
 @ResponseBody

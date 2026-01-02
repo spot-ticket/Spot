@@ -1,16 +1,7 @@
 package com.example.Spot.user.domain.entity;
 
 import com.example.Spot.global.common.UpdateBaseEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.Table;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.ManyToOne;
-
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,7 +10,7 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
-@Table(name="p_refresh_token")
+@Table(name = "p_refresh_token")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class RefreshTokenEntity extends UpdateBaseEntity {
@@ -35,13 +26,11 @@ public class RefreshTokenEntity extends UpdateBaseEntity {
     @Column(name = "refresh_token_hash", nullable = false, length = 128, unique = true)
     private String refreshTokenHash;
 
-
     @Column(name = "expires_at", nullable = false)
     private LocalDateTime expiresAt;
 
     @Column(name = "revoked_at")
     private LocalDateTime revokedAt;
-
 
     public boolean isActive(LocalDateTime now) {
         return !getIsDeleted()
@@ -53,6 +42,4 @@ public class RefreshTokenEntity extends UpdateBaseEntity {
         this.revokedAt = LocalDateTime.now();
         softDelete();
     }
-
-
 }

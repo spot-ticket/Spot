@@ -1,12 +1,11 @@
 package com.example.Spot.store.domain.repository;
 
+import com.example.Spot.store.domain.entity.StoreEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
-
-import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.example.Spot.store.domain.entity.StoreEntity;
 
 public interface StoreRepository extends JpaRepository<StoreEntity, UUID> {
 
