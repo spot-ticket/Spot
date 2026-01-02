@@ -43,7 +43,7 @@ public class UserAuthEntity extends UpdateBaseEntity {
         this.hashedPassword = hashedPassword;
     }
 
-    @Builder
+
     public void changePassword(String newHashedPassword) {
         this.hashedPassword = newHashedPassword;
     }
