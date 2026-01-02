@@ -54,7 +54,6 @@ public class UserEntity extends UpdateBaseEntity {
     }
 
 
-    @Builder
     public static UserEntity forAuthentication(String username, Role role) {
         UserEntity user = new UserEntity();
         user.username = username;
@@ -62,7 +61,6 @@ public class UserEntity extends UpdateBaseEntity {
         return user;
     }
 
-    @Builder
     public void ismale() {
         this.male = true;
     }
