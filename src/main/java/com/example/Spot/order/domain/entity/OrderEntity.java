@@ -10,6 +10,7 @@ import org.hibernate.annotations.UuidGenerator;
 import com.example.Spot.global.common.BaseEntity;
 import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
+import com.example.Spot.order.domain.exception.InvalidOrderStatusTransitionException;
 import com.example.Spot.store.domain.entity.StoreEntity;
 
 import jakarta.persistence.CascadeType;
@@ -55,14 +56,14 @@ public class OrderEntity extends BaseEntity {
     private String request;
 
     @Column(name = "need_disposables", nullable = false)
-    private Boolean needDisposables;
+    private Boolean needDisposables = false;
 
     @Column(name = "pickup_time", nullable = false)
     private LocalDateTime pickupTime;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false, length = 20)
-    private OrderStatus orderStatus;
+    private OrderStatus orderStatus = OrderStatus.PENDING;
 
     @Column(name = "accepted_at")
     private LocalDateTime acceptedAt;
@@ -97,19 +98,47 @@ public class OrderEntity extends BaseEntity {
 
     @Builder
     public OrderEntity(StoreEntity store, Long userId, String orderNumber,
-                       String request, Boolean needDisposables, LocalDateTime pickupTime) {
+                       String request, boolean needDisposables, LocalDateTime pickupTime) {
+        if (store == null) {
+            throw new IllegalArgumentException("가게 정보는 필수입니다.");
+        }
+        if (userId == null) {
+            throw new IllegalArgumentException("사용자 ID는 필수입니다.");
+        }
+        if (orderNumber == null || orderNumber.trim().isEmpty()) {
+            throw new IllegalArgumentException("주문 번호는 필수입니다.");
+        }
+        if (pickupTime == null) {
+            throw new IllegalArgumentException("픽업 시간은 필수입니다.");
+        }
+        
         this.store = store;
         this.userId = userId;
         this.orderNumber = orderNumber;
         this.request = request;
-        this.needDisposables = needDisposables != null ? needDisposables : false;
+        this.needDisposables = needDisposables;
         this.pickupTime = pickupTime;
-        this.orderStatus = OrderStatus.PENDING;
         this.orderItems = new ArrayList<>();
+    }
+
+    public void addOrderItem(OrderItemEntity orderItem) {
+        if (orderItem == null) {
+            throw new IllegalArgumentException("주문 항목은 null일 수 없습니다.");
+        }
+        this.orderItems.add(orderItem);
+        orderItem.setOrder(this);
+    }
+
+    public void removeOrderItem(OrderItemEntity orderItem) {
+        if (orderItem == null) {
+            return;
+        }
+        this.orderItems.remove(orderItem);
     }
 
     // 주문 수락 (OWNER)
     public void acceptOrder(Integer estimatedTime) {
+        validateStatusTransition(OrderStatus.ACCEPTED);
         this.orderStatus = OrderStatus.ACCEPTED;
         this.acceptedAt = LocalDateTime.now();
         this.estimatedTime = estimatedTime;
@@ -117,6 +146,7 @@ public class OrderEntity extends BaseEntity {
 
     // 주문 거절 (OWNER)
     public void rejectOrder(String reason) {
+        validateStatusTransition(OrderStatus.REJECTED);
         this.orderStatus = OrderStatus.REJECTED;
         this.rejectedAt = LocalDateTime.now();
         this.reason = reason;
@@ -124,6 +154,7 @@ public class OrderEntity extends BaseEntity {
 
     // 주문 취소 (OWNER, CUSTOMER)
     public void cancelOrder(String reason, CancelledBy cancelledBy) {
+        validateStatusTransition(OrderStatus.CANCELLED);
         this.orderStatus = OrderStatus.CANCELLED;
         this.cancelledAt = LocalDateTime.now();
         this.reason = reason;
@@ -132,19 +163,29 @@ public class OrderEntity extends BaseEntity {
 
     // 조리 시작 (CHEF)
     public void startCooking() {
+        validateStatusTransition(OrderStatus.COOKING);
         this.orderStatus = OrderStatus.COOKING;
         this.cookingStartedAt = LocalDateTime.now();
     }
 
     // 조리 완료 = 픽업 대기 (CHEF)
     public void readyForPickup() {
+        validateStatusTransition(OrderStatus.READY);
         this.orderStatus = OrderStatus.READY;
         this.cookingCompletedAt = LocalDateTime.now();
     }
 
     // 픽업 완료 (CUSTOMER)
     public void completeOrder() {
+        validateStatusTransition(OrderStatus.COMPLETED);
         this.orderStatus = OrderStatus.COMPLETED;
         this.pickedUpAt = LocalDateTime.now();
+    }
+
+    // 상태 전환 검증
+    private void validateStatusTransition(OrderStatus newStatus) {
+        if (!this.orderStatus.canTransitionTo(newStatus)) {
+            throw new InvalidOrderStatusTransitionException(this.orderStatus, newStatus);
+        }
     }
 }
