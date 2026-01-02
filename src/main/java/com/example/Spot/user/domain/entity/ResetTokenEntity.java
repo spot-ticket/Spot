@@ -2,6 +2,9 @@ package com.example.Spot.user.domain.entity;
 
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import com.example.Spot.global.common.UpdateBaseEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -14,7 +17,6 @@ import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import com.example.Spot.global.common.UpdateBaseEntity;
 
 @Entity
 @Table(name = "p_reset_token")
