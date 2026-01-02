@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @Disabled("Password reset feature not yet implemented")
-class PasswordResetFlowTest {
+class PWChangeTest {
 
     @Autowired private JoinService joinService;
     @Autowired private UserRepository userRepository;
@@ -139,7 +139,7 @@ class PasswordResetFlowTest {
         String needle = "\"" + key + "\":";
         int idx = json.indexOf(needle);
         if (idx == -1) {
-                return "";
+            return "";
         }
         int start = json.indexOf("\"", idx + needle.length());
         int end = json.indexOf("\"", start + 1);

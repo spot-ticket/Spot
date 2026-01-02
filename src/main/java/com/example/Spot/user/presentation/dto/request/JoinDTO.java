@@ -21,4 +21,3 @@ public class JoinDTO {
     private String address;
     private Role role;
 }
-

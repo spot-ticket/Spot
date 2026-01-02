@@ -1,20 +1,18 @@
 package com.example.Spot.infra.auth.jwt;
 
-import java.io.IOException;
-
+import com.example.Spot.infra.auth.security.CustomUserDetails;
+import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.domain.entity.UserEntity;
+import jakarta.servlet.FilterChain;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
-import com.example.Spot.infra.auth.security.CustomUserDetails;
-import com.example.Spot.user.domain.Role;
-import com.example.Spot.user.domain.entity.UserEntity;
-
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 public class JWTFilter extends OncePerRequestFilter {
     // jwtUtil을 주입받음
