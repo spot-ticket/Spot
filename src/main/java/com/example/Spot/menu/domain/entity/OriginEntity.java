@@ -42,7 +42,7 @@ public class OriginEntity extends UpdateBaseEntity {
     private String ingredientName;
 
     @Builder
-    public OriginEntity(MenuEntity menu, String origiinName, String ingredientName) {
+    public OriginEntity(MenuEntity menu, String originName, String ingredientName) {
         validateNames(originName, ingredientName);
 
         this.menu = menu;
