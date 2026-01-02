@@ -31,19 +31,26 @@ public class StoreEntity extends UpdateBaseEntity {
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
     private final List<StoreUserEntity> users = new ArrayList<>();
+
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
     private final Set<StoreCategoryEntity> storeCategoryMaps = new HashSet<>();
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
+
     @Column(nullable = false)
     private String name;
+
     @Column(nullable = false)
     private String address;
+
     @Column(name = "phone_number")
     private String phoneNumber;
+
     @Column(name = "open_time")
     private LocalTime openTime;
+
     @Column(name = "close_time")
     private LocalTime closeTime;
 
