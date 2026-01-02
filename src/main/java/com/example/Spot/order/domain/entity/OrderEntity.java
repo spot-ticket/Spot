@@ -8,6 +8,8 @@ import java.util.UUID;
 import org.hibernate.annotations.UuidGenerator;
 
 import com.example.Spot.global.common.BaseEntity;
+import com.example.Spot.order.domain.enums.CancelledBy;
+import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.store.domain.entity.StoreEntity;
 
 import jakarta.persistence.CascadeType;
@@ -145,20 +147,3 @@ public class OrderEntity extends BaseEntity {
         this.orderStatus = OrderStatus.COMPLETED;
         this.pickedUpAt = LocalDateTime.now();
     }
-
-    public enum OrderStatus {
-        PENDING,              // 주문 수락 대기
-        ACCEPTED,             // 주문 수락
-        REJECTED,             // 주문 거절
-        COOKING,              // 조리중
-        READY,                // 픽업 대기
-        COMPLETED,            // 픽업 완료
-        CANCELLED             // 주문 취소
-    }
-
-    public enum CancelledBy {
-        CUSTOMER,             // 고객 취소
-        STORE,                // 매장 취소
-        SYSTEM                // 시스템 자동 취소 (결제 실패 등)
-    }
-}
