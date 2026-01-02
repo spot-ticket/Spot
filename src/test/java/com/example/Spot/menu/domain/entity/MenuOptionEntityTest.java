@@ -2,6 +2,7 @@ package com.example.Spot.menu.domain.entity;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class MenuOptionEntityTest {
