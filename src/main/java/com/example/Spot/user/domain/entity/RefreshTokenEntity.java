@@ -44,18 +44,6 @@ public class RefreshTokenEntity extends UpdateBaseEntity {
     @Column(name = "revoked_at")
     private LocalDateTime revokedAt;
 
-    @Builder
-    public RefreshTokenEntity(
-            UserAuthEntity auth,
-            String refreshTokenHash,
-            LocalDateTime expiresAt
-    ) {
-        this.auth = auth;
-        this.refreshTokenHash = refreshTokenHash;
-        this.expiresAt = expiresAt;
-    }
-
-
     public boolean isActive(LocalDateTime now) {
         return !getIsDeleted()
                 && revokedAt == null
