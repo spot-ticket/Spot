@@ -1,12 +1,14 @@
 package com.example.Spot.payments.domain.entity;
 
+import com.example.Spot.payments.domain.entity.PaymentEntity.PaymentStatus;
+import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
-import com.example.Spot.payments.domain.entity.PaymentEntity.PaymentStatus;
-import java.util.UUID;
-import static org.assertj.core.api.Assertions.*;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 public class PaymentEntityUnitTest {
 
