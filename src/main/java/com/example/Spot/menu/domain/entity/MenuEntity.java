@@ -2,6 +2,9 @@ package com.example.Spot.menu.domain.entity;
 
 import java.util.UUID;
 
+import com.example.Spot.store.domain.entity.StoreEntity;
+import com.example.Spot.global.common.UpdateBaseEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -15,9 +18,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import com.example.Spot.global.common.UpdateBaseEntity;
-import com.example.Spot.store.domain.entity.StoreEntity;
 
 @Entity
 @Getter
@@ -56,17 +56,17 @@ public class MenuEntity extends UpdateBaseEntity {
         this.price = price;
     }
 
-    public void updateMenu(String name, int price, String category){
+    public void updateMenu(String name, int price, String category) {
         this.name = name;
         this.price = price;
         this.category = category;
     }
 
-    public void changeAvailable(Boolean isAvailable){
+    public void changeAvailable(Boolean isAvailable) {
         this.isAvailable = isAvailable;
     }
 
-    public void changeHidden(Boolean isHidden){
+    public void changeHidden(Boolean isHidden) {
         this.isHidden = isHidden;
     }
 }

@@ -1,19 +1,22 @@
 package com.example.Spot.infra.auth.jwt;
+
+import java.util.Collection;
+import java.util.Iterator;
+
 import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.presentation.dto.request.JoinDTO;
 import com.example.Spot.infra.auth.security.CustomUserDetails;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-
-import java.util.Collection;
-import java.util.Iterator;
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
@@ -24,14 +27,14 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     private final JWTUtil jwtUtil;
 
 
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil){
+    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil= jwtUtil;
     }
 
 
     @Override
-    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException{
+    public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
         // 클라이언트 요청에서 username, password 추출
         String username = obtainUsername(request);
         String password = obtainPassword(request);

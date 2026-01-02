@@ -2,6 +2,8 @@ package com.example.Spot.menu.domain.entity;
 
 import java.util.UUID;
 
+import com.example.Spot.global.common.UpdateBaseEntity;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -15,8 +17,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import com.example.Spot.global.common.UpdateBaseEntity;
 
 @Entity
 @Getter

@@ -1,7 +1,9 @@
 package com.example.Spot.menu.domain.entity;
 
 import java.util.UUID;
-import java.time.LocalDateTime;
+
+import com.example.Spot.menu.domain.entity.MenuEntity;
+import com.example.Spot.global.common.UpdateBaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -11,19 +13,16 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
-import lombok.Getter;
 import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import org.hibernate.annotations.UuidGenerator;
 
-import com.example.Spot.menu.domain.entity.MenuEntity;
-import com.example.Spot.global.common.UpdateBaseEntity;
-
 @Entity
 @Getter
-@Table(name="p_origin")
+@Table(name = "p_origin")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OriginEntity extends UpdateBaseEntity {
 
