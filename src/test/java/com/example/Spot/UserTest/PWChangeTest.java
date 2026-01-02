@@ -28,7 +28,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @Disabled("Password reset feature not yet implemented")
-class PasswordResetFlowTest {
+class PWChangeTest {
 
     @Autowired private JoinService joinService;
     @Autowired private UserRepository userRepository;
