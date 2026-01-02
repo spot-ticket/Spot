@@ -3,6 +3,7 @@ package com.example.Spot.menu.domain.repository;
 import static org.assertj.core.api.Assertions.assertThat; // 검증을 위한 AssertJ
 import static org.assertj.core.api.Assertions.tuple;
 
+import java.time.LocalTime;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -13,47 +14,103 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
+import com.example.Spot.store.domain.entity.StoreEntity;
+import com.example.Spot.store.domain.repository.StoreRepository;
 
 @DataJpaTest
 class MenuOptionRepositoryTest {
     @Autowired
-    private MenuOptionRepository menuOptionRepository;
+    private StoreRepository storeRepository;
 
-    private MenuOptionEntity savedOption;
+    private StoreEntity savedStore;
 
     @Autowired
     private MenuRepository menuRepository;
 
     private MenuEntity savedMenu;
 
+    @Autowired
+    private MenuOptionRepository menuOptionRepository;
+
+    private MenuOptionEntity savedOption;   // 정상 옵션
+    private MenuOptionEntity soldOutOption; // 품절 옵션
+
     @BeforeEach
-    void setUp() {
-        // [Given] 1. MenuEntity 생성 및 저장
+    void 메뉴_및_메뉴_옵션_생성() {
+        // [Given] 1. StoreEntity 생성 및 저장
+        StoreEntity store = StoreEntity.builder()
+                .name("원조역삼막국수")
+                .address("서울시 강남구")
+                .phoneNumber("02-4321-8765")
+                .openTime(LocalTime.of(11, 0))
+                .closeTime(LocalTime.of(21, 0))
+                .build();
+
+        // Store의 ID가 필요하므로 먼저 저장
+        savedStore = storeRepository.save(store);
+
+        // [Given] 2. MenuEntity 생성 및 저장
         MenuEntity menu = MenuEntity.builder()
+                .store(savedStore)
                 .name("육전막국수")
                 .category("한식")
                 .price(11000)
                 .build();
-
         savedMenu = menuRepository.save(menu);
 
+        // 구매 가능 옵션
         MenuOptionEntity option = MenuOptionEntity.builder()
-                .menu(menu)
+                .menu(savedMenu)
                 .name("육전 추가")
                 .detail("4조각")
                 .price(4000)
                 .build();
-
         savedOption = menuOptionRepository.save(option);
+
+        // 품절된 옵션
+        MenuOptionEntity soldOption = MenuOptionEntity.builder()
+                .menu(savedMenu)
+                .name("면 추가")
+                .detail("곱빼기")
+                .price(2500)
+                .build();
+
+        soldOption.changeAvailable(false);
+        soldOutOption = menuOptionRepository.save(soldOption);
     }
 
     @Test
-    @DisplayName("손님 - 메뉴 옵션 조회 테스트")
-    void findActiveOptionTest() {
+    @DisplayName("[손님] 구매 가능한 옵션만 조회 (품절 / 삭제 제외)")
+    void 구매_가능한_옵션_테스트() {
         List<MenuOptionEntity> activeOptions = menuOptionRepository.findAllActiveOptions(savedMenu.getId());
 
         assertThat(activeOptions)
-                .extracting("menu.name", "name", "detail", "price", "isDeleted", "isAvailable")
-                .containsExactly(tuple("육전막국수", "육전 추가", "4조각", 4000, false, true));
+                .extracting("name", "detail", "price", "isDeleted", "isAvailable")
+                .containsExactly(tuple("육전 추가", "4조각", 4000, false, true))
+                .doesNotContain(tuple("면 추가", "곱빼기", 2500, false, false));
+    }
+
+    @Test
+    @DisplayName("가게 - 삭제된 옵션을 제외하고 모든 옵션을 조회")
+    void 삭제_옵션_제외_테스트() {
+        // 삭제된 옵션 생성
+        MenuOptionEntity deletedOption = MenuOptionEntity.builder()
+                .menu(savedMenu)
+                .name("삭제된 옵션")
+                .detail("재료 수급 문제")
+                .price(1)
+                .build();
+        deletedOption.softDelete();
+        menuOptionRepository.save(deletedOption);
+
+        List<MenuOptionEntity> storeOptions = menuOptionRepository.findAllByMenuIdAndIsDeletedFalse(savedMenu.getId());
+
+        assertThat(storeOptions)
+                .extracting("name", "isDeleted", "isAvailable")
+                .contains(
+                        tuple("육전 추가", false, true),
+                        tuple("면 추가", false, false)
+                )
+                .doesNotContain(tuple("삭제된 옵션", true, true));
     }
 }
