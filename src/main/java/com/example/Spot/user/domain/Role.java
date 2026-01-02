@@ -1,4 +1,5 @@
 package com.example.Spot.user.domain;
+
 public enum Role {
     ADMIN,
     CUSTOMER,
@@ -7,7 +8,7 @@ public enum Role {
     MANAGER,
     MASTER;
 
-    public String getAuthority(){
-        return "ROLE_" +this.name();
+    public String getAuthority() {
+        return "ROLE_" + this.name();
     }
 }

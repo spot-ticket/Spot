@@ -1,21 +1,29 @@
 package com.example.Spot.user.domain.entity;
-import com.example.Spot.global.common.UpdateBaseEntity;
-import com.example.Spot.store.domain.entity.StoreStaffEntity;
-import com.example.Spot.user.domain.Role;
-import jakarta.persistence.*;
-import lombok.*;
-
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.Spot.global.common.UpdateBaseEntity;
+import com.example.Spot.store.domain.entity.StoreStaffEntity;
+import com.example.Spot.user.domain.Role;
+
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
-@EntityListeners(AuditingEntityListener.class)
 @Getter
-@Setter
-@Table(name="p_user")
+@Table(name = "p_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity extends UpdateBaseEntity {
 
@@ -57,7 +65,7 @@ public class UserEntity extends UpdateBaseEntity {
 
     @Builder
     public static UserEntity forAuthentication(String username, Role role) {
-        UserEntity user = new UserEntity();
+        UserEntity user = new UserEntity(); // protected 생성자 → 같은 클래스라서 가능
         user.username = username;
         user.role = role;
         return user;
@@ -68,6 +76,21 @@ public class UserEntity extends UpdateBaseEntity {
         this.male = true;
     }
 
+    // Setter methods
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setRole(Role role) {
+        this.role = role;
+    }
+
+    public void setMale(boolean male) {
+        this.male = male;
+    }
+
+    public void setAge(int age) {
+        this.age = age;
+    }
 
 }
-

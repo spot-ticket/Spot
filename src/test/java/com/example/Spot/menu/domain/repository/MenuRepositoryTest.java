@@ -2,16 +2,14 @@ package com.example.Spot.menu.domain.repository;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
-import com.example.Spot.store.domain.repository.StoreRepository; // StoreRepository 필요
+import com.example.Spot.store.domain.repository.StoreRepository;
+import java.time.LocalTime;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import java.time.LocalTime;
-
-import static org.assertj.core.api.Assertions.assertThat; // 검증을 위한 AssertJ
-
+import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 class MenuRepositoryTest {
@@ -29,8 +27,8 @@ class MenuRepositoryTest {
                 .name("원조역삼막국수")
                 .address("서울시 강남구")
                 .phoneNumber("02-4321-8765")
-                .openTime(LocalTime.of(11,0))
-                .closeTime(LocalTime.of(21,0))
+                .openTime(LocalTime.of(11, 0))
+                .closeTime(LocalTime.of(21, 0))
                 .build();
 
         // Store의 ID(FK)가 필요하므로 먼저 저장

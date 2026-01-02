@@ -1,13 +1,14 @@
 package com.example.Spot.infra.auth.security;
 
-import com.example.Spot.user.domain.entity.UserEntity;
-import com.example.Spot.user.domain.entity.UserAuthEntity;
-import com.example.Spot.user.domain.repository.UserRepository;
-import com.example.Spot.user.domain.repository.UserAuthRepository;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+
+import com.example.Spot.user.domain.entity.UserAuthEntity;
+import com.example.Spot.user.domain.entity.UserEntity;
+import com.example.Spot.user.domain.repository.UserAuthRepository;
+import com.example.Spot.user.domain.repository.UserRepository;
 
 @Service
 public class CustomUserDetailsService implements UserDetailsService {
@@ -15,7 +16,7 @@ public class CustomUserDetailsService implements UserDetailsService {
     private final UserRepository userRepository;
     private final UserAuthRepository userAuthRepository;
 
-    public CustomUserDetailsService(UserRepository userRepository, UserAuthRepository userAuthRepository){
+    public CustomUserDetailsService(UserRepository userRepository, UserAuthRepository userAuthRepository) {
         this.userRepository = userRepository;
         this.userAuthRepository = userAuthRepository;
     }
@@ -32,7 +33,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 );
 
         // p_user_auth 조회 (비밀번호 해시)
-        UserAuthEntity auth = userAuthRepository.findByUser_Username(username)
+        UserAuthEntity auth = userAuthRepository.findByUserUsername(username)
                 .orElseThrow(() ->
                         new UsernameNotFoundException("AUTH_NOT_FOUND")
                 );
