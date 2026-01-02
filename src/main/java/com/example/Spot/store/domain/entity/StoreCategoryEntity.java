@@ -1,6 +1,9 @@
 package com.example.Spot.store.domain.entity;
 
+import java.util.UUID;
+
 import com.example.Spot.global.common.UpdateBaseEntity;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
@@ -13,8 +16,6 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-
-import java.util.UUID;
 
 @Entity
 @Getter

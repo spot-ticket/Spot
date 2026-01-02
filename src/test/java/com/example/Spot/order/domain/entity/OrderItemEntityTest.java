@@ -1,7 +1,6 @@
 package com.example.Spot.order.domain.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
 import java.math.BigDecimal;
 
 import org.junit.jupiter.api.DisplayName;
@@ -13,6 +12,37 @@ import com.example.Spot.store.domain.entity.StoreEntity;
 
 @DisplayName("OrderItemEntity 테스트")
 class OrderItemEntityTest {
+
+    // 테스트 헬퍼 메서드
+    private OrderEntity createTestOrder() {
+        return OrderEntity.builder()
+                .store(createTestStore())
+                .userId(1L)
+                .orderNumber("ORD-001")
+                .pickupTime(java.time.LocalDateTime.now().plusHours(1))
+                .build();
+    }
+
+    private StoreEntity createTestStore() {
+        // OrderItemEntity 테스트에서는 StoreEntity의 세부 구현은 중요하지 않음
+        return null;
+    }
+
+    private MenuEntity createTestMenu() {
+        return MenuEntity.builder()
+                .name("테스트 메뉴")
+                .price(10000)
+                .build();
+    }
+
+    private OrderItemEntity createOrderItem(OrderEntity order, BigDecimal price, int quantity) {
+        return OrderItemEntity.builder()
+                .order(order)
+                .menu(createTestMenu())
+                .menuPrice(price)
+                .quantity(quantity)
+                .build();
+    }
 
     @Nested
     @DisplayName("주문 항목 생성")
@@ -48,7 +78,7 @@ class OrderItemEntityTest {
             // given
             BigDecimal menuPrice = new BigDecimal("10000.00");
             int quantity = 3;
-            
+
             OrderItemEntity orderItem = OrderItemEntity.builder()
                     .order(createTestOrder())
                     .menu(createTestMenu())
@@ -103,36 +133,5 @@ class OrderItemEntityTest {
             assertThat(item2.getOrder()).isEqualTo(order);
             assertThat(item1.getOrder()).isEqualTo(item2.getOrder());
         }
-    }
-
-    // 테스트 헬퍼 메서드
-    private OrderEntity createTestOrder() {
-        return OrderEntity.builder()
-                .store(createTestStore())
-                .userId(1L)
-                .orderNumber("ORD-001")
-                .pickupTime(java.time.LocalDateTime.now().plusHours(1))
-                .build();
-    }
-
-    private StoreEntity createTestStore() {
-        // OrderItemEntity 테스트에서는 StoreEntity의 세부 구현은 중요하지 않음
-        return null;
-    }
-
-    private MenuEntity createTestMenu() {
-        return MenuEntity.builder()
-                .name("테스트 메뉴")
-                .price(10000)
-                .build();
-    }
-
-    private OrderItemEntity createOrderItem(OrderEntity order, BigDecimal price, int quantity) {
-        return OrderItemEntity.builder()
-                .order(order)
-                .menu(createTestMenu())
-                .menuPrice(price)
-                .quantity(quantity)
-                .build();
     }
 }

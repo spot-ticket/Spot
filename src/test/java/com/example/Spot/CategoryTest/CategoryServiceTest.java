@@ -1,7 +1,13 @@
 package com.example.Spot.CategoryTest;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import java.util.List;
 import java.util.Optional;
+
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import com.example.Spot.store.domain.entity.CategoryEntity;
 import com.example.Spot.store.domain.entity.StoreCategoryEntity;
@@ -9,12 +15,6 @@ import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.CategoryRepository;
 import com.example.Spot.store.domain.repository.StoreCategoryRepository;
 import com.example.Spot.store.domain.repository.StoreRepository;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-
-import static org.assertj.core.api.Assertions.assertThat;
 
 @DataJpaTest
 class CategoryServiceTest {

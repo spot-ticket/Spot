@@ -4,11 +4,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.stereotype.Repository;
+
 import com.example.Spot.store.domain.entity.CategoryEntity;
 import com.example.Spot.store.domain.entity.StoreCategoryEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
 
 @Repository
 public interface StoreCategoryRepository extends JpaRepository<StoreCategoryEntity, UUID> {

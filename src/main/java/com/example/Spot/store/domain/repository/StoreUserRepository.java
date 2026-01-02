@@ -3,9 +3,10 @@ package com.example.Spot.store.domain.repository;
 import java.util.List;
 import java.util.UUID;
 
-import com.example.Spot.store.domain.entity.StoreUserEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
+
+import com.example.Spot.store.domain.entity.StoreUserEntity;
 
 @Repository
 public interface StoreUserRepository extends JpaRepository<StoreUserEntity, UUID> {

@@ -2,7 +2,6 @@ package com.example.Spot.payments.domain.entity;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
 import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
@@ -33,7 +32,7 @@ public class PaymentEntityUnitTest {
         PaymentEntity toFailed = createReadyPayment();
         toFailed.updateStatus(PaymentStatus.FAILED);
         assertThat(toFailed.getPaymentStatus()).isEqualTo(PaymentStatus.FAILED);
-        
+
         PaymentEntity toCancelled = createReadyPayment();
         toCancelled.updateStatus(PaymentStatus.CANCELLED);
         assertThat(toCancelled.getPaymentStatus()).isEqualTo(PaymentStatus.CANCELLED);
@@ -49,7 +48,7 @@ public class PaymentEntityUnitTest {
                 .build();
 
         assertThatThrownBy(() -> payment.updateStatus(targetStatus))
-            .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(IllegalStateException.class);
     }
 
     @ParameterizedTest
@@ -60,9 +59,9 @@ public class PaymentEntityUnitTest {
         PaymentEntity payment = PaymentEntity.builder()
                 .paymentStatus(PaymentEntity.PaymentStatus.FAILED)
                 .build();
-        
+
         assertThatThrownBy(() -> payment.updateStatus(targetStatus))
-            .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(IllegalStateException.class);
     }
 
     @ParameterizedTest
@@ -73,8 +72,8 @@ public class PaymentEntityUnitTest {
         PaymentEntity payment = PaymentEntity.builder()
                 .paymentStatus(PaymentEntity.PaymentStatus.CANCELLED)
                 .build();
-        
+
         assertThatThrownBy(() -> payment.updateStatus(targetStatus))
-            .isInstanceOf(IllegalStateException.class);
+                .isInstanceOf(IllegalStateException.class);
     }
 }
