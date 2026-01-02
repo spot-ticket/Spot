@@ -1,13 +1,15 @@
 package com.example.Spot.user.application.service;
 
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.stereotype.Service;
+
 import com.example.Spot.global.presentation.advice.DuplicateUserException;
 import com.example.Spot.user.domain.entity.UserAuthEntity;
 import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.repository.UserAuthRepository;
 import com.example.Spot.user.domain.repository.UserRepository;
 import com.example.Spot.user.presentation.dto.request.JoinDTO;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.stereotype.Service;
+
 
 @Service
 public class JoinService {
@@ -53,29 +55,6 @@ public class JoinService {
         userAuthRepository.save(auth);
 
 
-//        String username = joinDTO.getUsername();
-//        String password = joinDTO.getPassword();
-//        String nickname = joinDTO.getNickname();
-//        String email = joinDTO.getEmail();
-//        boolean male = joinDTO.isMale();
-//        int age = joinDTO.getAge();
-//        String address = joinDTO.getAddress();
-//        Role role = joinDTO.getRole();
-//
-//
-//
-//        // userEntity 저장
-//        UserEntity data = new UserEntity();
-//        data.setUsername(username);
-//        data.setPassword(bCryptPasswordEncoder.encode(password));
-//        data.setNickname(nickname);
-//        data.setEmail(email);
-//        data.setMale(male);
-//        data.setAge(age);
-//        data.setAddress(address);
-//        data.setRole(role);
-//
-//        userRepository.save(data);
     }
 
 }

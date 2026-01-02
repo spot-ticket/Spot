@@ -1,4 +1,3 @@
-
 package com.example.Spot.user.presentation.dto.request;
 
 import lombok.AllArgsConstructor;

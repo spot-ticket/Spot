@@ -1,18 +1,30 @@
 package com.example.Spot.payments.domain.entity;
 
-import com.example.Spot.global.common.BaseEntity;
-import com.example.Spot.user.domain.entity.UserEntity;
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import org.hibernate.annotations.UuidGenerator;
 import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
-import java.time.LocalDateTime;
-import java.util.UUID;
+import com.example.Spot.global.common.BaseEntity;
+import com.example.Spot.user.domain.entity.UserEntity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EntityListeners;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
@@ -56,7 +68,7 @@ public class PaymentEntity extends BaseEntity {
     private LocalDateTime updatedAt;
 
     @Builder
-    public PaymentEntity (String title, String content, UUID idempotencyKey, 
+    public PaymentEntity (String title, String content, UUID idempotencyKey,
                           PaymentMethod paymentMethod, Long paymentAmount, PaymentStatus paymentStatus) {
 
         this.title = title;
@@ -82,8 +94,8 @@ public class PaymentEntity extends BaseEntity {
     public void updateStatus(PaymentStatus status) {
 
         if (this.paymentStatus == PaymentStatus.SUCCESS
-            || this.paymentStatus == PaymentStatus.CANCELLED
-            || this.paymentStatus == PaymentStatus.FAILED) {
+                || this.paymentStatus == PaymentStatus.CANCELLED
+                || this.paymentStatus == PaymentStatus.FAILED) {
             throw new IllegalStateException("이미 완료된 결제 상태는 변경할 수 없습니다.");
         }
 

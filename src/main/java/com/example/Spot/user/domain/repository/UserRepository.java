@@ -1,9 +1,10 @@
 package com.example.Spot.user.domain.repository;
 
-import com.example.Spot.user.domain.entity.UserEntity;
+import java.util.Optional;
+
 import org.springframework.data.jpa.repository.JpaRepository;
 
-import java.util.Optional;
+import com.example.Spot.user.domain.entity.UserEntity;
 
 
 public interface UserRepository extends JpaRepository<UserEntity, Integer> {
@@ -16,4 +17,3 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
     Optional<UserEntity> findByUsername(String username);
     //UserEntity findByEmail(String email);
 }
-

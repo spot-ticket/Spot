@@ -1,6 +1,7 @@
 package com.example.Spot.user.presentation.dto.request;
 
 import com.example.Spot.user.domain.Role;
+
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,4 +21,3 @@ public class JoinDTO {
     private String address;
     private Role role;
 }
-
