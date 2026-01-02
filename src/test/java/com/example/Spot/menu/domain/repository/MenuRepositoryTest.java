@@ -29,7 +29,7 @@ class MenuRepositoryTest {
     private StoreEntity savedStore;
 
     @BeforeEach
-    void setUp() {
+    void 가게_메뉴_메뉴_옵션_생성() {
         // [Given] 1. StoreEntity 생성 및 저장
         StoreEntity store = StoreEntity.builder()
                 .name("원조역삼막국수")
@@ -55,7 +55,7 @@ class MenuRepositoryTest {
 
     @Test
     @DisplayName("메뉴 정보 수정 테스트")
-    void updateMenuTest() {
+    void 메뉴_업데이트_테스트() {
         // 업데이트 진행
         savedMenu.updateMenu("가라아게덮밥", 11000, "일식");
 
@@ -69,8 +69,8 @@ class MenuRepositoryTest {
     }
 
     @Test
-    @DisplayName("손님용 - 메뉴 ID로 조회한 경우 테스트")
-    void findByIdTest() {
+    @DisplayName("[손님] 주문 내역에서 특정 메뉴를 클릭하여 특정 메뉴 ID로 조회한 경우")
+    void 특정_메뉴_ID_조회_테스트() {
         MenuEntity foundMenu = menuRepository.findActiveMenuById(savedMenu.getId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 메뉴가 존재하지 않습니다."));
 
@@ -78,8 +78,8 @@ class MenuRepositoryTest {
     }
 
     @Test
-    @DisplayName("손님용 - 메뉴판 조회")
-    void findActiveMenuTest() {
+    @DisplayName("[손님] 메뉴 조회")
+    void 주문_가능한_메뉴_조회() {
         // 가게 메뉴판을 보는 것이므로 '가게 ID'를 넘김
         List<MenuEntity> activeMenus = menuRepository.findAllActiveMenus(savedStore.getId());
 
@@ -92,8 +92,8 @@ class MenuRepositoryTest {
     }
 
     @Test
-    @DisplayName("사장님용 조회 - 숨김 메뉴는 보이고, 삭제된 건 안 보임")
-    void ownerFindTest() {
+    @DisplayName("[가게] 삭제된 메뉴를 제외한 모든 메뉴를 조회")
+    void 삭제_옵션_메뉴_제외_테스트() {
         // 숨김 처리된 메뉴
         savedMenu.changeHidden(true);
 
