@@ -10,6 +10,7 @@ import org.hibernate.annotations.UuidGenerator;
 import com.example.Spot.global.common.BaseEntity;
 import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
+import com.example.Spot.order.domain.exception.InvalidOrderStatusTransitionException;
 import com.example.Spot.store.domain.entity.StoreEntity;
 
 import jakarta.persistence.CascadeType;
@@ -110,6 +111,7 @@ public class OrderEntity extends BaseEntity {
 
     // 주문 수락 (OWNER)
     public void acceptOrder(Integer estimatedTime) {
+        validateStatusTransition(OrderStatus.ACCEPTED);
         this.orderStatus = OrderStatus.ACCEPTED;
         this.acceptedAt = LocalDateTime.now();
         this.estimatedTime = estimatedTime;
@@ -117,6 +119,7 @@ public class OrderEntity extends BaseEntity {
 
     // 주문 거절 (OWNER)
     public void rejectOrder(String reason) {
+        validateStatusTransition(OrderStatus.REJECTED);
         this.orderStatus = OrderStatus.REJECTED;
         this.rejectedAt = LocalDateTime.now();
         this.reason = reason;
@@ -124,6 +127,7 @@ public class OrderEntity extends BaseEntity {
 
     // 주문 취소 (OWNER, CUSTOMER)
     public void cancelOrder(String reason, CancelledBy cancelledBy) {
+        validateStatusTransition(OrderStatus.CANCELLED);
         this.orderStatus = OrderStatus.CANCELLED;
         this.cancelledAt = LocalDateTime.now();
         this.reason = reason;
@@ -132,18 +136,29 @@ public class OrderEntity extends BaseEntity {
 
     // 조리 시작 (CHEF)
     public void startCooking() {
+        validateStatusTransition(OrderStatus.COOKING);
         this.orderStatus = OrderStatus.COOKING;
         this.cookingStartedAt = LocalDateTime.now();
     }
 
     // 조리 완료 = 픽업 대기 (CHEF)
     public void readyForPickup() {
+        validateStatusTransition(OrderStatus.READY);
         this.orderStatus = OrderStatus.READY;
         this.cookingCompletedAt = LocalDateTime.now();
     }
 
     // 픽업 완료 (CUSTOMER)
     public void completeOrder() {
+        validateStatusTransition(OrderStatus.COMPLETED);
         this.orderStatus = OrderStatus.COMPLETED;
         this.pickedUpAt = LocalDateTime.now();
     }
+
+    // 상태 전환 검증
+    private void validateStatusTransition(OrderStatus newStatus) {
+        if (!this.orderStatus.canTransitionTo(newStatus)) {
+            throw new InvalidOrderStatusTransitionException(this.orderStatus, newStatus);
+        }
+    }
+}
