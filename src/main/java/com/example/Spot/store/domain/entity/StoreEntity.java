@@ -25,9 +25,15 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "p_stores")
+@Table(name = "p_store")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StoreEntity extends UpdateBaseEntity {
+
+    @OneToMany(mappedBy = "store", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    private final List<StoreUserEntity> users = new ArrayList<>();
+
+    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    private final Set<StoreCategoryEntity> storeCategoryMaps = new HashSet<>();
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -47,12 +53,6 @@ public class StoreEntity extends UpdateBaseEntity {
 
     @Column(name = "close_time")
     private LocalTime closeTime;
-
-    @OneToMany(mappedBy = "store", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    private List<StoreStaffEntity> staffs = new ArrayList<>();
-
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    private Set<StoreViewEntity> storeCategoryMaps = new HashSet<>();
 
     @Builder
     public StoreEntity(String name, String address, String phoneNumber,

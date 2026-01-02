@@ -49,7 +49,7 @@ public class OrderItemEntity extends BaseEntity {
 
     @Builder
     public OrderItemEntity(OrderEntity order, MenuEntity menu,
-                          BigDecimal menuPrice, Integer quantity) {
+                           BigDecimal menuPrice, Integer quantity) {
         this.order = order;
         this.menu = menu;
         this.menuPrice = menuPrice;
