@@ -43,4 +43,9 @@ public class OrderItemEntity extends BaseEntity {
         this.menuPrice = menuPrice;
         this.quantity = quantity;
     }
+
+    // 양방향 관계 설정을 위한 메서드
+    protected void setOrder(OrderEntity order) {
+        this.order = order;
+    }
 }

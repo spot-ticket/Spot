@@ -56,14 +56,14 @@ public class OrderEntity extends BaseEntity {
     private String request;
 
     @Column(name = "need_disposables", nullable = false)
-    private Boolean needDisposables;
+    private Boolean needDisposables = false;
 
     @Column(name = "pickup_time", nullable = false)
     private LocalDateTime pickupTime;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false, length = 20)
-    private OrderStatus orderStatus;
+    private OrderStatus orderStatus = OrderStatus.PENDING;
 
     @Column(name = "accepted_at")
     private LocalDateTime acceptedAt;
@@ -94,19 +94,27 @@ public class OrderEntity extends BaseEntity {
     private CancelledBy cancelledBy;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItemEntity> orderItems;
+    private List<OrderItemEntity> orderItems = new ArrayList<>();
 
     @Builder
     public OrderEntity(StoreEntity store, Long userId, String orderNumber,
-                       String request, Boolean needDisposables, LocalDateTime pickupTime) {
+                       String request, boolean needDisposables, LocalDateTime pickupTime) {
         this.store = store;
         this.userId = userId;
         this.orderNumber = orderNumber;
         this.request = request;
-        this.needDisposables = needDisposables != null ? needDisposables : false;
+        this.needDisposables = needDisposables;
         this.pickupTime = pickupTime;
-        this.orderStatus = OrderStatus.PENDING;
-        this.orderItems = new ArrayList<>();
+    }
+
+    public void addOrderItem(OrderItemEntity orderItem) {
+        this.orderItems.add(orderItem);
+        orderItem.setOrder(this);
+    }
+
+    public void removeOrderItem(OrderItemEntity orderItem) {
+        this.orderItems.remove(orderItem);
+        orderItem.setOrder(null);
     }
 
     // 주문 수락 (OWNER)
