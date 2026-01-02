@@ -1,27 +1,19 @@
 package com.example.Spot.store.domain.entity;
 
-import java.util.UUID;
-
 import com.example.Spot.global.common.UpdateBaseEntity;
-
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Entity
 @Getter
-@Table(name = "p_store_view")
+@Table(name = "p_store_category")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class StoreViewEntity extends UpdateBaseEntity {
+public class StoreCategoryEntity extends UpdateBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -36,7 +28,7 @@ public class StoreViewEntity extends UpdateBaseEntity {
     private CategoryEntity category;
 
     @Builder
-    public StoreViewEntity(StoreEntity store, CategoryEntity category) {
+    public StoreCategoryEntity(StoreEntity store, CategoryEntity category) {
         this.store = store;
         this.category = category;
     }

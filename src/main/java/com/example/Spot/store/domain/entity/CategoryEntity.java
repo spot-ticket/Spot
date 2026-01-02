@@ -1,37 +1,30 @@
 package com.example.Spot.store.domain.entity;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import com.example.Spot.global.common.UpdateBaseEntity;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
+import java.util.Set;
+import java.util.UUID;
+
 @Entity
 @Getter
-@Table(name = "p_store_category")
+@Table(name = "p_category")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CategoryEntity extends UpdateBaseEntity {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
 
     @Column(nullable = false)
     private String name;
 
     @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
-    private Set<StoreViewEntity> storeCategoryMaps = new HashSet<>();
+    private Set<StoreCategoryEntity> storeCategoryMaps = new HashSet<>();
 
     // 도메인 메서드
 

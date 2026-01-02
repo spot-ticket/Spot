@@ -1,25 +1,16 @@
 package com.example.Spot.user.domain.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.example.Spot.global.common.UpdateBaseEntity;
-import com.example.Spot.store.domain.entity.StoreStaffEntity;
+import com.example.Spot.store.domain.entity.StoreUserEntity;
 import com.example.Spot.user.domain.Role;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Getter
@@ -51,7 +42,7 @@ public class UserEntity extends UpdateBaseEntity {
     private Role role;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    private List<StoreStaffEntity> staffs = new ArrayList<>();
+    private List<StoreUserEntity> staffs = new ArrayList<>();
 
     @Builder
     public UserEntity(String username, String nickname, String address, String email, Role role) {

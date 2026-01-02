@@ -1,31 +1,18 @@
 package com.example.Spot.store.domain.entity;
 
-import java.time.LocalTime;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.UUID;
-
 import com.example.Spot.global.common.UpdateBaseEntity;
-
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalTime;
+import java.util.*;
+
 @Entity
 @Getter
-@Table(name = "p_stores")
+@Table(name = "p_store")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StoreEntity extends UpdateBaseEntity {
 
@@ -49,10 +36,10 @@ public class StoreEntity extends UpdateBaseEntity {
     private LocalTime closeTime;
 
     @OneToMany(mappedBy = "store", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    private List<StoreStaffEntity> staffs = new ArrayList<>();
+    private List<StoreUserEntity> users = new ArrayList<>();
 
     @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    private Set<StoreViewEntity> storeCategoryMaps = new HashSet<>();
+    private Set<StoreCategoryEntity> storeCategoryMaps = new HashSet<>();
 
     @Builder
     public StoreEntity(String name, String address, String phoneNumber,
