@@ -11,9 +11,8 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-
-import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.example.Spot.menu.domain.entity.MenuEntity;
+import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 
 @DataJpaTest
 class MenuOptionRepositoryTest {
