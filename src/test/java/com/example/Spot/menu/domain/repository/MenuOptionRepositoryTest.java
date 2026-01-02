@@ -36,7 +36,7 @@ class MenuOptionRepositoryTest {
     private MenuOptionEntity soldOutOption; // 품절 옵션
 
     @BeforeEach
-    void 메뉴_및_메뉴_옵션_생성() {
+    void 가게_메뉴_메뉴_옵션_생성() {
         // [Given] 1. StoreEntity 생성 및 저장
         StoreEntity store = StoreEntity.builder()
                 .name("원조역삼막국수")
@@ -91,7 +91,7 @@ class MenuOptionRepositoryTest {
     }
 
     @Test
-    @DisplayName("가게 - 삭제된 옵션을 제외하고 모든 옵션을 조회")
+    @DisplayName("[가게] 삭제된 옵션을 제외하고 모든 옵션을 조회")
     void 삭제_옵션_제외_테스트() {
         // 삭제된 옵션 생성
         MenuOptionEntity deletedOption = MenuOptionEntity.builder()
