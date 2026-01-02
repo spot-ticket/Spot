@@ -1,4 +1,4 @@
-package com.example.Spot.UserTest;
+package com.example.Spot.user.presentation.controller;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
