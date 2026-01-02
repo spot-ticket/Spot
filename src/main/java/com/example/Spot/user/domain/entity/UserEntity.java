@@ -18,6 +18,7 @@ import java.util.UUID;
 @Entity
 @EntityListeners(AuditingEntityListener.class)
 @Getter
+@Setter
 @Table(name="p_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity extends UpdateBaseEntity {
@@ -61,7 +62,7 @@ public class UserEntity extends UpdateBaseEntity {
 
     @Builder
     public static UserEntity forAuthentication(String username, Role role) {
-        UserEntity user = new UserEntity(); // protected 생성자 → 같은 클래스라서 가능
+        UserEntity user = new UserEntity();
         user.username = username;
         user.role = role;
         return user;
