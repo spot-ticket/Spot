@@ -40,7 +40,6 @@ public class CategoryEntity extends UpdateBaseEntity {
         this.name = name;
     }
 
-    @Builder
     public void updateName(String name) {
         this.name = name;
     }
