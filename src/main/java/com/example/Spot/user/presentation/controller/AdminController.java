@@ -1,4 +1,3 @@
-
 package com.example.Spot.user.presentation.controller;
 
 import org.springframework.stereotype.Controller;
