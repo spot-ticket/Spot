@@ -40,6 +40,7 @@ public class CategoryEntity extends UpdateBaseEntity {
         this.name = name;
     }
 
+
     public void updateName(String name) {
         this.name = name;
     }
