@@ -1,15 +1,17 @@
 package com.example.Spot.menu.domain.repository;
 
-import com.example.Spot.menu.domain.entity.MenuEntity;
-import com.example.Spot.store.domain.entity.StoreEntity;
-import com.example.Spot.store.domain.repository.StoreRepository;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.time.LocalTime;
+
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import com.example.Spot.menu.domain.entity.MenuEntity;
+import com.example.Spot.store.domain.entity.StoreEntity;
+import com.example.Spot.store.domain.repository.StoreRepository;
 
 @DataJpaTest
 class MenuRepositoryTest {

@@ -64,7 +64,6 @@ public class UserEntity extends UpdateBaseEntity {
     }
 
 
-    @Builder
     public static UserEntity forAuthentication(String username, Role role) {
         UserEntity user = new UserEntity(); // protected 생성자 → 같은 클래스라서 가능
         user.username = username;
@@ -72,7 +71,6 @@ public class UserEntity extends UpdateBaseEntity {
         return user;
     }
 
-    @Builder
     public void ismale() {
         this.male = true;
     }
