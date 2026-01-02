@@ -3,6 +3,7 @@ package com.example.Spot.user.domain.entity;
 import com.example.Spot.global.common.UpdateBaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -32,6 +33,12 @@ public class RefreshTokenEntity extends UpdateBaseEntity {
 
     @Column(name = "used_at")
     private LocalDateTime usedAt;
+
+    @Builder
+    public RefreshTokenEntity(UserAuthEntity auth, String refreshTokenHash){
+        this.auth = auth;
+        this.refreshTokenHash = refreshTokenHash;
+    }
 
 
     public boolean isActive(LocalDateTime now) {
