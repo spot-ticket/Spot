@@ -1,67 +1,49 @@
 package com.example.Spot.store.domain.entity;
 
-import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
+
+import com.example.Spot.global.common.UpdateBaseEntity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
 
 @Entity
-@EntityListeners(AuditingEntityListener.class)
-@Table(name = "p_store_category")
 @Getter
+@Table(name = "p_category")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-
-public class CategoryEntity {
+public class CategoryEntity extends UpdateBaseEntity {
+    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    private final Set<StoreCategoryEntity> storeCategoryMaps = new HashSet<>();
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
-
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
     @Column(nullable = false)
     private String name;
 
-    @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted = false;
-
-    @CreatedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
-
-    @CreatedDate
-    @Column(name = "created_at", nullable = false, updatable = false)
-    private LocalDateTime createdAt;
-
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
-    private Set<StoreViewEntity> storeCategoryMaps = new HashSet<>();
-
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-        this.updatedAt = LocalDateTime.now();
-    }
-
-    @PreUpdate
-    protected void onUpdate() {
-        this.updatedAt = LocalDateTime.now();
-    }
-
     // 도메인 메서드
 
+    @Builder
     public CategoryEntity(String name) {
         this.name = name;
     }
+
 
     public void updateName(String name) {
         this.name = name;
     }
 
-    public void softDelete() {
-        this.isDeleted = true;
-    }
 
 }
