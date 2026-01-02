@@ -1,24 +1,30 @@
 package com.example.Spot.menu.domain.entity;
 
+import java.util.UUID;
+
+import com.example.Spot.global.common.UpdateBaseEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
-import jakarta.persistence.*;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.annotation.LastModifiedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
 
 @Entity
-@Table(name = "p_menu")
 @Getter
-@EntityListeners(AuditingEntityListener.class)
+@Table(name = "p_menu")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class MenuEntity {
+public class MenuEntity extends UpdateBaseEntity {
+
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
@@ -39,19 +45,8 @@ public class MenuEntity {
     @Column(name = "is_available")
     private Boolean isAvailable = true;
 
-    @Column(name = "is_deleted")
-    private Boolean isDeleted = false;
-
     @Column(name = "is_hidden")
     private Boolean isHidden = false;
-
-    @CreatedDate
-    @Column(name = "created_at", updatable = false)
-    private LocalDateTime createdAt;
-
-    @LastModifiedDate
-    @Column(name = "updated_at")
-    private LocalDateTime updatedAt;
 
     @Builder
     public MenuEntity(StoreEntity store, String name, String category, int price) {
@@ -61,21 +56,17 @@ public class MenuEntity {
         this.price = price;
     }
 
-    public void updateMenu(String name, int price, String category){
+    public void updateMenu(String name, int price, String category) {
         this.name = name;
         this.price = price;
         this.category = category;
     }
 
-    public void changeAvailable(Boolean isAvailable){
+    public void changeAvailable(Boolean isAvailable) {
         this.isAvailable = isAvailable;
     }
 
-    public void changeHidden(Boolean isHidden){
+    public void changeHidden(Boolean isHidden) {
         this.isHidden = isHidden;
-    }
-
-    public void delete(){
-        this.isDeleted = true;
     }
 }
