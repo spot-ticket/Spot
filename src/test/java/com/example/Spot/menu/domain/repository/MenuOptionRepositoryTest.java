@@ -1,20 +1,18 @@
 package com.example.Spot.menu.domain.repository;
 
-import java.time.LocalTime;
-import java.util.List;
-
-import com.example.Spot.menu.domain.entity.MenuOptionEntity;
-import com.example.Spot.store.domain.entity.StoreEntity;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-
 import static org.assertj.core.api.Assertions.assertThat; // 검증을 위한 AssertJ
 import static org.assertj.core.api.Assertions.tuple;
 
+import java.util.List;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+
+
+import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.example.Spot.menu.domain.entity.MenuEntity;
 
 @DataJpaTest
