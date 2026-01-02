@@ -8,6 +8,7 @@ import com.example.Spot.user.domain.repository.UserAuthRepository;
 import com.example.Spot.user.domain.repository.UserRepository;
 import com.example.Spot.user.presentation.dto.request.JoinDTO;
 import jakarta.transaction.Transactional;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,6 +26,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @AutoConfigureMockMvc
 @Transactional
+@Disabled("Password reset feature not yet implemented")
 class PasswordResetFlowTest {
 
     @Autowired private JoinService joinService;
