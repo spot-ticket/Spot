@@ -1,8 +1,8 @@
 package com.example.Spot.user.domain.entity;
 
-import com.example.Spot.global.common.UpdateBaseEntity;
-import com.example.Spot.store.domain.entity.StoreStaffEntity;
-import com.example.Spot.user.domain.Role;
+import java.util.ArrayList;
+import java.util.List;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -17,8 +17,9 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.ArrayList;
-import java.util.List;
+import com.example.Spot.global.common.UpdateBaseEntity;
+import com.example.Spot.store.domain.entity.StoreStaffEntity;
+import com.example.Spot.user.domain.Role;
 
 @Entity
 @Getter

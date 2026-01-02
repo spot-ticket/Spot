@@ -1,5 +1,8 @@
 package com.example.Spot.menu.domain.entity;
 
+import java.util.UUID;
+import java.time.LocalDateTime;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -12,19 +15,17 @@ import lombok.NoArgsConstructor;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Builder;
+
 import org.hibernate.annotations.UuidGenerator;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.global.common.UpdateBaseEntity;
 
-import java.util.UUID;
-import java.time.LocalDateTime;
-
 @Entity
 @Getter
 @Table(name="p_origin")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class OriginEntity extends UpdateBaseEntity{
+public class OriginEntity extends UpdateBaseEntity {
 
     @Id
     @GeneratedValue
@@ -33,17 +34,17 @@ public class OriginEntity extends UpdateBaseEntity{
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name="menu_id", nullable=false)
+    @JoinColumn(name = "menu_id", nullable = false)
     private MenuEntity menu;
 
-    @Column(name="origin_name", nullable=false, length=100)
+    @Column(name = "origin_name", nullable = false, length = 100)
     private String originName;
 
-    @Column(name="ingredient_name", nullable=false, length=100)
+    @Column(name = "ingredient_name", nullable = false, length = 100)
     private String ingredientName;
 
     @Builder
-    public OriginEntity(MenuEntity menu, String origiinName, String ingredientName){
+    public OriginEntity(MenuEntity menu, String origiinName, String ingredientName) {
         validateNames(originName, ingredientName);
 
         this.menu = menu;
@@ -51,7 +52,7 @@ public class OriginEntity extends UpdateBaseEntity{
         this.ingredientName = ingredientName;
     }
 
-    public void updateInfo(String originName, String ingredientName){
+    public void updateInfo(String originName, String ingredientName) {
         validateNames(originName, ingredientName);
 
         if (originName != null && !originName.isBlank()) {

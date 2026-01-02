@@ -1,6 +1,7 @@
 package com.example.Spot.menu.domain.entity;
 
-import com.example.Spot.global.common.UpdateBaseEntity;
+import java.util.UUID;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -15,7 +16,7 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
+import com.example.Spot.global.common.UpdateBaseEntity;
 
 @Entity
 @Getter
@@ -25,7 +26,7 @@ public class MenuOptionEntity extends UpdateBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-    
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "menu_id")     // DB 테이블에 생길 컬럼 이름
     private MenuEntity menu;
@@ -50,13 +51,13 @@ public class MenuOptionEntity extends UpdateBaseEntity {
         this.price = price;
     }
 
-    public void updateOption(String name, int price, String detail){
+    public void updateOption(String name, int price, String detail) {
         this.name = name;
         this.price = price;
         this.detail = detail;
     }
 
-    public void changeAvailable(Boolean isAvailable){
+    public void changeAvailable(Boolean isAvailable) {
         this.isAvailable = isAvailable;
     }
 }

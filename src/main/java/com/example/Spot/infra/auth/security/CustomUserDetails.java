@@ -1,13 +1,14 @@
 package com.example.Spot.infra.auth.security;
 
-import com.example.Spot.user.domain.entity.UserEntity;
-import com.example.Spot.user.domain.entity.UserAuthEntity;
-import com.example.Spot.user.domain.repository.UserAuthRepository;
+import java.util.ArrayList;
+import java.util.Collection;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.ArrayList;
-import java.util.Collection;
+import com.example.Spot.user.domain.entity.UserEntity;
+import com.example.Spot.user.domain.entity.UserAuthEntity;
+import com.example.Spot.user.domain.repository.UserAuthRepository;
 
 public class CustomUserDetails implements UserDetails {
 

@@ -8,7 +8,7 @@ public enum Role {
     MANAGER,
     MASTER;
 
-    public String getAuthority(){
-        return "ROLE_" +this.name();
+    public String getAuthority() {
+        return "ROLE_" + this.name();
     }
 }

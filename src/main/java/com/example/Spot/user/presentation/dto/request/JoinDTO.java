@@ -1,13 +1,11 @@
 package com.example.Spot.user.presentation.dto.request;
 
+import java.util.UUID;
 
-import com.example.Spot.user.domain.Role;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
 import lombok.Getter;
 import lombok.Setter;
 
-import java.util.UUID;
+import com.example.Spot.user.domain.Role;
 
 @Setter
 @Getter
