@@ -47,25 +47,33 @@ class MenuRepositoryTest {
                 .name("육전막국수")
                 .category("한식")
                 .price(11000)
-
+                .description("")
+                .imageUrl("")
                 .build();
 
         savedMenu = menuRepository.save(menu);
     }
 
     @Test
-    @DisplayName("메뉴 정보 수정 테스트")
+    @DisplayName("메뉴 정보를 수정하는 테스트")
     void 메뉴_업데이트_테스트() {
-        // 업데이트 진행
-        savedMenu.updateMenu("가라아게덮밥", 11000, "일식");
+        // 1. When: 업데이트 진행
+        savedMenu.updateMenu("가라아게덮밥", 11000, "일식", "매콤한 소스가 들어갔습니다.", "new_img.jpg");
 
+        // 2. DB 반영 (Flush)
+        // flush()는 변경 내용을 DB에 쿼리로 날리는 역할
         menuRepository.flush();
 
+        // 3. Then: 다시 조회해서 확인
         MenuEntity checkMenu = menuRepository.findById(savedMenu.getId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 메뉴가 존재하지 않습니다."));
 
+        // 4. 검증: 변경한 5가지 값이 모두 맞는지 확인!
         assertThat(checkMenu.getName()).isEqualTo("가라아게덮밥");
         assertThat(checkMenu.getPrice()).isEqualTo(11000);
+        assertThat(checkMenu.getCategory()).isEqualTo("일식");
+        assertThat(checkMenu.getDescription()).isEqualTo("매콤한 소스가 들어갔습니다.");
+        assertThat(checkMenu.getImageUrl()).isEqualTo("new_img.jpg");
     }
 
     @Test
