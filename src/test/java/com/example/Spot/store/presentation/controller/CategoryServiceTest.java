@@ -11,11 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import com.example.Spot.store.domain.entity.CategoryEntity;
+import com.example.Spot.store.domain.entity.StoreCategoryEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
-import com.example.Spot.store.domain.entity.StoreViewEntity;
 import com.example.Spot.store.domain.repository.CategoryRepository;
+import com.example.Spot.store.domain.repository.StoreCategoryRepository;
 import com.example.Spot.store.domain.repository.StoreRepository;
-import com.example.Spot.store.domain.repository.StoreViewRepository;
 
 @DataJpaTest
 class CategoryServiceTest {
@@ -27,7 +27,7 @@ class CategoryServiceTest {
     private StoreRepository storeRepository;
 
     @Autowired
-    private StoreViewRepository storeViewRepository;
+    private StoreCategoryRepository storeViewRepository;
 
     @Test
     void 카테고리_전체를_조회할_수_있다() {
@@ -58,12 +58,12 @@ class CategoryServiceTest {
         storeRepository.save(bbq);
         storeRepository.save(kyochon);
 
-        StoreViewEntity view1 = StoreViewEntity.builder()
+        StoreCategoryEntity view1 = StoreCategoryEntity.builder()
                 .store(bbq)
                 .category(chicken)
                 .build();
 
-        StoreViewEntity view2 = StoreViewEntity.builder()
+        StoreCategoryEntity view2 = StoreCategoryEntity.builder()
                 .store(kyochon)
                 .category(chicken)
                 .build();
@@ -83,7 +83,7 @@ class CategoryServiceTest {
                 .findFirst()
                 .orElseThrow();
 
-        List<StoreViewEntity> chickenStores =
+        List<StoreCategoryEntity> chickenStores =
                 storeViewRepository.findByCategoryAndIsDeletedFalse(foundChicken);
 
         assertThat(chickenStores)
@@ -158,12 +158,12 @@ class CategoryServiceTest {
         storeRepository.save(store1);
         storeRepository.save(store2);
 
-        StoreViewEntity view1 = StoreViewEntity.builder()
+        StoreCategoryEntity view1 = StoreCategoryEntity.builder()
                 .store(store1)
                 .category(category)
                 .build();
 
-        StoreViewEntity view2 = StoreViewEntity.builder()
+        StoreCategoryEntity view2 = StoreCategoryEntity.builder()
                 .store(store2)
                 .category(category)
                 .build();
@@ -176,7 +176,7 @@ class CategoryServiceTest {
                 categoryRepository.findByIdAndIsDeletedFalse(category.getId())
                         .orElseThrow();
 
-        List<StoreViewEntity> stores =
+        List<StoreCategoryEntity> stores =
                 storeViewRepository.findByCategoryAndIsDeletedFalse(foundCategory);
 
         // then
@@ -215,21 +215,21 @@ class CategoryServiceTest {
         storeRepository.save(savedDeletedStore);
 
         storeViewRepository.save(
-                StoreViewEntity.builder()
+                StoreCategoryEntity.builder()
                         .store(activeStore)
                         .category(category)
                         .build()
         );
 
         storeViewRepository.save(
-                StoreViewEntity.builder()
+                StoreCategoryEntity.builder()
                         .store(savedDeletedStore)
                         .category(category)
                         .build()
         );
 
         // when
-        List<StoreViewEntity> stores =
+        List<StoreCategoryEntity> stores =
                 storeViewRepository.findByCategoryAndIsDeletedFalse(category);
 
         // then

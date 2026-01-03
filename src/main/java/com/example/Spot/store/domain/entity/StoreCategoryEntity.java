@@ -3,7 +3,6 @@ package com.example.Spot.store.domain.entity;
 import java.util.UUID;
 
 import com.example.Spot.global.common.UpdateBaseEntity;
-import com.example.Spot.user.domain.entity.UserEntity;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -20,25 +19,27 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "p_store_staff")
+@Table(name = "p_store_category")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class StoreStaffEntity extends UpdateBaseEntity {
+public class StoreCategoryEntity extends UpdateBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity user;
-
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "store_id", nullable = false)
     private StoreEntity store;
 
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "store_category_id", nullable = false)
+    private CategoryEntity category;
+
     @Builder
-    public StoreStaffEntity(UserEntity user, StoreEntity store) {
-        this.user = user;
+    public StoreCategoryEntity(StoreEntity store, CategoryEntity category) {
         this.store = store;
+        this.category = category;
     }
+
+
 }
