@@ -32,11 +32,32 @@ import jakarta.transaction.Transactional;
 @Disabled("Password reset feature not yet implemented")
 class PWChangeTest {
 
-    @Autowired private JoinService joinService;
-    @Autowired private UserRepository userRepository;
-    @Autowired private UserAuthRepository userAuthRepository;
-    @Autowired private BCryptPasswordEncoder passwordEncoder;
-    @Autowired private MockMvc mockMvc;
+    @Autowired
+    private JoinService joinService;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private UserAuthRepository userAuthRepository;
+    @Autowired
+    private BCryptPasswordEncoder passwordEncoder;
+    @Autowired
+    private MockMvc mockMvc;
+
+    /**
+     * 아주 단순한 JSON 문자열 추출 헬퍼 (테스트용).
+     * 실제로는 ObjectMapper 사용 권장.
+     */
+    private static String extractJsonString(String json, String key) {
+        // 예: {"resetToken":"abc"} 형태를 가정
+        String needle = "\"" + key + "\":";
+        int idx = json.indexOf(needle);
+        if (idx == -1) {
+            return "";
+        }
+        int start = json.indexOf("\"", idx + needle.length());
+        int end = json.indexOf("\"", start + 1);
+        return (start == -1 || end == -1) ? "" : json.substring(start + 1, end);
+    }
 
     @Test
     @DisplayName("패스워드변경_로그아웃상태_resetToken: 토큰 발급 -> 토큰으로 비밀번호 재설정 -> 토큰 1회성 폐기")
@@ -132,27 +153,6 @@ class PWChangeTest {
 
     }
 
-    /**
-     * 아주 단순한 JSON 문자열 추출 헬퍼 (테스트용).
-     * 실제로는 ObjectMapper 사용 권장.
-     */
-    private static String extractJsonString(String json, String key) {
-        // 예: {"resetToken":"abc"} 형태를 가정
-        String needle = "\"" + key + "\":";
-        int idx = json.indexOf(needle);
-        if (idx == -1) {
-                return "";
-        }
-        int start = json.indexOf("\"", idx + needle.length());
-        int end = json.indexOf("\"", start + 1);
-        return (start == -1 || end == -1) ? "" : json.substring(start + 1, end);
-    }
-
-
-
-
-
-
     @Test
     void 패스워드변경_로그인상태_이메일인증() throws Exception {
         // given-1: 회원 생성
@@ -192,7 +192,6 @@ class PWChangeTest {
         String token = authHeader.substring("Bearer ".length());
 
 
-
         // =========================
         // when-2: (로그인 상태) 비밀번호 변경용 이메일 인증 코드 발급
         // =========================
@@ -221,12 +220,12 @@ class PWChangeTest {
                                 .header("Authorization", "Bearer " + token)
                                 .contentType(MediaType.APPLICATION_JSON)
                                 .content("""
-                                    {
-                                      "currentPassword": "1234",
-                                      "newPassword": "5678",
-                                      "verificationCode": "%s"
-                                    }
-                                    """.formatted(verificationCode))
+                                        {
+                                          "currentPassword": "1234",
+                                          "newPassword": "5678",
+                                          "verificationCode": "%s"
+                                        }
+                                        """.formatted(verificationCode))
                 )
                 .andExpect(status().isOk());
 
@@ -243,14 +242,6 @@ class PWChangeTest {
         // BCrypt 매칭 검증
         assertThat(passwordEncoder.matches("5678", authAfter.getHashedPassword())).isTrue();
         assertThat(passwordEncoder.matches("1234", authAfter.getHashedPassword())).isFalse();
-
-
-
-
-
-
-
-
 
 
     }

@@ -110,8 +110,6 @@ class UserServiceTest {
                 .andReturn();
 
 
-
-
         // then: JWT authorization: bearer로 보내면 인증 붙는지 확인
         // 1. authorization 헤더에서 jwt 확인
         String authHeader = loginResult.getResponse().getHeader("Authorization");
@@ -126,9 +124,6 @@ class UserServiceTest {
                                 .header("Authorization", "Bearer " + token)
                 )
                 .andExpect(status().isOk());
-
-
-
 
 
     }
@@ -288,9 +283,6 @@ class UserServiceTest {
     }
 
 
-
-
-
     // 회원탈퇴 test 1
     // 구현되지 않은 메서드 사용 - 오류 발생으로 임시 주석 처리
 //    @Test
@@ -360,7 +352,6 @@ class UserServiceTest {
                 )
                 .andExpect(status().is4xxClientError()); // 401 / 403
     }
-
 
 
     // 회원탈퇴 test 3
