@@ -1,4 +1,4 @@
-package com.example.Spot.payments.infrastructure.repository;
+package com.example.Spot.payments.domain.repository;
 
 import java.util.UUID;
 

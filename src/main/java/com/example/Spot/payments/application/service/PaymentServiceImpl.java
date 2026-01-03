@@ -1,5 +1,7 @@
 package com.example.Spot.payments.application.service;
 
+import java.util.UUID;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -115,12 +117,12 @@ public class PaymentServiceImpl implements PaymentService {
             );
 
             OrderEntity order = latestItem.getOrder();
-            createPaymentItem(payment, order, PaymentItemEntity.PaymentStatus.CANCELLED);
+            PaymentItemEntity cancelledItem = createPaymentItem(payment, order, PaymentItemEntity.PaymentStatus.CANCELLED);
 
             PaymentCancelEntity cancelEntity = PaymentCancelEntity.builder()
-                .payment(payment)
-                .cancelReason(request.cancelReason())
-                .cancelAmount(payment.getTotalAmount())
+                .paymentItem(cancelledItem)
+                .reason(request.cancelReason())
+                .cancelIdempotency(UUID.randomUUID())
                 .build();
             paymentCancelRepository.save(cancelEntity);
 
@@ -142,12 +144,12 @@ public class PaymentServiceImpl implements PaymentService {
         }
     }
 
-    private OrderEntity findOrder(Long orderId) {
+    private OrderEntity findOrder(UUID orderId) {
         return orderRepository.findById(orderId)
             .orElseThrow(() -> new ResourceNotFoundException("주문을 찾을 수 없습니다."));
     }
 
-    private UserEntity findUser(Long userId) {
+    private UserEntity findUser(Integer userId) {
         return userRepository.findById(userId)
             .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다."));
     }
@@ -173,5 +175,11 @@ public class PaymentServiceImpl implements PaymentService {
 
         return paymentItem;
     }
-    
+
+    @Override
+    public PaymentResponseDto.View paymentUserView() {
+        // TODO: 구현 필요
+        return null;
+    }
+
 }

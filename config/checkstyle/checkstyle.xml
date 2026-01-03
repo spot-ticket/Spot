@@ -57,9 +57,15 @@
 
         <module name="LocalFinalVariableName"/>
 
-        <module name="LocalVariableName"/>
+        <module name="LocalVariableName">
+            <!-- 로컬 변수: camelCase만 허용 -->
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
 
-        <module name="MemberName"/>
+        <module name="MemberName">
+            <!-- 멤버 변수: camelCase만 허용 -->
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
 
         <module name="MethodName">
             <!-- 테스트 메서드는 한글 허용 -->
@@ -68,7 +74,10 @@
 
         <module name="PackageName"/>
 
-        <module name="ParameterName"/>
+        <module name="ParameterName">
+            <!-- 파라미터: camelCase만 허용 -->
+            <property name="format" value="^[a-z][a-zA-Z0-9]*$"/>
+        </module>
 
         <module name="StaticVariableName"/>
 

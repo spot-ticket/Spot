@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>토스 페이먼츠 - 빌링키 발급 테스트</title>
+    <script src="https://js.tosspayments.com/v2/standard"></script>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        input:focus {
+            outline: none;
+            border-color: #0064FF;
+        }
+        button {
+            width: 100%;
+            padding: 14px;
+            background-color: #0064FF;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        button:hover {
+            background-color: #0052CC;
+        }
+        button:disabled {
+            background-color: #ccc;
+            cursor: not-allowed;
+        }
+        .info-box {
+            background-color: #f0f7ff;
+            border-left: 4px solid #0064FF;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .info-box p {
+            margin: 5px 0;
+            font-size: 13px;
+            color: #333;
+        }
+        .warning-box {
+            background-color: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 4px;
+        }
+        .warning-box p {
+            margin: 5px 0;
+            font-size: 13px;
+            color: #856404;
+        }
+        code {
+            background-color: #f4f4f4;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔑 빌링키 발급 테스트</h1>
+        <p class="subtitle">토스 페이먼츠 자동결제(빌링) 연동 테스트</p>
+
+        <div class="warning-box">
+            <p><strong>⚠️ 주의사항</strong></p>
+            <p>1. 토스 개발자센터에서 테스트 클라이언트 키를 발급받아야 합니다</p>
+            <p>2. 백엔드 서버가 <code>http://localhost:8080</code>에서 실행 중이어야 합니다</p>
+            <p>3. 테스트 카드번호: <code>5570-0000-0000-0001</code></p>
+        </div>
+
+        <div class="info-box">
+            <p><strong>💡 테스트 카드 정보</strong></p>
+            <p>• 카드번호: 5570-0000-0000-0001</p>
+            <p>• 유효기간: 아무 미래 날짜</p>
+            <p>• CVC: 123</p>
+            <p>• 비밀번호: 00</p>
+            <p>• 생년월일: 990101</p>
+        </div>
+
+        <div class="form-group">
+            <label for="clientKey">토스 클라이언트 키 (Client Key)</label>
+            <input
+                type="text"
+                id="clientKey"
+                placeholder="test_ck_..."
+                value=""
+            >
+        </div>
+
+        <div class="form-group">
+            <label for="customerKey">고객 ID (Customer Key)</label>
+            <input
+                type="text"
+                id="customerKey"
+                placeholder="예: customer_test_001"
+                value="customer_test_001"
+            >
+        </div>
+
+        <button id="issueBillingBtn">빌링키 발급하기</button>
+
+        <div class="info-box" style="margin-top: 20px;">
+            <p><strong>📋 플로우</strong></p>
+            <p>1. 위 버튼 클릭 → 토스 결제창 팝업</p>
+            <p>2. 테스트 카드 정보 입력</p>
+            <p>3. 성공 시 <code>/api/billing/success</code>로 리다이렉트</p>
+            <p>4. 백엔드에서 빌링키 발급 API 호출</p>
+            <p>5. 빌링키 DB 저장 완료</p>
+        </div>
+    </div>
+
+    <script>
+        let tossPayments = null;
+
+        // 클라이언트 키 입력 시 TossPayments 초기화
+        document.getElementById('clientKey').addEventListener('input', (e) => {
+            const clientKey = e.target.value.trim();
+            if (clientKey.startsWith('test_ck_') || clientKey.startsWith('live_ck_')) {
+                try {
+                    tossPayments = TossPayments(clientKey);
+                    console.log('TossPayments 초기화 완료');
+                } catch (error) {
+                    console.error('TossPayments 초기화 실패:', error);
+                    alert('클라이언트 키가 올바르지 않습니다.');
+                }
+            }
+        });
+
+        // 빌링키 발급 버튼 클릭
+        document.getElementById('issueBillingBtn').addEventListener('click', async () => {
+            const clientKey = document.getElementById('clientKey').value.trim();
+            const customerKey = document.getElementById('customerKey').value.trim();
+
+            // 유효성 검사
+            if (!clientKey) {
+                alert('토스 클라이언트 키를 입력해주세요.\n\n토스 개발자센터(https://developers.tosspayments.com)에서 발급받을 수 있습니다.');
+                return;
+            }
+
+            if (!customerKey) {
+                alert('고객 ID를 입력해주세요.');
+                return;
+            }
+
+            if (!tossPayments) {
+                alert('TossPayments가 초기화되지 않았습니다. 클라이언트 키를 확인해주세요.');
+                return;
+            }
+
+            try {
+                // 빌링키 발급 요청
+                await tossPayments.requestBillingAuth({
+                    method: "CARD",
+                    customerKey: customerKey,
+                    successUrl: window.location.origin + '/api/billing/success',
+                    failUrl: window.location.origin + '/api/billing/fail',
+                });
+            } catch (error) {
+                console.error('빌링키 발급 오류:', error);
+                alert('빌링키 발급 중 오류가 발생했습니다.\n\n' + error.message);
+            }
+        });
+
+        // 페이지 로드 시 안내
+        window.addEventListener('load', () => {
+            console.log('=== 토스 빌링키 발급 테스트 페이지 ===');
+            console.log('1. 토스 개발자센터에서 테스트 클라이언트 키 발급');
+            console.log('2. 위 입력란에 클라이언트 키 입력');
+            console.log('3. 빌링키 발급하기 버튼 클릭');
+            console.log('4. 테스트 카드로 결제 정보 입력');
+            console.log('\n테스트 카드: 5570-0000-0000-0001');
+        });
+    </script>
+</body>
+</html>
