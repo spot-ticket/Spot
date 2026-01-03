@@ -1,4 +1,4 @@
-package com.example.Spot.user.presentation.dto.request;
+package com.example.Spot.user.presentation.controller;
 
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.GetMapping;
