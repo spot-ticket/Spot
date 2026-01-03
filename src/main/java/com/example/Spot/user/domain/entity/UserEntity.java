@@ -7,15 +7,7 @@ import com.example.Spot.global.common.UpdateBaseEntity;
 import com.example.Spot.store.domain.entity.StoreUserEntity;
 import com.example.Spot.user.domain.Role;
 
-import jakarta.persistence.CascadeType;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -31,6 +23,7 @@ public class UserEntity extends UpdateBaseEntity {
     private final List<StoreUserEntity> staffs = new ArrayList<>();
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "name", nullable = false)
