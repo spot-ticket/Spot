@@ -1,14 +1,16 @@
 package com.example.Spot.user.presentation.controller;
 
-import com.example.Spot.user.application.service.TokenService;
-import com.example.Spot.user.presentation.dto.request.AuthTokenDTO;
-import com.example.Spot.user.presentation.dto.response.TokenPairResponse;
-import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import com.example.Spot.user.application.service.TokenService;
+import com.example.Spot.user.presentation.dto.request.AuthTokenDTO;
+import com.example.Spot.user.presentation.dto.response.TokenPairResponse;
+
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
