@@ -1,5 +1,6 @@
 package com.example.Spot.store.domain.entity;
 
+import com.example.Spot.user.domain.entity.UserEntity;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -29,24 +30,20 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StoreEntity extends UpdateBaseEntity {
 
-    @OneToMany(mappedBy = "store", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    private final List<StoreUserEntity> users = new ArrayList<>();
-
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
-    private final Set<StoreCategoryEntity> storeCategoryMaps = new HashSet<>();
-
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
-
+    
     @Column(nullable = false)
     private String name;
 
     @Column(nullable = false)
-    private String address;
+    private String address; // 예: 서울특별시 종로구 사직로 161
+    
+    private String detailAddress; 
 
     @Column(name = "phone_number")
-    private String phoneNumber;
+    private String phoneNumber; //
 
     @Column(name = "open_time")
     private LocalTime openTime;
@@ -54,13 +51,49 @@ public class StoreEntity extends UpdateBaseEntity {
     @Column(name = "close_time")
     private LocalTime closeTime;
 
+    @OneToMany(mappedBy = "store", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    private List<StoreUserEntity> users = new ArrayList<>();
+
+    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    private Set<StoreCategoryEntity> storeCategoryMaps = new HashSet<>();
+
     @Builder
     public StoreEntity(String name, String address, String phoneNumber,
                        LocalTime openTime, LocalTime closeTime) {
         this.name = name;
         this.address = address;
+        this.detailAddress = detailAddress;
         this.phoneNumber = phoneNumber;
         this.openTime = openTime;
         this.closeTime = closeTime;
+    }
+    
+    public void addStoreUser(UserEntity user) {
+        StoreUserEntity storeUser = StoreUserEntity.builder()
+                .store(this) // 현재 매장
+                .user(user) // 전달받은 유저
+                .build();
+        this.users.add(storeUser);
+    }
+    
+    public void addCategory(CategoryEntity category) {
+        if (this.storeCategoryMaps.size() >= 3){
+            throw new IllegalArgumentException("카테고리는 최대 3개까지만 등록 가능합니다.");
+        }
+        StoreCategoryEntity storeCategory = StoreCategoryEntity.builder()
+                .store(this)
+                .category(category)
+                .build();
+        this.storeCategoryMaps.add(storeCategory);
+    }
+    
+    public void updateStoreDetails(String name, String address, String phoneNumber,
+                                   LocalTime openTime, LocalTime closeTime){
+        if (name != null) this.name = name;
+        if (address != null) this.address = address;
+        if (detailAddress != null) this.detailAddress = detailAddress;
+        if (phoneNumber != null) this.phoneNumber = phoneNumber;
+        if (openTime != null) this.openTime = openTime;
+        if (closeTime != null) this.closeTime = closeTime;
     }
 }
