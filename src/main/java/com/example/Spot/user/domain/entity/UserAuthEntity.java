@@ -21,8 +21,13 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "p_user_auth",
-        uniqueConstraints = @UniqueConstraint(name = "uk_user_auth_user_id", columnNames = "user_id"))
+@Table(
+        name = "p_user_auth",
+        uniqueConstraints = @UniqueConstraint(
+                name = "uk_user_auth_user_id",
+                columnNames = "user_id"
+        )
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserAuthEntity extends UpdateBaseEntity {
 
@@ -43,9 +48,7 @@ public class UserAuthEntity extends UpdateBaseEntity {
         this.hashedPassword = hashedPassword;
     }
 
-
     public void changePassword(String newHashedPassword) {
         this.hashedPassword = newHashedPassword;
     }
-
 }

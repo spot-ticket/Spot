@@ -12,5 +12,5 @@ import com.example.Spot.store.domain.entity.StoreUserEntity;
 public interface StoreUserRepository extends JpaRepository<StoreUserEntity, UUID> {
 
     // 특정 유저(ID)가 속한 모든 가게 매핑 정보 조회
-    List<StoreUserEntity> findAllByUser_Id(UUID userId);
+    List<StoreUserEntity> findAllByUser_Id(Integer userId);
 }
