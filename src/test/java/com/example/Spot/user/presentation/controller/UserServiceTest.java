@@ -126,6 +126,9 @@ class UserServiceTest {
                 .andExpect(status().isOk());
 
 
+
+
+
     }
 
 
@@ -283,6 +286,9 @@ class UserServiceTest {
     }
 
 
+
+
+
     // 회원탈퇴 test 1
     // 구현되지 않은 메서드 사용 - 오류 발생으로 임시 주석 처리
 //    @Test
@@ -354,6 +360,7 @@ class UserServiceTest {
     }
 
 
+
     // 회원탈퇴 test 3
     @Test
     void 회원탈퇴_실패_다른유저삭제시도() throws Exception {
@@ -404,4 +411,3 @@ class UserServiceTest {
                 .andExpect(status().isForbidden()); // 또는 isNotFound()
     }
 }
-
