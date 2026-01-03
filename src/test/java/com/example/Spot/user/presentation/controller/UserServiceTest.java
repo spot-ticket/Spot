@@ -126,6 +126,9 @@ class UserServiceTest {
                 .andExpect(status().isOk());
 
 
+
+
+
     }
 
 
@@ -283,6 +286,9 @@ class UserServiceTest {
     }
 
 
+
+
+
     // 회원탈퇴 test 1
     // 구현되지 않은 메서드 사용 - 오류 발생으로 임시 주석 처리
 //    @Test
@@ -352,6 +358,7 @@ class UserServiceTest {
                 )
                 .andExpect(status().is4xxClientError()); // 401 / 403
     }
+
 
 
     // 회원탈퇴 test 3

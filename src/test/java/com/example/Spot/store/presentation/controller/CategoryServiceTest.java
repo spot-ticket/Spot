@@ -27,7 +27,7 @@ class CategoryServiceTest {
     private StoreRepository storeRepository;
 
     @Autowired
-    private StoreCategoryRepository storeViewRepository;
+    private StoreViewRepository storeViewRepository;
 
     @Test
     void 카테고리_전체를_조회할_수_있다() {
