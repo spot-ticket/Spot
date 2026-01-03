@@ -13,7 +13,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.example.Spot.infra.auth.jwt.JWTUtil;
 import com.example.Spot.infra.auth.jwt.LoginFilter;
-
+import com.example.Spot.user.application.service.TokenService;
 
 @Configuration
 @EnableWebSecurity
@@ -23,10 +23,13 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     //JWTUtil 주입
     private final JWTUtil jwtUtil;
+    // TokenService 주입
+    private final TokenService tokenService;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, TokenService tokenService) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
+        this.tokenService = tokenService;
     }
 
     //AuthenticationManager Bean 등록
@@ -60,13 +63,13 @@ public class SecurityConfig {
         // 경로별 인가 작업
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/login", "/", "/join").permitAll()
+                        .requestMatchers("/login", "/", "/join", "/auth/refresh").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
 
         //필터 추가 LoginFilter()는 인자를 받음 (AuthenticationManager() 메소드에 authenticationConfiguration 객체를 넣어야 함) 따라서 등록 필요
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, tokenService), UsernamePasswordAuthenticationFilter.class);
 
         http
                 .sessionManagement(session -> session
