@@ -16,8 +16,15 @@ public interface MenuRepository extends JpaRepository<MenuEntity, UUID> {
     @Query("select m from MenuEntity m where m.store.id = :storeId AND m.isDeleted = false AND m.isHidden = false")
     List<MenuEntity> findAllActiveMenus(@Param("storeId") UUID storeId);
 
-    // [손님용] 메뉴 ID로 조회한 경우 (삭제 X, 숨김 X)
-    @Query("select m from MenuEntity m where m.id = :menuId AND m.isDeleted = false AND m.isHidden = false")
+    // ★ [손님용] 메뉴 상세 조회 (수정됨!)
+    // 1. DISTINCT: 1:N 조인 시 데이터 뻥튀기 방지 (JPA 엔티티 중복 제거)
+    // 2. LEFT JOIN FETCH m.options: 메뉴를 가져올 때 옵션들도 '한 번에' 가져옴 (N+1 방지)
+    // 3. 옵션이 없는 메뉴도 조회되어야 하므로 'LEFT' 사용
+    @Query("SELECT DISTINCT m FROM MenuEntity m " +
+            "LEFT JOIN FETCH m.options " +
+            "WHERE m.id = :menuId " +
+            "AND m.isDeleted = false " +
+            "AND m.isHidden = false")
     Optional<MenuEntity> findActiveMenuById(@Param("menuId") UUID menuId);
 
     // [가게 주인용] 가게 메뉴 조회 (삭제 X, 숨김 O)
