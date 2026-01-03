@@ -192,7 +192,6 @@ class PWChangeTest {
         String token = authHeader.substring("Bearer ".length());
 
 
-
         // =========================
         // when-2: (로그인 상태) 비밀번호 변경용 이메일 인증 코드 발급
         // =========================

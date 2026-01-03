@@ -68,8 +68,8 @@ public class PaymentEntity extends BaseEntity {
     private LocalDateTime updatedAt;
 
     @Builder
-    public PaymentEntity (String title, String content, UUID idempotencyKey, 
-                          PaymentMethod paymentMethod, Long paymentAmount, PaymentStatus paymentStatus) {
+    public PaymentEntity(String title, String content, UUID idempotencyKey,
+                         PaymentMethod paymentMethod, Long paymentAmount, PaymentStatus paymentStatus) {
 
         this.title = title;
         this.content = content;
@@ -77,6 +77,17 @@ public class PaymentEntity extends BaseEntity {
         this.paymentMethod = paymentMethod;
         this.paymentAmount = paymentAmount;
         this.paymentStatus = (paymentStatus != null) ? paymentStatus : PaymentStatus.READY;
+    }
+
+    public void updateStatus(PaymentStatus status) {
+
+        if (this.paymentStatus == PaymentStatus.SUCCESS
+                || this.paymentStatus == PaymentStatus.CANCELLED
+                || this.paymentStatus == PaymentStatus.FAILED) {
+            throw new IllegalStateException("이미 완료된 결제 상태는 변경할 수 없습니다.");
+        }
+
+        this.paymentStatus = status;
     }
 
     public enum PaymentMethod {
@@ -89,16 +100,5 @@ public class PaymentEntity extends BaseEntity {
         SUCCESS,            // 결제 성공
         FAILED,             // 결제 실패
         CANCELLED           // 결제 취소
-    }
-
-    public void updateStatus(PaymentStatus status) {
-
-        if (this.paymentStatus == PaymentStatus.SUCCESS
-            || this.paymentStatus == PaymentStatus.CANCELLED
-            || this.paymentStatus == PaymentStatus.FAILED) {
-            throw new IllegalStateException("이미 완료된 결제 상태는 변경할 수 없습니다.");
-        }
-
-        this.paymentStatus = status;
     }
 }

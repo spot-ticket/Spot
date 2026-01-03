@@ -110,8 +110,6 @@ class UserServiceTest {
                 .andReturn();
 
 
-
-
         // then: JWT authorization: bearer로 보내면 인증 붙는지 확인
         // 1. authorization 헤더에서 jwt 확인
         String authHeader = loginResult.getResponse().getHeader("Authorization");
