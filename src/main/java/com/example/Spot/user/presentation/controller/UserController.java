@@ -17,6 +17,7 @@ import lombok.RequiredArgsConstructor;
 public class UserController {
 
     private final UserRepository userRepository;
+
     @GetMapping("/{username}")
     public UserEntity getUserByUsername(
             @PathVariable String username,

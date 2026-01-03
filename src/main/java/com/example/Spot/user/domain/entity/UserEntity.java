@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.example.Spot.global.common.UpdateBaseEntity;
-import com.example.Spot.store.domain.entity.StoreStaffEntity;
+import com.example.Spot.store.domain.entity.StoreUserEntity;
 import com.example.Spot.user.domain.Role;
 
 import jakarta.persistence.CascadeType;
@@ -27,6 +27,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity extends UpdateBaseEntity {
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    private final List<StoreUserEntity> staffs = new ArrayList<>();
+
     @Id
     private Integer id;
 
@@ -35,7 +38,6 @@ public class UserEntity extends UpdateBaseEntity {
 
     @Column(nullable = false)
     private String nickname;
-
     private boolean male;
 
     @Column(nullable = false)
@@ -49,9 +51,6 @@ public class UserEntity extends UpdateBaseEntity {
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    private List<StoreStaffEntity> staffs = new ArrayList<>();
 
     @Builder
     public UserEntity(String username, String nickname, String address, String email, Role role) {
