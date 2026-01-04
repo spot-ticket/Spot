@@ -1,12 +1,12 @@
 package com.example.Spot.store.domain.entity;
 
-import jakarta.persistence.CascadeType;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
 
 import com.example.Spot.global.common.UpdateBaseEntity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
