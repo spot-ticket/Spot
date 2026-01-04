@@ -1,15 +1,18 @@
 package com.example.Spot.menu.presentation.dto.request;
 
+import java.util.UUID;
+
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
 
 @Getter
 @NoArgsConstructor

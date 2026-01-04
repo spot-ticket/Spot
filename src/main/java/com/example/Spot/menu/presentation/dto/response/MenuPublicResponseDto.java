@@ -1,14 +1,15 @@
 package com.example.Spot.menu.presentation.dto.response;
 
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
 import com.example.Spot.menu.domain.entity.MenuEntity;
-import com.example.Spot.menu.domain.entity.MenuOptionEntity;
+
 import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-import java.util.List;
-import java.util.UUID;
-import java.util.stream.Collectors;
 
 @Getter
 @NoArgsConstructor
