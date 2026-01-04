@@ -25,6 +25,7 @@ import lombok.NoArgsConstructor;
 public class MenuOptionEntity extends UpdateBaseEntity {
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "option_id")
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -34,27 +35,38 @@ public class MenuOptionEntity extends UpdateBaseEntity {
     @Column(nullable = false, length = 50)
     private String name;
 
-    @Column(length = 50)
+    @Column(nullable = true, length = 100)
     private String detail;
 
     @Column(nullable = false)
-    private int price;
+    private Integer price;
 
     @Column(name = "is_available")
     private Boolean isAvailable = true;
 
     @Builder
-    public MenuOptionEntity(MenuEntity menu, String name, String detail, int price) {
+    public MenuOptionEntity(MenuEntity menu, String name, String detail, Integer price) {
         this.menu = menu;
         this.name = name;
         this.detail = detail;
         this.price = price;
     }
 
-    public void updateOption(String name, int price, String detail) {
-        this.name = name;
-        this.price = price;
-        this.detail = detail;
+    public void updateOption(String name, Integer price, String detail) {
+        // 1. 이름이 들어오면 수정
+        if (name != null && !name.isBlank()) {
+            this.name = name;
+        }
+
+        // 2. 가격이 들어오면 수정
+        if (price != null) {
+            this.price = price;
+        }
+
+        // 3. 상세 설명이 들어오면 수정
+        if (detail != null) {
+            this.detail = detail;
+        }
     }
 
     public void changeAvailable(Boolean isAvailable) {
