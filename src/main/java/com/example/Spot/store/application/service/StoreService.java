@@ -115,10 +115,11 @@ public class StoreService {
                 .orElseThrow(() -> new EntityNotFoundException("매장을 찾을 수 없습니다."));
 
         // 4.2 권한 검증
-        boolean isOwner = store.getUsers().stream()
-                .anyMatch(su -> su.getUser().getId().equals(currentUser.getId()));
+        boolean isRealOwner = store.getUsers().stream()
+                .anyMatch(su -> su.getUser().getId().equals(currentUser.getId())
+                                && su.getUser().getRole() == Role.OWNER);
 
-        if (!isAdmin && !isOwner) {
+        if (!isAdmin && !isRealOwner) {
             throw new AccessDeniedException("해당 매장에 대한 수정 권한이 없습니다.");
         }
 
@@ -164,10 +165,11 @@ public class StoreService {
         boolean isAdmin = currentUser.getRole() == Role.ADMIN ||
                 currentUser.getRole() == Role.MANAGER;
 
-        boolean isOwner = store.getUsers().stream()
-                .anyMatch(su -> su.getUser().getId().equals(currentUser.getId()));
+        boolean isRealOwner = store.getUsers().stream()
+                .anyMatch(su -> su.getUser().getId().equals(currentUser.getId())
+                                && su.getUser().getRole() == Role.OWNER);
 
-        if (!isAdmin && !isOwner) {
+        if (!isAdmin && !isRealOwner) {
             throw new AccessDeniedException("삭제 권한이 없습니다.");
         }
 
