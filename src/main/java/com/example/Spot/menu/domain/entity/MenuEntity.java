@@ -1,5 +1,7 @@
 package com.example.Spot.menu.domain.entity;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import com.example.Spot.global.common.UpdateBaseEntity;
@@ -13,6 +15,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -27,6 +30,7 @@ public class MenuEntity extends UpdateBaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "menu_id")     // DB 테이블에 생길 컬럼 이름
     private UUID id;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -40,7 +44,15 @@ public class MenuEntity extends UpdateBaseEntity {
     private String category;
 
     @Column(nullable = false)
-    private int price;
+    private Integer price;
+
+    // [추가] 손님에게 보여줄 상세 설명
+    @Column(length = 255)
+    private String description;
+
+    // [추가] 메뉴 이미지 URL
+    @Column(name = "image_url")
+    private String imageUrl;
 
     @Column(name = "is_available")
     private Boolean isAvailable = true;
@@ -48,18 +60,46 @@ public class MenuEntity extends UpdateBaseEntity {
     @Column(name = "is_hidden")
     private Boolean isHidden = false;
 
+    // [추가] DTO 변환을 위한 양방향 매핑 (DB에는 영향 없음)
+    // mappedBy = "menu"는 MenuOptionEntity의 'menu' 변수명을 가리킴
+    @OneToMany(mappedBy = "menu", fetch = FetchType.LAZY)
+    private List<MenuOptionEntity> options = new ArrayList<>();
+
     @Builder
-    public MenuEntity(StoreEntity store, String name, String category, int price) {
+    public MenuEntity(StoreEntity store, String name, String category, Integer price, String description, String imageUrl) {
         this.store = store;
         this.name = name;
         this.category = category;
         this.price = price;
+        this.description = description;
+        this.imageUrl = imageUrl;
     }
 
-    public void updateMenu(String name, int price, String category) {
-        this.name = name;
-        this.price = price;
-        this.category = category;
+    public void updateMenu(String name, Integer price, String category, String description, String imageUrl) {
+        // 1. 이름이 들어오면 수정
+        if (name != null && !name.isBlank()) {
+            this.name = name;
+        }
+
+        // 2. 가격이 들어오면 수정
+        if (price != null) {
+            this.price = price;
+        }
+
+        // 3. 카테고리가 들어오면 수정
+        if (category != null && !category.isBlank()) {
+            this.category = category;
+        }
+
+        // 4. 상세 설명이 들어오면 수정
+        if (description != null) {
+            this.description = description;
+        }
+
+        // 5. 이미지가 들어오면 수정
+        if (imageUrl != null ) {
+            this.imageUrl = imageUrl;
+        }
     }
 
     public void changeAvailable(Boolean isAvailable) {
