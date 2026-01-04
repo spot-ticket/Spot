@@ -43,6 +43,8 @@ public class UserEntity extends UpdateBaseEntity {
 
     @Column(nullable = false)
     private String nickname;
+
+
     private boolean male;
 
     @Column(nullable = false)
@@ -74,9 +76,6 @@ public class UserEntity extends UpdateBaseEntity {
         return user;
     }
 
-    public void ismale() {
-        this.male = true;
-    }
 
     // Setter methods
     public void setUsername(String username) {
