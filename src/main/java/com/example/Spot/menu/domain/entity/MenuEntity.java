@@ -54,14 +54,6 @@ public class MenuEntity extends UpdateBaseEntity {
     @Column(name = "image_url")
     private String imageUrl;
 
-    // [추가] 손님에게 보여줄 상세 설명
-    @Column(length = 255)
-    private String description;
-
-    // [추가] 메뉴 이미지 URL
-    @Column(name = "image_url")
-    private String imageUrl;
-
     @Column(name = "is_available")
     private Boolean isAvailable = true;
 
