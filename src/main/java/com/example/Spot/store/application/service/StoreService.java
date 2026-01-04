@@ -1,24 +1,25 @@
 package com.example.Spot.store.application.service;
 
-import java.util.stream.Collectors;
 import java.util.List;
 import java.util.UUID;
-
-import com.example.Spot.store.domain.entity.CategoryEntity;
-import com.example.Spot.store.domain.entity.StoreEntity;
-import com.example.Spot.user.domain.entity.UserEntity;
-import com.example.Spot.store.domain.repository.CategoryRepository;
-import com.example.Spot.store.domain.repository.StoreRepository;
-import com.example.Spot.user.domain.repository.UserRepository;
-import com.example.Spot.store.presentation.dto.request.StoreCreateRequest;
-import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
-import com.example.Spot.store.presentation.dto.response.StoreListResponse;
-import com.example.Spot.store.presentation.dto.response.StoreResponse;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.example.Spot.store.domain.entity.CategoryEntity;
+import com.example.Spot.store.domain.entity.StoreEntity;
+import com.example.Spot.store.domain.repository.CategoryRepository;
+import com.example.Spot.store.domain.repository.StoreRepository;
+import com.example.Spot.store.presentation.dto.request.StoreCreateRequest;
+import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
+import com.example.Spot.store.presentation.dto.response.StoreListResponse;
+import com.example.Spot.store.presentation.dto.response.StoreResponse;
+import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.domain.entity.UserEntity;
+import com.example.Spot.user.domain.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -37,10 +38,10 @@ public class StoreService {
 
     // 1. 매장 생성
     @Transactional
-    public UUID createStore(StoreCreateRequest dto, UserEntity currentUser){
+    public UUID createStore(StoreCreateRequest dto, UserEntity currentUser) {
 
         // 1.1 권한 검증: 권한이 셰프와 유저일 경우 예외처리
-        if (currentUser.getRole() == UserRole.USER || currentUser.getRole() == UserRole.CHEF) {
+        if (currentUser.getRole() == Role.CUSTOMER || currentUser.getRole() == Role.CHEF) {
             throw new AccessDeniedException("매장 생성 권한이 없습니다.");
         }
         // 1.2 매장 엔티티 생성(DTO -> Entity)
@@ -66,8 +67,8 @@ public class StoreService {
     public StoreResponse getStoreDetails(UUID storeId, UserEntity currentUser) {
 
         // 2.1 현재 사용자의 권한 확인(True/False)
-        boolean isAdmin = currentUser.getRole() == UserRole.ADMIN ||
-                currentUser.getRole() == UserRole.MANAGER;
+        boolean isAdmin = currentUser.getRole() == Role.ADMIN ||
+                currentUser.getRole() == Role.MANAGER;
 
         // 2.2 레포지토리 호출
         StoreEntity store = storeRepository.findByIdWithDetails(storeId, isAdmin)
@@ -90,8 +91,8 @@ public class StoreService {
     // 3. 매장 전체 조회
     public List<StoreListResponse> getAllStores(UserEntity currentUser) {
         // 3.1 사용자의 권한 확인
-        boolean isAdmin = (currentUser.getRole() == UserRole.ADMIN ||
-                currentUser.getRole() == UserRole.MANAGER) ;
+        boolean isAdmin = currentUser.getRole() == Role.ADMIN ||
+                currentUser.getRole() == Role.MANAGER ;
 
         // 3.2 레포지토리 호출
         List<StoreEntity> stores = storeRepository.findAllByRole(isAdmin);
@@ -107,8 +108,8 @@ public class StoreService {
     // 4. 매장 정보 수정
     public void updateStore(UUID storeId, StoreUpdateRequest request, UserEntity currentUser) {
         // 4.1 매장 . 연관 데이터 조회 
-        boolean isAdmin = currentUser.getRole() == UserRole.ADMIN ||
-                currentUser.getRole() == UserRole.MANAGER;
+        boolean isAdmin = currentUser.getRole() == Role.ADMIN ||
+                currentUser.getRole() == Role.MANAGER;
 
         StoreEntity store = storeRepository.findByIdWithDetails(storeId, isAdmin)
                 .orElseThrow(() -> new EntityNotFoundException("매장을 찾을 수 없습니다."));
@@ -160,8 +161,8 @@ public class StoreService {
                 .orElseThrow(() -> new EntityNotFoundException("매장을 찾을 수 없거나 이미 삭제되었습니다."));
 
         // 5.2 권한 검증 (ADMIN, MANAGER, OWNER)
-        boolean isAdmin = currentUser.getRole() == UserRole.ADMIN ||
-                currentUser.getRole() == UserRole.MANAGER;
+        boolean isAdmin = currentUser.getRole() == Role.ADMIN ||
+                currentUser.getRole() == Role.MANAGER;
 
         boolean isOwner = store.getUsers().stream()
                 .anyMatch(su -> su.getUser().getId().equals(currentUser.getId()));

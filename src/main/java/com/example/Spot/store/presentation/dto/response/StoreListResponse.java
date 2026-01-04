@@ -21,7 +21,7 @@ public class StoreListResponse {
     private List<String> categories;
     
     // Entity -> DTO 변환 메서드
-    public static StoreListResponse fromEntity(StoreEntity store){
+    public static StoreListResponse fromEntity(StoreEntity store) {
         return StoreListResponse.builder()
                 .id(store.getId())
                 .name(store.getName())
