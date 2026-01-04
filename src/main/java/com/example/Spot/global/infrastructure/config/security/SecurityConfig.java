@@ -1,5 +1,6 @@
 package com.example.Spot.global.infrastructure.config.security;
 
+import com.example.Spot.infra.auth.jwt.JWTFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -68,6 +69,11 @@ public class SecurityConfig {
                         .requestMatchers("/login", "/", "/join", "/auth/refresh").permitAll()
                         .requestMatchers("/admin").hasRole("ADMIN")
                         .anyRequest().authenticated());
+
+        http.addFilterBefore(
+                new JWTFilter(jwtUtil),
+                UsernamePasswordAuthenticationFilter.class
+        );
 
         //필터 추가 LoginFilter()는 인자를 받음 (AuthenticationManager() 메소드에 authenticationConfiguration 객체를 넣어야 함) 따라서 등록 필요
         http
