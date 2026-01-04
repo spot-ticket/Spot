@@ -17,6 +17,7 @@ public class UserController {
     private final UserService userService;
 
     // 조회
+    @PreAuthorize("#username == authentication.name or hasRole('ADMIN')")
     @GetMapping("/{username}")
     public UserResponseDTO get(@PathVariable String username) {
         return userService.getByUsername(username);
