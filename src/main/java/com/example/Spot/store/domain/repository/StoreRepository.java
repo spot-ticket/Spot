@@ -15,14 +15,21 @@ import com.example.Spot.store.domain.entity.StoreEntity;
 public interface StoreRepository extends JpaRepository<StoreEntity, UUID> {
 
     // 기본 조회
-    List<StoreEntity> findByIsDeletedFalse();
+    @Query("SELECT s FROM StoreEntity s " + 
+            "LEFT JOIN FETCH s.storeCategoryMaps sc " +
+            "LEFT JOIN FETCH sc.category " +
+            "WHERE (:isAdmin = true OR s.isDeleted = false)")
+    List<StoreEntity> findAllByRole(@Param("isAdmin") boolean isAdmin);
 
-    // 상세 조회
+    // 상세 조회: or을 통해 권한 혹은 소프트제거 여부에 따른 조회범위 설정
     @Query("SELECT s FROM StoreEntity s " +
+            "LEFT JOIN FETCH s.storeCategoryMaps sc " +
+            "LEFT JOIN FETCH sc.category " +
             "LEFT JOIN FETCH s.users su " + 
             "LEFT JOIN FETCH su.user u " +
-            "WHERE s.id = :id AND s.isDeleted = false")
-    Optional<StoreEntity> findByIdAndIsDeletedFalse(@Param("id") UUID id);
+            "WHERE s.id = :id " +
+            "AND (:isAdmin = true OR s.isDeleted = false)")
+    Optional<StoreEntity> findByIdWithDetails(@Param("id") UUID id, @Param("isAdmin") boolean isAdmin);
 
     // 검색 기능
     List<StoreEntity> findByNameContainingAndIsDeletedFalse(String name);

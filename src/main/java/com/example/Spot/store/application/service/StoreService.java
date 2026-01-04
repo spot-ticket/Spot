@@ -1,16 +1,22 @@
 package com.example.Spot.store.application.service;
 
+import com.example.Spot.store.domain.entity.CategoryEntity;
+import com.example.Spot.store.domain.entity.StoreEntity;
+import com.example.Spot.user.domain.entity.UserEntity;
+import com.example.Spot.store.domain.repository.CategoryRepository;
+import com.example.Spot.store.domain.repository.StoreRepository;
 import com.example.Spot.user.domain.repository.UserRepository;
+
+import java.util.stream.Collectors;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.example.Spot.store.domain.entity.StoreEntity;
-import com.example.Spot.store.domain.repository.StoreRepository;
-
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -20,39 +26,67 @@ public class StoreService {
     
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
+    private final CategoryRepository categoryRepository;
     
-    // 1. 역할에 따른 매장 목록 조회
-    public List<StoreEntity> getStores(boolean includeDeleted){
-        return includeDeleted
-                ? storeRepository.findAll()
-                : storeRepository.findByIsDeletedFalse ();
+    // 1. 매장 생성
+    @Transactional
+    public UUID createStore(StoreCreateRequest dto, UserEntity currentUser){
+        
+        // 1.1 권한 검증: 권한이 셰프와 유저일 경우 예외처리
+        if (currentUser.getRole() == UserRole.USER || currentUser.getRole() == UserRole.CHEF) {
+            throw new AccessDeniedException("매장 생성 권한이 없습니다.");
+        }
+        // 1.2 매장 엔티티 생성(DTO -> Entity)
+        StoreEntity store = dto.toEntity();
+        
+        // 1.3 카테고리 연결
+        List<CategoryEntity> categories = categoryRepository.findAllById(dto.getCategoryIds());
+        categories.forEach(store::addCategory);
+        
+        // 1.4 DTO에 담겨온 ID로 유저를 찾아서 스태프 등록
+        UserEntity owner = userRepository.findById(dto.getOwnerId())
+                .orElseThrow(() -> new EntityNotFoundException("오너를 찾을 수 없습니다."));
+        UserEntity chef = userRepository.findById(dto.getChefId())
+                .orElseThrow(() -> new EntityNotFoundException("셰프를 찾을 수 없습니다."));
+        
+        store.addStoreUser(owner);
+        store.addStoreUser(chef);
+        
+        return storeRepository.save(store).getId();
     }
     
     // 2. 매장 상세 조회
-    public StoreEntity getStoreById(UUID id, boolean includeDeleted){
-        // 2.1. 조건에 따라 호출할 레포지토리 메서드만 선택
-        Optional<StoreEntity> store = includeDeleted
-                ? storeRepository.findById(id)
-                : storeRepository.findByIdAndIsDeletedFalse(id);
-        // 2.2. 결과 처리 (공통)
-        return store.orElseThrow(() -> new RuntimeException("매장을 찾을 수 없습니다."));
+    public StoreResponse getStoreDetails(UUID storeId, UserEntity currentUser) {
+
+        // 2.1 현재 사용자의 권한 확인(True/False)
+        boolean isAdmin = currentUser.getRole() == UserRole.ADMIN ||
+                currentUser.getRole() == UserRole.MANAGER;
+
+        // 2.2 레포지토리 호출
+        StoreEntity store = storeRepository.findByIdWithDetails(storeId, isAdmin)
+                .orElseThrow(() -> new EntityNotFoundException("매장을 찾을 수 없거나 접근 권한이 없습니다."));
+        
+        // 2.3 Entity를 DTO(Response)로 변환하여 반환
+        return StoreReponse.fromEntity(store);
     }
     
-    // 3. 매장 생성
-    @Transactional
-    public StoreCreateResponseDto createStore(StoreCreateRequestDto dto){
-        // 3.1 변환 및 엔티티 생성(DTO가 담당하거나 서비스가 간단히 처리)
-        StoreEntity store = dto.toEntity();
+    // 3. 매장 전체 조회
+    public List<StoreListResponse> getAllStores(UserEntity currentUser) {
+        // 3.1 사용자의 권한 확인
+        boolean isAdmin = (currentUser.getRole() == UserRole.ADMIN ||
+                currentUser.getRole() == UserRole.MANAGER) ;
         
-        // 3.2 비즈니스 규칙 실행 
-        store.addStoreUser(dto.getOwner_id(), "OWNER");
-        store.addStoreUser(dto.getChef_id(), "CHEF");
+        // 3.2 레포지토리 호출
+        List<StoreEntity> stores = storeRepository.findAllByRole(isAdmin);
         
-        // 3.3 저장
-        StoreEntity savedStore = storeRepository.save(store);
-        
-        // 3.4 결과 반환(DTO)
-        return StoreCreateResponseDto.from(savedStore, dto.getOwner_id(), dto.getChef());
-    } 
+        // 3.3 엔티티 리스트 스트림을 사용해 DTO 리스트로 변환ㄴ하여 반환
+        return stores.stream()
+                .map(StoreListResponse::fromEntity)
+                .collect(Collectors.toList());
+    }
+    
+    
+    
+    
     
 }

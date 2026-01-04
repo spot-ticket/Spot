@@ -1,5 +1,6 @@
 package com.example.Spot.store.domain.entity;
 
+import jakarta.persistence.CascadeType;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -30,7 +31,10 @@ public class CategoryEntity extends UpdateBaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @OneToMany(mappedBy = "category", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "category", 
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
     private final Set<StoreCategoryEntity> storeCategoryMaps = new HashSet<>();
     
     @Column(nullable = false)

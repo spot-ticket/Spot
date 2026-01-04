@@ -51,10 +51,16 @@ public class StoreEntity extends UpdateBaseEntity {
     @Column(name = "close_time")
     private LocalTime closeTime;
 
-    @OneToMany(mappedBy = "store", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "store", 
+            cascade = CascadeType.ALL,  // Store가 저장/수정될 때 연결 정보도 함께 저장/수정
+            orphanRemoval = true,       // 리스트에서 제거하면 DB에서도 Hard Delete
+            fetch = FetchType.LAZY)
     private List<StoreUserEntity> users = new ArrayList<>();
 
-    @OneToMany(mappedBy = "store", fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "store",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY)
     private Set<StoreCategoryEntity> storeCategoryMaps = new HashSet<>();
 
     @Builder
