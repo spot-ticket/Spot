@@ -39,14 +39,19 @@ class MenuEntityTest {
                 .name("육전막국수")
                 .category("한식")
                 .price(13000)
+                .description("강원도 메밀을 사용한 물 막국수입니다.")
+                .imageUrl("old.jpg")
                 .build();
 
         // 2. when
-        menu.updateMenu("가라아게덮밥", 11000, "일식");
+        menu.updateMenu("가라아게덮밥", 11000, "일식", "매콤한 소스가 들어갔습니다.", "new_image.jpg");
 
         assertThat(menu.getName()).isEqualTo("가라아게덮밥");
         assertThat(menu.getPrice()).isEqualTo(11000);
         assertThat(menu.getCategory()).isEqualTo("일식");
+
+        assertThat(menu.getDescription()).isEqualTo("매콤한 소스가 들어갔습니다.");
+        assertThat(menu.getImageUrl()).isEqualTo("new_image.jpg");
     }
 
     @Test
