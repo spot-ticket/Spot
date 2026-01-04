@@ -23,7 +23,6 @@ public class MenuPublicResponseDto {
     private String name;
     private String category;
     private Integer price;
-
     private String description;
 
     @JsonProperty("image_url")
