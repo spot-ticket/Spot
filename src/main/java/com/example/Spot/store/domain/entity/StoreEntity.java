@@ -39,7 +39,7 @@ public class StoreEntity extends UpdateBaseEntity {
     private String name;
 
     @Column(nullable = false)
-    private String address;
+    private String address; // 예: 서울특별시 종로구 사직로 161 //
 
     private String detailAddress;
 
@@ -54,8 +54,8 @@ public class StoreEntity extends UpdateBaseEntity {
 
     @OneToMany(
             mappedBy = "store",
-            cascade = CascadeType.ALL,
-            orphanRemoval = true,
+            cascade = CascadeType.ALL,  // Store가 저장/수정될 때 연결 정보도 함께 저장/수정 //
+            orphanRemoval = true,       // 리스트에서 제거하면 DB에서도 hardDelete //
             fetch = FetchType.LAZY
     )
     private List<StoreUserEntity> users = new ArrayList<>();
@@ -72,12 +72,14 @@ public class StoreEntity extends UpdateBaseEntity {
     public StoreEntity(
             String name,
             String address,
+            String detailAddress,
             String phoneNumber,
             LocalTime openTime,
             LocalTime closeTime
     ) {
         this.name = name;
         this.address = address;
+        this.detailAddress = detailAddress;
         this.phoneNumber = phoneNumber;
         this.openTime = openTime;
         this.closeTime = closeTime;
@@ -85,8 +87,8 @@ public class StoreEntity extends UpdateBaseEntity {
 
     public void addStoreUser(UserEntity user) {
         StoreUserEntity storeUser = StoreUserEntity.builder()
-                .store(this)
-                .user(user)
+                .store(this) // 현재 매장
+                .user(user) // 전달받은 유저
                 .build();
         this.users.add(storeUser);
     }
