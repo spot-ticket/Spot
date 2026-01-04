@@ -90,8 +90,13 @@ public class UserEntity extends UpdateBaseEntity {
         this.male = male;
     }
 
-    public void setAge(int age) {
-        this.age = age;
-    }
+    public void setNickname(String nickname) {this.nickname=nickname;}
+
+    public void setAge(int age) {this.age = age;}
+
+    public void setEmail(String email) {this.email = email;}
+
+    public void setAddress(String address) {this.address = address;}
+
 
 }
