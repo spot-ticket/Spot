@@ -202,7 +202,7 @@ public class OrderEntity extends BaseEntity {
         this.cookingCompletedAt = LocalDateTime.now();
     }
 
-    // 픽업 완료 (CUSTOMER)
+    // 픽업 완료 (OWNER)
     public void completeOrder() {
         validateStatusTransition(OrderStatus.COMPLETED);
         this.orderStatus = OrderStatus.COMPLETED;

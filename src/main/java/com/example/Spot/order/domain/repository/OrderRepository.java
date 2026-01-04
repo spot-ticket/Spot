@@ -25,27 +25,17 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
             "WHERE o.id = :orderId")
     Optional<OrderEntity> findByIdWithDetails(@Param("orderId") UUID orderId);
 
+    Optional<OrderEntity> findByOrderNumber(String orderNumber);
+
     @Query("SELECT o FROM OrderEntity o " +
             "WHERE o.userId = :userId " +
             "ORDER BY o.createdAt DESC")
     List<OrderEntity> findByUserId(@Param("userId") Integer userId);
 
     @Query("SELECT o FROM OrderEntity o " +
-            "WHERE o.userId = :userId " +
-            "AND o.orderStatus = :status " +
-            "ORDER BY o.createdAt DESC")
-    List<OrderEntity> findByUserIdAndStatus(@Param("userId") Integer userId, @Param("status") OrderStatus status);
-
-    @Query("SELECT o FROM OrderEntity o " +
             "WHERE o.store.id = :storeId " +
             "ORDER BY o.createdAt DESC")
     List<OrderEntity> findByStoreId(@Param("storeId") UUID storeId);
-
-    @Query("SELECT o FROM OrderEntity o " +
-            "WHERE o.store.id = :storeId " +
-            "AND o.orderStatus = :status " +
-            "ORDER BY o.createdAt DESC")
-    List<OrderEntity> findByStoreIdAndStatus(@Param("storeId") UUID storeId, @Param("status") OrderStatus status);
 
     @Query("SELECT o FROM OrderEntity o " +
             "WHERE o.store.id = :storeId " +
@@ -87,9 +77,12 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
     @Query("SELECT o FROM OrderEntity o " +
             "WHERE o.store.id = :storeId " +
-            "AND DATE(o.createdAt) = CURRENT_DATE " +
+            "AND o.createdAt >= :startOfDay AND o.createdAt < :endOfDay " +
             "AND o.orderStatus IN ('ACCEPTED', 'COOKING', 'READY') " +
             "ORDER BY o.acceptedAt ASC")
-    List<OrderEntity> findTodayActiveOrdersByStoreId(@Param("storeId") UUID storeId);
+    List<OrderEntity> findTodayActiveOrdersByStoreId(
+            @Param("storeId") UUID storeId,
+            @Param("startOfDay") LocalDateTime startOfDay,
+            @Param("endOfDay") LocalDateTime endOfDay);
 }
 

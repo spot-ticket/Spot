@@ -119,13 +119,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderResponseDto> getUserOrdersByStatus(Integer userId, OrderStatus status) {
-        return orderRepository.findByUserIdAndStatus(userId, status).stream()
-                .map(OrderResponseDto::from)
-                .collect(Collectors.toList());
-    }
-
-    @Override
     public List<OrderResponseDto> getUserActiveOrders(Integer userId) {
         return orderRepository.findActiveOrdersByUserId(userId).stream()
                 .map(OrderResponseDto::from)
@@ -133,132 +126,27 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderResponseDto> getStoreOrders(UUID storeId) {
-        return orderRepository.findByStoreId(storeId).stream()
-                .map(OrderResponseDto::from)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<OrderResponseDto> getStoreOrdersByStatus(UUID storeId, OrderStatus status) {
-        return orderRepository.findByStoreIdAndStatus(storeId, status).stream()
-                .map(OrderResponseDto::from)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<OrderResponseDto> getStoreActiveOrders(UUID storeId) {
-        return orderRepository.findActiveOrdersByStoreId(storeId).stream()
-                .map(OrderResponseDto::from)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<OrderResponseDto> getUserOrdersByDateRange(Integer userId, LocalDateTime startDate, LocalDateTime endDate) {
-        return orderRepository.findByUserIdAndDateRange(userId, startDate, endDate).stream()
-                .map(OrderResponseDto::from)
-                .collect(Collectors.toList());
-    }
-
-    @Override
     public List<OrderResponseDto> getUserOrdersByFilters(Integer userId, UUID storeId, LocalDateTime date, OrderStatus status) {
-        List<OrderEntity> orders;
+        // 1. 기본 주문 목록 조회
+        List<OrderEntity> orders = getBaseUserOrders(userId, storeId, date);
         
-        if (storeId != null && date != null && status != null) {
-            LocalDateTime startOfDay = date.toLocalDate().atStartOfDay();
-            LocalDateTime endOfDay = date.toLocalDate().atTime(23, 59, 59);
-            orders = orderRepository.findByStoreIdAndUserId(storeId, userId).stream()
-                    .filter(o -> o.getCreatedAt().isAfter(startOfDay) && o.getCreatedAt().isBefore(endOfDay))
-                    .filter(o -> o.getOrderStatus().equals(status))
-                    .collect(Collectors.toList());
-        } else if (storeId != null && date != null) {
-            LocalDateTime startOfDay = date.toLocalDate().atStartOfDay();
-            LocalDateTime endOfDay = date.toLocalDate().atTime(23, 59, 59);
-            orders = orderRepository.findByStoreIdAndUserId(storeId, userId).stream()
-                    .filter(o -> o.getCreatedAt().isAfter(startOfDay) && o.getCreatedAt().isBefore(endOfDay))
-                    .collect(Collectors.toList());
-        } else if (storeId != null && status != null) {
-            orders = orderRepository.findByStoreIdAndUserId(storeId, userId).stream()
-                    .filter(o -> o.getOrderStatus().equals(status))
-                    .collect(Collectors.toList());
-        } else if (date != null && status != null) {
-            LocalDateTime startOfDay = date.toLocalDate().atStartOfDay();
-            LocalDateTime endOfDay = date.toLocalDate().atTime(23, 59, 59);
-            orders = orderRepository.findByUserIdAndDateRange(userId, startOfDay, endOfDay).stream()
-                    .filter(o -> o.getOrderStatus().equals(status))
-                    .collect(Collectors.toList());
-        } else if (storeId != null) {
-            orders = orderRepository.findByStoreIdAndUserId(storeId, userId);
-        } else if (date != null) {
-            LocalDateTime startOfDay = date.toLocalDate().atStartOfDay();
-            LocalDateTime endOfDay = date.toLocalDate().atTime(23, 59, 59);
-            orders = orderRepository.findByUserIdAndDateRange(userId, startOfDay, endOfDay);
-        } else if (status != null) {
-            orders = orderRepository.findByUserIdAndStatus(userId, status);
-        } else {
-            orders = orderRepository.findByUserId(userId);
-        }
-        
-        return orders.stream()
-                .map(OrderResponseDto::from)
-                .collect(Collectors.toList());
+        // 2. 상태 필터 적용
+        return applyFiltersAndMap(orders, date, status);
     }
 
-    @Override
-    public List<OrderResponseDto> getStoreOrdersByDateRange(UUID storeId, LocalDateTime startDate, LocalDateTime endDate) {
-        return orderRepository.findByStoreIdAndDateRange(storeId, startDate, endDate).stream()
-                .map(OrderResponseDto::from)
-                .collect(Collectors.toList());
-    }
-
-    @Override
-    public List<OrderResponseDto> getStoreOrdersByFilters(UUID storeId, Integer customerId, LocalDateTime date, OrderStatus status) {
-        List<OrderEntity> orders;
+    private List<OrderResponseDto> getStoreOrdersByFilters(UUID storeId, Integer customerId, LocalDateTime date, OrderStatus status) {
+        // 1. 기본 주문 목록 조회
+        List<OrderEntity> orders = getBaseStoreOrders(storeId, customerId, date);
         
-        if (customerId != null && date != null && status != null) {
-            LocalDateTime startOfDay = date.toLocalDate().atStartOfDay();
-            LocalDateTime endOfDay = date.toLocalDate().atTime(23, 59, 59);
-            orders = orderRepository.findByStoreIdAndUserId(storeId, customerId).stream()
-                    .filter(o -> o.getCreatedAt().isAfter(startOfDay) && o.getCreatedAt().isBefore(endOfDay))
-                    .filter(o -> o.getOrderStatus().equals(status))
-                    .collect(Collectors.toList());
-        } else if (customerId != null && date != null) {
-            LocalDateTime startOfDay = date.toLocalDate().atStartOfDay();
-            LocalDateTime endOfDay = date.toLocalDate().atTime(23, 59, 59);
-            orders = orderRepository.findByStoreIdAndUserId(storeId, customerId).stream()
-                    .filter(o -> o.getCreatedAt().isAfter(startOfDay) && o.getCreatedAt().isBefore(endOfDay))
-                    .collect(Collectors.toList());
-        } else if (customerId != null && status != null) {
-            orders = orderRepository.findByStoreIdAndUserId(storeId, customerId).stream()
-                    .filter(o -> o.getOrderStatus().equals(status))
-                    .collect(Collectors.toList());
-        } else if (date != null && status != null) {
-            LocalDateTime startOfDay = date.toLocalDate().atStartOfDay();
-            LocalDateTime endOfDay = date.toLocalDate().atTime(23, 59, 59);
-            orders = orderRepository.findByStoreIdAndDateRange(storeId, startOfDay, endOfDay).stream()
-                    .filter(o -> o.getOrderStatus().equals(status))
-                    .collect(Collectors.toList());
-        } else if (customerId != null) {
-            orders = orderRepository.findByStoreIdAndUserId(storeId, customerId);
-        } else if (date != null) {
-            LocalDateTime startOfDay = date.toLocalDate().atStartOfDay();
-            LocalDateTime endOfDay = date.toLocalDate().atTime(23, 59, 59);
-            orders = orderRepository.findByStoreIdAndDateRange(storeId, startOfDay, endOfDay);
-        } else if (status != null) {
-            orders = orderRepository.findByStoreIdAndStatus(storeId, status);
-        } else {
-            orders = orderRepository.findByStoreId(storeId);
-        }
-        
-        return orders.stream()
-                .map(OrderResponseDto::from)
-                .collect(Collectors.toList());
+        // 2. 상태 필터 적용
+        return applyFiltersAndMap(orders, date, status);
     }
 
     @Override
     public List<OrderResponseDto> getChefTodayOrders(Integer userId) {
         UUID storeId = getStoreIdByUserId(userId);
-        return orderRepository.findTodayActiveOrdersByStoreId(storeId).stream()
+        LocalDateTime[] range = getDateRange(LocalDateTime.now());
+        return orderRepository.findTodayActiveOrdersByStoreId(storeId, range[0], range[1]).stream()
                 .map(OrderResponseDto::from)
                 .collect(Collectors.toList());
     }
@@ -367,20 +255,71 @@ public class OrderServiceImpl implements OrderService {
         return OrderResponseDto.from(order);
     }
 
-    // 주문 번호 생성 (예: ORDER-20260104-0001)
+    // ========== Private Helper Methods ==========
+    
+    // 주문 번호 생성 (예: ORDER-20260105-0001)
     private String generateOrderNumber() {
         String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
         int sequence = orderSequence.incrementAndGet();
         return String.format("ORDER-%s-%04d", date, sequence);
     }
 
-    // userId로 storeId 조회 (OWNER, CHEF 공통)
+    // userId로 storeId 조회 (OWNER, CHEF)
     private UUID getStoreIdByUserId(Integer userId) {
         StoreUserEntity storeUser = storeUserRepository.findFirstByUser_Id(userId);
         if (storeUser == null) {
             throw new IllegalArgumentException("소속된 매장이 없습니다.");
         }
         return storeUser.getStore().getId();
+    }
+
+    private List<OrderEntity> getBaseUserOrders(Integer userId, UUID storeId, LocalDateTime date) {
+        if (storeId != null && date != null) {
+            LocalDateTime[] range = getDateRange(date);
+            return orderRepository.findByStoreIdAndUserId(storeId, userId).stream()
+                    .filter(o -> isInDateRange(o, range[0], range[1]))
+                    .collect(Collectors.toList());
+        } else if (storeId != null) {
+            return orderRepository.findByStoreIdAndUserId(storeId, userId);
+        } else if (date != null) {
+            LocalDateTime[] range = getDateRange(date);
+            return orderRepository.findByUserIdAndDateRange(userId, range[0], range[1]);
+        } else {
+            return orderRepository.findByUserId(userId);
+        }
+    }
+
+    private List<OrderEntity> getBaseStoreOrders(UUID storeId, Integer customerId, LocalDateTime date) {
+        if (customerId != null && date != null) {
+            LocalDateTime[] range = getDateRange(date);
+            return orderRepository.findByStoreIdAndUserId(storeId, customerId).stream()
+                    .filter(o -> isInDateRange(o, range[0], range[1]))
+                    .collect(Collectors.toList());
+        } else if (customerId != null) {
+            return orderRepository.findByStoreIdAndUserId(storeId, customerId);
+        } else if (date != null) {
+            LocalDateTime[] range = getDateRange(date);
+            return orderRepository.findByStoreIdAndDateRange(storeId, range[0], range[1]);
+        } else {
+            return orderRepository.findByStoreId(storeId);
+        }
+    }
+
+    private List<OrderResponseDto> applyFiltersAndMap(List<OrderEntity> orders, LocalDateTime date, OrderStatus status) {
+        return orders.stream()
+                .filter(o -> status == null || o.getOrderStatus().equals(status))
+                .map(OrderResponseDto::from)
+                .collect(Collectors.toList());
+    }
+
+    private LocalDateTime[] getDateRange(LocalDateTime date) {
+        LocalDateTime startOfDay = date.toLocalDate().atStartOfDay();
+        LocalDateTime endOfDay = date.toLocalDate().atTime(23, 59, 59);
+        return new LocalDateTime[] { startOfDay, endOfDay };
+    }
+
+    private boolean isInDateRange(OrderEntity order, LocalDateTime start, LocalDateTime end) {
+        return order.getCreatedAt().isAfter(start) && order.getCreatedAt().isBefore(end);
     }
 }
 

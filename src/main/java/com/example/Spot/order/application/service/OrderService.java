@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
-import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 import com.example.Spot.order.presentation.dto.response.OrderResponseDto;
@@ -17,16 +16,8 @@ public interface OrderService {
     OrderResponseDto getOrderByOrderNumber(String orderNumber);
     
     List<OrderResponseDto> getUserOrders(Integer userId);
-    List<OrderResponseDto> getUserOrdersByStatus(Integer userId, OrderStatus status);
     List<OrderResponseDto> getUserActiveOrders(Integer userId);
-    List<OrderResponseDto> getUserOrdersByDateRange(Integer userId, LocalDateTime startDate, LocalDateTime endDate);
     List<OrderResponseDto> getUserOrdersByFilters(Integer userId, UUID storeId, LocalDateTime date, OrderStatus status);
-    
-    List<OrderResponseDto> getStoreOrders(UUID storeId);
-    List<OrderResponseDto> getStoreOrdersByStatus(UUID storeId, OrderStatus status);
-    List<OrderResponseDto> getStoreActiveOrders(UUID storeId);
-    List<OrderResponseDto> getStoreOrdersByDateRange(UUID storeId, LocalDateTime startDate, LocalDateTime endDate);
-    List<OrderResponseDto> getStoreOrdersByFilters(UUID storeId, Integer customerId, LocalDateTime date, OrderStatus status);
     
     // Chef 전용
     List<OrderResponseDto> getChefTodayOrders(Integer userId);
@@ -43,7 +34,7 @@ public interface OrderService {
     OrderResponseDto startCooking(UUID orderId);
     OrderResponseDto readyForPickup(UUID orderId);
     
-    // 주문 완료 (Customer)
+    // 픽업 완료 (Owner)
     OrderResponseDto completeOrder(UUID orderId);
     
     // 주문 취소
