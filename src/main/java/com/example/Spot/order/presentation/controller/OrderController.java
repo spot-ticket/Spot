@@ -1,8 +1,11 @@
 package com.example.Spot.order.presentation.controller;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -17,7 +20,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.Spot.global.presentation.ApiResponse;
 import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.order.application.service.OrderService;
-import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.presentation.code.OrderSuccessCode;
 import com.example.Spot.order.presentation.dto.request.OrderAcceptRequestDto;
@@ -70,13 +72,17 @@ public class OrderController {
     @GetMapping("/my")
     public ResponseEntity<ApiResponse<List<OrderResponseDto>>> getMyOrders(
             @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(required = false) UUID storeId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(required = false) OrderStatus status) {
         
         Integer userId = userDetails.getUserId();
         List<OrderResponseDto> response;
         
-        if (status != null) {
-            response = orderService.getUserOrdersByStatus(userId, status);
+        LocalDateTime dateTime = date != null ? date.atStartOfDay() : null;
+        
+        if (storeId != null || dateTime != null || status != null) {
+            response = orderService.getUserOrdersByFilters(userId, storeId, dateTime, status);
         } else {
             response = orderService.getUserOrders(userId);
         }
@@ -98,29 +104,41 @@ public class OrderController {
                 .body(ApiResponse.onSuccess(OrderSuccessCode.ORDER_LIST_FOUND, response));
     }
 
-    @GetMapping("/store/{storeId}")
-    public ResponseEntity<ApiResponse<List<OrderResponseDto>>> getStoreOrders(
-            @PathVariable UUID storeId,
+    @GetMapping("/my-store")
+    public ResponseEntity<ApiResponse<List<OrderResponseDto>>> getMyStoreOrders(
+            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @RequestParam(required = false) Integer customerId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(required = false) OrderStatus status) {
         
-        List<OrderResponseDto> response;
+        Integer userId = userDetails.getUserId();
+        LocalDateTime dateTime = date != null ? date.atStartOfDay() : null;
         
-        if (status != null) {
-            response = orderService.getStoreOrdersByStatus(storeId, status);
-        } else {
-            response = orderService.getStoreOrders(storeId);
-        }
+        List<OrderResponseDto> response = orderService.getMyStoreOrders(userId, customerId, dateTime, status);
         
         return ResponseEntity
                 .status(OrderSuccessCode.ORDER_LIST_FOUND.getStatus())
                 .body(ApiResponse.onSuccess(OrderSuccessCode.ORDER_LIST_FOUND, response));
     }
 
-    @GetMapping("/store/{storeId}/active")
-    public ResponseEntity<ApiResponse<List<OrderResponseDto>>> getStoreActiveOrders(
-            @PathVariable UUID storeId) {
+    @GetMapping("/my-store/active")
+    public ResponseEntity<ApiResponse<List<OrderResponseDto>>> getMyStoreActiveOrders(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
         
-        List<OrderResponseDto> response = orderService.getStoreActiveOrders(storeId);
+        Integer userId = userDetails.getUserId();
+        List<OrderResponseDto> response = orderService.getMyStoreActiveOrders(userId);
+        
+        return ResponseEntity
+                .status(OrderSuccessCode.ORDER_LIST_FOUND.getStatus())
+                .body(ApiResponse.onSuccess(OrderSuccessCode.ORDER_LIST_FOUND, response));
+    }
+
+    @GetMapping("/chef/today")
+    public ResponseEntity<ApiResponse<List<OrderResponseDto>>> getChefTodayOrders(
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        
+        Integer userId = userDetails.getUserId();
+        List<OrderResponseDto> response = orderService.getChefTodayOrders(userId);
         
         return ResponseEntity
                 .status(OrderSuccessCode.ORDER_LIST_FOUND.getStatus())
@@ -178,17 +196,27 @@ public class OrderController {
                 .body(ApiResponse.onSuccess(OrderSuccessCode.ORDER_COMPLETED, response));
     }
 
-    @PatchMapping("/{orderId}/cancel")
-    public ResponseEntity<ApiResponse<OrderResponseDto>> cancelOrder(
+    @PatchMapping("/{orderId}/customer-cancel")
+    public ResponseEntity<ApiResponse<OrderResponseDto>> customerCancelOrder(
             @PathVariable UUID orderId,
-            @Valid @RequestBody OrderCancelRequestDto requestDto,
-            @RequestParam CancelledBy cancelledBy) {
+            @Valid @RequestBody OrderCancelRequestDto requestDto) {
         
-        OrderResponseDto response = orderService.cancelOrder(orderId, requestDto.getReason(), cancelledBy);
+        OrderResponseDto response = orderService.customerCancelOrder(orderId, requestDto.getReason());
+        
+        return ResponseEntity
+                .status(OrderSuccessCode.ORDER_CANCELLED.getStatus())
+                .body(ApiResponse.onSuccess(OrderSuccessCode.ORDER_CANCELLED, response));
+    }
+
+    @PatchMapping("/{orderId}/store-cancel")
+    public ResponseEntity<ApiResponse<OrderResponseDto>> storeCancelOrder(
+            @PathVariable UUID orderId,
+            @Valid @RequestBody OrderCancelRequestDto requestDto) {
+        
+        OrderResponseDto response = orderService.storeCancelOrder(orderId, requestDto.getReason());
         
         return ResponseEntity
                 .status(OrderSuccessCode.ORDER_CANCELLED.getStatus())
                 .body(ApiResponse.onSuccess(OrderSuccessCode.ORDER_CANCELLED, response));
     }
 }
-

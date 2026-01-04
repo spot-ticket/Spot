@@ -1,5 +1,6 @@
 package com.example.Spot.order.application.service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
@@ -18,10 +19,21 @@ public interface OrderService {
     List<OrderResponseDto> getUserOrders(Integer userId);
     List<OrderResponseDto> getUserOrdersByStatus(Integer userId, OrderStatus status);
     List<OrderResponseDto> getUserActiveOrders(Integer userId);
+    List<OrderResponseDto> getUserOrdersByDateRange(Integer userId, LocalDateTime startDate, LocalDateTime endDate);
+    List<OrderResponseDto> getUserOrdersByFilters(Integer userId, UUID storeId, LocalDateTime date, OrderStatus status);
     
     List<OrderResponseDto> getStoreOrders(UUID storeId);
     List<OrderResponseDto> getStoreOrdersByStatus(UUID storeId, OrderStatus status);
     List<OrderResponseDto> getStoreActiveOrders(UUID storeId);
+    List<OrderResponseDto> getStoreOrdersByDateRange(UUID storeId, LocalDateTime startDate, LocalDateTime endDate);
+    List<OrderResponseDto> getStoreOrdersByFilters(UUID storeId, Integer customerId, LocalDateTime date, OrderStatus status);
+    
+    // Chef 전용
+    List<OrderResponseDto> getChefTodayOrders(Integer userId);
+    
+    // Owner 전용
+    List<OrderResponseDto> getMyStoreOrders(Integer userId, Integer customerId, LocalDateTime date, OrderStatus status);
+    List<OrderResponseDto> getMyStoreActiveOrders(Integer userId);
     
     // 주문 상태 변경 (Owner/Chef)
     OrderResponseDto acceptOrder(UUID orderId, Integer estimatedTime);
@@ -34,8 +46,9 @@ public interface OrderService {
     // 주문 완료 (Customer)
     OrderResponseDto completeOrder(UUID orderId);
     
-    // 주문 취소 (Customer/Owner)
-    OrderResponseDto cancelOrder(UUID orderId, String reason, CancelledBy cancelledBy);
+    // 주문 취소
+    OrderResponseDto customerCancelOrder(UUID orderId, String reason);
+    OrderResponseDto storeCancelOrder(UUID orderId, String reason);
     
     // 결제 관련 (Payment Service에서 호출)
     OrderResponseDto completePayment(UUID orderId);

@@ -13,4 +13,7 @@ public interface StoreUserRepository extends JpaRepository<StoreUserEntity, UUID
 
     // 특정 유저(ID)가 속한 모든 가게 매핑 정보 조회
     List<StoreUserEntity> findAllByUser_Id(Integer userId);
+    
+    // 특정 유저의 첫 번째 매장 조회 (CHEF, MANAGER는 하나만 가짐)
+    StoreUserEntity findFirstByUser_Id(Integer userId);
 }
