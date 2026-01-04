@@ -1,19 +1,30 @@
 package com.example.Spot.store.domain.repository;
 
+import com.example.Spot.store.domain.entity.CategoryEntity;
+import com.example.Spot.store.domain.entity.StoreCategoryEntity;
+import com.example.Spot.store.domain.entity.StoreEntity;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.stereotype.Repository;
+public interface StoreCategoryRepository extends JpaRepository<StoreCategoryEntity, UUID>{
 
-import com.example.Spot.store.domain.entity.CategoryEntity;
-import com.example.Spot.store.domain.entity.StoreCategoryEntity;
-import com.example.Spot.store.domain.entity.StoreEntity;
+    // main
+    @Query("""
+        select sc
+        from StoreCategoryEntity sc
+        join fetch sc.store s
+        where sc.isDeleted = false
+          and s.isDeleted = false
+          and sc.category.id = :categoryId
+    """)
+    List<StoreCategoryEntity> findAllActiveByCategoryIdWithStore(@Param("categoryId") UUID categoryId);
 
-@Repository
-public interface StoreCategoryRepository extends JpaRepository<StoreCategoryEntity, UUID> {
-
+    // test
     // 카테고리에 매핑된 (삭제되지 않은) 매장 목록 조회용
     List<StoreCategoryEntity> findByCategoryAndIsDeletedFalse(CategoryEntity category);
 
@@ -28,4 +39,7 @@ public interface StoreCategoryRepository extends JpaRepository<StoreCategoryEnti
 
     // 카테고리 내 매핑 개수 확인 등
     long countByCategoryAndIsDeletedFalse(CategoryEntity category);
+
+
+
 }
