@@ -10,14 +10,14 @@ import com.example.Spot.order.presentation.dto.response.OrderResponseDto;
 
 public interface OrderService {
 
-    OrderResponseDto createOrder(OrderCreateRequestDto requestDto, Long userId);
+    OrderResponseDto createOrder(OrderCreateRequestDto requestDto, Integer userId);
 
     OrderResponseDto getOrderById(UUID orderId);
     OrderResponseDto getOrderByOrderNumber(String orderNumber);
     
-    List<OrderResponseDto> getUserOrders(Long userId);
-    List<OrderResponseDto> getUserOrdersByStatus(Long userId, OrderStatus status);
-    List<OrderResponseDto> getUserActiveOrders(Long userId);
+    List<OrderResponseDto> getUserOrders(Integer userId);
+    List<OrderResponseDto> getUserOrdersByStatus(Integer userId, OrderStatus status);
+    List<OrderResponseDto> getUserActiveOrders(Integer userId);
     
     List<OrderResponseDto> getStoreOrders(UUID storeId);
     List<OrderResponseDto> getStoreOrdersByStatus(UUID storeId, OrderStatus status);

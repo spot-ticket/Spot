@@ -20,7 +20,7 @@ import lombok.Getter;
 public class OrderResponseDto {
 
     private UUID id;
-    private Long userId;
+    private Integer userId;
     private UUID storeId;
     private String storeName;
     private String orderNumber;
@@ -41,7 +41,6 @@ public class OrderResponseDto {
     private LocalDateTime pickedUpAt;
     private LocalDateTime cancelledAt;
     private LocalDateTime createdAt;
-    private LocalDateTime updatedAt;
     
     private List<OrderItemResponseDto> orderItems;
     
@@ -78,7 +77,6 @@ public class OrderResponseDto {
                 .pickedUpAt(entity.getPickedUpAt())
                 .cancelledAt(entity.getCancelledAt())
                 .createdAt(entity.getCreatedAt())
-                .updatedAt(entity.getUpdatedAt())
                 .orderItems(orderItemDtos)
                 .totalAmount(totalAmount)
                 .build();

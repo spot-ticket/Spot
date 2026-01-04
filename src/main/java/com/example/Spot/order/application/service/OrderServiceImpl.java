@@ -43,7 +43,7 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderResponseDto createOrder(OrderCreateRequestDto requestDto, Long userId) {
+    public OrderResponseDto createOrder(OrderCreateRequestDto requestDto, Integer userId) {
         StoreEntity store = storeRepository.findById(requestDto.getStoreId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 가게입니다."));
 
@@ -68,7 +68,6 @@ public class OrderServiceImpl implements OrderService {
 
             OrderItemEntity orderItem = OrderItemEntity.builder()
                     .menu(menu)
-                    .menuPrice(menu.getPrice())
                     .quantity(itemDto.getQuantity())
                     .build();
 
@@ -110,21 +109,21 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
-    public List<OrderResponseDto> getUserOrders(Long userId) {
+    public List<OrderResponseDto> getUserOrders(Integer userId) {
         return orderRepository.findByUserId(userId).stream()
                 .map(OrderResponseDto::from)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<OrderResponseDto> getUserOrdersByStatus(Long userId, OrderStatus status) {
+    public List<OrderResponseDto> getUserOrdersByStatus(Integer userId, OrderStatus status) {
         return orderRepository.findByUserIdAndStatus(userId, status).stream()
                 .map(OrderResponseDto::from)
                 .collect(Collectors.toList());
     }
 
     @Override
-    public List<OrderResponseDto> getUserActiveOrders(Long userId) {
+    public List<OrderResponseDto> getUserActiveOrders(Integer userId) {
         return orderRepository.findActiveOrdersByUserId(userId).stream()
                 .map(OrderResponseDto::from)
                 .collect(Collectors.toList());

@@ -30,13 +30,13 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
     @Query("SELECT o FROM OrderEntity o " +
             "WHERE o.userId = :userId " +
             "ORDER BY o.createdAt DESC")
-    List<OrderEntity> findByUserId(@Param("userId") Long userId);
+    List<OrderEntity> findByUserId(@Param("userId") Integer userId);
 
     @Query("SELECT o FROM OrderEntity o " +
             "WHERE o.userId = :userId " +
             "AND o.orderStatus = :status " +
             "ORDER BY o.createdAt DESC")
-    List<OrderEntity> findByUserIdAndStatus(@Param("userId") Long userId, @Param("status") OrderStatus status);
+    List<OrderEntity> findByUserIdAndStatus(@Param("userId") Integer userId, @Param("status") OrderStatus status);
 
     @Query("SELECT o FROM OrderEntity o " +
             "WHERE o.store.id = :storeId " +
@@ -68,6 +68,6 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
             "WHERE o.userId = :userId " +
             "AND o.orderStatus IN ('PAYMENT_PENDING', 'PENDING', 'ACCEPTED', 'COOKING', 'READY') " +
             "ORDER BY o.createdAt DESC")
-    List<OrderEntity> findActiveOrdersByUserId(@Param("userId") Long userId);
+    List<OrderEntity> findActiveOrdersByUserId(@Param("userId") Integer userId);
 }
 

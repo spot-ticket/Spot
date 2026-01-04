@@ -43,7 +43,7 @@ public class OrderEntity extends BaseEntity {
     private UUID id;
 
     @Column(name = "user_id", nullable = false)
-    private Long userId;
+    private Integer userId;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
@@ -104,7 +104,7 @@ public class OrderEntity extends BaseEntity {
     private List<OrderItemEntity> orderItems = new ArrayList<>();
 
     @Builder
-    public OrderEntity(StoreEntity store, Long userId, String orderNumber,
+    public OrderEntity(StoreEntity store, Integer userId, String orderNumber,
                        String request, boolean needDisposables, LocalDateTime pickupTime) {
         if (store == null) {
             throw new IllegalArgumentException("가게 정보는 필수입니다.");
