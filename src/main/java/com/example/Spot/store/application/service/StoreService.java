@@ -86,22 +86,22 @@ public class StoreService {
     }
     
     // 4. 매장 정보 수정
-    public void updateStore(UUID storeId, StoreUpdateRequest request, UserEntity currentUser){
+    public void updateStore(UUID storeId, StoreUpdateRequest request, UserEntity currentUser) {
         // 4.1 매장 . 연관 데이터 조회 
         boolean isAdmin = currentUser.getRole() == UserRole.ADMIN ||
                 currentUser.getRole() == UserRole.ADMIN;
 
         StoreEntity store = storeRepository.findByIdWithDetails(storeId, isAdmin)
                 .orElseThrow(() -> new EntityNotFoundException("매장을 찾을 수 없습니다."));
-        
+
         // 4.2 권한 검증
         boolean isOwner = store.getUsers().stream()
                 .anyMatch(su -> su.getUser().getId().equals(currentUser.getId()));
-        
+
         if (!isAdmin && !isOwner) {
             throw new AccessDeniedException("해당 매장에 대한 수정 권한이 없습니다.");
         }
-        
+
         // 4.3 기본 정보 업데이트 (Dirty Checking 활용)
         store.updateStoreDetails(
                 request.getName(),
@@ -110,18 +110,18 @@ public class StoreService {
                 request.getOpenTime(),
                 request.getCloseTime()
         );
-        
+
         // 4.4 카테고리 교체 
         if (request.getCategoryIds() != null) {
             store.getStoreCategoryMaps().clear();
-            
+
             for (UUID categoryId : request.getCategoryIds()) {
                 CategoryEntity category = categoryRepository.findById(categoryId)
                         .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다."));
                 store.addCategory(category);
             }
         }
-        
+
         // 4.5 스태프(셰프/오너) 교체 
         if (request.getStaffUserIds() != null) {
             store.getUsers().clear();
@@ -131,5 +131,27 @@ public class StoreService {
                 store.addStoreUser(staff);
             }
         }
+    }
+    
+    // 5. 매장 삭제
+    @Transactional
+    public void deletedStore(UUID storeId, UserEntity currentUser) {
+        // 5.1 매장 조회 (이미 삭제된 것은 제외하고 조회)
+        StoreEntity store = storeRepository.findByIdWithDetails(storeId, false)
+                .orElseThrow(() -> new EntityNotFoundException("매장을 찾을 수 없거나 이미 삭제되었습니다."));
+        
+        // 5.2 권한 검증 (ADMIN, MANAGER, OWNER)
+        boolean isAdmin = currentUser.getRole() == UserRole.ADMIN ||
+                currentUser.getRole() == UserRole.MANAGER;
+
+        boolean isOwner = store.getUsers().stream()
+                .anyMatch(su -> su.getUser().getId().equals(currentUser.getId()));
+        
+        if (!isAdmin && !isOwner) {
+            throw new AccessDeniedException("삭제 권한이 없습니다.");
+        }
+        
+        // 5.3 공통 메서드 호출
+        store.softDelete();
     }
 }
