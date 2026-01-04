@@ -32,7 +32,7 @@ public class StoreCategoryEntity extends UpdateBaseEntity {
     private StoreEntity store;
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "store_category_id", nullable = false)
+    @JoinColumn(name = "category_id", nullable = false)
     private CategoryEntity category;
 
     @Builder
