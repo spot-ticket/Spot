@@ -27,13 +27,8 @@ public class UserService {
 
     // USER UPDATE
     @Transactional
-    public UserResponseDTO updateByUsername(String targetUsername, String loginUsername, UserUpdateRequestDTO req) {
-        // 권한 체크: 본인만 수정 가능
-        if (!targetUsername.equals(loginUsername)) {
-            throw new AccessDeniedException("사용자 본인만 수정할 수 있습니다.");
-        }
-
-        UserEntity user = userRepository.findByUsername(targetUsername)
+    public UserResponseDTO updateByUsername(String username, UserUpdateRequestDTO req) {
+        UserEntity user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
 

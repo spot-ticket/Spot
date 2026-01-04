@@ -3,6 +3,7 @@ package com.example.Spot.user.presentation.controller;
 import com.example.Spot.user.application.service.UserService;
 import com.example.Spot.user.presentation.dto.request.UserUpdateRequestDTO;
 import com.example.Spot.user.presentation.dto.response.UserResponseDTO;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,18 +23,17 @@ public class UserController {
     }
 
     // 수정
+    @PreAuthorize("#username == authentication.name or hasRole('ADMIN')")
     @PatchMapping("/{username}")
     public UserResponseDTO update(
             @PathVariable String username,
-            @RequestBody UserUpdateRequestDTO request,
-            Authentication authentication
+            @RequestBody UserUpdateRequestDTO request
     ) {
-        // 로그인 사용자 확인(권한 체크용)
-        String loginUsername = authentication.getName();
-        return userService.updateByUsername(username, loginUsername, request);
+        return userService.updateByUsername(username, request);
     }
 
     // 삭제(탈퇴/soft delete)
+    @PreAuthorize("#username == authentication.name or hasRole('ADMIN')")
     @DeleteMapping("/{username}")
     public void delete(
             @PathVariable String username,
