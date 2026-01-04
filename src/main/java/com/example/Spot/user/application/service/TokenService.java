@@ -4,10 +4,10 @@ import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Base64;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.Spot.infra.auth.jwt.JWTUtil;
 import com.example.Spot.user.application.security.TokenHashing;
 import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.domain.entity.RefreshTokenEntity;
@@ -21,75 +21,67 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TokenService {
 
-    private static final long ACCESS_EXPIRE_MS = 60 * 60 * 10L;
-    private static final long REFRESH_EXPIRE_DAYS = 30L;
-
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
-
     private final RefreshTokenRepository refreshTokenRepository;
     private final UserAuthRepository userAuthRepository;
     private final TokenHashing tokenHashing;
-    private final JWTUtil jwtUtil;
 
+    @Value("${security.refresh-token.expire-days:30}")
+    private long refreshExpireDays;
+
+    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+
+    /** 로그인 성공 시: refresh 발급 + 저장 */
     @Transactional
-    public void logout(String refreshTokenRaw) {
-        String hash = tokenHashing.sha256WithPepper(refreshTokenRaw);
-
-        refreshTokenRepository.findByRefreshTokenHash(hash)
-                .ifPresent(RefreshTokenEntity::revoke);
-    }
-
-    @Transactional
-    public TokenPair refresh(String refreshTokenRaw) {
-        LocalDateTime now = LocalDateTime.now();
-        String hash = tokenHashing.sha256WithPepper(refreshTokenRaw);
-
-        RefreshTokenEntity oldToken = refreshTokenRepository.findByRefreshTokenHash(hash)
-                .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
-
-        if (!oldToken.isActive(now)) {
-            throw new IllegalArgumentException("Refresh token expired or revoked");
-        }
-
-        oldToken.revoke();
-
-        UserAuthEntity auth = oldToken.getAuth();
-        String newAccess = jwtUtil.createJwt(usernameOf(auth), roleOf(auth), ACCESS_EXPIRE_MS);
-
-        String newRefreshRaw = generateRefreshToken();
-        String newHash = tokenHashing.sha256WithPepper(newRefreshRaw);
-
-        RefreshTokenEntity newEntity = RefreshTokenEntity.builder()
-                .auth(auth)
-                .refreshTokenHash(newHash)
-                .expiresAt(now.plusDays(REFRESH_EXPIRE_DAYS))
-                .build();
-
-        refreshTokenRepository.save(newEntity);
-
-        return new TokenPair(newAccess, newRefreshRaw);
-    }
-
-    @Transactional
-    public TokenPair issueOnLoginSuccess(String username) {
+    public RefreshIssueResult issueRefresh(String username) {
         UserAuthEntity auth = userAuthRepository.findByUserUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("Auth not found"));
 
-        String access = jwtUtil.createJwt(usernameOf(auth), roleOf(auth), ACCESS_EXPIRE_MS);
-
         LocalDateTime now = LocalDateTime.now();
         String refreshRaw = generateRefreshToken();
-        String refreshHash = tokenHashing.sha256WithPepper(refreshRaw);
 
         RefreshTokenEntity entity = RefreshTokenEntity.builder()
                 .auth(auth)
-                .refreshTokenHash(refreshHash)
-                .expiresAt(now.plusDays(REFRESH_EXPIRE_DAYS))
+                .refreshTokenHash(tokenHashing.sha256WithPepper(refreshRaw))
+                .expiresAt(now.plusDays(refreshExpireDays))
                 .build();
 
         refreshTokenRepository.save(entity);
 
-        return new TokenPair(access, refreshRaw);
+        return new RefreshIssueResult(usernameOf(auth), roleOf(auth), refreshRaw);
+    }
+
+    /** refresh 요청 시: 기존 refresh 검증 → revoke → 새 refresh 발급(rotate) */
+    @Transactional
+    public RefreshIssueResult rotateRefresh(String oldRefreshRaw) {
+        LocalDateTime now = LocalDateTime.now();
+        RefreshTokenEntity old = refreshTokenRepository.findByRefreshTokenHash(tokenHashing.sha256WithPepper(oldRefreshRaw))
+                .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
+
+        if (!old.isActive(now)) {
+            throw new IllegalArgumentException("Refresh token expired or revoked");
+        }
+
+        old.revoke(); // revoke + soft delete
+
+        UserAuthEntity auth = old.getAuth();
+        String newRefreshRaw = generateRefreshToken();
+
+        RefreshTokenEntity next = RefreshTokenEntity.builder()
+                .auth(auth)
+                .refreshTokenHash(tokenHashing.sha256WithPepper(newRefreshRaw))
+                .expiresAt(now.plusDays(refreshExpireDays))
+                .build();
+
+        refreshTokenRepository.save(next);
+
+        return new RefreshIssueResult(usernameOf(auth), roleOf(auth), newRefreshRaw);
+    }
+
+    /** logout 요청 시: refresh revoke */
+    @Transactional
+    public void revokeRefresh(String refreshRaw) {
+        refreshTokenRepository.findByRefreshTokenHash(tokenHashing.sha256WithPepper(refreshRaw))
+                .ifPresent(RefreshTokenEntity::revoke);
     }
 
     private String usernameOf(UserAuthEntity auth) {
@@ -106,6 +98,5 @@ public class TokenService {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
     }
 
-    public record TokenPair(String accessToken, String refreshToken) {
-    }
+    public record RefreshIssueResult(String username, Role role, String refreshToken) {}
 }
