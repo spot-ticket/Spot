@@ -41,7 +41,7 @@ public interface StoreRepository extends JpaRepository<StoreEntity, UUID> {
             "WHERE u.id = :userId " +
             "AND u.role = ('OWNER', 'CHEF') " +
             "AND s.isDeleted = false")
-    List<StoreEntity> findAllByOwnerId(@Param("userId") Long userId);
+    List<StoreEntity> findAllByOwnerId(@Param("userId") Integer userId);
 
     // category-repo
     // 삭제되지 않은 가게 전체 조회
