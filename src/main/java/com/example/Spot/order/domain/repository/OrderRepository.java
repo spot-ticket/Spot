@@ -11,7 +11,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.Spot.order.domain.entity.OrderEntity;
-import com.example.Spot.order.domain.enums.OrderStatus;
 
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
