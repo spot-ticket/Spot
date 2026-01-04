@@ -41,6 +41,9 @@ public class OrderItemEntity extends BaseEntity {
     @JoinColumn(name = "menu_id", nullable = false)
     private MenuEntity menu;
 
+    @Column(name = "menu_name", nullable = false)
+    private String menuName;
+
     @Column(name = "menu_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal menuPrice;
 
@@ -60,7 +63,8 @@ public class OrderItemEntity extends BaseEntity {
         }
         
         this.menu = menu;
-        this.menuPrice = menuPrice;
+        this.menuName = menu.getName();
+        this.menuPrice = menu.getPrice();
         this.quantity = quantity;
     }
 

@@ -42,29 +42,35 @@ public class OrderEntity extends BaseEntity {
     @Column(columnDefinition = "UUID")
     private UUID id;
 
+    @Column(name = "user_id", nullable = false)
+    private Long userId;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id", nullable = false)
     private StoreEntity store;
 
-    @Column(name = "user_id", nullable = false)
-    private Long userId;
-
     @Column(name = "order_number", nullable = false, unique = true, length = 50)
     private String orderNumber;
 
-    @Column(name = "request", columnDefinition = "TEXT")
-    private String request;
-
     @Column(name = "need_disposables", nullable = false)
     private Boolean needDisposables = false;
+
+    @Column(name = "request", columnDefinition = "TEXT")
+    private String request;
 
     @Column(name = "pickup_time", nullable = false)
     private LocalDateTime pickupTime;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false, length = 20)
-    private OrderStatus orderStatus = OrderStatus.PENDING;
+    private OrderStatus orderStatus = OrderStatus.PAYMENT_PENDING;
 
+    @Column(name = "payment_completed_at")
+    private LocalDateTime paymentCompletedAt;
+
+    @Column(name = "payment_failed_at")
+    private LocalDateTime paymentFailedAt;
+    
     @Column(name = "accepted_at")
     private LocalDateTime acceptedAt;
 
@@ -83,18 +89,19 @@ public class OrderEntity extends BaseEntity {
     @Column(name = "cancelled_at")
     private LocalDateTime cancelledAt;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cancelled_by", length = 20)
+    private CancelledBy cancelledBy;
+
     @Column(name = "estimated_time")
     private Integer estimatedTime; // 조리 예상 시간 (분)
 
     @Column(name = "reason", columnDefinition = "TEXT")
     private String reason; // 주문 취소/거절 이유
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "cancelled_by", length = 20)
-    private CancelledBy cancelledBy;
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderItemEntity> orderItems;
+    private List<OrderItemEntity> orderItems = new ArrayList<>();
 
     @Builder
     public OrderEntity(StoreEntity store, Long userId, String orderNumber,
@@ -118,7 +125,6 @@ public class OrderEntity extends BaseEntity {
         this.request = request;
         this.needDisposables = needDisposables;
         this.pickupTime = pickupTime;
-        this.orderItems = new ArrayList<>();
     }
 
     public void addOrderItem(OrderItemEntity orderItem) {
@@ -127,6 +133,27 @@ public class OrderEntity extends BaseEntity {
         }
         this.orderItems.add(orderItem);
         orderItem.setOrder(this);
+    }
+
+    // 결제 완료 처리
+    public void completePayment() {
+        validateStatusTransition(OrderStatus.PENDING);
+        this.orderStatus = OrderStatus.PENDING;
+        this.paymentCompletedAt = LocalDateTime.now();
+    }
+
+    // 결제 실패 처리
+    public void failPayment() {
+        validateStatusTransition(OrderStatus.PAYMENT_FAILED);
+        this.orderStatus = OrderStatus.PAYMENT_FAILED;
+        this.paymentFailedAt = LocalDateTime.now();
+    }
+
+    // 재결제 시도
+    public void retryPayment() {
+        validateStatusTransition(OrderStatus.PAYMENT_PENDING);
+        this.orderStatus = OrderStatus.PAYMENT_PENDING;
+        this.paymentFailedAt = null;
     }
 
     public void removeOrderItem(OrderItemEntity orderItem) {
