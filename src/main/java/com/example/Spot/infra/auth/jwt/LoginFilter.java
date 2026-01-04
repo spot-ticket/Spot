@@ -1,16 +1,13 @@
 package com.example.Spot.infra.auth.jwt;
 
-import java.util.Collection;
-import java.util.Iterator;
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 import com.example.Spot.infra.auth.security.CustomUserDetails;
+import com.example.Spot.user.application.service.TokenService;
 import com.example.Spot.user.domain.Role;
 
 import jakarta.servlet.FilterChain;
@@ -25,10 +22,13 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
     // JWTUtil 주입
     private final JWTUtil jwtUtil;
 
+    // TokenService 주입
+    private final TokenService tokenService;
 
-    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil) {
+    public LoginFilter(AuthenticationManager authenticationManager, JWTUtil jwtUtil, TokenService tokenService) {
         this.authenticationManager = authenticationManager;
         this.jwtUtil = jwtUtil;
+        this.tokenService = tokenService;
     }
 
 
@@ -48,21 +48,38 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     // 로그인 성공시 실행하는 메소드 (여기서 JWT를 발급)
     @Override
-    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response, FilterChain chain, Authentication authentication) {
-        //System.out.println("success");
-        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
+    protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
+                                            FilterChain chain, Authentication authentication) {
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+        String username = principal.getUsername();
 
-        String username = customUserDetails.getUsername();
-        Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
-        Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
-        GrantedAuthority auth = iterator.next();
-
-        String authority = auth.getAuthority();
+        String authority = authentication.getAuthorities().iterator().next().getAuthority();
         String roleName = authority.replace("ROLE_", "");
-        String token = jwtUtil.createJwt(username, Role.valueOf(roleName), 60 * 60 * 10L);
+        Role role = Role.valueOf(roleName);
 
-        response.addHeader("Authorization", "Bearer " + token);
+        // access 발급 (JWTUtil)
+        String accessToken = jwtUtil.createJwt(username, role, 60 * 30L); // 만료 시간은 네 기준으로 조절
+
+        // refresh 발급 (DB 저장)
+        TokenService.RefreshIssueResult r = tokenService.issueRefresh(username);
+
+
+        // JSON 응답
+        response.setHeader("Authorization", "Bearer " + accessToken);
+        response.setStatus(HttpServletResponse.SC_OK);
+        response.setContentType("application/json;charset=UTF-8");
+
+        String body = """
+        {"accessToken":"%s","refreshToken":"%s"}
+        """.formatted(accessToken, r.refreshToken());
+
+        try {
+            response.getWriter().write(body);
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
+
 
     // 로그인 실패시 실행하는 메소드
     @Override
@@ -71,4 +88,5 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         // 로그인 실패 시 401 응답코드 반환
         response.setStatus(401);
     }
+
 }

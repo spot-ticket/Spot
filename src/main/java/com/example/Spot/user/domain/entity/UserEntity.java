@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import com.example.Spot.global.common.UpdateBaseEntity;
-import com.example.Spot.store.domain.entity.StoreStaffEntity;
+import com.example.Spot.store.domain.entity.StoreUserEntity;
 import com.example.Spot.user.domain.Role;
 
 import jakarta.persistence.CascadeType;
@@ -13,6 +13,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
@@ -21,13 +23,19 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+
+
 @Entity
 @Getter
 @Table(name = "p_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity extends UpdateBaseEntity {
 
+    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
+    private final List<StoreUserEntity> staffs = new ArrayList<>();
+
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
     @Column(name = "name", nullable = false)
@@ -35,6 +43,7 @@ public class UserEntity extends UpdateBaseEntity {
 
     @Column(nullable = false)
     private String nickname;
+
 
     private boolean male;
 
@@ -49,9 +58,6 @@ public class UserEntity extends UpdateBaseEntity {
 
     @Enumerated(EnumType.STRING)
     private Role role;
-
-    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    private List<StoreStaffEntity> staffs = new ArrayList<>();
 
     @Builder
     public UserEntity(String username, String nickname, String address, String email, Role role) {
@@ -70,9 +76,6 @@ public class UserEntity extends UpdateBaseEntity {
         return user;
     }
 
-    public void ismale() {
-        this.male = true;
-    }
 
     // Setter methods
     public void setUsername(String username) {
@@ -87,8 +90,13 @@ public class UserEntity extends UpdateBaseEntity {
         this.male = male;
     }
 
-    public void setAge(int age) {
-        this.age = age;
-    }
+    public void setNickname(String nickname) {this.nickname=nickname;}
+
+    public void setAge(int age) {this.age = age;}
+
+    public void setEmail(String email) {this.email = email;}
+
+    public void setAddress(String address) {this.address = address;}
+
 
 }
