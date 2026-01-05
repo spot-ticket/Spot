@@ -35,13 +35,17 @@ public interface StoreRepository extends JpaRepository<StoreEntity, UUID> {
     List<StoreEntity> findByNameContainingAndIsDeletedFalse(String name);
 
     // 특정 유저가 담당하는 매장 조회 (중간 테이블 Join)
-    @Query("SELECT s FROM StoreEntity s " +
-            "JOIN s.users su " +
-            "JOIN su.user u " +
-            "WHERE u.id = :userId " +
-            "AND u.role = ('OWNER', 'CHEF') " +
-            "AND s.isDeleted = false")
+    @Query("""
+    SELECT DISTINCT s
+    FROM StoreEntity s
+    JOIN s.users su
+    JOIN su.user u
+    WHERE u.id = :userId
+      AND u.role IN ('OWNER', 'CHEF')
+      AND s.isDeleted = false
+""")
     List<StoreEntity> findAllByOwnerId(@Param("userId") Integer userId);
+
 
     // category-repo
     // 삭제되지 않은 가게 전체 조회

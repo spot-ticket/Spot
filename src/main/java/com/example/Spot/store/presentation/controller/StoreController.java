@@ -3,8 +3,10 @@ package com.example.Spot.store.presentation.controller;
 import java.util.List;
 import java.util.UUID;
 
+import com.example.Spot.infra.auth.security.CustomUserDetails;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -31,17 +33,20 @@ import lombok.RequiredArgsConstructor;
 public class StoreController {
     
     private final StoreService storeService;
-    
+
     // 1. 매장 생성
     @PostMapping
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER','MANAGER')")
     public ResponseEntity<UUID> createStore(
             @Valid @RequestBody StoreCreateRequest request,
-            @AuthenticationPrincipal UserEntity currentUser) {
-        
+            @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser
+    ) {
         UUID storeId = storeService.createStore(request, currentUser);
         return ResponseEntity.status(HttpStatus.CREATED).body(storeId);
     }
-    
+
+
+
     // 2. 매장 상세 조회
     @GetMapping("/{storeId}")
     public ResponseEntity<StoreResponse> getStoreDetails(
@@ -61,10 +66,12 @@ public class StoreController {
     
     // 4. 매장 정보 수정
     @PutMapping("/{storeId}")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER','MANAGER')")
     public ResponseEntity<Void> updateStore(
             @PathVariable UUID storeId,
             @Valid @RequestBody StoreUpdateRequest request,
-            @AuthenticationPrincipal UserEntity currentUser) {
+            @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser
+    ) {
         
         storeService.updateStore(storeId, request, currentUser);
         return ResponseEntity.noContent().build();
@@ -72,10 +79,11 @@ public class StoreController {
     
     // 5. 매장 삭제 (Soft Delete)
     @DeleteMapping("/{storeId}")
+    @PreAuthorize("hasAnyRole('ADMIN','OWNER','MANAGER')")
     public ResponseEntity<Void> deleteStore(
             @PathVariable UUID storeId,
-            @AuthenticationPrincipal UserEntity currentUser) {
-        
+            @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser
+    ) {
         storeService.deletedStore(storeId, currentUser);
         return ResponseEntity.noContent().build();
     }

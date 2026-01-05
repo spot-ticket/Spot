@@ -7,9 +7,16 @@ import com.example.Spot.store.presentation.dto.request.CategoryRequestDTO;
 import com.example.Spot.store.presentation.dto.response.CategoryResponseDTO;
 
 public interface CategoryService {
+
     List<CategoryResponseDTO.CategoryItem> getAll();
-    List<CategoryResponseDTO.StoreSummary> getStoresByCategory(UUID categoryId);
+
+    List<CategoryResponseDTO.StoreSummary> getStoresByCategoryId(UUID categoryId);
+
+    List<CategoryResponseDTO.StoreSummary> getStoresByCategoryName(String name);
+
     CategoryResponseDTO.CategoryDetail create(CategoryRequestDTO.Create request);
+
     CategoryResponseDTO.CategoryDetail update(UUID categoryId, CategoryRequestDTO.Update request);
+
     void delete(UUID categoryId);
 }

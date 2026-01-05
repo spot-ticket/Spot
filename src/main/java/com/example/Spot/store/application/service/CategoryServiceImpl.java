@@ -2,6 +2,7 @@ package com.example.Spot.store.application.service;
 
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ public class CategoryServiceImpl implements CategoryService {
     private final CategoryRepository categoryRepository;
     private final StoreCategoryRepository storeCategoryRepository;
 
+    // 카테고리 전체 조회
     @Override
     public List<CategoryResponseDTO.CategoryItem> getAll() {
         return categoryRepository.findAllByIsDeletedFalse()
@@ -33,21 +35,39 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
 
-    // get
+    // 카테고리 별 매장 조회
     @Override
-    public List<CategoryResponseDTO.StoreSummary> getStoresByCategory(UUID categoryId) {
+    @Transactional(readOnly = true)
+    public List<CategoryResponseDTO.StoreSummary> getStoresByCategoryId(UUID categoryId) {
         CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(categoryId)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found: " + categoryId));
+        return getStoresByCategoryIdInternal(category.getId());
+    }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<CategoryResponseDTO.StoreSummary> getStoresByCategoryName(String categoryName) {
+        CategoryEntity category = categoryRepository.findByNameAndIsDeletedFalse(categoryName)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found: " + categoryName));
+        return getStoresByCategoryIdInternal(category.getId());
+    }
+
+    private List<CategoryResponseDTO.StoreSummary> getStoresByCategoryIdInternal(UUID categoryId) {
         List<StoreCategoryEntity> maps =
-                storeCategoryRepository.findAllActiveByCategoryIdWithStore(category.getId());
+                storeCategoryRepository.findAllActiveByCategoryIdWithStore(categoryId);
 
         return maps.stream()
                 .map(StoreCategoryEntity::getStore)
-                .distinct() // 중복 매핑 방지
+                .collect(Collectors.toMap(
+                        StoreEntity::getId,
+                        s -> s,
+                        (a, b) -> a
+                ))
+                .values().stream()
                 .map(this::toStoreSummary)
                 .toList();
     }
+
 
 
     // create

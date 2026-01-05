@@ -36,9 +36,9 @@ public class CategoryController {
     }
 
     // 카테고리별 매장 조회
-    @GetMapping("/{categoryId}/stores")
-    public List<CategoryResponseDTO.StoreSummary> getStores(@PathVariable UUID categoryId) {
-        return categoryService.getStoresByCategory(categoryId);
+    @GetMapping("/{categoryName}/stores")
+    public List<CategoryResponseDTO.StoreSummary> getStores(@PathVariable String categoryName) {
+        return categoryService.getStoresByCategoryName(categoryName);
     }
 
     // 카테고리 생성
