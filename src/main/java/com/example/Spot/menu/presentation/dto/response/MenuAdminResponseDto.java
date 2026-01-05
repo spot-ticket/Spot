@@ -1,9 +1,7 @@
 package com.example.Spot.menu.presentation.dto.response;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -25,7 +23,6 @@ public class MenuAdminResponseDto {
     private String name;
     private String category;
     private Integer price;
-
     private String description;
 
     @JsonProperty("image_url")
@@ -46,8 +43,6 @@ public class MenuAdminResponseDto {
     @JsonProperty("updated_at")
     private LocalDateTime updatedAt;
 
-    private List<MenuOptionResponseDto> options;
-
     public MenuAdminResponseDto(MenuEntity menu) {
         this.id = menu.getId();
         this.storeId = menu.getStore().getId();
@@ -61,9 +56,5 @@ public class MenuAdminResponseDto {
         this.isHidden = menu.getIsHidden();
         this.createdAt = menu.getCreatedAt();
         this.updatedAt = menu.getUpdatedAt();
-
-        this.options = menu.getOptions().stream()
-                .map(MenuOptionResponseDto::new)
-                .collect(Collectors.toList());
     }
 }
