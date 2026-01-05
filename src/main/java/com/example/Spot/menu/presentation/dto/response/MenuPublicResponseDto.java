@@ -32,6 +32,9 @@ public class MenuPublicResponseDto {
     @JsonProperty("is_available")
     private Boolean isAvailable;
 
+    @JsonProperty("is_hidden")
+    private Boolean isHidden;
+
     private List<MenuOptionResponseDto> options;
 
     public MenuPublicResponseDto(MenuEntity menu) {
@@ -43,10 +46,9 @@ public class MenuPublicResponseDto {
         this.description = menu.getDescription();
         this.imageUrl = menu.getImageUrl();
         this.isAvailable = menu.getIsAvailable();
-
+        this.isHidden = menu.getIsHidden();
         this.options = menu.getOptions().stream()
                 .filter(opt -> !opt.getIsDeleted())
-                .filter(opt -> Boolean.TRUE.equals(opt.getIsAvailable()))
                 .map(MenuOptionResponseDto::new)
                 .collect(Collectors.toList());
     }
