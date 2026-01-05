@@ -12,7 +12,7 @@ import com.example.Spot.menu.domain.entity.MenuEntity;
 
 public interface MenuRepository extends JpaRepository<MenuEntity, UUID> {
 
-    // [손님용] 가게 메뉴 조회 (삭제 X, 숨김 X)
+    // [손님용] 메뉴 전체 조회 (삭제 X, 숨김 X)
     @Query("select m from MenuEntity m where m.store.id = :storeId AND m.isDeleted = false AND m.isHidden = false")
     List<MenuEntity> findAllActiveMenus(@Param("storeId") UUID storeId);
 
@@ -27,6 +27,9 @@ public interface MenuRepository extends JpaRepository<MenuEntity, UUID> {
             "AND m.isHidden = false")
     Optional<MenuEntity> findActiveMenuById(@Param("menuId") UUID menuId);
 
-    // [가게 주인용] 가게 메뉴 조회 (삭제 X, 숨김 O)
+    // [가게용] 메뉴 조회 (삭제 X, 숨김 O)
     List<MenuEntity> findAllByStoreIdAndIsDeletedFalse(UUID storeId);
+
+    // 4. [관리자용] 메뉴 전체 조회
+    List<MenuEntity> findAllByStoreId(UUID storeId);
 }
