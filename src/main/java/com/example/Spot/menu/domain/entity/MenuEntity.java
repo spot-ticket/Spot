@@ -66,13 +66,14 @@ public class MenuEntity extends UpdateBaseEntity {
     private List<MenuOptionEntity> options = new ArrayList<>();
 
     @Builder
-    public MenuEntity(StoreEntity store, String name, String category, Integer price, String description, String imageUrl) {
+    public MenuEntity(StoreEntity store, String name, String category, Integer price, String description, String imageUrl, List<MenuOptionEntity> options) {
         this.store = store;
         this.name = name;
         this.category = category;
         this.price = price;
         this.description = description;
         this.imageUrl = imageUrl;
+        this.options = (options != null) ? options: new ArrayList<>();
     }
 
     public void updateMenu(String name, Integer price, String category, String description, String imageUrl) {
