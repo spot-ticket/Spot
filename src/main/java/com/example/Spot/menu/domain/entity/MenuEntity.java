@@ -73,7 +73,7 @@ public class MenuEntity extends UpdateBaseEntity {
         this.price = price;
         this.description = description;
         this.imageUrl = imageUrl;
-        this.options = (options != null) ? options: new ArrayList<>();
+        this.options = (options != null) ? options : new ArrayList<>();
     }
 
     public void updateMenu(String name, Integer price, String category, String description, String imageUrl) {
