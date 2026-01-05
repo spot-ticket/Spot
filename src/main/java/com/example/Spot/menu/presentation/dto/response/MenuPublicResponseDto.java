@@ -5,6 +5,7 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
+import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Getter;
@@ -37,19 +38,24 @@ public class MenuPublicResponseDto {
 
     private List<MenuOptionResponseDto> options;
 
-    public MenuPublicResponseDto(MenuEntity menu) {
-        this.id = menu.getId();
-        this.storeId = menu.getStore().getId();
-        this.name = menu.getName();
-        this.category = menu.getCategory();
-        this.price = menu.getPrice();
-        this.description = menu.getDescription();
-        this.imageUrl = menu.getImageUrl();
-        this.isAvailable = menu.getIsAvailable();
-        this.isHidden = menu.getIsHidden();
-        this.options = menu.getOptions().stream()
-                .filter(opt -> !opt.getIsDeleted())
+    public static MenuPublicResponseDto of(MenuEntity menu, List<MenuOptionEntity> options) {
+        MenuPublicResponseDto dto = new MenuPublicResponseDto();
+
+        dto.id = menu.getId();
+        dto.storeId = menu.getStore().getId();
+        dto.name = menu.getName();
+        dto.category = menu.getCategory();
+        dto.price = menu.getPrice();
+        dto.description = menu.getDescription();
+        dto.imageUrl = menu.getImageUrl();
+        dto.isAvailable = menu.getIsAvailable();
+        dto.isHidden = menu.getIsHidden();
+
+        // menu.getOptions() 대신 파라미터로 받은 options를 사용
+        dto.options = options.stream()
                 .map(MenuOptionResponseDto::new)
                 .collect(Collectors.toList());
+
+        return dto;
     }
 }
