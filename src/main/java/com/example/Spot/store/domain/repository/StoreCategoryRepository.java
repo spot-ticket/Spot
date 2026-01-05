@@ -14,25 +14,20 @@ import com.example.Spot.store.domain.entity.StoreEntity;
 
 public interface StoreCategoryRepository extends JpaRepository<StoreCategoryEntity, UUID> {
 
-    // Category - 카테고리 별 매장 조회
     @Query("""
-        select scm
-        from StoreCategoryEntity scm
-        join fetch scm.store s  
-        where scm.category.id  = :categoryId
+        select sc
+        from StoreCategoryEntity sc
+        join fetch sc.store s
+        where sc.isDeleted = false
           and s.isDeleted = false
-          and s.isDeleted = false
+          and sc.category.id = :categoryId
     """)
     List<StoreCategoryEntity> findAllActiveByCategoryIdWithStore(@Param("categoryId") UUID categoryId);
 
-
-    // Store
     List<StoreCategoryEntity> findByCategoryAndIsDeletedFalse(CategoryEntity category);
 
     List<StoreCategoryEntity> findByStoreAndIsDeletedFalse(StoreEntity store);
 
-
-    // Test
     Optional<StoreCategoryEntity> findByStoreAndCategoryAndIsDeletedFalse(
             StoreEntity store,
             CategoryEntity category
