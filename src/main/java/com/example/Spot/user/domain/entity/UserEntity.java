@@ -43,6 +43,8 @@ public class UserEntity extends UpdateBaseEntity {
 
     @Column(nullable = false)
     private String nickname;
+
+    @Column(nullable = false)
     private boolean male;
 
     @Column(nullable = false)
@@ -66,7 +68,6 @@ public class UserEntity extends UpdateBaseEntity {
         this.role = role;
     }
 
-
     public static UserEntity forAuthentication(String username, Role role) {
         UserEntity user = new UserEntity();
         user.username = username;
@@ -74,11 +75,6 @@ public class UserEntity extends UpdateBaseEntity {
         return user;
     }
 
-    public void ismale() {
-        this.male = true;
-    }
-
-    // Setter methods
     public void setUsername(String username) {
         this.username = username;
     }
@@ -91,8 +87,19 @@ public class UserEntity extends UpdateBaseEntity {
         this.male = male;
     }
 
+    public void setNickname(String nickname) {
+        this.nickname = nickname;
+    }
+
     public void setAge(int age) {
         this.age = age;
     }
 
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public void setAddress(String address) {
+        this.address = address;
+    }
 }
