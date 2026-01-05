@@ -12,10 +12,19 @@ import com.example.Spot.store.domain.entity.CategoryEntity;
 @Repository
 public interface CategoryRepository extends JpaRepository<CategoryEntity, UUID> {
 
-    Optional<CategoryEntity> findByName(String name);
 
-    // soft delete 컬럼(isDeleted)이 UpdateBaseEntity에 있다고 가정
-    List<CategoryEntity> findByIsDeletedFalse();
+    // main
+    List<CategoryEntity> findAllByIsDeletedFalse();
 
     Optional<CategoryEntity> findByIdAndIsDeletedFalse(UUID id);
+    Optional<CategoryEntity> findByNameAndIsDeletedFalse(String name);
+
+
+    boolean existsByNameAndIsDeletedFalse(String name);
+
+
+    // test
+    Optional<CategoryEntity> findByName(String name);
+    // soft delete 컬럼(isDeleted)이 UpdateBaseEntity에 있다고 가정
+    List<CategoryEntity> findByIsDeletedFalse();
 }
