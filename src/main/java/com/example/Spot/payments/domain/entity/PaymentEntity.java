@@ -1,10 +1,8 @@
 package com.example.Spot.payments.domain.entity;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.example.Spot.global.common.BaseEntity;
@@ -68,6 +66,7 @@ public class PaymentEntity extends BaseEntity{
         this.paymentContent = content;
         this.paymentMethod = paymentMethod;
         this.totalAmount = totalAmount;
+        this.paymentKey = null;
     }
 
     public void confirm(String paymentKey) {
