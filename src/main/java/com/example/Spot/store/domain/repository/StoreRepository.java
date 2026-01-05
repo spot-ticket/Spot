@@ -39,7 +39,7 @@ public interface StoreRepository extends JpaRepository<StoreEntity, UUID> {
             "JOIN s.users su " +
             "JOIN su.user u " +
             "WHERE u.id = :userId " +
-            "AND u.role = ('OWNER', 'CHEF') " +
+            "AND u.role IN ('OWNER', 'CHEF') " +
             "AND s.isDeleted = false")
     List<StoreEntity> findAllByOwnerId(@Param("userId") Integer userId);
 
