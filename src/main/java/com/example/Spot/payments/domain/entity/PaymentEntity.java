@@ -29,7 +29,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "p_payment")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-public class PaymentEntity extends BaseEntity{
+public class PaymentEntity extends BaseEntity {
 
     @Id
     @GeneratedValue

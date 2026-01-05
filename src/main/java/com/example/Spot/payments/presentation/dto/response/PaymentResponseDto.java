@@ -1,8 +1,9 @@
 package com.example.Spot.payments.presentation.dto.response;
 
-import lombok.Builder;
 import java.time.LocalDateTime;
 import java.util.UUID;
+
+import lombok.Builder;
 
 public class PaymentResponseDto {
 

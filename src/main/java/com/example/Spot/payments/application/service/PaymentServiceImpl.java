@@ -7,20 +7,20 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.Spot.global.presentation.advice.ResourceNotFoundException;
-import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
-import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
-import com.example.Spot.payments.domain.repository.PaymentRepository;
-import com.example.Spot.payments.domain.repository.PaymentCancelRepository;
-import com.example.Spot.payments.domain.repository.PaymentItemRepository;
-import com.example.Spot.payments.domain.entity.PaymentEntity;
-import com.example.Spot.payments.domain.entity.PaymentItemEntity;
-import com.example.Spot.payments.domain.entity.PaymentCancelEntity;
-import com.example.Spot.payments.infrastructure.client.TossPaymentClient;
-import com.example.Spot.payments.infrastructure.dto.TossPaymentResponse;
-import com.example.Spot.user.domain.entity.UserEntity;
-import com.example.Spot.user.domain.repository.UserRepository;
 import com.example.Spot.order.domain.entity.OrderEntity;
 import com.example.Spot.order.domain.repository.OrderRepository;
+import com.example.Spot.payments.domain.entity.PaymentCancelEntity;
+import com.example.Spot.payments.domain.entity.PaymentEntity;
+import com.example.Spot.payments.domain.entity.PaymentItemEntity;
+import com.example.Spot.payments.domain.repository.PaymentCancelRepository;
+import com.example.Spot.payments.domain.repository.PaymentItemRepository;
+import com.example.Spot.payments.domain.repository.PaymentRepository;
+import com.example.Spot.payments.infrastructure.client.TossPaymentClient;
+import com.example.Spot.payments.infrastructure.dto.TossPaymentResponse;
+import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
+import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
+import com.example.Spot.user.domain.entity.UserEntity;
+import com.example.Spot.user.domain.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -111,7 +111,7 @@ public class PaymentServiceImpl implements PaymentService {
         }
 
         try {
-            TossPaymentResponse tossResponse = tossPaymentClient.cancelPayment(
+            tossPaymentClient.cancelPayment(
                     payment.getPaymentKey(),
                     request.cancelReason()
             );
