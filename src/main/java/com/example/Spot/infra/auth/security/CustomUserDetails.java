@@ -25,6 +25,11 @@ public class CustomUserDetails implements UserDetails {
         this.userAuthEntity = null;
     }
 
+    public UserEntity getUserEntity() {
+        return userEntity;
+    }
+
+
     // role값 반환
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
