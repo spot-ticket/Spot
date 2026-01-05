@@ -58,7 +58,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Role role = Role.valueOf(roleName);
 
         // access 발급 (JWTUtil)
-        String accessToken = jwtUtil.createJwt(username, role, 60 * 60 * 10L);
+        String accessToken = jwtUtil.createJwt(username, role, 60*60*10L);
 
         // refresh 발급 (DB 저장)
         TokenService.RefreshIssueResult r = tokenService.issueRefresh(username);
