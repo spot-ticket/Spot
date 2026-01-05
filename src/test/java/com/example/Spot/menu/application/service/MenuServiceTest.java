@@ -5,26 +5,25 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
+
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.repository.MenuRepository;
-
 import com.example.Spot.menu.presentation.dto.response.MenuAdminResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuPublicResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.user.domain.Role;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.BDDMockito;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import static org.mockito.BDDMockito.given;
-import org.springframework.test.util.ReflectionTestUtils;
+
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-
 
 @ExtendWith(MockitoExtension.class)
 class MenuServiceTest {
@@ -59,10 +58,10 @@ class MenuServiceTest {
         assertThat(result).hasSize(2);
         assertThat(result.getFirst().getName()).isEqualTo("육전물막국수");
 
-        // 3-3. DTO 변환 시 StoreId가 잘 들어갔는지 확인
+        // DTO 변환 시 StoreId가 잘 들어갔는지 확인
         assertThat(result.getFirst().getStoreId()).isEqualTo(storeId);
 
-        // 3-4. Repository가 실제로 호출되었는지 검증
+        // Repository가 실제로 호출되었는지 검증
         verify(menuRepository, times(1)).findAllByStoreId(storeId);
     }
 
@@ -124,7 +123,7 @@ class MenuServiceTest {
 
     private MenuEntity createMenuEntity(StoreEntity store, String name, Integer price) {
         MenuEntity menu = MenuEntity.builder()
-                .store(store) // 중요! Store가 있어야 DTO 변환 시 에러 안 남
+                .store(store) // Store가 있어야 DTO 변환 시 에러 안 남
                 .name(name)
                 .category("한식")
                 .price(price)
