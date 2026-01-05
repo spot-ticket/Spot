@@ -1,10 +1,8 @@
 package com.example.Spot.payments.domain.entity;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.example.Spot.global.common.BaseEntity;
@@ -31,7 +29,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "p_payment")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @EntityListeners(AuditingEntityListener.class)
-public class PaymentEntity extends BaseEntity{
+public class PaymentEntity extends BaseEntity {
 
     @Id
     @GeneratedValue

@@ -6,9 +6,9 @@ import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import com.example.Spot.order.domain.entity.OrderEntity;
 import com.example.Spot.payments.domain.entity.PaymentEntity;
 import com.example.Spot.payments.domain.entity.PaymentItemEntity;
-import com.example.Spot.order.domain.entity.OrderEntity;
 
 public interface PaymentItemRepository extends JpaRepository<PaymentItemEntity, UUID> {
 
