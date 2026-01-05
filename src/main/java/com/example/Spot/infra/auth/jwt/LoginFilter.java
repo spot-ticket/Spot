@@ -46,7 +46,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         return authenticationManager.authenticate(authToken);
     }
 
-    // 로그인 성공시 실행하는 메소드 (여기서 JWT를 발급)
+    // 로그인 성공시 실행하는 메서드 (여기서 JWT를 발급)
     @Override
     protected void successfulAuthentication(HttpServletRequest request, HttpServletResponse response,
                                             FilterChain chain, Authentication authentication) {
@@ -58,7 +58,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         Role role = Role.valueOf(roleName);
 
         // access 발급 (JWTUtil)
-        String accessToken = jwtUtil.createJwt(username, role, 60 * 30L); // 만료 시간은 네 기준으로 조절
+        String accessToken = jwtUtil.createJwt(username, role, 60 * 60 * 10L);
 
         // refresh 발급 (DB 저장)
         TokenService.RefreshIssueResult r = tokenService.issueRefresh(username);
