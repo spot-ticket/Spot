@@ -6,6 +6,8 @@ import java.util.UUID;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
+
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.example.Spot.menu.domain.repository.MenuOptionRepository;
@@ -16,8 +18,6 @@ import com.example.Spot.menu.presentation.dto.response.CreateMenuOptionResponseD
 import com.example.Spot.menu.presentation.dto.response.MenuOptionResponseDto;
 import com.example.Spot.menu.presentation.dto.response.UpdateMenuOptionResponseDto;
 import com.example.Spot.user.domain.Role;
-
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
