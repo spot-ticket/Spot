@@ -77,7 +77,7 @@ public class PaymentCancelEntityUnitTest {
     private OrderEntity createTestOrder(StoreEntity store) {
         return OrderEntity.builder()
                           .store(store)
-                          .userId(1L)
+                          .userId(1)
                           .orderNumber("TEST-ORDER-001")
                           .pickupTime(LocalDateTime.now().plusHours(1))
                           .needDisposables(false)
