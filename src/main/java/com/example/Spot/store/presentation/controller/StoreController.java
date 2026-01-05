@@ -35,7 +35,7 @@ public class StoreController {
 
     // 1. 매장 생성
     @PostMapping
-    @PreAuthorize("hasAnyRole('ADMIN','OWNER','MANAGER')")
+    @PreAuthorize("hasAnyRole('MASTER','OWNER','MANAGER')")
     public ResponseEntity<UUID> createStore(
             @Valid @RequestBody StoreCreateRequest request,
             @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser
@@ -65,7 +65,7 @@ public class StoreController {
     
     // 4. 매장 정보 수정
     @PutMapping("/{storeId}")
-    @PreAuthorize("hasAnyRole('ADMIN','OWNER','MANAGER')")
+    @PreAuthorize("hasAnyRole('MASTER','OWNER','MANAGER')")
     public ResponseEntity<Void> updateStore(
             @PathVariable UUID storeId,
             @Valid @RequestBody StoreUpdateRequest request,
@@ -78,7 +78,7 @@ public class StoreController {
     
     // 5. 매장 삭제 (Soft Delete)
     @DeleteMapping("/{storeId}")
-    @PreAuthorize("hasAnyRole('ADMIN','OWNER','MANAGER')")
+    @PreAuthorize("hasAnyRole('MASTER','OWNER','MANAGER')")
     public ResponseEntity<Void> deleteStore(
             @PathVariable UUID storeId,
             @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser
