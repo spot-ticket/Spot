@@ -1,5 +1,10 @@
 package com.example.Spot.menu.application.service;
 
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -19,11 +24,6 @@ import com.example.Spot.menu.presentation.dto.response.MenuAdminResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuPublicResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.user.domain.Role;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 @ExtendWith(MockitoExtension.class)
 class MenuServiceTest {
