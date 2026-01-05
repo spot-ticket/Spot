@@ -1,0 +1,15 @@
+package com.example.Spot.store.application.service;
+
+import java.util.List;
+import java.util.UUID;
+
+import com.example.Spot.store.presentation.dto.request.CategoryRequestDTO;
+import com.example.Spot.store.presentation.dto.response.CategoryResponseDTO;
+
+public interface CategoryService {
+    List<CategoryResponseDTO.CategoryItem> getAll();
+    List<CategoryResponseDTO.StoreSummary> getStoresByCategory(UUID categoryId);
+    CategoryResponseDTO.CategoryDetail create(CategoryRequestDTO.Create request);
+    CategoryResponseDTO.CategoryDetail update(UUID categoryId, CategoryRequestDTO.Update request);
+    void delete(UUID categoryId);
+}
