@@ -10,13 +10,15 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
+import com.example.Spot.payments.domain.entity.PaymentEntity.PaymentMethod;
+
 public class PaymentEntityUnitTest {
 
     private PaymentEntity createReadyPayment() {
         return PaymentEntity.builder()
                 .title("테스트 결제")
-                .paymentAmount(10000L)
-                .idempotencyKey(UUID.randomUUID())
+                .totalAmount(10000L)
+                .paymentMethod(PaymentMethod.CREDIT_CARD)
                 .build();
     }
 }

@@ -66,6 +66,7 @@ public class PaymentEntity extends BaseEntity {
         this.paymentContent = content;
         this.paymentMethod = paymentMethod;
         this.totalAmount = totalAmount;
+        this.paymentKey = null;
     }
 
     public void confirm(String paymentKey) {
