@@ -37,7 +37,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HandlerMethodValidationException.class)
     public ResponseEntity<ApiResponse<?>> handleHandlerMethodValidation(HandlerMethodValidationException e) {
-
+        
         log.warn("[HandlerMethodValidationException] {}", e.getMessage());
 
         return ResponseEntity
@@ -53,6 +53,16 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(GeneralErrorCode.UNAUTHORIZED.getStatus())
                 .body(ApiResponse.onFailure(GeneralErrorCode.UNAUTHORIZED, null));
+    }
+
+    @ExceptionHandler(ResourceNotFoundException.class)
+    public ResponseEntity<ApiResponse<?>> handleResourceNotFound(ResourceNotFoundException e) {
+
+        log.warn("[ResourceNotFoundException] {}", e.getMessage());
+
+        return ResponseEntity
+                .status(GeneralErrorCode.NOT_FOUND.getStatus())
+                .body(ApiResponse.onFailure(GeneralErrorCode.NOT_FOUND, null));
     }
 
     @ExceptionHandler(Exception.class)
