@@ -1,6 +1,5 @@
 package com.example.Spot.payments.domain.entity;
 
-import com.example.Spot.payments.domain.entity.PaymentEntity;
 import com.example.Spot.payments.domain.entity.PaymentEntity.PaymentMethod;
 
 public class PaymentEntityUnitTest {
