@@ -3,8 +3,6 @@ package com.example.Spot.menu.application.service;
 import java.util.List;
 import java.util.UUID;
 
-import lombok.RequiredArgsConstructor;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,6 +17,7 @@ import com.example.Spot.menu.presentation.dto.response.MenuOptionResponseDto;
 import com.example.Spot.menu.presentation.dto.response.UpdateMenuOptionResponseDto;
 import com.example.Spot.user.domain.Role;
 
+import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
