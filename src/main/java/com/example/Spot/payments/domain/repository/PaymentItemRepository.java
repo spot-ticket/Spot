@@ -18,4 +18,6 @@ public interface PaymentItemRepository extends JpaRepository<PaymentItemEntity, 
 
     Optional<PaymentItemEntity> findTopByPaymentAndOrderOrderByCreatedAtDesc(
         PaymentEntity payment, OrderEntity order);
+
+    List<PaymentItemEntity> findAllByPayment(PaymentEntity payment);
 }
