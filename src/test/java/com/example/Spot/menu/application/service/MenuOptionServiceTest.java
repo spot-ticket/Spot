@@ -103,7 +103,7 @@ class MenuOptionServiceTest {
 
         MenuOptionEntity option = createMenuOptionEntity(menu, "기존옵션", "설명", 1000, optionId);
 
-        // ★ 수정: DTO 생성 및 값 주입
+        // DTO 생성 및 값 주입
         UpdateMenuOptionRequestDto request = new UpdateMenuOptionRequestDto();
         ReflectionTestUtils.setField(request, "name", "수정된옵션");
         ReflectionTestUtils.setField(request, "price", 2000);
