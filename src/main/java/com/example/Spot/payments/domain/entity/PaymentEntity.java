@@ -1,10 +1,8 @@
 package com.example.Spot.payments.domain.entity;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
-import org.springframework.data.annotation.LastModifiedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import com.example.Spot.global.common.BaseEntity;
@@ -44,61 +42,44 @@ public class PaymentEntity extends BaseEntity {
     private UserEntity user;
 
     @Column(updatable = false, nullable = false, length = 100)
-    private String title;
+    private String paymentTitle;
 
     @Column(updatable = false, nullable = false, length = 255)
-    private String content;
+    private String paymentContent;
 
-    @Column(updatable = false, nullable = false, name = "idempotency_key")
-    private UUID idempotencyKey;
+    @Column(name = "payment_key", unique = true)
+    private String paymentKey;
 
     @Enumerated(EnumType.STRING)
     @Column(updatable = false, nullable = false, name = "payment_method")
     private PaymentMethod paymentMethod;
 
     @Column(updatable = false, nullable = false, name = "payment_amount")
-    private Long paymentAmount;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false, name = "payment_status")
-    private PaymentStatus paymentStatus;
-
-    @LastModifiedDate
-    @Column(nullable = false, name = "update_at")
-    private LocalDateTime updatedAt;
+    private Long totalAmount;
 
     @Builder
-    public PaymentEntity(String title, String content, UUID idempotencyKey,
-                         PaymentMethod paymentMethod, Long paymentAmount, PaymentStatus paymentStatus) {
+    public PaymentEntity(UserEntity user, String title, String content,
+                         PaymentMethod paymentMethod, Long totalAmount) {
 
-        this.title = title;
-        this.content = content;
-        this.idempotencyKey = idempotencyKey;
+        this.user = user;
+        this.paymentTitle = title;
+        this.paymentContent = content;
         this.paymentMethod = paymentMethod;
-        this.paymentAmount = paymentAmount;
-        this.paymentStatus = (paymentStatus != null) ? paymentStatus : PaymentStatus.READY;
+        this.totalAmount = totalAmount;
+        this.paymentKey = null;
     }
 
-    public void updateStatus(PaymentStatus status) {
+    public void confirm(String paymentKey) {
+        this.paymentKey = paymentKey;
+    }
 
-        if (this.paymentStatus == PaymentStatus.SUCCESS
-                || this.paymentStatus == PaymentStatus.CANCELLED
-                || this.paymentStatus == PaymentStatus.FAILED) {
-            throw new IllegalStateException("이미 완료된 결제 상태는 변경할 수 없습니다.");
-        }
-
-        this.paymentStatus = status;
+    public String getPaymentKey() {
+        return this.paymentKey;
     }
 
     public enum PaymentMethod {
-        CREDIT_CARD,        // 신용 카드
+        CREDIT_CARD,         // 신용 카드
         BANK_TRANSFER        // 계좌 이체
     }
 
-    public enum PaymentStatus {
-        READY,              // 결제 준비
-        SUCCESS,            // 결제 성공
-        FAILED,             // 결제 실패
-        CANCELLED           // 결제 취소
-    }
 }
