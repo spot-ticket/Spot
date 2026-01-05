@@ -68,5 +68,4 @@ public class PaymentController {
         PaymentResponseDto.CancelList response = paymentService.getDetailPaymentCancel(paymentId);
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
     }
-
 }
