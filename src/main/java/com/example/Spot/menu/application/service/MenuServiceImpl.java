@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import com.example.Spot.menu.domain.entity.MenuOptionEntity;
-import com.example.Spot.menu.domain.repository.MenuOptionRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import lombok.RequiredArgsConstructor;
+
 import com.example.Spot.menu.domain.entity.MenuEntity;
+import com.example.Spot.menu.domain.entity.MenuOptionEntity;
+import com.example.Spot.menu.domain.repository.MenuOptionRepository;
 import com.example.Spot.menu.domain.repository.MenuRepository;
 import com.example.Spot.menu.presentation.dto.request.CreateMenuRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuHiddenRequestDto;
@@ -22,8 +24,6 @@ import com.example.Spot.menu.presentation.dto.response.UpdateMenuResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.StoreRepository;
 import com.example.Spot.user.domain.Role;
-
-import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
