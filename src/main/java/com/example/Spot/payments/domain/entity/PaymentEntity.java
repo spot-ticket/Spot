@@ -81,4 +81,5 @@ public class PaymentEntity extends BaseEntity {
         CREDIT_CARD,         // 신용 카드
         BANK_TRANSFER        // 계좌 이체
     }
+
 }
