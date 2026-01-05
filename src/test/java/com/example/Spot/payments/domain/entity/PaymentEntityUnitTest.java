@@ -10,8 +10,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.EnumSource;
 
-import com.example.Spot.payments.domain.entity.PaymentEntity.PaymentStatus;
-
 public class PaymentEntityUnitTest {
 
     private PaymentEntity createReadyPayment() {
