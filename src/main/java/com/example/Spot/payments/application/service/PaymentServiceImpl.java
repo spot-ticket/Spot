@@ -1,6 +1,8 @@
 package com.example.Spot.payments.application.service;
 
+import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -47,7 +49,7 @@ public class PaymentServiceImpl implements PaymentService {
     // billingKey를 받으려면 프론트 로직이 요구되어서 customer_id는 1로 고정됨
     @Override
     @Transactional
-    public PaymentResponseDto.Confirm paymentBillingConfirm(PaymentRequestDto.Confirm request) {
+    public PaymentResponseDto.Confirm confirmPaymentBilling(PaymentRequestDto.Confirm request) {
         // READY -> IN_PROGRESS -> DONE / ABORTED
         // https://docs.tosspayments.com/reference/using-api/webhook-events 참고
 
@@ -92,7 +94,7 @@ public class PaymentServiceImpl implements PaymentService {
     // 결제했을 때 발급받은 paymentKey를 이용함
     @Override
     @Transactional
-    public PaymentResponseDto.Cancel paymentCancel(PaymentRequestDto.Cancel request) {
+    public PaymentResponseDto.Cancel cancelPayment(PaymentRequestDto.Cancel request) {
 
         PaymentEntity payment = paymentRepository.findById(request.paymentId())
                 .orElseThrow(() -> new ResourceNotFoundException("결제를 찾을 수 없습니다."));
@@ -177,9 +179,96 @@ public class PaymentServiceImpl implements PaymentService {
     }
 
     @Override
-    public PaymentResponseDto.View paymentUserView() {
-        // TODO: 구현 필요
-        return null;
+    public PaymentResponseDto.PaymentList getAllPayment() {
+        List<PaymentEntity> payments = paymentRepository.findAll();
+
+        List<PaymentResponseDto.PaymentDetail> paymentDetails = payments.stream()
+                .map(payment -> {
+                    PaymentItemEntity latestItem = paymentItemRepository
+                            .findTopByPaymentOrderByCreatedAtDesc(payment)
+                            .orElse(null);
+
+                    return PaymentResponseDto.PaymentDetail.builder()
+                            .paymentId(payment.getId())
+                            .title(payment.getPaymentTitle())
+                            .content(payment.getPaymentContent())
+                            .paymentMethod(payment.getPaymentMethod())
+                            .totalAmount(payment.getTotalAmount())
+                            .status(latestItem != null ? latestItem.getPaymentStatus().toString() : "UNKNOWN")
+                            .createdAt(payment.getCreatedAt())
+                            .build();
+                })
+                .collect(Collectors.toList());
+
+        return PaymentResponseDto.PaymentList.builder()
+                .payments(paymentDetails)
+                .totalCount(paymentDetails.size())
+                .build();
+    }
+
+    @Override
+    public PaymentResponseDto.PaymentDetail getDetailPayment(UUID paymentId) {
+        PaymentEntity payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new ResourceNotFoundException("결제를 찾을 수 없습니다."));
+
+        PaymentItemEntity latestItem = paymentItemRepository
+                .findTopByPaymentOrderByCreatedAtDesc(payment)
+                .orElseThrow(() -> new ResourceNotFoundException("결제 항목을 찾을 수 없습니다."));
+
+        return PaymentResponseDto.PaymentDetail.builder()
+                .paymentId(payment.getId())
+                .title(payment.getPaymentTitle())
+                .content(payment.getPaymentContent())
+                .paymentMethod(payment.getPaymentMethod())
+                .totalAmount(payment.getTotalAmount())
+                .status(latestItem.getPaymentStatus().toString())
+                .createdAt(payment.getCreatedAt())
+                .build();
+    }
+
+    @Override
+    public PaymentResponseDto.CancelList getAllPaymentCancel() {
+        List<PaymentCancelEntity> cancellations = paymentCancelRepository.findAll();
+
+        List<PaymentResponseDto.CancelDetail> cancelDetails = cancellations.stream()
+                .map(cancel -> PaymentResponseDto.CancelDetail.builder()
+                        .cancelId(cancel.getId())
+                        .paymentId(cancel.getPaymentItem().getPayment().getId())
+                        .cancelReason(cancel.getReason())
+                        .cancelAmount(cancel.getPaymentItem().getPayment().getTotalAmount())
+                        .canceledAt(cancel.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+
+        return PaymentResponseDto.CancelList.builder()
+                .cancellations(cancelDetails)
+                .totalCount(cancelDetails.size())
+                .build();
+    }
+
+    @Override
+    public PaymentResponseDto.CancelList getDetailPaymentCancel(UUID paymentId) {
+        PaymentEntity payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new ResourceNotFoundException("결제를 찾을 수 없습니다."));
+
+        List<PaymentItemEntity> paymentItems = paymentItemRepository.findAllByPayment(payment);
+
+        List<PaymentResponseDto.CancelDetail> cancelDetails = paymentItems.stream()
+                .filter(item -> item.getPaymentStatus() == PaymentItemEntity.PaymentStatus.CANCELLED)
+                .flatMap(item -> paymentCancelRepository.findAllByPaymentItem(item).stream())
+                .map(cancel -> PaymentResponseDto.CancelDetail.builder()
+                        .cancelId(cancel.getId())
+                        .paymentId(payment.getId())
+                        .cancelReason(cancel.getReason())
+                        .cancelAmount(payment.getTotalAmount())
+                        .canceledAt(cancel.getCreatedAt())
+                        .build())
+                .collect(Collectors.toList());
+
+        return PaymentResponseDto.CancelList.builder()
+                .cancellations(cancelDetails)
+                .totalCount(cancelDetails.size())
+                .build();
     }
 
 }
