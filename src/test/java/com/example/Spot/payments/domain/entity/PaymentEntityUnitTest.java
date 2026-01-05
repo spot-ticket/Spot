@@ -1,15 +1,6 @@
 package com.example.Spot.payments.domain.entity;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.assertThatThrownBy;
-
-import java.util.UUID;
-
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.EnumSource;
-
+import com.example.Spot.payments.domain.entity.PaymentEntity;
 import com.example.Spot.payments.domain.entity.PaymentEntity.PaymentMethod;
 
 public class PaymentEntityUnitTest {
@@ -17,6 +8,7 @@ public class PaymentEntityUnitTest {
     private PaymentEntity createReadyPayment() {
         return PaymentEntity.builder()
                 .title("테스트 결제")
+                .content("결제 테스트 진행입니다")
                 .totalAmount(10000L)
                 .paymentMethod(PaymentMethod.CREDIT_CARD)
                 .build();
