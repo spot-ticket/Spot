@@ -4,12 +4,16 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import com.example.Spot.order.domain.entity.OrderEntity;
+import com.example.Spot.store.domain.entity.StoreEntity;
+import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.domain.entity.UserEntity;
 
 public class PaymentCancelEntityUnitTest {
 
@@ -19,20 +23,10 @@ public class PaymentCancelEntityUnitTest {
         UUID idempotency = UUID.randomUUID();
         String reason = "고객 변심";
 
-        OrderEntity order = OrderEntity.builder()
-                .orderNumber("TEST-ORDER-001")
-                .userId(1L)
-                .pickupTime(LocalDateTime.now().plusHours(1))
-                .build();
-
-        PaymentEntity payment = PaymentEntity.builder()
-                .title("테스트 결제")
-                .content("테스트 결제 내용")
-                .idempotencyKey(UUID.randomUUID())
-                .paymentMethod(PaymentEntity.PaymentMethod.CREDIT_CARD)
-                .paymentAmount(10000L)
-                .paymentStatus(PaymentEntity.PaymentStatus.SUCCESS)
-                .build();
+        UserEntity user = createTestUser();
+        StoreEntity store = createTestStore();
+        OrderEntity order = createTestOrder(store);
+        PaymentEntity payment = createTestPayment(user);
 
         PaymentItemEntity paymentItem = PaymentItemEntity.builder()
                 .payment(payment)
@@ -57,5 +51,46 @@ public class PaymentCancelEntityUnitTest {
                 .reason(null)
                 .build())
                 .isInstanceOf(IllegalArgumentException.class);
+    }
+
+    private UserEntity createTestUser() {
+        return UserEntity.builder()
+                         .username("김구름")
+                         .nickname("구르미")
+                         .address("서울시 강남구")
+                         .email("goormi@goorm.com")
+                         .role(Role.OWNER)
+                         .build();
+    }
+
+    private StoreEntity createTestStore() {
+        return StoreEntity.builder()
+                          .name("테스트 매장")
+                          .address("서울시 강남구 테헤란로 123")
+                          .detailAddress("4층")
+                          .phoneNumber("02-1234-5678")
+                          .openTime(LocalTime.of(9, 0))
+                          .closeTime(LocalTime.of(21, 0))
+                          .build();
+    }
+
+    private OrderEntity createTestOrder(StoreEntity store) {
+        return OrderEntity.builder()
+                          .store(store)
+                          .userId(1)
+                          .orderNumber("TEST-ORDER-001")
+                          .pickupTime(LocalDateTime.now().plusHours(1))
+                          .needDisposables(false)
+                          .build();
+    }
+
+    private PaymentEntity createTestPayment(UserEntity user) {
+        return PaymentEntity.builder()
+                            .user(user)
+                            .title("테스트 결제")
+                            .content("테스트 결제 내용")
+                            .paymentMethod(PaymentEntity.PaymentMethod.CREDIT_CARD)
+                            .totalAmount(10000L)
+                            .build();
     }
 }

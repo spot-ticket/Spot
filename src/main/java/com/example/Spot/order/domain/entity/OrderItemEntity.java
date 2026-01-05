@@ -1,6 +1,8 @@
 package com.example.Spot.order.domain.entity;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
@@ -8,6 +10,7 @@ import org.hibernate.annotations.UuidGenerator;
 import com.example.Spot.global.common.BaseEntity;
 import com.example.Spot.menu.domain.entity.MenuEntity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -15,6 +18,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -41,27 +45,39 @@ public class OrderItemEntity extends BaseEntity {
     @JoinColumn(name = "menu_id", nullable = false)
     private MenuEntity menu;
 
+    @Column(name = "menu_name", nullable = false)
+    private String menuName;
+
     @Column(name = "menu_price", nullable = false, precision = 10, scale = 2)
     private BigDecimal menuPrice;
 
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
+    @OneToMany(mappedBy = "orderItem", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderItemOptionEntity> orderItemOptions = new ArrayList<>();
+
     @Builder
-    public OrderItemEntity(MenuEntity menu, BigDecimal menuPrice, Integer quantity) {
+    public OrderItemEntity(MenuEntity menu, Integer quantity) {
         if (menu == null) {
             throw new IllegalArgumentException("메뉴는 필수입니다.");
-        }
-        if (menuPrice == null || menuPrice.compareTo(BigDecimal.ZERO) < 0) {
-            throw new IllegalArgumentException("메뉴 가격은 0 이상이어야 합니다.");
         }
         if (quantity == null || quantity <= 0) {
             throw new IllegalArgumentException("수량은 1 이상이어야 합니다.");
         }
         
         this.menu = menu;
-        this.menuPrice = menuPrice;
+        this.menuName = menu.getName();
+        this.menuPrice = BigDecimal.valueOf(menu.getPrice());
         this.quantity = quantity;
+    }
+
+    public void addOrderItemOption(OrderItemOptionEntity orderItemOption) {
+        if (orderItemOption == null) {
+            throw new IllegalArgumentException("주문 옵션은 null일 수 없습니다.");
+        }
+        this.orderItemOptions.add(orderItemOption);
+        orderItemOption.setOrderItem(this);
     }
 
     // 양방향 관계 설정을 위한 메서드

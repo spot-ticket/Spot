@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -11,12 +12,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.example.Spot.infra.auth.jwt.JWTFilter;
 import com.example.Spot.infra.auth.jwt.JWTUtil;
 import com.example.Spot.infra.auth.jwt.LoginFilter;
 import com.example.Spot.user.application.service.TokenService;
 
 @Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
 public class SecurityConfig {
 
     //AuthenticationManager가 인자로 받을 AuthenticationConfiguraion 객체 생성자 주입
@@ -63,9 +66,32 @@ public class SecurityConfig {
         // 경로별 인가 작업
         http
                 .authorizeHttpRequests(auth -> auth
+                        // 누구나 접근 가능 (로그인, 회원가입, 토큰 갱신)
                         .requestMatchers("/login", "/", "/join", "/auth/refresh").permitAll()
+                        
+                        // 관리자 전용
                         .requestMatchers("/admin").hasRole("ADMIN")
+
+
+//                        // --- Store Domain ---
+//                        // 1. 매장 생성
+//                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/stores/**")
+//                            .hasAnyRole("OWNER", "MANAGER", "ADMIN")
+//
+//                        // 2. 매장 수정/삭제
+//                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/stores/**").authenticated()
+//                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/stores/**").authenticated()
+//
+//                        // 3. 매장 조회
+//                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/stores/**").authenticated()
+//
+                        // 모든 요청: 로그인 필수
                         .anyRequest().authenticated());
+
+        http.addFilterBefore(
+                new JWTFilter(jwtUtil),
+                UsernamePasswordAuthenticationFilter.class
+        );
 
         //필터 추가 LoginFilter()는 인자를 받음 (AuthenticationManager() 메소드에 authenticationConfiguration 객체를 넣어야 함) 따라서 등록 필요
         http
