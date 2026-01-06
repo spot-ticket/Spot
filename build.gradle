@@ -49,6 +49,9 @@ dependencies {
 
 	// postgreSQL
 	implementation 'org.postgresql:postgresql'
+
+	// email
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
 }
 
 tasks.named('test') {

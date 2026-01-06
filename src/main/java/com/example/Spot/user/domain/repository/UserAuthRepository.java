@@ -12,7 +12,7 @@ public interface UserAuthRepository extends JpaRepository<UserAuthEntity, UUID> 
     boolean existsByUserId(Integer userId);
 
     // 로그인용: username으로 auth 조회
-    Optional<UserAuthEntity> findByUserId(Integer userid);
+    Optional<UserAuthEntity> findByUser_Id(Integer userid);
 
     // 테스트용: username으로 auth 조회 (언더스코어 버전)
     Optional<UserAuthEntity> findByUser_Username(String username);
