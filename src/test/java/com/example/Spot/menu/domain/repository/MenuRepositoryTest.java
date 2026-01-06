@@ -77,8 +77,8 @@ class MenuRepositoryTest {
     }
 
     @Test
-    @DisplayName("[손님] 주문 내역에서 특정 메뉴를 클릭하여 특정 메뉴 ID로 조회한 경우")
-    void 특정_메뉴_ID_조회_테스트() {
+    @DisplayName("[손님] 메뉴 상세 조회")
+    void 메뉴_상세_조회_테스트() {
         MenuEntity foundMenu = menuRepository.findActiveMenuById(savedMenu.getId())
                 .orElseThrow(() -> new IllegalArgumentException("해당 메뉴가 존재하지 않습니다."));
 
