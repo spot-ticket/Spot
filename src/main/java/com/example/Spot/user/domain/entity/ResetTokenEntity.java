@@ -7,12 +7,9 @@ import com.example.Spot.global.common.UpdateBaseEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -28,12 +25,11 @@ public class ResetTokenEntity extends UpdateBaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "auth_id", nullable = false)
-    private UserAuthEntity auth;
+    @Column(name = "auth_id", nullable = false)
+    private UUID authId;
 
-    @Column(name = "reset_token", nullable = false, unique = true)
-    private String resetToken;
+    @Column(name = "reset_token_hash", nullable = false, unique = true)
+    private String resetTokenHash;
 
     @Column(name = "expires_at", nullable = false)
     private LocalDateTime expiresAt;
@@ -41,14 +37,21 @@ public class ResetTokenEntity extends UpdateBaseEntity {
     @Column(name = "used_at")
     private LocalDateTime usedAt;
 
-    public boolean isUsable(LocalDateTime now) {
-        return !getIsDeleted()
-                && usedAt == null
-                && expiresAt.isAfter(now);
+    protected ResetTokenEntity(UUID authId, String resetTokenHash, LocalDateTime expiresAt) {
+        this.authId = authId;
+        this.resetTokenHash = resetTokenHash;
+        this.expiresAt = expiresAt;
     }
 
-    public void markUsed() {
-        this.usedAt = LocalDateTime.now();
-        softDelete();
+    public static ResetTokenEntity issue(UUID authId, String resetTokenHash, long ttlMinutes) {
+        return new ResetTokenEntity(
+                authId,
+                resetTokenHash,
+                LocalDateTime.now().plusMinutes(ttlMinutes)
+        );
+    }
+
+    public boolean isExpired() {
+        return LocalDateTime.now().isAfter(expiresAt);
     }
 }

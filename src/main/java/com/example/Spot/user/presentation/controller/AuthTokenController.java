@@ -6,8 +6,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.Spot.user.application.service.PasswordResetService;
 import com.example.Spot.user.application.service.TokenService;
 import com.example.Spot.user.presentation.dto.request.AuthTokenDTO;
+import com.example.Spot.user.presentation.dto.request.ResetTokenDTO;
 import com.example.Spot.user.presentation.dto.response.TokenPairResponse;
 
 import lombok.RequiredArgsConstructor;
@@ -17,7 +19,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 @RequestMapping("/auth")
 public class AuthTokenController {
+
     private final TokenService tokenService;
+    private final PasswordResetService passwordResetService;
 
     @PostMapping("/refresh")
     public ResponseEntity<TokenPairResponse> refresh(@RequestBody AuthTokenDTO.RefreshRequest request) {
@@ -32,4 +36,18 @@ public class AuthTokenController {
         return ResponseEntity.ok().build();
     }
 
+
+
+    // 패스워드 리셋
+    @PostMapping("/reset-password-request")
+    public ResponseEntity<Void> requestPasswordReset(@RequestBody ResetTokenDTO.EmailRequest request) {
+        passwordResetService.sendResetLink(request.email());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<Void> resetPassword(@RequestBody ResetTokenDTO.ResetPasswordRequest request) {
+        passwordResetService.resetPassword(request.token(), request.newPassword());
+        return ResponseEntity.ok().build();
+    }
 }
