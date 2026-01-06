@@ -103,7 +103,7 @@ public class UserEntity extends UpdateBaseEntity {
         this.email = email;
     }
 
-    public void setAddress(String roadAddress, String detailAddress) {
+    public void setAddress(String roadAddress, String addressDetail) {
         this.roadAddress = roadAddress;
         this.addressDetail = addressDetail;
     }
