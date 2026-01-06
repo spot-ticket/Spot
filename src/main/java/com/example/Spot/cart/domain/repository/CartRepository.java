@@ -13,7 +13,7 @@ import com.example.Spot.cart.domain.entity.CartEntity;
 @Repository
 public interface CartRepository extends JpaRepository<CartEntity, UUID> {
 
-    Optional<CartEntity> findByUserId(Integer userId);
+    Optional<CartEntity> findByUserIdAndIsDeletedFalse(Integer userId);
 
     @Query("SELECT c FROM CartEntity c " +
             "LEFT JOIN FETCH c.store s " +
@@ -21,12 +21,12 @@ public interface CartRepository extends JpaRepository<CartEntity, UUID> {
             "LEFT JOIN FETCH ci.menu m " +
             "LEFT JOIN FETCH ci.options cio " +
             "LEFT JOIN FETCH cio.menuOption " +
-            "WHERE c.userId = :userId")
+            "WHERE c.userId = :userId AND c.isDeleted = false")
     Optional<CartEntity> findByUserIdWithItems(@Param("userId") Integer userId);
 
-    boolean existsByUserId(Integer userId);
+    boolean existsByUserIdAndIsDeletedFalse(Integer userId);
 
     @Query("SELECT c FROM CartEntity c " +
-            "WHERE c.store.id = :storeId")
-    Optional<CartEntity> findByStoreId(@Param("storeId") UUID storeId);
+            "WHERE c.store.id = :storeId AND c.isDeleted = false")
+    Optional<CartEntity> findByStoreIdAndIsDeletedFalse(@Param("storeId") UUID storeId);
 }

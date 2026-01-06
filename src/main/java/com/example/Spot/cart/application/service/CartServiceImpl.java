@@ -45,7 +45,7 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public CartResponseDto addCartItem(Integer userId, AddCartItemRequestDto requestDto) {
         // 장바구니 조회 또는 생성
-        CartEntity cart = cartRepository.findByUserId(userId)
+        CartEntity cart = cartRepository.findByUserIdAndIsDeletedFalse(userId)
                 .orElseGet(() -> {
                     CartEntity newCart = CartEntity.builder()
                             .userId(userId)
@@ -99,7 +99,7 @@ public class CartServiceImpl implements CartService {
     @Transactional
     public CartResponseDto updateCartItemQuantity(Integer userId, UUID cartItemId, 
                                                    UpdateCartItemQuantityRequestDto requestDto) {
-        CartEntity cart = cartRepository.findByUserId(userId)
+        CartEntity cart = cartRepository.findByUserIdAndIsDeletedFalse(userId)
                 .orElseThrow(() -> new IllegalArgumentException("장바구니가 존재하지 않습니다."));
 
         CartItemEntity cartItem = cartItemRepository.findById(cartItemId)
@@ -117,7 +117,7 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional
     public CartResponseDto removeCartItem(Integer userId, UUID cartItemId) {
-        CartEntity cart = cartRepository.findByUserId(userId)
+        CartEntity cart = cartRepository.findByUserIdAndIsDeletedFalse(userId)
                 .orElseThrow(() -> new IllegalArgumentException("장바구니가 존재하지 않습니다."));
 
         CartItemEntity cartItem = cartItemRepository.findById(cartItemId)
@@ -135,7 +135,7 @@ public class CartServiceImpl implements CartService {
     @Override
     @Transactional
     public void clearCart(Integer userId) {
-        CartEntity cart = cartRepository.findByUserId(userId)
+        CartEntity cart = cartRepository.findByUserIdAndIsDeletedFalse(userId)
                 .orElseThrow(() -> new IllegalArgumentException("장바구니가 존재하지 않습니다."));
 
         cart.clear();

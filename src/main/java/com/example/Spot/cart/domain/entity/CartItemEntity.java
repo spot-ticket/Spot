@@ -6,7 +6,7 @@ import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
 
-import com.example.Spot.global.common.BaseEntity;
+import com.example.Spot.global.common.UpdateBaseEntity;
 import com.example.Spot.menu.domain.entity.MenuEntity;
 
 import jakarta.persistence.CascadeType;
@@ -28,7 +28,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name = "p_cart_item")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class CartItemEntity extends BaseEntity {
+public class CartItemEntity extends UpdateBaseEntity {
 
     @Id
     @GeneratedValue
