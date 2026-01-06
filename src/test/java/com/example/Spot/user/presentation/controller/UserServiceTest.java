@@ -53,7 +53,8 @@ class UserServiceTest {
         dto.setUsername("Testuser");
         dto.setPassword("1234");
         dto.setNickname("spot");
-        dto.setAddress("Seoul");
+        dto.setRoadAddress("Seoul");
+        dto.setAddressDetail("123-45");
         dto.setEmail("spot@test.com");
         dto.setRole(Role.CUSTOMER);
         dto.setMale(true);
@@ -93,7 +94,8 @@ class UserServiceTest {
         join.setUsername("Testuser");
         join.setPassword("1234");
         join.setNickname("spot");
-        join.setAddress("Seoul");
+        join.setRoadAddress("Seoul");
+        join.setAddressDetail("123-45");
         join.setEmail("spot@test.com");
         join.setRole(Role.CUSTOMER);
         join.setMale(true);
@@ -139,7 +141,8 @@ class UserServiceTest {
         join.setUsername("Testuser");
         join.setPassword("1234");
         join.setNickname("spot");
-        join.setAddress("Seoul");
+        join.setRoadAddress("Seoul");
+        join.setAddressDetail("123-45");
         join.setEmail("spot@test.com");
         join.setRole(Role.CUSTOMER);
         join.setMale(true);
@@ -248,7 +251,8 @@ class UserServiceTest {
         join.setUsername("Testuser");
         join.setPassword("1234");
         join.setNickname("spot");
-        join.setAddress("Seoul");
+        join.setRoadAddress("Seoul");
+        join.setAddressDetail("123-45");
         join.setEmail("spot@test.com");
         join.setRole(Role.CUSTOMER);
         join.setMale(true);
@@ -369,7 +373,8 @@ class UserServiceTest {
         u1.setUsername("user1");
         u1.setPassword("1234");
         u1.setNickname("u1");
-        u1.setAddress("Seoul");
+        u1.setRoadAddress("Seoul");
+        u1.setAddressDetail("123-45");
         u1.setEmail("u1@test.com");
         u1.setRole(Role.CUSTOMER);
         u1.setMale(true);
@@ -381,7 +386,8 @@ class UserServiceTest {
         u2.setUsername("user2");
         u2.setPassword("1234");
         u2.setNickname("u2");
-        u2.setAddress("Busan");
+        u2.setRoadAddress("Busan");
+        u2.setAddressDetail("123-45");
         u2.setEmail("u2@test.com");
         u2.setRole(Role.CUSTOMER);
         u2.setMale(false);

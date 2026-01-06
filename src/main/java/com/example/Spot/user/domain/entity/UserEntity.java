@@ -51,7 +51,10 @@ public class UserEntity extends UpdateBaseEntity {
     private int age;
 
     @Column(nullable = false)
-    private String address;
+    private String roadAddress;
+
+    @Column(nullable = false)
+    private String addressDetail;
 
     @Column(nullable = false)
     private String email;
@@ -60,17 +63,18 @@ public class UserEntity extends UpdateBaseEntity {
     private Role role;
 
     @Builder
-    public UserEntity(String username, String nickname, String address, String email, Role role) {
+    public UserEntity(String username, String nickname, String roadAddress, String addressDetail, String email, Role role) {
         this.username = username;
         this.nickname = nickname;
-        this.address = address;
+        this.roadAddress = roadAddress;
+        this.addressDetail = addressDetail;
         this.email = email;
         this.role = role;
     }
 
-    public static UserEntity forAuthentication(String username, Role role) {
+    public static UserEntity forAuthentication(Integer id, Role role) {
         UserEntity user = new UserEntity();
-        user.username = username;
+        user.id = id;
         user.role = role;
         return user;
     }
@@ -99,7 +103,8 @@ public class UserEntity extends UpdateBaseEntity {
         this.email = email;
     }
 
-    public void setAddress(String address) {
-        this.address = address;
+    public void setAddress(String roadAddress, String addressDetail) {
+        this.roadAddress = roadAddress;
+        this.addressDetail = addressDetail;
     }
 }
