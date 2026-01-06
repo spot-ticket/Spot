@@ -14,7 +14,7 @@ import lombok.RequiredArgsConstructor;
 public class TokenService {
 
     private final JWTUtil jwtUtil;
-    private final UserRepository userRepository; // access 발급 시 role을 DB에서 최신으로 읽고 싶으면 사용
+    private final UserRepository userRepository; // access 발급 시 role을 DB에서 최신으로 읽어오기
 
     @Value("${security.refresh-token.expire-days:30}")
     private long refreshExpireDays;

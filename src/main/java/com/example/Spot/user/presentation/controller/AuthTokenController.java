@@ -27,7 +27,7 @@ public class AuthTokenController {
 
     @PostMapping("/logout")
     public ResponseEntity<Void> logout() {
-        // stateless이면 서버는 할 일이 없음 → 클라이언트가 토큰 삭제
+        // stateless (이후 로직은 client)
         tokenService.logoutStateless();
         return ResponseEntity.ok().build();
     }
