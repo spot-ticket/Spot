@@ -9,5 +9,5 @@ import com.example.Spot.payments.domain.entity.PaymentKeyEntity;
 
 public interface PaymentKeyRepository extends JpaRepository<PaymentKeyEntity, UUID> {
 
-    Optional<PaymentKeyEntity> findByPaymentId(UUID paymentId);
+  Optional<PaymentKeyEntity> findByPaymentId(UUID paymentId);
 }
