@@ -73,14 +73,16 @@ public class PaymentService {
 
         return payment.getId();
     }
-
-    @Transactional
+    
+    // ******* //
+    // 결제 승인 //
+    // ******* //
     public PaymentResponseDto.Confirm executePaymentBilling(UUID paymentId) {
-        recordProgress(paymentId);
+        recordPaymentProgress(paymentId);
 
-        TossPaymentResponse response = executeTossPayment(paymentId);
+        TossPaymentResponse response = executeTossPaymentBilling(paymentId);
 
-        PaymentHistoryEntity paymentHistory = recordSuccess(paymentId, response.getPaymentKey());
+        PaymentHistoryEntity paymentHistory = recordPaymentSuccess(paymentId, response.getPaymentKey());
 
         return PaymentResponseDto.Confirm.builder()
             .paymentId(paymentId)
@@ -90,9 +92,7 @@ public class PaymentService {
     }
 
     @Transactional
-    private void recordProgress(UUID paymentId) {
-        PaymentEntity payment = findPayment(paymentId);
-
+    private void recordPaymentProgress(UUID paymentId) {
         PaymentHistoryEntity latestItem = paymentHistoryRepository
             .findTopByPaymentIdOrderByCreatedAtDesc(paymentId)
             .orElseThrow(() -> new ResourceNotFoundException("결제 이력을 찾을 수 없습니다."));
@@ -111,14 +111,14 @@ public class PaymentService {
     }
 
     @Transactional
-    private PaymentHistoryEntity recordSuccess(UUID paymentId, String paymentKey) {
+    private PaymentHistoryEntity recordPaymentSuccess(UUID paymentId, String paymentKey) {
         PaymentHistoryEntity paymentHistory = createPaymentHistory(paymentId, PaymentHistoryEntity.PaymentStatus.DONE);
         createPaymentKey(paymentId, paymentKey, LocalDateTime.now());
 
         return paymentHistory;
     }
 
-    private TossPaymentResponse executeTossPayment(UUID paymentId) {
+    private TossPaymentResponse executeTossPaymentBilling(UUID paymentId) {
         PaymentEntity payment = findPayment(paymentId);
 
         try {
@@ -136,46 +136,67 @@ public class PaymentService {
         }
     }
 
-    // // 결제했을 때 발급받은 paymentKey를 이용함
-    // @Transactional
-    // public PaymentResponseDto.Cancel cancelPayment(PaymentRequestDto.Cancel request) {
+    // ******* //
+    // 결제 취소 //
+    // ******* //
 
-    //     PaymentEntity payment = paymentRepository.findById(request.paymentId())
-    //             .orElseThrow(() -> new ResourceNotFoundException("결제를 찾을 수 없습니다."));
+    // 결제했을 때 발급받은 paymentKey를 이용함
+    public PaymentResponseDto.Cancel executeCancel(PaymentRequestDto.Cancel request) {
+        PaymentEntity payment = findPayment(request.paymentId());
 
-    //     // PaymentHistory에서 최신 해당 payment에 대해서 최신 것의 status를 확인
-    //     PaymentHistoryEntity latestItem = paymentHistoryRepository
-    //             .findTopByPaymentOrderByCreatedAtDesc(payment.getId())
-    //             .orElseThrow(() -> new ResourceNotFoundException("결제 이력을 찾을 수 없습니다."));
+        recordCancelProgress(request.paymentId());
 
-    //     if (latestItem.getStatus() != PaymentHistoryEntity.PaymentStatus.DONE) {
-    //         throw new IllegalStateException("완료된 결제만 취소할 수 있습니다. 현재 상태: " + latestItem.getStatus());
-    //     }
+        PaymentKeyEntity paymentKeyEntity = paymentKeyRepository.findByPaymentId(request.paymentId())
+            .orElseThrow(() -> new IllegalStateException("결제 키가 없어 취소할 수 없습니다."));
 
-    //     if (payment.getPaymentKey() == null) {
-    //         throw new IllegalStateException("결제 키가 없어 취소할 수 없습니다.");
-    //     }
+        TossPaymentResponse response = tossPaymentCancel(request.paymentId(), paymentKeyEntity.getPaymentKey(), request.cancelReason());
+        PaymentHistoryEntity cancelledHistory = recordCancelSuccess(request.paymentId());
 
-    //     try {
-    //         tossPaymentClient.cancelPayment(
-    //                 payment.getPaymentKey(),
-    //                 request.cancelReason(),
-    //                 this.timeout
-    //         );
+        return PaymentResponseDto.Cancel.builder()
+                                        .paymentId(payment.getId())
+                                        .cancelAmount(payment.getTotalAmount())
+                                        .cancelReason(request.cancelReason())
+                                        .canceledAt(cancelledHistory.getCreatedAt())
+                                        .build();
+    }
 
-    //         PaymentHistoryEntity cancelledItem = createPaymentHistory(payment.getId(), PaymentHistoryEntity.PaymentStatus.CANCELLED);
+    private TossPaymentResponse tossPaymentCancel(UUID paymentId, String paymentKey, String cancelReason) {
+        try {
+            return tossPaymentClient.cancelPayment(
+                        paymentKey,
+                        cancelReason,
+                        this.timeout
+            );
+        } catch (Exception e) {
+            recordFailure(paymentId, e);
+            throw new RuntimeException("결제 취소 실패: " + e.getMessage(), e);
+        }
+    }
 
-    //         return PaymentResponseDto.Cancel.builder()
-    //                                         .paymentId(payment.getId())
-    //                                         .cancelAmount(payment.getTotalAmount())
-    //                                         .cancelReason(request.cancelReason())
-    //                                         .canceledAt(cancelEntity.getCreatedAt())
-    //                                         .build();
+    @Transactional
+    private void recordCancelProgress(UUID paymentId) {
+        PaymentHistoryEntity latestItem = paymentHistoryRepository
+            .findTopByPaymentIdOrderByCreatedAtDesc(paymentId)
+            .orElseThrow(() -> new ResourceNotFoundException("결제 이력을 찾을 수 없습니다."));
 
-    //     } catch (Exception e) {
-    //         throw new RuntimeException("결제 취소 실패: " + e.getMessage(), e);
-    //     }
-    // }
+        if (latestItem.getStatus() != PaymentHistoryEntity.PaymentStatus.DONE) {
+            throw new IllegalStateException("결제 완료된 내역만 취소 가능합니다.");
+        }
+
+        createPaymentHistory(paymentId, PaymentHistoryEntity.PaymentStatus.CANCELLED_IN_PROGRESS);
+    }
+
+    @Transactional
+    private PaymentHistoryEntity recordCancelSuccess(UUID paymentId) {
+        return createPaymentHistory(paymentId, PaymentHistoryEntity.PaymentStatus.CANCELLED);
+    }
+
+    // ******* //
+    // 부분 취소 //
+    // ******* //
+    public PaymentResponseDto.PartialCancel executePartialCancel(PaymentRequestDto.PartialCancel request) {
+
+    }
 
     private void validatePaymentRequest(PaymentRequestDto.Confirm request) {
         if (request.paymentAmount() <= 0) {
@@ -242,8 +263,6 @@ public class PaymentService {
     }
 
     public PaymentResponseDto.PaymentList getAllPayment() {
-
-        payment
         return null;
     }
 
