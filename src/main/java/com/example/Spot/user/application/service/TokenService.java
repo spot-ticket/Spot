@@ -37,7 +37,7 @@ public class TokenService {
         Role role = userRepository.findRoleById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found")).getRole();
 
-        long accessExpMs = 1000L * 60 * 30; // 30분 예시
+        long accessExpMs = 1000L * 60 * 30; // 30분
         String newAccess = jwtUtil.createJwt(userId, role, accessExpMs);
 
         // refresh도 같이 새로 발급해 rotate처럼 운영

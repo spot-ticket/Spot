@@ -40,6 +40,7 @@ public class UserController {
         return userService.updateById(userId, request);
     }
 
+    // 삭제
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/me")
     public void delete(Authentication authentication) {
