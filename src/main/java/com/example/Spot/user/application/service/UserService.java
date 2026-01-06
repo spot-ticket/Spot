@@ -35,8 +35,11 @@ public class UserService {
         if (req.email() != null) {
             user.setEmail(req.email());
         }
-        if (req.address() != null) {
-            user.setAddress(req.address());
+        if (req.roadAddress() != null || req.addressDetail() != null) {
+            user.setAddress(
+                    req.roadAddress() != null ? req.roadAddress() : user.getRoadAddress(),
+                    req.addressDetail() != null ? req.addressDetail() : user.getAddressDetail()
+            );
         }
 
         return toResponse(user);
@@ -61,7 +64,8 @@ public class UserService {
                 user.getRole(),
                 user.getNickname(),
                 user.getEmail(),
-                user.getAddress(),
+                user.getRoadAddress(),
+                user.getAddressDetail(),
                 user.getAge(),
                 user.isMale()
         );
