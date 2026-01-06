@@ -20,7 +20,7 @@ import com.example.Spot.store.application.service.StoreService;
 import com.example.Spot.store.presentation.dto.request.StoreCreateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
 import com.example.Spot.store.presentation.dto.response.StoreListResponse;
-import com.example.Spot.store.presentation.dto.response.StoreResponse;
+import com.example.Spot.store.presentation.dto.response.StoreDetailResponse;
 import com.example.Spot.user.domain.entity.UserEntity;
 
 import jakarta.validation.Valid;
@@ -48,7 +48,7 @@ public class StoreController {
 
     // 2. 매장 상세 조회
     @GetMapping("/{storeId}")
-    public ResponseEntity<StoreResponse> getStoreDetails(
+    public ResponseEntity<StoreDetailResponse> getStoreDetails(
             @PathVariable UUID storeId,
             @AuthenticationPrincipal UserEntity currentUser) {
 

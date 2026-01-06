@@ -1,5 +1,7 @@
 package com.example.Spot.store.presentation.dto.request;
 
+import com.example.Spot.store.domain.entity.CategoryEntity;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
@@ -24,8 +26,12 @@ public class StoreCreateRequest {
     @NotBlank(message = "주소는 필수입니다.")
     private String address;
     private String detailAddress;
-    private String phoneNumber;
+    private String phoneNumber; 
+    
+    @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime openTime;
+
+    @JsonFormat(pattern = "HH:mm:ss")
     private LocalTime closeTime;
     
     @NotNull(message = "오너 ID는 필수입니다.")
@@ -37,8 +43,8 @@ public class StoreCreateRequest {
     @NotEmpty(message = "최소 하나 이상의 카테고리를 선택해야 합니다.")
     private List<String> categoryNames;
     
-    public StoreEntity toEntity() {
-        return StoreEntity.builder()
+    public StoreEntity toEntity(List<CategoryEntity>categories) {
+        StoreEntity store = StoreEntity.builder()
                 .name(this.name)
                 .address(this.address)
                 .detailAddress(this.detailAddress)
@@ -46,5 +52,11 @@ public class StoreCreateRequest {
                 .openTime(this.openTime)
                 .closeTime(this.closeTime)
                 .build();
+        
+        if (categories != null){
+            categories.forEach(store::addCategory);
+        }
+        
+        return store;
     }
 }

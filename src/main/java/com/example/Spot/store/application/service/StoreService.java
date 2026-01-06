@@ -16,7 +16,7 @@ import com.example.Spot.store.domain.repository.StoreRepository;
 import com.example.Spot.store.presentation.dto.request.StoreCreateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
 import com.example.Spot.store.presentation.dto.response.StoreListResponse;
-import com.example.Spot.store.presentation.dto.response.StoreResponse;
+import com.example.Spot.store.presentation.dto.response.StoreDetailResponse;
 import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.repository.UserRepository;
@@ -43,13 +43,14 @@ public class StoreService {
         // 1.1 매장 엔티티 생성(DTO -> Entity)
         StoreEntity store = dto.toEntity();
 
-        // 1.2 카테고리 연결
-        List<CategoryEntity> categories = categoryRepository.findAllById(dto.getCategoryIds());
-        // 입력받은 ID 개수와 DB에서 찾아온 엔티티 개수가 다르면 에러!
-        if (categories.size() != dto.getCategoryIds().size()) {
-            throw new EntityNotFoundException("일부 카테고리 ID가 유효하지 않습니다.");
+        // 1.2 입력받은 리스트로 카테고리 조회
+        if (dto.getCategoryNames() != null) {
+            for (String name : dto.getCategoryNames()) {
+                CategoryEntity category = categoryRepository.findByName(name)
+                        .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다.: " + name));
+                store.addCategory(category);
+            }
         }
-        categories.forEach(store::addCategory);
 
         // 1.3 DTO에 담겨온 ID로 유저를 찾아서 스태프 등록
         UserEntity owner = userRepository.findById(dto.getOwnerId())
@@ -64,7 +65,7 @@ public class StoreService {
     }
 
     // 2. 매장 상세 조회
-    public StoreResponse getStoreDetails(UUID storeId, UserEntity currentUser) {
+    public StoreDetailResponse getStoreDetails(UUID storeId, UserEntity currentUser) {
 
         // 2.1 현재 사용자의 권한 확인(True/False)
         boolean isAdmin = checkIsAdmin(currentUser);
@@ -84,7 +85,7 @@ public class StoreService {
         }
         
         // 2.4 Entity를 DTO(Response)로 변환하여 반환
-        return StoreResponse.fromEntity(store);
+        return StoreDetailResponse.fromEntity(store);
     }
 
     // 3. 매장 전체 조회
@@ -109,35 +110,25 @@ public class StoreService {
         // 4.1 [공통 로직] 조회 + 관리자 스위치 + 소유권 검증 
         StoreEntity store = findStoreWithAuthority(storeId, currentUser);
         
-        // 4.2 기본 정보 업데이트 (Dirty Checking 활용)
+        // 4.2 카테고리 이름 리스트를 엔티티 리스트로 변환
+        List<CategoryEntity> categoryEntities = null;
+        if (request.getCategoryNames() != null) {
+            categoryEntities = request.getCategoryNames().stream()
+                    .map(name -> categoryRepository.findByName(name)
+                            .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 카테고리: " + name)))
+                    .collect(Collectors.toList());
+        }
+        
+        // 4.3 엔티티 내부 메서드 호출
         store.updateStoreDetails(
                 request.getName(),
                 request.getAddress(),
+                request.getDetailAddress(),
                 request.getPhoneNumber(),
                 request.getOpenTime(),
-                request.getCloseTime()
+                request.getCloseTime(),
+                categoryEntities
         );
-
-        // 4.4 카테고리 교체 (Dirty Checking 활용)
-        if (request.getCategoryIds() != null) {
-            store.getStoreCategoryMaps().clear();
-
-            for (String categoryName : request.getCategoryNames()) {
-                CategoryEntity category = categoryRepository.findByName(categoryName)
-                        .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 카테고리입니다: " + categoryName));
-                store.addCategory(category);
-            }
-        }
-
-        // 4.5 스태프(셰프/오너) 교체 
-        if (request.getStaffUserIds() != null) {
-            store.getUsers().clear();
-            for (Integer userId : request.getStaffUserIds()) {
-                UserEntity staff = userRepository.findById(userId)
-                        .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다."));
-                store.addStoreUser(staff);
-            }
-        }
     }
 
     // 5. 매장 삭제

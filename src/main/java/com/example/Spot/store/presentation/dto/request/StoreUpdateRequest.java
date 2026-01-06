@@ -1,5 +1,6 @@
 package com.example.Spot.store.presentation.dto.request;
 
+import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
@@ -18,12 +19,12 @@ public class StoreUpdateRequest {
     private String address;
     private String detailAddress;
     private String phoneNumber;
-    private LocalTime openTime;
-    private LocalTime closeTime;
 
+    @JsonFormat(pattern = "HH:mm:ss")
+    private LocalTime openTime;
+
+    @JsonFormat(pattern = "HH:mm:ss")
+    private LocalTime closeTime;
     private List<String> categoryNames;
-    private Integer ownerId;
-    private Integer chefId;
-    
 }
 

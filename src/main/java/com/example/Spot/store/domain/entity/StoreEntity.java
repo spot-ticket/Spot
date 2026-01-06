@@ -133,7 +133,7 @@ public class StoreEntity extends UpdateBaseEntity {
         }
         
         if (categories != null) {
-            this.storeCategoryMaps.clear(); // 기존 연결 해제(orphanRemoval=true 작동)
+            this.storeCategoryMaps.clear(); // 기존 연결 해제(orphanRemova l=true 작동)
             for (CategoryEntity category : categories) {
                 this.addCategory(category); // 새로운 카테고리 연결
             }
