@@ -1,6 +1,5 @@
 package com.example.Spot.cart.domain.entity;
 
-import java.math.BigDecimal;
 import java.util.UUID;
 
 import org.hibernate.annotations.UuidGenerator;
