@@ -23,17 +23,25 @@ public record StoreDetailResponse(
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-    public record StaffInfo(Integer userId, String name) {}
+    public record StaffInfo(Integer userId, String name, Role role) {}
     
     public static StoreDetailResponse fromEntity(StoreEntity store) {
         StaffInfo ownerInfo = store.getUsers().stream()
                 .filter(su -> su.getUser().getRole() == Role.OWNER)
-                .map(su -> new StaffInfo(su.getUser().getId(), su.getUser().getNickname()))
+                .map(su -> new StaffInfo(
+                        su.getUser().getId(),
+                        su.getUser().getNickname(),
+                        su.getUser().getRole()
+                ))
                 .findFirst().orElse(null);
 
         List<StaffInfo> chefInfos = store.getUsers().stream()
                 .filter(su -> su.getUser().getRole() == Role.CHEF)
-                .map(su -> new StaffInfo(su.getUser().getId(), su.getUser().getNickname()))
+                .map(su -> new StaffInfo(
+                        su.getUser().getId(),
+                        su.getUser().getNickname(),
+                        su.getUser().getRole()
+                ))
                 .toList();
         
         return new StoreDetailResponse(

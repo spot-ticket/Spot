@@ -14,6 +14,7 @@ import com.example.Spot.store.domain.repository.CategoryRepository;
 import com.example.Spot.store.domain.repository.StoreRepository;
 import com.example.Spot.store.presentation.dto.request.StoreCreateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
+import com.example.Spot.store.presentation.dto.request.StoreUserUpdateRequest;
 import com.example.Spot.store.presentation.dto.response.StoreDetailResponse;
 import com.example.Spot.store.presentation.dto.response.StoreListResponse;
 import com.example.Spot.user.domain.Role;
@@ -95,7 +96,7 @@ public class StoreService {
                 .toList();
     }
 
-    // 4. 매장 정보 수정
+    // 4. 매장 기본 정보 수정
     public void updateStore(UUID storeId, StoreUpdateRequest request, UserEntity currentUser) {
         // 4.1 [공통 로직] 조회 + 관리자 스위치 + 소유권 검증 
         StoreEntity store = findStoreWithAuthority(storeId, currentUser);
@@ -120,8 +121,32 @@ public class StoreService {
                 categories
         );
     }
+    
+    // 5. 매장 직원 정보 수정
+    @Transactional
+    public void updateStoreStaff(UUID storeId, StoreUserUpdateRequest request, UserEntity currentUser) {
+        StoreEntity store = findStoreWithAuthority(storeId, currentUser);
+        
+        for (StoreUserUpdateRequest.UserChange change : request.changes()) {
+            UserEntity targetUser = userRepository.findById(change.userId())
+                    .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 . 없습니다: " + change.userId()));
+            
+            if (change.action() == StoreUserUpdateRequest.Action.ADD) {
+                // 중복 체크
+                boolean alreadyStaff = store.getUsers().stream()
+                        .anyMatch(su -> su.getUser().getId().equals(change.userId()));
+                
+                if (!alreadyStaff) {
+                    // targetUser가 이미 내부에 자신의 Role을 가지고 있으므로 그대로 등록
+                    store.addStoreUser(targetUser);
+                }
+            } else if (change.action() == StoreUserUpdateRequest.Action.REMOVE) {
+                store.getUsers().removeIf(su -> su.getUser().getId().equals(change.userId()));
+            }
+        }
+    }
 
-    // 5. 매장 삭제
+    // 6. 매장 삭제
     @Transactional
     public void deleteStore(UUID storeId, UserEntity currentUser) {
         // 5.1 [공통 로직] 조회 및 권한 체크
