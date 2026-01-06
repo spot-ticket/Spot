@@ -42,8 +42,8 @@ public class CartController {
         CartResponseDto response = cartService.getCart(userId);
         
         return ResponseEntity
-                .status(GeneralSuccessCode.OK.getStatus())
-                .body(ApiResponse.onSuccess(GeneralSuccessCode.OK, response));
+                .status(GeneralSuccessCode.GOOD_REQUEST.getStatus())
+                .body(ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response));
     }
 
     @PostMapping("/items")
@@ -55,8 +55,8 @@ public class CartController {
         CartResponseDto response = cartService.addCartItem(userId, requestDto);
         
         return ResponseEntity
-                .status(GeneralSuccessCode.CREATED.getStatus())
-                .body(ApiResponse.onSuccess(GeneralSuccessCode.CREATED, response));
+                .status(GeneralSuccessCode.CREATE.getStatus())
+                .body(ApiResponse.onSuccess(GeneralSuccessCode.CREATE, response));
     }
 
     @PatchMapping("/items/{cartItemId}")
@@ -69,8 +69,8 @@ public class CartController {
         CartResponseDto response = cartService.updateCartItemQuantity(userId, cartItemId, requestDto);
         
         return ResponseEntity
-                .status(GeneralSuccessCode.OK.getStatus())
-                .body(ApiResponse.onSuccess(GeneralSuccessCode.OK, response));
+                .status(GeneralSuccessCode.GOOD_REQUEST.getStatus())
+                .body(ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response));
     }
 
     @DeleteMapping("/items/{cartItemId}")
@@ -82,8 +82,8 @@ public class CartController {
         CartResponseDto response = cartService.removeCartItem(userId, cartItemId);
         
         return ResponseEntity
-                .status(GeneralSuccessCode.OK.getStatus())
-                .body(ApiResponse.onSuccess(GeneralSuccessCode.OK, response));
+                .status(GeneralSuccessCode.GOOD_REQUEST.getStatus())
+                .body(ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response));
     }
 
     @DeleteMapping
@@ -95,7 +95,7 @@ public class CartController {
         
         return ResponseEntity
                 .status(HttpStatus.NO_CONTENT)
-                .body(ApiResponse.onSuccess(GeneralSuccessCode.OK, null));
+                .body(ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, null));
     }
 }
 

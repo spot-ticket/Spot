@@ -14,25 +14,16 @@ import com.example.Spot.cart.domain.entity.CartItemEntity;
 @Repository
 public interface CartItemRepository extends JpaRepository<CartItemEntity, UUID> {
 
-    /**
-     * 장바구니 ID로 아이템 목록 조회
-     */
     @Query("SELECT ci FROM CartItemEntity ci " +
             "WHERE ci.cart.id = :cartId")
     List<CartItemEntity> findByCartId(@Param("cartId") UUID cartId);
 
-    /**
-     * 장바구니 ID로 아이템 목록 조회 (옵션 포함)
-     */
     @Query("SELECT ci FROM CartItemEntity ci " +
             "LEFT JOIN FETCH ci.options cio " +
             "LEFT JOIN FETCH cio.menuOption " +
             "WHERE ci.cart.id = :cartId")
     List<CartItemEntity> findByCartIdWithOptions(@Param("cartId") UUID cartId);
 
-    /**
-     * 장바구니와 메뉴로 아이템 조회
-     */
     @Query("SELECT ci FROM CartItemEntity ci " +
             "WHERE ci.cart.id = :cartId AND ci.menu.id = :menuId")
     Optional<CartItemEntity> findByCartIdAndMenuId(
