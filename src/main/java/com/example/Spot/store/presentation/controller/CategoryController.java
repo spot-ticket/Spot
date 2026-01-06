@@ -42,7 +42,7 @@ public class CategoryController {
     }
 
     // 카테고리 생성
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasRole('MASTER')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryResponseDTO.CategoryDetail create(@RequestBody @Valid CategoryRequestDTO.Create request) {

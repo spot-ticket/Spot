@@ -38,10 +38,10 @@ public class StoreService {
 
     // 1. 매장 생성
     @Transactional
-    public UUID createStore(StoreCreateRequest dto, UserEntity currentUser) {
+    public UUID createStore(StoreCreateRequest dto, Integer userId) {
         
         // 1.1 DTO에 넘겨줄 카테고리 리스트를 생성
-        List<CategoryEntity> categories = dto.getCategoryNames().stream()
+        List<CategoryEntity> categories = dto.categoryNames().stream()
                 .map(name -> categoryRepository.findByName(name)
                         .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다.: " + name)))
                 .toList();
@@ -50,10 +50,10 @@ public class StoreService {
         StoreEntity store = dto.toEntity(categories);
 
         // 1.3 DTO에 담겨온 ID로 유저를 찾아서 스태프 등록
-        UserEntity owner = userRepository.findById(dto.getOwnerId())
-                .orElseThrow(() -> new EntityNotFoundException("오너를 찾을 수 없습니다: " + dto.getOwnerId()));
-        UserEntity chef = userRepository.findById(dto.getChefId())
-                .orElseThrow(() -> new EntityNotFoundException("셰프를 찾을 수 없습니다: " + dto.getOwnerId()));
+        UserEntity owner = userRepository.findById(dto.ownerId())
+                .orElseThrow(() -> new EntityNotFoundException("오너를 찾을 수 없습니다: " + dto.ownerId()));
+        UserEntity chef = userRepository.findById(dto.chefId())
+                .orElseThrow(() -> new EntityNotFoundException("셰프를 찾을 수 없습니다: " + dto.chefId()));
 
         store.addStoreUser(owner);
         store.addStoreUser(chef);
@@ -62,9 +62,10 @@ public class StoreService {
     }
 
     // 2. 매장 상세 조회
-    public StoreDetailResponse getStoreDetails(UUID storeId, UserEntity currentUser) {
+    public StoreDetailResponse getStoreDetails(UUID storeId, Integer userId) {
 
-        // 2.1 현재 사용자의 권한 확인(True/False)
+        // 2.1 유저 조회 및 권한 확인
+        UserEntity currentUser = getValidatedUser(userId);
         boolean isAdmin = checkIsAdmin(currentUser);
 
         // 2.2 레포지토리 호출
@@ -81,8 +82,9 @@ public class StoreService {
     }
 
     // 3. 매장 전체 조회
-    public List<StoreListResponse> getAllStores(UserEntity currentUser) {
+    public List<StoreListResponse> getAllStores(Integer userId) {
         // 3.1 사용자의 권한 확인
+        UserEntity currentUser = getValidatedUser(userId);
         boolean isAdmin = checkIsAdmin(currentUser);
 
         // 3.2 레포지토리 호출 (관리자는 삭제된 것 포함)
@@ -97,14 +99,16 @@ public class StoreService {
     }
 
     // 4. 매장 기본 정보 수정
-    public void updateStore(UUID storeId, StoreUpdateRequest request, UserEntity currentUser) {
-        // 4.1 [공통 로직] 조회 + 관리자 스위치 + 소유권 검증 
+    @Transactional
+    public void updateStore(UUID storeId, StoreUpdateRequest request, Integer userId) {
+        // 4.1 [공통 로직] 조회 + 관리자 스위치 + 소유권 검증
+        UserEntity currentUser = getValidatedUser(userId);
         StoreEntity store = findStoreWithAuthority(storeId, currentUser);
         
         // 4.2 카테고리 이름 리스트를 엔티티 리스트로 변환
         List<CategoryEntity> categories = null;
-        if (request.getCategoryNames() != null) {
-            categories = request.getCategoryNames().stream()
+        if (request.categoryNames() != null) {
+            categories = request.categoryNames().stream()
                     .map(name -> categoryRepository.findByName(name)
                             .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 카테고리: " + name)))
                     .toList();
@@ -112,19 +116,20 @@ public class StoreService {
         
         // 4.3 엔티티 내부 메서드 호출
         store.updateStoreDetails(
-                request.getName(),
-                request.getAddress(),
-                request.getDetailAddress(),
-                request.getPhoneNumber(),
-                request.getOpenTime(),
-                request.getCloseTime(),
+                request.name(),
+                request.address(),
+                request.detailAddress(),
+                request.phoneNumber(),
+                request.openTime(),
+                request.closeTime(),
                 categories
         );
     }
     
     // 5. 매장 직원 정보 수정
     @Transactional
-    public void updateStoreStaff(UUID storeId, StoreUserUpdateRequest request, UserEntity currentUser) {
+    public void updateStoreStaff(UUID storeId, StoreUserUpdateRequest request, Integer userId) {
+        UserEntity currentUser = getValidatedUser(userId);
         StoreEntity store = findStoreWithAuthority(storeId, currentUser);
         
         for (StoreUserUpdateRequest.UserChange change : request.changes()) {
@@ -148,11 +153,12 @@ public class StoreService {
 
     // 6. 매장 삭제
     @Transactional
-    public void deleteStore(UUID storeId, UserEntity currentUser) {
-        // 5.1 [공통 로직] 조회 및 권한 체크
+    public void deleteStore(UUID storeId, Integer userId) {
+        // 6.1 [공통 로직] 조회 및 권한 체크
+        UserEntity currentUser = getValidatedUser(userId);
         StoreEntity store = findStoreWithAuthority(storeId, currentUser);
         
-        // 5.2 공통 메서드 호출
+        // 6.2 공통 메서드 호출
         store.softDelete();
     }
     
@@ -193,5 +199,11 @@ public class StoreService {
         if (!isServiceable(address)) {
             throw new AccessDeniedException("현재 픽업 서비스가 제공되지 않는 지역의 매장입니다.");
         }
+    }
+    
+    // 5. userId(Integer)로 UserEntity를 조회하고 권한 검증 준비
+    private UserEntity getValidatedUser(Integer userId){
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
     }
 }
