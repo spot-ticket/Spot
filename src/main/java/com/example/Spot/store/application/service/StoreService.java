@@ -74,7 +74,7 @@ public class StoreService {
         
         // 2.3 서비스 가능 지역인지 검증
         if (!isAdmin) {
-            validateServiceRegion(store.getAddress());
+            validateServiceRegion(store.getRoadAddress());
         }
         
         // 2.4 Entity를 DTO(Response)로 변환하여 반환
@@ -93,7 +93,7 @@ public class StoreService {
         // 3.3 엔티티 리스트 스트림을 사용해 DTO 리스트로 변환하여 반환
         return stores.stream()
                 // 일반 유저라면 activeRegions에 포함된 매장만 필터링하여 반환
-                .filter(store -> isAdmin || isServiceable(store.getAddress()))
+                .filter(store -> isAdmin || isServiceable(store.getRoadAddress()))
                 .map(StoreListResponse::fromEntity)
                 .toList();
     }
@@ -117,8 +117,8 @@ public class StoreService {
         // 4.3 엔티티 내부 메서드 호출
         store.updateStoreDetails(
                 request.name(),
-                request.address(),
-                request.detailAddress(),
+                request.roadAddress(),
+                request.addressDetail(),
                 request.phoneNumber(),
                 request.openTime(),
                 request.closeTime(),
@@ -190,19 +190,19 @@ public class StoreService {
     }
     
     // 3. 서비스 가능한 지역 여부 확인
-    private boolean isServiceable(String address) {
-        return activeRegions.stream().anyMatch(address::contains);
+    private boolean isServiceable(String roadAddress) {
+        return activeRegions.stream().anyMatch(roadAddress::contains);
     }
     
     // 4. 서비스 지역 검증(예외 발생) - 상세 조회에서 서비스 불가능 지역일 경우 접근 차단 후 에러 메시지 출력
-    private void validateServiceRegion(String address) {
-        if (!isServiceable(address)) {
+    private void validateServiceRegion(String roadAddress) {
+        if (!isServiceable(roadAddress)) {
             throw new AccessDeniedException("현재 픽업 서비스가 제공되지 않는 지역의 매장입니다.");
         }
     }
     
     // 5. userId(Integer)로 UserEntity를 조회하고 권한 검증 준비
-    private UserEntity getValidatedUser(Integer userId){
+    private UserEntity getValidatedUser(Integer userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
     }

@@ -11,8 +11,8 @@ import com.example.Spot.user.domain.Role;
 public record StoreDetailResponse(
         UUID id,
         String name,
-        String address,
-        String detailAddress,
+        String roadAddress,
+        String addressDetail,
         String phoneNumber,
         LocalTime openTime,
         LocalTime closeTime,
@@ -47,8 +47,8 @@ public record StoreDetailResponse(
         return new StoreDetailResponse(
                 store.getId(),
                 store.getName(),
-                store.getAddress(),
-                store.getDetailAddress(),
+                store.getRoadAddress(),
+                store.getAddressDetail(),
                 store.getPhoneNumber(),
                 store.getOpenTime(),
                 store.getCloseTime(),

@@ -6,8 +6,8 @@ import java.util.List;
 public record StoreUpdateRequest(
         
     String name,
-    String address,
-    String detailAddress,
+    String roadAddress,
+    String addressDetail,
     String phoneNumber,
     LocalTime openTime,
     LocalTime closeTime,

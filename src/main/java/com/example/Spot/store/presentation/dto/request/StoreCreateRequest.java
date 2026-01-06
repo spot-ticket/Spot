@@ -14,8 +14,8 @@ import lombok.Builder;
 @Builder
 public record StoreCreateRequest (
         @NotBlank String name,
-        @NotBlank String address,
-        String detailAddress,
+        @NotBlank String roadAddress,
+        String addressDetail,
         @NotBlank String phoneNumber,
         @NotNull LocalTime openTime,
         @NotNull LocalTime closeTime,
@@ -26,8 +26,8 @@ public record StoreCreateRequest (
     public StoreEntity toEntity(List<CategoryEntity> categories) {
         StoreEntity store = StoreEntity.builder()
                 .name(name)
-                .address(address)
-                .detailAddress(detailAddress)
+                .roadAddress(roadAddress)
+                .addressDetail(addressDetail)
                 .phoneNumber(phoneNumber)
                 .openTime(openTime)
                 .closeTime(closeTime)

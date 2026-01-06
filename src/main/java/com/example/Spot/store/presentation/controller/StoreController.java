@@ -22,7 +22,6 @@ import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUserUpdateRequest;
 import com.example.Spot.store.presentation.dto.response.StoreDetailResponse;
 import com.example.Spot.store.presentation.dto.response.StoreListResponse;
-import com.example.Spot.user.domain.entity.UserEntity;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
