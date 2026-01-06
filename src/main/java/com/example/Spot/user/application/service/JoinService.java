@@ -35,13 +35,11 @@ public class JoinService {
         UserEntity user = new UserEntity(
                 joinDTO.getUsername(),
                 joinDTO.getNickname(),
-                joinDTO.getAddress(),
+                joinDTO.getRoadAddress(),
+                joinDTO.getAddressDetail(),
                 joinDTO.getEmail(),
                 joinDTO.getRole()
         );
-
-        // male/age가 생성자에 없으면 여기서 반영
-        // (UserEntity에 setter가 없다면 updateProfile 같은 메서드를 만들어서 쓰는 걸 추천)
         user.setMale(joinDTO.isMale());
         user.setAge(joinDTO.getAge());
 

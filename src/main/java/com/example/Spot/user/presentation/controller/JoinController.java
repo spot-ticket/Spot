@@ -19,7 +19,7 @@ public class JoinController {
         this.joinService = joinService;
     }
 
-    @PostMapping("/join")
+    @PostMapping("/api/join")
     public String joinProcess(JoinDTO joinDTO) {
 
         System.out.println(joinDTO.getUsername());

@@ -18,7 +18,8 @@ public class JoinDTO {
 
     private boolean male;
     private int age;
-    private String address;
+    private String roadAddress;
+    private String addressDetail;
     private Role role;
 }
 
