@@ -15,7 +15,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.example.Spot.infra.auth.jwt.JWTFilter;
 import com.example.Spot.infra.auth.jwt.JWTUtil;
 import com.example.Spot.infra.auth.jwt.LoginFilter;
-import com.example.Spot.user.application.service.TokenService;
 
 @Configuration
 @EnableWebSecurity
@@ -26,13 +25,12 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     //JWTUtil 주입
     private final JWTUtil jwtUtil;
-    // TokenService 주입
-    private final TokenService tokenService;
+//    // TokenService 주입
+//    private final TokenService tokenService;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, TokenService tokenService) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
-        this.tokenService = tokenService;
     }
 
     //AuthenticationManager Bean 등록
@@ -71,20 +69,7 @@ public class SecurityConfig {
                         
                         // 관리자 전용
                         .requestMatchers("/admin").hasRole("ADMIN")
-
-
-//                        // --- Store Domain ---
-//                        // 1. 매장 생성
-//                        .requestMatchers(org.springframework.http.HttpMethod.POST, "/api/stores/**")
-//                            .hasAnyRole("OWNER", "MANAGER", "ADMIN")
-//
-//                        // 2. 매장 수정/삭제
-//                        .requestMatchers(org.springframework.http.HttpMethod.PUT, "/api/stores/**").authenticated()
-//                        .requestMatchers(org.springframework.http.HttpMethod.DELETE, "/api/stores/**").authenticated()
-//
-//                        // 3. 매장 조회
-//                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/api/stores/**").authenticated()
-//
+                        
                         // 모든 요청: 로그인 필수
                         .anyRequest().authenticated());
 
@@ -95,7 +80,7 @@ public class SecurityConfig {
 
         //필터 추가 LoginFilter()는 인자를 받음 (AuthenticationManager() 메소드에 authenticationConfiguration 객체를 넣어야 함) 따라서 등록 필요
         http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, tokenService), UsernamePasswordAuthenticationFilter.class);
+                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil), UsernamePasswordAuthenticationFilter.class);
 
         http
                 .sessionManagement(session -> session
