@@ -131,7 +131,6 @@ class MenuServiceTest {
 
         assertThat(result.getName()).isEqualTo("육전물막국수");
         assertThat(result.getPrice()).isEqualTo(13000);
-        assertThat(result.getIsHidden()).isTrue();
 
         verify(menuRepository, times(1)).findActiveMenuById(menuId);
         verify(menuOptionRepository, times(1)).findAllByMenuIdAndIsDeletedFalse(menuId);

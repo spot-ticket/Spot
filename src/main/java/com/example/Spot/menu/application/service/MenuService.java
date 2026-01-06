@@ -11,13 +11,14 @@ import com.example.Spot.menu.presentation.dto.response.MenuAdminResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuPublicResponseDto;
 import com.example.Spot.menu.presentation.dto.response.UpdateMenuResponseDto;
 import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.domain.entity.UserEntity;
 
 public interface MenuService {
     List<MenuAdminResponseDto> getMenusForAdmin(UUID storeId, Role userRole);  // [관리자, 가게]
     List<MenuPublicResponseDto> getMenusForCustomer(UUID storeId);    // [손님] 메뉴 조회
     MenuPublicResponseDto getMenuDetail(UUID menuId);    // [손님] 메뉴 상세 조회
-    CreateMenuResponseDto createMenu(UUID storeId, CreateMenuRequestDto request);   // 메뉴 생성
-    UpdateMenuResponseDto updateMenu(UUID menuId, UpdateMenuRequestDto request);    // 메뉴 업데이트
-    void deleteMenu(UUID menuId);   // 메뉴 삭제
-    UpdateMenuResponseDto hiddenMenu(UUID menuId, UpdateMenuHiddenRequestDto request);  // 메뉴 숨김
+    CreateMenuResponseDto createMenu(UUID storeId, CreateMenuRequestDto request, UserEntity user);   // 메뉴 생성
+    UpdateMenuResponseDto updateMenu(UUID menuId, UpdateMenuRequestDto request, UserEntity user);    // 메뉴 업데이트
+    void deleteMenu(UUID menuId, UserEntity user);   // 메뉴 삭제
+    void hiddenMenu(UUID menuId, UpdateMenuHiddenRequestDto request, UserEntity user);  // 메뉴 숨김
 }
