@@ -8,8 +8,8 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import com.example.Spot.payments.domain.entity.PaymentHistoryEntity.PaymentStatus;
 import com.example.Spot.payments.domain.entity.PaymentHistoryEntity;
+import com.example.Spot.payments.domain.entity.PaymentHistoryEntity.PaymentStatus;
 
 public interface PaymentHistoryRepository extends JpaRepository<PaymentHistoryEntity, UUID> {
 

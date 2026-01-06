@@ -162,9 +162,9 @@ public class PaymentService {
             .findByPaymentId(request.paymentId())
             .orElseThrow(() -> new IllegalStateException("결제 키가 없어 취소할 수 없습니다."));
 
-    TossPaymentResponse response =
         tossPaymentCancel(
             request.paymentId(), paymentKeyEntity.getPaymentKey(), request.cancelReason());
+            
     PaymentHistoryEntity cancelledHistory = recordCancelSuccess(request.paymentId());
 
     return PaymentResponseDto.Cancel.builder()
