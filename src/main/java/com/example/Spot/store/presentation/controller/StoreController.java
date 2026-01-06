@@ -9,9 +9,9 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -19,8 +19,9 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.Spot.store.application.service.StoreService;
 import com.example.Spot.store.presentation.dto.request.StoreCreateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
+import com.example.Spot.store.presentation.dto.request.StoreUserUpdateRequest;
+import com.example.Spot.store.presentation.dto.response.StoreDetailResponse;
 import com.example.Spot.store.presentation.dto.response.StoreListResponse;
-import com.example.Spot.store.presentation.dto.response.StoreResponse;
 import com.example.Spot.user.domain.entity.UserEntity;
 
 import jakarta.validation.Valid;
@@ -44,13 +45,11 @@ public class StoreController {
         return ResponseEntity.status(HttpStatus.CREATED).body(storeId);
     }
 
-
-
     // 2. 매장 상세 조회
     @GetMapping("/{storeId}")
-    public ResponseEntity<StoreResponse> getStoreDetails(
+    public ResponseEntity<StoreDetailResponse> getStoreDetails(
             @PathVariable UUID storeId,
-            @AuthenticationPrincipal UserEntity currentUser) {
+            @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser) {
 
         return ResponseEntity.ok(storeService.getStoreDetails(storeId, currentUser));
     }
@@ -58,32 +57,43 @@ public class StoreController {
     // 3. 매장 전체 조회
     @GetMapping
     public ResponseEntity<List<StoreListResponse>> getAllStores(
-            @AuthenticationPrincipal UserEntity currentUser) {
+            @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser) {
         
         return ResponseEntity.ok(storeService.getAllStores(currentUser));
     }
     
-    // 4. 매장 정보 수정
-    @PutMapping("/{storeId}")
+    // 4. 매장 기본 정보 수정
+    @PatchMapping("/{storeId}")
     @PreAuthorize("hasAnyRole('MASTER','OWNER','MANAGER')")
     public ResponseEntity<Void> updateStore(
             @PathVariable UUID storeId,
             @Valid @RequestBody StoreUpdateRequest request,
             @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser
     ) {
-        
         storeService.updateStore(storeId, request, currentUser);
         return ResponseEntity.noContent().build();
     }
     
-    // 5. 매장 삭제 (Soft Delete)
+    // 5. 매장 직원 정보 수정
+    @PatchMapping("/{storeId}/staff")
+    @PreAuthorize("hasAnyRole('MASTER','OWNER','MANAGER')")
+    public ResponseEntity<Void> updateStoreStaff(
+            @PathVariable UUID storeId,
+            @Valid @RequestBody StoreUserUpdateRequest request,
+            @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser
+    ) {
+        storeService.updateStoreStaff(storeId, request, currentUser);
+        return ResponseEntity.noContent().build();
+    }
+    
+    // 6. 매장 삭제 (Soft Delete)
     @DeleteMapping("/{storeId}")
     @PreAuthorize("hasAnyRole('MASTER','OWNER','MANAGER')")
     public ResponseEntity<Void> deleteStore(
             @PathVariable UUID storeId,
             @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser
     ) {
-        storeService.deletedStore(storeId, currentUser);
+        storeService.deleteStore(storeId, currentUser);
         return ResponseEntity.noContent().build();
     }
 }
