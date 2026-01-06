@@ -1,19 +1,11 @@
 package com.example.Spot.user.application.service;
 
-import java.security.SecureRandom;
-import java.time.LocalDateTime;
-import java.util.Base64;
-
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
-import com.example.Spot.user.application.security.TokenHashing;
+import com.example.Spot.infra.auth.jwt.JWTUtil;
 import com.example.Spot.user.domain.Role;
-import com.example.Spot.user.domain.entity.RefreshTokenEntity;
-import com.example.Spot.user.domain.entity.UserAuthEntity;
-import com.example.Spot.user.domain.repository.RefreshTokenRepository;
-import com.example.Spot.user.domain.repository.UserAuthRepository;
+import com.example.Spot.user.domain.repository.UserRepository; // role 다시 읽고 싶으면
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,82 +13,44 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class TokenService {
 
-    private final RefreshTokenRepository refreshTokenRepository;
-    private final UserAuthRepository userAuthRepository;
-    private final TokenHashing tokenHashing;
+    private final JWTUtil jwtUtil;
+    private final UserRepository userRepository; // access 발급 시 role을 DB에서 최신으로 읽고 싶으면 사용
 
     @Value("${security.refresh-token.expire-days:30}")
     private long refreshExpireDays;
 
-    private static final SecureRandom SECURE_RANDOM = new SecureRandom();
+    // refresh 요청 시: refresh JWT 검증 → 새 access(+선택 새 refresh)
+    public ReissueResult reissueByRefresh(String refreshToken) {
 
-    /** 로그인 성공 시: refresh 발급 + 저장 */
-    @Transactional
-    public RefreshIssueResult issueRefresh(String username) {
-        UserAuthEntity auth = userAuthRepository.findByUserUsername(username)
-                .orElseThrow(() -> new IllegalArgumentException("Auth not found"));
-
-        LocalDateTime now = LocalDateTime.now();
-        String refreshRaw = generateRefreshToken();
-
-        RefreshTokenEntity entity = RefreshTokenEntity.builder()
-                .auth(auth)
-                .refreshTokenHash(tokenHashing.sha256WithPepper(refreshRaw))
-                .expiresAt(now.plusDays(refreshExpireDays))
-                .build();
-
-        refreshTokenRepository.save(entity);
-
-        return new RefreshIssueResult(usernameOf(auth), roleOf(auth), refreshRaw);
-    }
-
-    /** refresh 요청 시: 기존 refresh 검증 → revoke → 새 refresh 발급(rotate) */
-    @Transactional
-    public RefreshIssueResult rotateRefresh(String oldRefreshRaw) {
-        LocalDateTime now = LocalDateTime.now();
-        RefreshTokenEntity old = refreshTokenRepository.findByRefreshTokenHash(tokenHashing.sha256WithPepper(oldRefreshRaw))
-                .orElseThrow(() -> new IllegalArgumentException("Invalid refresh token"));
-
-        if (!old.isActive(now)) {
-            throw new IllegalArgumentException("Refresh token expired or revoked");
+        if (jwtUtil.isExpired(refreshToken)) {
+            throw new IllegalArgumentException("Refresh token expired");
         }
 
-        old.revoke(); // revoke + soft delete
+        String type = jwtUtil.getTokenType(refreshToken);
+        if (!"refresh".equals(type)) {
+            throw new IllegalArgumentException("Not a refresh token");
+        }
 
-        UserAuthEntity auth = old.getAuth();
-        String newRefreshRaw = generateRefreshToken();
+        Integer userId = jwtUtil.getUserId(refreshToken);
 
-        RefreshTokenEntity next = RefreshTokenEntity.builder()
-                .auth(auth)
-                .refreshTokenHash(tokenHashing.sha256WithPepper(newRefreshRaw))
-                .expiresAt(now.plusDays(refreshExpireDays))
-                .build();
+        // 권한은 DB에서 최신 role 조회
+        Role role = userRepository.findRoleById(userId)
+                .orElseThrow(() -> new IllegalArgumentException("User not found")).getRole();
 
-        refreshTokenRepository.save(next);
+        long accessExpMs = 1000L * 60 * 30; // 30분 예시
+        String newAccess = jwtUtil.createJwt(userId, role, accessExpMs);
 
-        return new RefreshIssueResult(usernameOf(auth), roleOf(auth), newRefreshRaw);
+        // refresh도 같이 새로 발급해 rotate처럼 운영
+        long refreshExpMs = refreshExpireDays * 24L * 60L * 60L * 1000L;
+        String newRefresh = jwtUtil.createRefreshToken(userId, refreshExpMs);
+
+        return new ReissueResult(newAccess, newRefresh);
     }
 
-    /** logout 요청 시: refresh revoke */
-    @Transactional
-    public void revokeRefresh(String refreshRaw) {
-        refreshTokenRepository.findByRefreshTokenHash(tokenHashing.sha256WithPepper(refreshRaw))
-                .ifPresent(RefreshTokenEntity::revoke);
+    // logout: stateless (클라이언트가 토큰 삭제)
+    public void logoutStateless() {
+        // no-op
     }
 
-    private String usernameOf(UserAuthEntity auth) {
-        return auth.getUser().getUsername();
-    }
-
-    private Role roleOf(UserAuthEntity auth) {
-        return auth.getUser().getRole();
-    }
-
-    private String generateRefreshToken() {
-        byte[] bytes = new byte[64];
-        SECURE_RANDOM.nextBytes(bytes);
-        return Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
-    }
-
-    public record RefreshIssueResult(String username, Role role, String refreshToken) {}
+    public record ReissueResult(String accessToken, String refreshToken) {}
 }
