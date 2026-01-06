@@ -1,6 +1,5 @@
 package com.example.Spot.user.application.service;
 
-import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,15 +17,15 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserResponseDTO getByUsername(String username) {
-        UserEntity user = userRepository.findByUsername(username)
+    public UserResponseDTO getByUserId(Integer userid) {
+        UserEntity user = userRepository.findById(userid)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         return toResponse(user);
     }
 
     @Transactional
-    public UserResponseDTO updateByUsername(String username, UserUpdateRequestDTO req) {
-        UserEntity user = userRepository.findByUsername(username)
+    public UserResponseDTO updateById(Integer userid, UserUpdateRequestDTO req) {
+        UserEntity user = userRepository.findById(userid)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         if (req.nickname() != null) {
@@ -42,17 +41,15 @@ public class UserService {
         return toResponse(user);
     }
 
-    @Transactional
-    public void deleteByUsername(String targetUsername, String loginUsername) {
-        if (!targetUsername.equals(loginUsername)) {
-            throw new AccessDeniedException("사용자 본인만 삭제할 수 있습니다.");
-        }
 
-        UserEntity user = userRepository.findByUsername(targetUsername)
+    @Transactional
+    public void deleteMe(Integer loginUserId) {
+        UserEntity user = userRepository.findById(loginUserId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         user.softDelete();
     }
+
 
     private UserResponseDTO toResponse(UserEntity user) {
         return new UserResponseDTO(
