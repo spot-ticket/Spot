@@ -17,8 +17,6 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-@AllArgsConstructor
-@Builder
 public class CreateMenuRequestDto {
 
     @NotNull(message = "가게 ID는 필수입니다.")
