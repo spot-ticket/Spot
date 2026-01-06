@@ -12,7 +12,7 @@ public record StoreListResponse (
     String address,
     String phoneNumber,
     List<String> categoryNames
-){
+) {
     // Entity -> DTO 변환 메서드
     public static StoreListResponse fromEntity(StoreEntity store) {
         return new StoreListResponse(

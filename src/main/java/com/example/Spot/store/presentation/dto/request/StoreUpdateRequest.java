@@ -1,14 +1,13 @@
 package com.example.Spot.store.presentation.dto.request;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.UUID;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
-
 
 @Getter
 @AllArgsConstructor

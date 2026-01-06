@@ -19,8 +19,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.Spot.store.application.service.StoreService;
 import com.example.Spot.store.presentation.dto.request.StoreCreateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
-import com.example.Spot.store.presentation.dto.response.StoreListResponse;
 import com.example.Spot.store.presentation.dto.response.StoreDetailResponse;
+import com.example.Spot.store.presentation.dto.response.StoreListResponse;
 import com.example.Spot.user.domain.entity.UserEntity;
 
 import jakarta.validation.Valid;
@@ -44,13 +44,11 @@ public class StoreController {
         return ResponseEntity.status(HttpStatus.CREATED).body(storeId);
     }
 
-
-
     // 2. 매장 상세 조회
     @GetMapping("/{storeId}")
     public ResponseEntity<StoreDetailResponse> getStoreDetails(
             @PathVariable UUID storeId,
-            @AuthenticationPrincipal UserEntity currentUser) {
+            @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser) {
 
         return ResponseEntity.ok(storeService.getStoreDetails(storeId, currentUser));
     }
@@ -58,7 +56,7 @@ public class StoreController {
     // 3. 매장 전체 조회
     @GetMapping
     public ResponseEntity<List<StoreListResponse>> getAllStores(
-            @AuthenticationPrincipal UserEntity currentUser) {
+            @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser) {
         
         return ResponseEntity.ok(storeService.getAllStores(currentUser));
     }
@@ -71,7 +69,6 @@ public class StoreController {
             @Valid @RequestBody StoreUpdateRequest request,
             @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser
     ) {
-        
         storeService.updateStore(storeId, request, currentUser);
         return ResponseEntity.noContent().build();
     }
@@ -83,7 +80,7 @@ public class StoreController {
             @PathVariable UUID storeId,
             @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser
     ) {
-        storeService.deletedStore(storeId, currentUser);
+        storeService.deleteStore(storeId, currentUser);
         return ResponseEntity.noContent().build();
     }
 }

@@ -1,17 +1,12 @@
 package com.example.Spot.store.presentation.dto.response;
 
-import com.example.Spot.user.domain.Role;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import com.example.Spot.store.domain.entity.StoreEntity;
-
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
+import com.example.Spot.user.domain.Role;
 
 public record StoreDetailResponse(
         UUID id,

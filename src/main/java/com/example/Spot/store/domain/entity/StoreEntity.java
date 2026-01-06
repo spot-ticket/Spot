@@ -119,9 +119,9 @@ public class StoreEntity extends UpdateBaseEntity {
         if (address != null) {
             this.address = address;
         }
-        if (detailAddress != null) 
+        if (detailAddress != null) {
             this.detailAddress = detailAddress;
-        
+        }
         if (phoneNumber != null) {
             this.phoneNumber = phoneNumber;
         }

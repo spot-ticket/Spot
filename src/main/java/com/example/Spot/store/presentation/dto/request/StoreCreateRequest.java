@@ -1,12 +1,11 @@
 package com.example.Spot.store.presentation.dto.request;
 
-import com.example.Spot.store.domain.entity.CategoryEntity;
-import com.fasterxml.jackson.annotation.JsonFormat;
 import java.time.LocalTime;
 import java.util.List;
-import java.util.UUID;
 
+import com.example.Spot.store.domain.entity.CategoryEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
@@ -53,7 +52,7 @@ public class StoreCreateRequest {
                 .closeTime(this.closeTime)
                 .build();
         
-        if (categories != null){
+        if (categories != null) {
             categories.forEach(store::addCategory);
         }
         

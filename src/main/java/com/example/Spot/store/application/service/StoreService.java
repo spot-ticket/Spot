@@ -2,7 +2,6 @@ package com.example.Spot.store.application.service;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.access.AccessDeniedException;
@@ -15,8 +14,8 @@ import com.example.Spot.store.domain.repository.CategoryRepository;
 import com.example.Spot.store.domain.repository.StoreRepository;
 import com.example.Spot.store.presentation.dto.request.StoreCreateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
-import com.example.Spot.store.presentation.dto.response.StoreListResponse;
 import com.example.Spot.store.presentation.dto.response.StoreDetailResponse;
+import com.example.Spot.store.presentation.dto.response.StoreListResponse;
 import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.repository.UserRepository;
@@ -40,17 +39,14 @@ public class StoreService {
     @Transactional
     public UUID createStore(StoreCreateRequest dto, UserEntity currentUser) {
         
-        // 1.1 매장 엔티티 생성(DTO -> Entity)
-        StoreEntity store = dto.toEntity();
-
-        // 1.2 입력받은 리스트로 카테고리 조회
-        if (dto.getCategoryNames() != null) {
-            for (String name : dto.getCategoryNames()) {
-                CategoryEntity category = categoryRepository.findByName(name)
-                        .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다.: " + name));
-                store.addCategory(category);
-            }
-        }
+        // 1.1 DTO에 넘겨줄 카테고리 리스트를 생성
+        List<CategoryEntity> categories = dto.getCategoryNames().stream()
+                .map(name -> categoryRepository.findByName(name)
+                        .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다.: " + name)))
+                .toList();
+        
+        // 1.2 매장 엔티티 생성(DTO -> Entity)
+        StoreEntity store = dto.toEntity(categories);
 
         // 1.3 DTO에 담겨온 ID로 유저를 찾아서 스태프 등록
         UserEntity owner = userRepository.findById(dto.getOwnerId())
@@ -76,12 +72,7 @@ public class StoreService {
         
         // 2.3 서비스 가능 지역인지 검증
         if (!isAdmin) {
-            boolean isServiceable = activeRegions.stream()
-                    .anyMatch(region -> store.getAddress().contains(region));
-            
-            if (!isServiceable) {
-                throw new AccessDeniedException("현재 픽업 서비스가 제공되지 않는 지역의 매장입니다.");
-            }
+            validateServiceRegion(store.getAddress());
         }
         
         // 2.4 Entity를 DTO(Response)로 변환하여 반환
@@ -99,10 +90,9 @@ public class StoreService {
         // 3.3 엔티티 리스트 스트림을 사용해 DTO 리스트로 변환하여 반환
         return stores.stream()
                 // 일반 유저라면 activeRegions에 포함된 매장만 필터링하여 반환
-                .filter(store -> isAdmin || activeRegions.stream()
-                        .anyMatch(region -> store.getAddress().contains(region)))
+                .filter(store -> isAdmin || isServiceable(store.getAddress()))
                 .map(StoreListResponse::fromEntity)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // 4. 매장 정보 수정
@@ -111,12 +101,12 @@ public class StoreService {
         StoreEntity store = findStoreWithAuthority(storeId, currentUser);
         
         // 4.2 카테고리 이름 리스트를 엔티티 리스트로 변환
-        List<CategoryEntity> categoryEntities = null;
+        List<CategoryEntity> categories = null;
         if (request.getCategoryNames() != null) {
-            categoryEntities = request.getCategoryNames().stream()
+            categories = request.getCategoryNames().stream()
                     .map(name -> categoryRepository.findByName(name)
                             .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 카테고리: " + name)))
-                    .collect(Collectors.toList());
+                    .toList();
         }
         
         // 4.3 엔티티 내부 메서드 호출
@@ -127,13 +117,13 @@ public class StoreService {
                 request.getPhoneNumber(),
                 request.getOpenTime(),
                 request.getCloseTime(),
-                categoryEntities
+                categories
         );
     }
 
     // 5. 매장 삭제
     @Transactional
-    public void deletedStore(UUID storeId, UserEntity currentUser) {
+    public void deleteStore(UUID storeId, UserEntity currentUser) {
         // 5.1 [공통 로직] 조회 및 권한 체크
         StoreEntity store = findStoreWithAuthority(storeId, currentUser);
         
@@ -166,5 +156,17 @@ public class StoreService {
             }
         }
         return store;
+    }
+    
+    // 3. 서비스 가능한 지역 여부 확인
+    private boolean isServiceable(String address) {
+        return activeRegions.stream().anyMatch(address::contains);
+    }
+    
+    // 4. 서비스 지역 검증(예외 발생) - 상세 조회에서 서비스 불가능 지역일 경우 접근 차단 후 에러 메시지 출력
+    private void validateServiceRegion(String address) {
+        if (!isServiceable(address)) {
+            throw new AccessDeniedException("현재 픽업 서비스가 제공되지 않는 지역의 매장입니다.");
+        }
     }
 }
