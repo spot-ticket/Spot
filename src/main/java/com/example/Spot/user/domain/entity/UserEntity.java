@@ -68,9 +68,9 @@ public class UserEntity extends UpdateBaseEntity {
         this.role = role;
     }
 
-    public static UserEntity forAuthentication(String username, Role role) {
+    public static UserEntity forAuthentication(Integer id, Role role) {
         UserEntity user = new UserEntity();
-        user.username = username;
+        user.id = id;
         user.role = role;
         return user;
     }
