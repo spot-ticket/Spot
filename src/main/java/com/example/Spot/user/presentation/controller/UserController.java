@@ -24,7 +24,7 @@ public class UserController {
     private final UserService userService;
 
     // 본인 조회
-    @PreAuthorize("#userId == authentication.id or hasRole('ADMIN')")
+    @PreAuthorize("#userId == authentication.principal or hasRole('ADMIN')")
     @GetMapping("/{userId}")
     public UserResponseDTO get(@PathVariable Integer userId) {
         return userService.getByUserId(userId);
