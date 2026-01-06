@@ -26,10 +26,10 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "p_payment_item")
+@Table(name = "p_payment_history")
 @EntityListeners(AuditingEntityListener.class)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class PaymentItemEntity extends BaseEntity {
+public class PaymentHistoryEntity extends BaseEntity {
 
     @Id
     @GeneratedValue
@@ -37,34 +37,25 @@ public class PaymentItemEntity extends BaseEntity {
     @Column(columnDefinition = "UUID")
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "payment_id")
-    private PaymentEntity payment;
-
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "order_id")
-    private OrderEntity order;
+    @Column(nullable = false, updatable = false, name = "payment_id")
+    private UUID paymentId;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, name = "payment_status")
+    @Column(nullable = false, updatable = false, name = "payment_status")
     private PaymentStatus paymentStatus;
 
     @Builder
-    public PaymentItemEntity(PaymentEntity payment, OrderEntity order, PaymentStatus status) {
+    public PaymentHistoryEntity(UUID paymentId, PaymentStatus status) {
 
-        if (payment == null) {
+        if (paymentId == null) {
             throw new IllegalArgumentException("사전에 등록된 결제가 있어야 합니다.");
         }
-        if (order == null) {
-            throw new IllegalArgumentException("사전에 등록된 주문이 있어야 합니다.");
-        }
 
-        this.payment = payment;
-        this.order = order;
+        this.paymentId = paymentId;
         this.paymentStatus = status;
     }
 
-    public PaymentStatus getPaymentStatus() {
+    public PaymentStatus getStatus() {
         return this.paymentStatus;
     }
     

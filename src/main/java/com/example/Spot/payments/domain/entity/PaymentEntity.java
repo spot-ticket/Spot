@@ -10,7 +10,6 @@ import com.example.Spot.user.domain.entity.UserEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EntityListeners;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
@@ -28,27 +27,25 @@ import lombok.NoArgsConstructor;
 @Getter
 @Table(name = "p_payment")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-@EntityListeners(AuditingEntityListener.class)
 public class PaymentEntity extends BaseEntity {
 
     @Id
     @GeneratedValue
     @UuidGenerator
-    @Column(columnDefinition = "UUID")
+    @Column(columnDefinition = "UUID", updatable = false)
     private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(updatable = false, nullable = false, name = "user_id")
-    private UserEntity user;
+    @Column(updatable = false, nullable = false, name = "user_id")
+    private Integer userId;
+
+    @Column(updatable = false, nullable = false, name = "order_id")
+    private UUID orderId;
 
     @Column(updatable = false, nullable = false, length = 100)
     private String paymentTitle;
 
     @Column(updatable = false, nullable = false, length = 255)
     private String paymentContent;
-
-    @Column(name = "payment_key", unique = true)
-    private String paymentKey;
 
     @Enumerated(EnumType.STRING)
     @Column(updatable = false, nullable = false, name = "payment_method")
@@ -58,23 +55,22 @@ public class PaymentEntity extends BaseEntity {
     private Long totalAmount;
 
     @Builder
-    public PaymentEntity(UserEntity user, String title, String content,
+    public PaymentEntity(Integer userId, UUID orderId, String title, String content,
                          PaymentMethod paymentMethod, Long totalAmount) {
+        
+        if (userId == null) {
+            throw new IllegalArgumentException("PaymentEntity에 Order ID를 입력하지 않았습니다.");
+        }
+        if (orderId == null) {
+            throw new IllegalArgumentException("PaymentEntity에 User ID를 입력하지 않았습니다.");
+        }
 
-        this.user = user;
+        this.userId = userId;
+        this.orderId = orderId;
         this.paymentTitle = title;
         this.paymentContent = content;
         this.paymentMethod = paymentMethod;
         this.totalAmount = totalAmount;
-        this.paymentKey = null;
-    }
-
-    public void confirm(String paymentKey) {
-        this.paymentKey = paymentKey;
-    }
-
-    public String getPaymentKey() {
-        return this.paymentKey;
     }
 
     public enum PaymentMethod {

@@ -27,7 +27,7 @@ public class TossPaymentClient {
     @Value("${toss.payments.base-url:https://api.tosspayments.com}")
     private String baseUrl;
 
-    public TossPaymentResponse requestBillingPayment(String billingKey, Long amount, String orderId, String orderName, String customerKey) {
+    public TossPaymentResponse requestBillingPayment(String billingKey, Long amount, String orderId, String orderName, String customerKey, Integer timeout) {
         String url = baseUrl + "/v1/billing/" + billingKey;
 
         Map<String, Object> requestBody = Map.of(
