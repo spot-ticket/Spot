@@ -42,5 +42,14 @@ public class PaymentRequestDto {
         @NotNull String cancelReason
     ) {}
 
+    @Builder
+    @Schema(description = "부분 결제 취소 여청")
+    public record PartialCancel(
+        @Schema(description = "결제 ID", example = "123e4567-e89b-12d3-a456-426614174000")
+        @NotNull UUID paymentId,
+
+        @Schema(description = "취소 사유", example = "고객 요청")
+        @NotNull String cancelReason
+    ) {}
 
 }

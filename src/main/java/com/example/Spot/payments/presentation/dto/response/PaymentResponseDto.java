@@ -44,6 +44,22 @@ public class PaymentResponseDto {
     ) {}
 
     @Builder
+    @Schema(description = "부분 결제 취소 응답")
+    public record PartialCancel(
+        @Schema(description = "결제 ID", example = "123e4567-e89b-12d3-a456-426614174000")
+        UUID paymentId,
+
+        @Schema(description = "취소 금액", example = "18000")
+        Long cancelAmount,
+
+        @Schema(description = "취소 사유", example = "고객 요청")
+        String cancelReason,
+
+        @Schema(description = "취소 시간", example = "2024-01-05T16:00:00")
+        LocalDateTime canceledAt
+    ) {}
+
+    @Builder
     @Schema(description = "결제 상세 정보")
     public record PaymentDetail(
         @Schema(description = "결제 ID", example = "123e4567-e89b-12d3-a456-426614174000")

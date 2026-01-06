@@ -52,7 +52,7 @@ public class TossPaymentClient {
         }
     }
 
-    public TossPaymentResponse cancelPayment(String paymentKey, String cancelReason) {
+    public TossPaymentResponse cancelPayment(String paymentKey, String cancelReason, Integer timeout) {
         String url = baseUrl + "/v1/payments/" + paymentKey + "/cancel";
 
         Map<String, Object> requestBody = Map.of(

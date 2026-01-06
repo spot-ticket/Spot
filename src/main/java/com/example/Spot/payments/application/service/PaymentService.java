@@ -73,7 +73,7 @@ public class PaymentService {
 
         return payment.getId();
     }
-    
+
     // ******* //
     // 결제 승인 //
     // ******* //
@@ -195,7 +195,7 @@ public class PaymentService {
     // 부분 취소 //
     // ******* //
     public PaymentResponseDto.PartialCancel executePartialCancel(PaymentRequestDto.PartialCancel request) {
-
+        return null;
     }
 
     private void validatePaymentRequest(PaymentRequestDto.Confirm request) {
@@ -262,19 +262,90 @@ public class PaymentService {
         return paymentRetryRepository.save(paymentRetry);
     }
 
+    // *************** //
+    // 결제 내역 전체 조회 //
+    // *************** //
+    @Transactional(readOnly = true)
     public PaymentResponseDto.PaymentList getAllPayment() {
-        return null;
+        List<Object[]> results = paymentRepository.findAllPaymentsWithLatestStatus();
+
+        List<PaymentResponseDto.PaymentDetail> payments = results.stream()
+            .map(this::mapToPaymentDetail)
+            .collect(Collectors.toList());
+
+        return PaymentResponseDto.PaymentList.builder()
+            .payments(payments)
+            .totalCount(payments.size())
+            .build();
     }
 
+    @Transactional(readOnly = true)
     public PaymentResponseDto.PaymentDetail getDetailPayment(UUID paymentId) {
-        return null;
+        List<Object[]> results = paymentRepository.findPaymentWithLatestStatus(paymentId);
+
+        if (results.isEmpty()) {
+            throw new ResourceNotFoundException("결제를 찾을 수 없습니다.");
+        }
+
+        return mapToPaymentDetail(results.get(0));
     }
 
+    @Transactional(readOnly = true)
     public PaymentResponseDto.CancelList getAllPaymentCancel() {
-        return null;
+        List<Object[]> results = paymentHistoryRepository.findAllByStatusWithPayment(
+            PaymentHistoryEntity.PaymentStatus.CANCELLED
+        );
+
+        List<PaymentResponseDto.CancelDetail> cancellations = results.stream()
+            .map(row -> mapToCancelDetail(row, null))
+            .collect(Collectors.toList());
+
+        return PaymentResponseDto.CancelList.builder()
+            .cancellations(cancellations)
+            .totalCount(cancellations.size())
+            .build();
     }
 
+    @Transactional(readOnly = true)
     public PaymentResponseDto.CancelList getDetailPaymentCancel(UUID paymentId) {
-        return null;
+        List<PaymentHistoryEntity.PaymentStatus> cancelStatuses = List.of(
+            PaymentHistoryEntity.PaymentStatus.CANCELLED,
+            PaymentHistoryEntity.PaymentStatus.PARTIAL_CANCELD
+        );
+
+        List<Object[]> results = paymentHistoryRepository.findByPaymentIdAndStatusesWithPayment(
+            paymentId, cancelStatuses
+        );
+
+        List<PaymentResponseDto.CancelDetail> cancellations = results.stream()
+            .map(row -> mapToCancelDetail(row, null))
+            .collect(Collectors.toList());
+
+        return PaymentResponseDto.CancelList.builder()
+            .cancellations(cancellations)
+            .totalCount(cancellations.size())
+            .build();
+    }
+
+    private PaymentResponseDto.PaymentDetail mapToPaymentDetail(Object[] row) {
+        return PaymentResponseDto.PaymentDetail.builder()
+            .paymentId((UUID) row[0])
+            .title((String) row[1])
+            .content((String) row[2])
+            .paymentMethod((PaymentEntity.PaymentMethod) row[3])
+            .totalAmount((Long) row[4])
+            .status(((PaymentHistoryEntity.PaymentStatus) row[5]).toString())
+            .createdAt((LocalDateTime) row[6])
+            .build();
+    }
+
+    private PaymentResponseDto.CancelDetail mapToCancelDetail(Object[] row, String cancelReason) {
+        return PaymentResponseDto.CancelDetail.builder()
+            .cancelId((UUID) row[0])
+            .paymentId((UUID) row[1])
+            .cancelAmount((Long) row[2])
+            .cancelReason(cancelReason)
+            .canceledAt((LocalDateTime) row[3])
+            .build();
     }
 }
