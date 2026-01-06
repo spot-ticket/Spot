@@ -21,7 +21,10 @@ import com.example.Spot.menu.application.service.MenuService;
 import com.example.Spot.menu.presentation.dto.request.CreateMenuRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuHiddenRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuRequestDto;
-import com.example.Spot.menu.presentation.dto.response.*;
+import com.example.Spot.menu.presentation.dto.response.CreateMenuResponseDto;
+import com.example.Spot.menu.presentation.dto.response.MenuAdminResponseDto;
+import com.example.Spot.menu.presentation.dto.response.MenuPublicResponseDto;
+import com.example.Spot.menu.presentation.dto.response.UpdateMenuResponseDto;
 import com.example.Spot.user.domain.Role;
 
 import lombok.RequiredArgsConstructor;
@@ -56,7 +59,7 @@ public class MenuController {
     // 메뉴 상세 조회
     @GetMapping("/{menuId}")
     public ApiResponse<MenuPublicResponseDto> getMenuDetail(@PathVariable UUID menuId) {
-        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, menuService.getMenuDetail((menuId)));
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, menuService.getMenuDetail(menuId));
     }
 
     // 메뉴 생성
