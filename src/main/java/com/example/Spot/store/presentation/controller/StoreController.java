@@ -22,7 +22,6 @@ import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUserUpdateRequest;
 import com.example.Spot.store.presentation.dto.response.StoreDetailResponse;
 import com.example.Spot.store.presentation.dto.response.StoreListResponse;
-import com.example.Spot.user.domain.entity.UserEntity;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -39,9 +38,9 @@ public class StoreController {
     @PreAuthorize("hasAnyRole('MASTER','OWNER','MANAGER')")
     public ResponseEntity<UUID> createStore(
             @Valid @RequestBody StoreCreateRequest request,
-            @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser
+            @AuthenticationPrincipal Integer userId
     ) {
-        UUID storeId = storeService.createStore(request, currentUser);
+        UUID storeId = storeService.createStore(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(storeId);
     }
 
@@ -49,17 +48,17 @@ public class StoreController {
     @GetMapping("/{storeId}")
     public ResponseEntity<StoreDetailResponse> getStoreDetails(
             @PathVariable UUID storeId,
-            @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser) {
+            @AuthenticationPrincipal Integer userId) {
 
-        return ResponseEntity.ok(storeService.getStoreDetails(storeId, currentUser));
+        return ResponseEntity.ok(storeService.getStoreDetails(storeId, userId));
     }
     
     // 3. 매장 전체 조회
     @GetMapping
     public ResponseEntity<List<StoreListResponse>> getAllStores(
-            @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser) {
-        
-        return ResponseEntity.ok(storeService.getAllStores(currentUser));
+            @AuthenticationPrincipal Integer userId
+    ) {
+        return ResponseEntity.ok(storeService.getAllStores(userId));
     }
     
     // 4. 매장 기본 정보 수정
@@ -68,9 +67,9 @@ public class StoreController {
     public ResponseEntity<Void> updateStore(
             @PathVariable UUID storeId,
             @Valid @RequestBody StoreUpdateRequest request,
-            @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser
+            @AuthenticationPrincipal Integer userId
     ) {
-        storeService.updateStore(storeId, request, currentUser);
+        storeService.updateStore(storeId, request, userId);
         return ResponseEntity.noContent().build();
     }
     
@@ -80,9 +79,9 @@ public class StoreController {
     public ResponseEntity<Void> updateStoreStaff(
             @PathVariable UUID storeId,
             @Valid @RequestBody StoreUserUpdateRequest request,
-            @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser
+            @AuthenticationPrincipal Integer userId
     ) {
-        storeService.updateStoreStaff(storeId, request, currentUser);
+        storeService.updateStoreStaff(storeId, request, userId);
         return ResponseEntity.noContent().build();
     }
     
@@ -91,9 +90,9 @@ public class StoreController {
     @PreAuthorize("hasAnyRole('MASTER','OWNER','MANAGER')")
     public ResponseEntity<Void> deleteStore(
             @PathVariable UUID storeId,
-            @AuthenticationPrincipal(expression = "userEntity") UserEntity currentUser
+            @AuthenticationPrincipal Integer userId
     ) {
-        storeService.deleteStore(storeId, currentUser);
+        storeService.deleteStore(storeId, userId);
         return ResponseEntity.noContent().build();
     }
 }

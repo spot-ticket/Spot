@@ -20,7 +20,7 @@ public interface StoreRepository extends JpaRepository<StoreEntity, UUID> {
             "LEFT JOIN FETCH sc.category " +
             "WHERE (:isAdmin = true OR s.isDeleted = false)")
     List<StoreEntity> findAllByRole(@Param("isAdmin") boolean isAdmin);
-
+    
     // 상세 조회: or을 통해 권한 혹은 소프트제거 여부에 따른 조회범위 설정
     @Query("SELECT s FROM StoreEntity s " +
             "LEFT JOIN FETCH s.storeCategoryMaps sc " +
