@@ -107,15 +107,20 @@ public class StoreEntity extends UpdateBaseEntity {
     public void updateStoreDetails(
             String name,
             String address,
+            String detailAddress,
             String phoneNumber,
             LocalTime openTime,
-            LocalTime closeTime
+            LocalTime closeTime,
+            List<CategoryEntity> categories
     ) {
         if (name != null) {
             this.name = name;
         }
         if (address != null) {
             this.address = address;
+        }
+        if (detailAddress != null) {
+            this.detailAddress = detailAddress;
         }
         if (phoneNumber != null) {
             this.phoneNumber = phoneNumber;
@@ -125,6 +130,13 @@ public class StoreEntity extends UpdateBaseEntity {
         }
         if (closeTime != null) {
             this.closeTime = closeTime;
+        }
+        
+        if (categories != null) {
+            this.storeCategoryMaps.clear(); // 기존 연결 해제(orphanRemova l=true 작동)
+            for (CategoryEntity category : categories) {
+                this.addCategory(category); // 새로운 카테고리 연결
+            }
         }
     }
 }

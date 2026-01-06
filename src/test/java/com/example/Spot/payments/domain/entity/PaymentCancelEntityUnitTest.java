@@ -57,7 +57,8 @@ public class PaymentCancelEntityUnitTest {
         return UserEntity.builder()
                          .username("김구름")
                          .nickname("구르미")
-                         .address("서울시 강남구")
+                         .roadAddress("서울시 강남구")
+                         .addressDetail("123-45")
                          .email("goormi@goorm.com")
                          .role(Role.OWNER)
                          .build();
