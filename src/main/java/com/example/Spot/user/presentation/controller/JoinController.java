@@ -2,6 +2,7 @@ package com.example.Spot.user.presentation.controller;
 
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.example.Spot.user.application.service.JoinService;
@@ -20,7 +21,7 @@ public class JoinController {
     }
 
     @PostMapping("/api/join")
-    public String joinProcess(JoinDTO joinDTO) {
+    public String joinProcess(@RequestBody JoinDTO joinDTO) {
 
         System.out.println(joinDTO.getUsername());
         joinService.joinProcess(joinDTO);
