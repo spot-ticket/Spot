@@ -24,7 +24,7 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/categories")
+@RequestMapping("/api/categories")
 public class CategoryController {
 
     private final CategoryService categoryService;
@@ -42,7 +42,7 @@ public class CategoryController {
     }
 
     // 카테고리 생성
-    @PreAuthorize("hasRole('MASTER')")
+    @PreAuthorize("hasAnyRole('MASTER','MANAGER')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryResponseDTO.CategoryDetail create(@RequestBody @Valid CategoryRequestDTO.Create request) {
@@ -50,7 +50,7 @@ public class CategoryController {
     }
 
     // 카테고리 수정
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('MASTER','MANAGER')")
     @PatchMapping("/{categoryId}")
     public CategoryResponseDTO.CategoryDetail update(
             @PathVariable UUID categoryId,
@@ -60,7 +60,7 @@ public class CategoryController {
     }
 
     // 카테고리 삭제(soft delete)
-    @PreAuthorize("hasRole('ADMIN')")
+    @PreAuthorize("hasAnyRole('MASTER','MANAGER')")
     @DeleteMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable UUID categoryId) {
