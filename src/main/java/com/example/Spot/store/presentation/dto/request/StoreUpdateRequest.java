@@ -21,8 +21,9 @@ public class StoreUpdateRequest {
     private LocalTime openTime;
     private LocalTime closeTime;
 
-    private List<UUID> categoryIds;
+    private List<String> categoryNames;
+    private Integer ownerId;
+    private Integer chefId;
     
-    private List<Integer> staffUserIds;
 }
 

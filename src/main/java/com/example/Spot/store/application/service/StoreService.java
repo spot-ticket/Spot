@@ -122,9 +122,9 @@ public class StoreService {
         if (request.getCategoryIds() != null) {
             store.getStoreCategoryMaps().clear();
 
-            for (UUID categoryId : request.getCategoryIds()) {
-                CategoryEntity category = categoryRepository.findById(categoryId)
-                        .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다."));
+            for (String categoryName : request.getCategoryNames()) {
+                CategoryEntity category = categoryRepository.findByName(categoryName)
+                        .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 카테고리입니다: " + categoryName));
                 store.addCategory(category);
             }
         }

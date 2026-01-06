@@ -23,13 +23,9 @@ public class StoreCreateRequest {
     
     @NotBlank(message = "주소는 필수입니다.")
     private String address;
-    
     private String detailAddress;
-
     private String phoneNumber;
-    
     private LocalTime openTime;
-    
     private LocalTime closeTime;
     
     @NotNull(message = "오너 ID는 필수입니다.")
@@ -39,7 +35,7 @@ public class StoreCreateRequest {
     private Integer chefId;
     
     @NotEmpty(message = "최소 하나 이상의 카테고리를 선택해야 합니다.")
-    private List<UUID> categoryIds;
+    private List<String> categoryNames;
     
     public StoreEntity toEntity() {
         return StoreEntity.builder()
