@@ -1,12 +1,16 @@
 package com.example.Spot.menu.application.service;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
+import com.example.Spot.menu.domain.entity.MenuOptionEntity;
+import com.example.Spot.menu.domain.repository.MenuOptionRepository;
 import com.example.Spot.menu.domain.repository.MenuRepository;
 import com.example.Spot.menu.presentation.dto.request.CreateMenuRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuHiddenRequestDto;
@@ -26,6 +30,7 @@ import lombok.RequiredArgsConstructor;
 public class MenuServiceImpl implements MenuService {
     private final MenuRepository menuRepository;
     private final StoreRepository storeRepository;
+    private final MenuOptionRepository menuOptionRepository;
 
     // 1. [관리자/가게] 메뉴 조회
     @Transactional(readOnly = true)
@@ -33,7 +38,7 @@ public class MenuServiceImpl implements MenuService {
 
         List<MenuEntity> menus;
 
-        if (userRole == Role.ADMIN) {
+        if (userRole == Role.MANAGER || userRole == Role.MASTER) {
             menus = menuRepository.findAllByStoreId(storeId);
         } else {
             menus = menuRepository.findAllByStoreIdAndIsDeletedFalse(storeId);
@@ -48,7 +53,8 @@ public class MenuServiceImpl implements MenuService {
 
         List<MenuEntity> menus = menuRepository.findAllActiveMenus(storeId);
 
-        return menus.stream().map(MenuPublicResponseDto::new).toList();
+        return menus.stream().map(menu -> MenuPublicResponseDto.of(menu, Collections.emptyList()))
+                .collect(Collectors.toList());
     }
 
     // 3. [손님] 특정 메뉴 상세 조회
@@ -58,7 +64,9 @@ public class MenuServiceImpl implements MenuService {
         MenuEntity menu = menuRepository.findActiveMenuById(menuId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메뉴가 존재하지 않습니다."));
 
-        return new MenuPublicResponseDto(menu);
+        List<MenuOptionEntity> options = menuOptionRepository.findAllByMenuIdAndIsDeletedFalse(menuId);
+
+        return MenuPublicResponseDto.of(menu, options);
     }
 
     // 4. 메뉴 생성
@@ -108,7 +116,7 @@ public class MenuServiceImpl implements MenuService {
 
     // 6. 메뉴 삭제
     @Transactional
-    public UUID deleteMenu(UUID menuId) {
+    public void deleteMenu(UUID menuId) {
 
         MenuEntity menu = menuRepository.findById(menuId)
                 .orElseThrow(() -> new IllegalArgumentException("메뉴가 없습니다."));
@@ -118,7 +126,6 @@ public class MenuServiceImpl implements MenuService {
         }
 
         menu.softDelete();
-        return menu.getId();
     }
 
     // 7. 메뉴 숨김

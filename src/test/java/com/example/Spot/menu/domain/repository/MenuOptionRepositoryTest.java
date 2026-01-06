@@ -82,7 +82,7 @@ class MenuOptionRepositoryTest {
     @Test
     @DisplayName("[손님] 구매 가능한 옵션만 조회 (품절 / 삭제 제외)")
     void 구매_가능한_옵션_테스트() {
-        List<MenuOptionEntity> activeOptions = menuOptionRepository.findAllActiveOptions(savedMenu.getId());
+        List<MenuOptionEntity> activeOptions = menuOptionRepository.findAllByMenuIdAndIsDeletedFalse(savedMenu.getId());
 
         assertThat(activeOptions)
                 .extracting("name", "detail", "price", "isDeleted", "isAvailable")
