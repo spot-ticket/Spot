@@ -63,7 +63,7 @@ public class UserEntity extends UpdateBaseEntity {
     private Role role;
 
     @Builder
-    public UserEntity(String username, String nickname, String roadAddress,String addressDetail, String email, Role role) {
+    public UserEntity(String username, String nickname, String roadAddress, String addressDetail, String email, Role role) {
         this.username = username;
         this.nickname = nickname;
         this.roadAddress = roadAddress;

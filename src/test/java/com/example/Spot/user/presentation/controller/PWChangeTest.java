@@ -48,7 +48,8 @@ class PWChangeTest {
         dto.setUsername("resetUser");
         dto.setPassword("oldPw1234");
         dto.setNickname("spot");
-        dto.setAddress("Seoul");
+        dto.setRoadAddress("Seoul");
+        dto.setAddressDetail("123-45");
         dto.setEmail("reset@spot.com");
         dto.setRole(Role.CUSTOMER);
         dto.setMale(true);
@@ -160,7 +161,8 @@ class PWChangeTest {
         join.setUsername("Testuser");
         join.setPassword("1234");
         join.setNickname("spot");
-        join.setAddress("Seoul");
+        join.setRoadAddress("Seoul");
+        join.setAddressDetail("123-45");
         join.setEmail("spot@test.com");
         join.setRole(Role.CUSTOMER);
         join.setMale(true);
