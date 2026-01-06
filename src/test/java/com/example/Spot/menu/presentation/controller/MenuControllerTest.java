@@ -115,8 +115,8 @@ class MenuControllerTest {
     }
 
     @Test
-    @DisplayName("[PATCH] 접근 권한이 없습니다.")
-    void 쉐프_유저_메뉴_변경_테스트() throws Exception {
+    @DisplayName("[PATCH] 쉐프 유저는 접근 권한이 없습니다.")
+    void 메뉴_변경_테스트() throws Exception {
         // 1. Given
         UUID storeId = UUID.randomUUID();
         UUID menuId = UUID.randomUUID();
