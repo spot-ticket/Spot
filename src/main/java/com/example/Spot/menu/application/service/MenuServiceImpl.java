@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
-import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.menu.domain.repository.MenuOptionRepository;
 import com.example.Spot.menu.domain.repository.MenuRepository;
 import com.example.Spot.menu.presentation.dto.request.CreateMenuRequestDto;
@@ -24,6 +23,7 @@ import com.example.Spot.menu.presentation.dto.response.UpdateMenuResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.StoreRepository;
 import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.domain.entity.UserEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -101,8 +101,6 @@ public class MenuServiceImpl implements MenuService {
             throw new IllegalArgumentException("삭제된 메뉴는 수정할 수 없습니다.");
         }
 
-        StoreEntity store = menu.getStore();
-
         // 유저가 이 가게 소속인지 확인
         validateOwner(menu.getStore(), user, "본인 가게의 메뉴만 수정할 수 있습니다.");
 
@@ -154,8 +152,6 @@ public class MenuServiceImpl implements MenuService {
         if (menu.getIsDeleted()) {
             throw new IllegalArgumentException("삭제된 메뉴는 숨길 수 없습니다.");
         }
-
-        StoreEntity store = menu.getStore();
 
         // 유저가 이 가게 소속인지 확인
         validateOwner(menu.getStore(), user, "본인 가게의 메뉴만 숨길 수 있습니다.");
