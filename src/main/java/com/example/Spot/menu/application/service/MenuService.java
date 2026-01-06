@@ -18,6 +18,6 @@ public interface MenuService {
     MenuPublicResponseDto getMenuDetail(UUID menuId);    // [손님] 메뉴 상세 조회
     CreateMenuResponseDto createMenu(UUID storeId, CreateMenuRequestDto request);   // 메뉴 생성
     UpdateMenuResponseDto updateMenu(UUID menuId, UpdateMenuRequestDto request);    // 메뉴 업데이트
-    UUID deleteMenu(UUID menuId);   // 메뉴 삭제
+    void deleteMenu(UUID menuId);   // 메뉴 삭제
     UpdateMenuResponseDto hiddenMenu(UUID menuId, UpdateMenuHiddenRequestDto request);  // 메뉴 숨김
 }
