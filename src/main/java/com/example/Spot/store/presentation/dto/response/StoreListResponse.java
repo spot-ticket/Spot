@@ -9,7 +9,7 @@ public record StoreListResponse (
     
     UUID id,
     String name,
-    String address,
+    String roadAddress,
     String phoneNumber,
     List<String> categoryNames
 ) {
@@ -18,7 +18,7 @@ public record StoreListResponse (
         return new StoreListResponse(
                 store.getId(),
                 store.getName(),
-                store.getAddress(),
+                store.getRoadAddress(),
                 store.getPhoneNumber(),
                 store.getStoreCategoryMaps().stream()
                         .map(map -> map.getCategory().getName())

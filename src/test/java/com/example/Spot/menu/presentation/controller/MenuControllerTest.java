@@ -200,7 +200,7 @@ class MenuControllerTest {
                 .username("test_boss")
                 .nickname("사장님")
                 .email("boss@test.com")
-                .address("서울시 강남구")
+                .roadAddress("서울시 강남구")
                 .role(userRole)
                 .build();
 

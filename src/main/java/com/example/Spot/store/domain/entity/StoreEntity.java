@@ -39,9 +39,9 @@ public class StoreEntity extends UpdateBaseEntity {
     private String name;
 
     @Column(nullable = false)
-    private String address; // 예: 서울특별시 종로구 사직로 161 //
+    private String roadAddress; // 예: 서울특별시 종로구 사직로 161 //
 
-    private String detailAddress;
+    private String addressDetail;
 
     @Column(name = "phone_number")
     private String phoneNumber;
@@ -71,15 +71,15 @@ public class StoreEntity extends UpdateBaseEntity {
     @Builder
     public StoreEntity(
             String name,
-            String address,
-            String detailAddress,
+            String roadAddress,
+            String addressDetail,
             String phoneNumber,
             LocalTime openTime,
             LocalTime closeTime
     ) {
         this.name = name;
-        this.address = address;
-        this.detailAddress = detailAddress;
+        this.roadAddress = roadAddress;
+        this.addressDetail = addressDetail;
         this.phoneNumber = phoneNumber;
         this.openTime = openTime;
         this.closeTime = closeTime;
@@ -106,8 +106,8 @@ public class StoreEntity extends UpdateBaseEntity {
 
     public void updateStoreDetails(
             String name,
-            String address,
-            String detailAddress,
+            String roadAddress,
+            String addressDetail,
             String phoneNumber,
             LocalTime openTime,
             LocalTime closeTime,
@@ -116,11 +116,11 @@ public class StoreEntity extends UpdateBaseEntity {
         if (name != null) {
             this.name = name;
         }
-        if (address != null) {
-            this.address = address;
+        if (roadAddress != null) {
+            this.roadAddress = roadAddress;
         }
-        if (detailAddress != null) {
-            this.detailAddress = detailAddress;
+        if (addressDetail != null) {
+            this.addressDetail = addressDetail;
         }
         if (phoneNumber != null) {
             this.phoneNumber = phoneNumber;
