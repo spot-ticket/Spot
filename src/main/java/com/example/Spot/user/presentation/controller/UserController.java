@@ -18,33 +18,34 @@ import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/users")
+@RequestMapping("/api/users")
 public class UserController {
 
     private final UserService userService;
 
-    @PreAuthorize("#username == authentication.name or hasRole('ADMIN')")
-    @GetMapping("/{username}")
-    public UserResponseDTO get(@PathVariable String username) {
-        return userService.getByUsername(username);
+    // 본인 조회
+    @PreAuthorize("#userId == authentication.principal or hasRole('ADMIN')")
+    @GetMapping("/{userId}")
+    public UserResponseDTO get(@PathVariable Integer userId) {
+        return userService.getByUserId(userId);
     }
 
-    @PreAuthorize("#username == authentication.name or hasRole('ADMIN')")
-    @PatchMapping("/{username}")
+    // 수정
+    @PreAuthorize("#userId == authentication.principal or hasRole('ADMIN')")
+    @PatchMapping("/{userId}")
     public UserResponseDTO update(
-            @PathVariable String username,
+            @PathVariable Integer userId,
             @RequestBody UserUpdateRequestDTO request
     ) {
-        return userService.updateByUsername(username, request);
+        return userService.updateById(userId, request);
     }
 
-    @PreAuthorize("#username == authentication.name or hasRole('ADMIN')")
-    @DeleteMapping("/{username}")
-    public void delete(
-            @PathVariable String username,
-            Authentication authentication
-    ) {
-        String loginUsername = authentication.getName();
-        userService.deleteByUsername(username, loginUsername);
+    // 삭제
+    @PreAuthorize("isAuthenticated()")
+    @DeleteMapping("/me")
+    public void delete(Authentication authentication) {
+        Integer loginUserId = (Integer) authentication.getPrincipal();
+        userService.deleteMe(loginUserId);
     }
+
 }
