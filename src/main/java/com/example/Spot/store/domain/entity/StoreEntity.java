@@ -38,9 +38,10 @@ public class StoreEntity extends UpdateBaseEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(name = "road_address", nullable = false)
     private String roadAddress; // 예: 서울특별시 종로구 사직로 161 //
 
+    @Column(name = "address_detail", nullable = false)
     private String addressDetail;
 
     @Column(name = "phone_number")
