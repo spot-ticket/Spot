@@ -66,6 +66,14 @@ checkstyle {
     ignoreFailures = false
 }
 
+configurations.checkstyle {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'org.apache.commons' && details.requested.name == 'commons-lang3') {
+            details.useVersion '3.18.0'
+        }
+    }
+}
+
 tasks.withType(Checkstyle) {
     reports {
         xml.required = true
