@@ -6,9 +6,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import com.example.Spot.global.TestSupport;
 import com.example.Spot.store.domain.entity.StoreEntity;
 
-class MenuEntityTest {
+class MenuEntityTest extends TestSupport {
 
     // 테스를 위한 임의의 유저 ID
     private static final Integer TEST_USER_ID = 107;
