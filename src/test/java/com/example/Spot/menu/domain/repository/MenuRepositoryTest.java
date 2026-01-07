@@ -33,7 +33,8 @@ class MenuRepositoryTest {
         // [Given] 1. StoreEntity 생성 및 저장
         StoreEntity store = StoreEntity.builder()
                 .name("원조역삼막국수")
-                .address("서울시 강남구")
+                .roadAddress("서울시 서초구")
+                .addressDetail("123-45")
                 .phoneNumber("02-4321-8765")
                 .openTime(LocalTime.of(11, 0))
                 .closeTime(LocalTime.of(21, 0))
