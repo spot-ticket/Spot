@@ -71,9 +71,22 @@ jobs:
             customerKey: customer_test
             secretKey: test_sk_test
             clientKey: test_ck_test
+            timeout: 10
 
         service:
           active-regions: 종로구
+        
+        mail:
+          host: smtp.gmail.com
+          port: 587
+          username: spotemail3@gmail.com
+          password: "dyeweirngiowjexf"
+          properties:
+            mail.debug: true
+            mail.connection timeout: 5000
+            mail.smtp.auth: true
+            mail.smtp.starttls.enable: true
+            mail.smtp.starttls.required: true
         EOF
 
     - name: Check code formatting
