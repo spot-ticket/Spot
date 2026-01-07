@@ -45,15 +45,13 @@ class CategoryServiceTest {
 
         StoreEntity bbq = StoreEntity.builder()
                 .name("BBQ 강남점")
-                .roadAddress("서울시 서초구")
-                .addressDetail("123-45")
+                .address("서울 강남")
                 .phoneNumber("02-1111-1111")
                 .build();
 
         StoreEntity kyochon = StoreEntity.builder()
                 .name("교촌 역삼점")
-                .roadAddress("서울시 서초구")
-                .addressDetail("123-45")
+                .address("서울 역삼")
                 .phoneNumber("02-2222-2222")
                 .build();
 
@@ -147,15 +145,13 @@ class CategoryServiceTest {
 
         StoreEntity store1 = StoreEntity.builder()
                 .name("스타벅스 강남점")
-                .roadAddress("서울시 서초구")
-                .addressDetail("123-45")
+                .address("서울 강남구")
                 .phoneNumber("02-1111-1111")
                 .build();
 
         StoreEntity store2 = StoreEntity.builder()
                 .name("투썸플레이스 역삼점")
-                .roadAddress("서울시 역삼동")
-                .addressDetail("123-45")
+                .address("서울 역삼동")
                 .phoneNumber("02-2222-2222")
                 .build();
 
@@ -202,15 +198,13 @@ class CategoryServiceTest {
 
         StoreEntity activeStore = StoreEntity.builder()
                 .name("설빙 강남점")
-                .roadAddress("서울시 강남구")
-                .addressDetail("123-45")
+                .address("서울 강남구")
                 .phoneNumber("02-3333-3333")
                 .build();
 
         StoreEntity deletedStore = StoreEntity.builder()
                 .name("폐업한 디저트 가게")
-                .roadAddress("서울시 강남구")
-                .addressDetail("123-45")
+                .address("서울 서초구")
                 .phoneNumber("02-4444-4444")
                 .build();
 

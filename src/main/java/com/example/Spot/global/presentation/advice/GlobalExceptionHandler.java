@@ -65,16 +65,6 @@ public class GlobalExceptionHandler {
                 .body(ApiResponse.onFailure(GeneralErrorCode.NOT_FOUND, null));
     }
 
-    @ExceptionHandler(ForbiddenException.class)
-    public ResponseEntity<ApiResponse<?>> handleForbidden(ForbiddenException e) {
-
-        log.warn("[ForbiddenException] {}", e.getMessage());
-
-        return ResponseEntity
-                .status(GeneralErrorCode.FORBIDDEN.getStatus())
-                .body(ApiResponse.onFailure(GeneralErrorCode.FORBIDDEN, null));
-    }
-
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleUnexpectedException(Exception e) {
 

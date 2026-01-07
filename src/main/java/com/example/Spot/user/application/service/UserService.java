@@ -1,8 +1,5 @@
 package com.example.Spot.user.application.service;
 
-import java.util.List;
-import java.util.stream.Collectors;
-
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -55,7 +52,7 @@ public class UserService {
 
         user.softDelete();
     }
-    
+
 
     private UserResponseDTO toResponse(UserEntity user) {
         return new UserResponseDTO(
@@ -69,12 +66,5 @@ public class UserService {
                 user.getAge(),
                 user.isMale()
         );
-    }
-    
-    public List<UserResponseDTO> searchUsersByNickname(String nickname) {
-        List<UserEntity> users = userRepository.findByNicknameContaining(nickname);
-        return users.stream()
-                .map(this::toResponse)
-                .collect(Collectors.toList());
     }
 }

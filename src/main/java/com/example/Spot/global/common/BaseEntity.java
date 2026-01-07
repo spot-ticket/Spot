@@ -9,22 +9,13 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 
 @Getter
 @MappedSuperclass
 @EntityListeners(AuditingEntityListener.class)
-@NoArgsConstructor(access = lombok.AccessLevel.PROTECTED)
 public abstract class BaseEntity {
 
     @CreatedDate
     @Column(name = "created_at", updatable = false, nullable = false)
     private LocalDateTime createdAt;
-
-    @Column(name = "created_by", updatable = false, nullable = false)
-    private Integer createdBy;
-
-    protected BaseEntity(Integer createdBy) {
-        this.createdBy = createdBy;
-    }
 }

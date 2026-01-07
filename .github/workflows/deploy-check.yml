@@ -17,17 +17,12 @@ jobs:
           distribution: 'temurin'
           cache: 'gradle'
 
-      - name: Grant execute permission for gradlew
-        run: chmod +x gradlew
-
-      - name: Setup Snyk CLI
-        uses: snyk/actions/setup@master
-
       - name: Run Snyk to check for vulnerabilities
-        run: snyk test --severity-threshold=high --sarif-file-output=snyk.sarif
+        uses: snyk/actions/java@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-        continue-on-error: true
+        with:
+          args: --severity-threshold=high
 
       - name: Upload result to GitHub Code Scanning
         uses: github/codeql-action/upload-sarif@v3
