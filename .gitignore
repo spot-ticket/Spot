@@ -39,3 +39,9 @@ Thumbs.db
 ### Log files ###
 *.log
 logs/
+
+
+### infra ###
+infra/terraform/provider.tf
+infra/terraform/terraform.*
+infra/terraform/.terraform*
