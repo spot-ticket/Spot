@@ -30,7 +30,7 @@ jobs:
       - name: Docker Build & Push
         run: |
           echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_ID }} --password-stdin
-          docker build -f Dockerfile -t ${{ secrets.DOCKER_REPO }}:latest .
+          docker build -f ./Docker/Dockerfile -t ${{ secrets.DOCKER_REPO }}:latest .
           docker push ${{ secrets.DOCKER_REPO }}:latest
 
       - name: Deploy to Prod
