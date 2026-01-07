@@ -18,6 +18,8 @@ import com.example.Spot.store.presentation.dto.response.CategoryResponseDTO;
 
 import lombok.RequiredArgsConstructor;
 
+import static org.springframework.data.jpa.domain.AbstractAuditable_.createdBy;
+
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
