@@ -42,9 +42,7 @@ public class MenuOptionController {
             @PathVariable UUID storeId,
             @PathVariable UUID menuId
     ) {
-        Role userRole = user.getUserEntity().getRole();
-
-        List<MenuOptionResponseDto> data = menuOptionService.getOptions(userRole, storeId, menuId);
+        List<MenuOptionResponseDto> data = menuOptionService.getOptions(user.getUserEntity().getRole(), storeId, menuId);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
     }
@@ -69,10 +67,11 @@ public class MenuOptionController {
     public ApiResponse<UpdateMenuOptionResponseDto> updateMenuOption(
             @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable UUID storeId,
+            @PathVariable UUID menuId,
             @PathVariable UUID optionId,
             @RequestBody UpdateMenuOptionRequestDto request
     ) {
-        UpdateMenuOptionResponseDto data = menuOptionService.updateMenuOption(user.getUserEntity(), storeId, optionId, request);
+        UpdateMenuOptionResponseDto data = menuOptionService.updateMenuOption(user.getUserEntity(), storeId, menuId, optionId, request);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
     }
@@ -83,9 +82,10 @@ public class MenuOptionController {
     public ApiResponse<String> deleteMenuOption(
             @AuthenticationPrincipal CustomUserDetails user,
             @PathVariable UUID storeId,
+            @PathVariable UUID menuId,
             @PathVariable UUID optionId
     ) {
-        menuOptionService.deleteMenuOption(user.getUserEntity(), storeId, optionId);
+        menuOptionService.deleteMenuOption(user.getUserEntity(), storeId, menuId, optionId);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, "해당 옵션이 삭제되었습니다.");
     }

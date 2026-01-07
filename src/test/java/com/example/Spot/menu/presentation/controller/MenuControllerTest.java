@@ -60,8 +60,7 @@ class MenuControllerTest {
 
     @Test
     @DisplayName("[GET] 메뉴 조회 성공")
-    @WithMockUser
-        // 로그인 된 상태라고 가정
+    @WithMockUser // 로그인 된 상태라고 가정
     void 메뉴_상세_조회_테스트() throws Exception {
         // given
         UUID menuId = UUID.randomUUID();
@@ -80,7 +79,7 @@ class MenuControllerTest {
         mockMvc.perform(get("/api/stores/{storeId}/menus/{menuId}", storeId, menuId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print()) // 콘솔에 요청/응답 찍어보기
-                .andExpect(status().isOk()); // 200 OK 인가?
+                .andExpect(status().isOk());
     }
 
     @Test
@@ -114,7 +113,7 @@ class MenuControllerTest {
     }
 
     @Test
-    @DisplayName("[PATCH] 쉐프 유저는 접근 권한이 없습니다.")
+    @DisplayName("[PATCH] 메뉴 변경 테스트 성공.")
     void 메뉴_변경_테스트() throws Exception {
         // 1. Given
         UUID storeId = UUID.randomUUID();
@@ -124,23 +123,22 @@ class MenuControllerTest {
                 .name("가라아게덮밥")
                 .build();
 
-        // 2. [핵심 수정] 컨트롤러가 사용할 진짜 CustomUserDetails 객체 생성
-        CustomUserDetails customUser = createMockUser(Role.CHEF);
+        // ustomUserDetails 객체 생성
+        CustomUserDetails customUser = createMockUser(Role.OWNER);
 
         MenuEntity menu = createMenuEntity(createStoreEntity(storeId), request.getName(), menuId);
 
         given(menuService.updateMenu(eq(menuId), any(UpdateMenuRequestDto.class), any()))
                 .willReturn(new UpdateMenuResponseDto(menu));
 
-        // 3. When & Then
+        // When & Then
         mockMvc.perform(patch("/api/stores/{storeId}/menus/{menuId}", storeId, menuId)
                         .with(csrf())
-                        // [핵심 수정] 문자열 이름이 아니라, 위에서 만든 객체(customUser)를 직접 넣습니다.
                         .with(user(customUser))
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andDo(print())
-                .andExpect(status().isForbidden())
+                .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result.name").value("가라아게덮밥"));
     }
 
@@ -158,7 +156,7 @@ class MenuControllerTest {
         CustomUserDetails userRole = createMockUser(Role.MANAGER);
         MenuEntity menu = createMenuEntity(createStoreEntity(storeId), "육전물막국수", menuId);
 
-        // void 메서드는 순서를 바꿔서 이렇게 써야 합니다.
+        // void 메서드
         willDoNothing().given(menuService)
                 .hiddenMenu(eq(menuId), any(UpdateMenuHiddenRequestDto.class), any());
 
