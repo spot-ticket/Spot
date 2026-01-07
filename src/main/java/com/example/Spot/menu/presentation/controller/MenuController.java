@@ -29,7 +29,6 @@ import com.example.Spot.user.domain.Role;
 
 import lombok.RequiredArgsConstructor;
 
-
 @RestController
 @RequestMapping("/api/stores/{storeId}/menus")
 @RequiredArgsConstructor
@@ -70,8 +69,6 @@ public class MenuController {
             @RequestBody CreateMenuRequestDto request,
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-
-        // 현재 유저가 소속된 가게 맞는지 확인
         CreateMenuResponseDto data = menuService.createMenu(storeId, request, user.getUserEntity());
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
@@ -85,7 +82,6 @@ public class MenuController {
             @RequestBody UpdateMenuRequestDto request,
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        // 현재 유저가 소속된 가게 맞는지 확인
         UpdateMenuResponseDto data = menuService.updateMenu(menuId, request, user.getUserEntity());
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
