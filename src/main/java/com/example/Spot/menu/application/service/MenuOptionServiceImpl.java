@@ -19,7 +19,6 @@ import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.domain.entity.UserEntity;
 
-
 import lombok.RequiredArgsConstructor;
 
 @Service

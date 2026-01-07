@@ -24,6 +24,7 @@ import com.example.Spot.menu.presentation.dto.request.UpdateMenuRequestDto;
 import com.example.Spot.menu.presentation.dto.response.CreateMenuResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuAdminResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuPublicResponseDto;
+import com.example.Spot.menu.presentation.dto.response.MenuResponseDto;
 import com.example.Spot.menu.presentation.dto.response.UpdateMenuResponseDto;
 import com.example.Spot.user.domain.Role;
 
@@ -38,7 +39,7 @@ public class MenuController {
 
     // 메뉴 전체 조회
     @GetMapping
-    public ApiResponse<List<?>> getMenus(
+    public ApiResponse<List<? extends MenuResponseDto>> getMenus(
             @PathVariable UUID storeId,
             @AuthenticationPrincipal CustomUserDetails user
     ) {
