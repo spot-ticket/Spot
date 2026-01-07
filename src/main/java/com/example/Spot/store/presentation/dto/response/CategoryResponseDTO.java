@@ -18,7 +18,7 @@ public class CategoryResponseDTO {
     public record StoreSummary(
             UUID id,
             String name,
-            String address,
+            String roadAddress,
             String phoneNumber,
             LocalTime openTime,
             LocalTime closeTime
