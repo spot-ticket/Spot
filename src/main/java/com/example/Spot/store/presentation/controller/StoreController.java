@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Spot.store.application.service.StoreService;
@@ -94,5 +95,14 @@ public class StoreController {
     ) {
         storeService.deleteStore(storeId, userId);
         return ResponseEntity.noContent().build();
+    }
+    
+    // 7. 매장 이름으로 검색
+    @GetMapping("/search")
+    public ResponseEntity<List<StoreListResponse>> searchStores(
+            @RequestParam String keyword,
+            @AuthenticationPrincipal Integer userId
+    ) {
+        return ResponseEntity.ok(storeService.searchStoresByName(keyword, userId));
     }
 }

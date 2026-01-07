@@ -162,6 +162,23 @@ public class StoreService {
         store.softDelete();
     }
     
+    // 7. 매장 이름으로 검색
+    public List<StoreListResponse> searchStoresByName(String keyword, Integer userId) {
+        // 7.1 사용자의 권한 확인
+        UserEntity currentUser = getValidatedUser(userId);
+        boolean isAdmin = checkIsAdmin(currentUser);
+        
+        // 7.2 레포지토리 호출
+        List<StoreEntity> stores = storeRepository.searchByName(keyword, isAdmin);
+        
+        // 7.3 엔티티 리스트를 DTO 리스트로 변환하여 반환
+        return stores.stream()
+                // 일반 유저라면 activeRegions에 포함된 매장만 필터링하여 반환
+                .filter(store -> isAdmin || isServiceable(store.getRoadAddress()))
+                .map(StoreListResponse::fromEntity)
+                .toList();
+    }
+    
     // ----- [공통 검증 로직] -----
     // 1. 현재 유저가 관리자급(MANAGER, MASTER)인지 확인하는 메서드
     private boolean checkIsAdmin(UserEntity user) {
