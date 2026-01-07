@@ -7,6 +7,8 @@ import java.util.UUID;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -169,6 +171,70 @@ public class OrderServiceImpl implements OrderService {
     public List<OrderResponseDto> getAllOrders(UUID storeId, LocalDateTime date, OrderStatus status) {
         List<OrderEntity> orders = getBaseAllOrders(storeId, date);
         return applyFiltersAndMap(orders, date, status);
+    }
+
+    // ========== 페이지네이션 ==========
+
+    @Override
+    public Page<OrderResponseDto> getUserOrdersWithPagination(
+            Integer userId,
+            UUID storeId,
+            LocalDateTime date,
+            OrderStatus status,
+            Pageable pageable) {
+
+        LocalDateTime[] range = date != null ? getDateRange(date) : new LocalDateTime[]{null, null};
+
+        Page<OrderEntity> orderPage = orderRepository.findUserOrdersWithFilters(
+                userId,
+                storeId,
+                status,
+                range[0],
+                range[1],
+                pageable);
+
+        return orderPage.map(OrderResponseDto::from);
+    }
+
+    @Override
+    public Page<OrderResponseDto> getMyStoreOrdersWithPagination(
+            Integer userId,
+            Integer customerId,
+            LocalDateTime date,
+            OrderStatus status,
+            Pageable pageable) {
+
+        UUID storeId = getStoreIdByUserId(userId);
+        LocalDateTime[] range = date != null ? getDateRange(date) : new LocalDateTime[]{null, null};
+
+        Page<OrderEntity> orderPage = orderRepository.findStoreOrdersWithFilters(
+                storeId,
+                customerId,
+                status,
+                range[0],
+                range[1],
+                pageable);
+
+        return orderPage.map(OrderResponseDto::from);
+    }
+
+    @Override
+    public Page<OrderResponseDto> getAllOrdersWithPagination(
+            UUID storeId,
+            LocalDateTime date,
+            OrderStatus status,
+            Pageable pageable) {
+
+        LocalDateTime[] range = date != null ? getDateRange(date) : new LocalDateTime[]{null, null};
+
+        Page<OrderEntity> orderPage = orderRepository.findAllOrdersWithFilters(
+                storeId,
+                status,
+                range[0],
+                range[1],
+                pageable);
+
+        return orderPage.map(OrderResponseDto::from);
     }
 
     @Override

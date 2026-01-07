@@ -5,12 +5,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.Spot.order.domain.entity.OrderEntity;
+import com.example.Spot.order.domain.enums.OrderStatus;
 
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
@@ -109,5 +112,82 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
             @Param("storeId") UUID storeId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
+
+    // ========== 페이지네이션 쿼리 (JOIN FETCH + 필터링) ==========
+
+    // 고객 주문 조회 (페이지네이션)
+    @Query(value = "SELECT DISTINCT o FROM OrderEntity o " +
+            "LEFT JOIN FETCH o.store s " +
+            "LEFT JOIN FETCH o.orderItems oi " +
+            "LEFT JOIN FETCH oi.menu m " +
+            "LEFT JOIN FETCH oi.orderItemOptions oio " +
+            "LEFT JOIN FETCH oio.menuOption mo " +
+            "WHERE o.userId = :userId " +
+            "AND (:storeId IS NULL OR o.store.id = :storeId) " +
+            "AND (:status IS NULL OR o.orderStatus = :status) " +
+            "AND (:startDate IS NULL OR o.createdAt >= :startDate) " +
+            "AND (:endDate IS NULL OR o.createdAt <= :endDate)",
+            countQuery = "SELECT COUNT(DISTINCT o) FROM OrderEntity o " +
+            "WHERE o.userId = :userId " +
+            "AND (:storeId IS NULL OR o.store.id = :storeId) " +
+            "AND (:status IS NULL OR o.orderStatus = :status) " +
+            "AND (:startDate IS NULL OR o.createdAt >= :startDate) " +
+            "AND (:endDate IS NULL OR o.createdAt <= :endDate)")
+    Page<OrderEntity> findUserOrdersWithFilters(
+            @Param("userId") Integer userId,
+            @Param("storeId") UUID storeId,
+            @Param("status") OrderStatus status,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable);
+
+    // 점주 매장 주문 조회 (페이지네이션)
+    @Query(value = "SELECT DISTINCT o FROM OrderEntity o " +
+            "LEFT JOIN FETCH o.store s " +
+            "LEFT JOIN FETCH o.orderItems oi " +
+            "LEFT JOIN FETCH oi.menu m " +
+            "LEFT JOIN FETCH oi.orderItemOptions oio " +
+            "LEFT JOIN FETCH oio.menuOption mo " +
+            "WHERE o.store.id = :storeId " +
+            "AND (:customerId IS NULL OR o.userId = :customerId) " +
+            "AND (:status IS NULL OR o.orderStatus = :status) " +
+            "AND (:startDate IS NULL OR o.createdAt >= :startDate) " +
+            "AND (:endDate IS NULL OR o.createdAt <= :endDate)",
+            countQuery = "SELECT COUNT(DISTINCT o) FROM OrderEntity o " +
+            "WHERE o.store.id = :storeId " +
+            "AND (:customerId IS NULL OR o.userId = :customerId) " +
+            "AND (:status IS NULL OR o.orderStatus = :status) " +
+            "AND (:startDate IS NULL OR o.createdAt >= :startDate) " +
+            "AND (:endDate IS NULL OR o.createdAt <= :endDate)")
+    Page<OrderEntity> findStoreOrdersWithFilters(
+            @Param("storeId") UUID storeId,
+            @Param("customerId") Integer customerId,
+            @Param("status") OrderStatus status,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable);
+
+    // 관리자 전체 주문 조회 (페이지네이션)
+    @Query(value = "SELECT DISTINCT o FROM OrderEntity o " +
+            "LEFT JOIN FETCH o.store s " +
+            "LEFT JOIN FETCH o.orderItems oi " +
+            "LEFT JOIN FETCH oi.menu m " +
+            "LEFT JOIN FETCH oi.orderItemOptions oio " +
+            "LEFT JOIN FETCH oio.menuOption mo " +
+            "WHERE (:storeId IS NULL OR o.store.id = :storeId) " +
+            "AND (:status IS NULL OR o.orderStatus = :status) " +
+            "AND (:startDate IS NULL OR o.createdAt >= :startDate) " +
+            "AND (:endDate IS NULL OR o.createdAt <= :endDate)",
+            countQuery = "SELECT COUNT(DISTINCT o) FROM OrderEntity o " +
+            "WHERE (:storeId IS NULL OR o.store.id = :storeId) " +
+            "AND (:status IS NULL OR o.orderStatus = :status) " +
+            "AND (:startDate IS NULL OR o.createdAt >= :startDate) " +
+            "AND (:endDate IS NULL OR o.createdAt <= :endDate)")
+    Page<OrderEntity> findAllOrdersWithFilters(
+            @Param("storeId") UUID storeId,
+            @Param("status") OrderStatus status,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate,
+            Pageable pageable);
 }
 

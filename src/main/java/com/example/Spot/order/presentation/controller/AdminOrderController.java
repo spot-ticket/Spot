@@ -2,9 +2,12 @@ package com.example.Spot.order.presentation.controller;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -30,14 +33,20 @@ public class AdminOrderController {
     private final OrderService orderService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<OrderResponseDto>>> getAllOrders(
+    public ResponseEntity<ApiResponse<Page<OrderResponseDto>>> getAllOrders(
             @RequestParam(required = false) UUID storeId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam(required = false) OrderStatus status) {
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") Sort.Direction direction) {
 
         LocalDateTime dateTime = date != null ? date.atStartOfDay() : null;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        List<OrderResponseDto> response = orderService.getAllOrders(storeId, dateTime, status);
+        Page<OrderResponseDto> response = orderService.getAllOrdersWithPagination(
+                storeId, dateTime, status, pageable);
 
         return ResponseEntity
                 .status(OrderSuccessCode.ORDER_LIST_FOUND.getStatus())
