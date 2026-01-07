@@ -90,18 +90,17 @@ class MenuControllerTest {
         UUID storeId = UUID.randomUUID();
         UUID menuId = UUID.randomUUID();
 
-        CreateMenuRequestDto request = CreateMenuRequestDto.builder()
-                .storeId(storeId)
-                .name("육전물막국수")
-                .build();
+        CreateMenuRequestDto request = new CreateMenuRequestDto();
+        ReflectionTestUtils.setField(request, "storeId", storeId);
+        ReflectionTestUtils.setField(request, "name", "육전물막국수");
 
-        // [핵심] 헬퍼 메서드로 CustomUserDetails 생성 (이 안에 UserEntity가 들어있음)
+        // 인증된 유저
         CustomUserDetails customUser = createMockUser(Role.MASTER);
 
         StoreEntity store = createStoreEntity(storeId);
         MenuEntity menu = createMenuEntity(store, request.getName(), menuId);
 
-        given(menuService.createMenu(any(), any(), any()))
+        given(menuService.createMenu(eq(storeId), any(CreateMenuRequestDto.class), any(UserEntity.class)))
                 .willReturn(new CreateMenuResponseDto(menu));
 
         // 2. When & Then
@@ -200,7 +199,7 @@ class MenuControllerTest {
                 .username("test_boss")
                 .nickname("사장님")
                 .email("boss@test.com")
-                .address("서울시 강남구")
+                .addressDetail("서울시 강남구")
                 .role(userRole)
                 .build();
 
