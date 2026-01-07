@@ -41,14 +41,5 @@ public class ResetTokenEntity extends UpdateBaseEntity {
     @Column(name = "used_at")
     private LocalDateTime usedAt;
 
-    public boolean isUsable(LocalDateTime now) {
-        return !getIsDeleted()
-                && usedAt == null
-                && expiresAt.isAfter(now);
-    }
 
-    public void markUsed() {
-        this.usedAt = LocalDateTime.now();
-        softDelete();
-    }
 }

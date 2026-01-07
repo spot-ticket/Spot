@@ -53,7 +53,7 @@ public class UserService {
         UserEntity user = userRepository.findById(loginUserId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        user.softDelete();
+        user.softDelete(user.getId());
     }
     
 
