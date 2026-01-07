@@ -117,7 +117,7 @@ public class MenuOptionServiceImpl implements MenuOptionService {
         // 권한 검증
         validatePermission(store, user);
 
-        option.softDelete();
+        option.softDelete(user.getId());
     }
 
     // Helper

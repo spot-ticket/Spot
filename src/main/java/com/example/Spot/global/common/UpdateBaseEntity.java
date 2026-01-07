@@ -25,7 +25,7 @@ public abstract class UpdateBaseEntity extends BaseEntity {
     private Integer updatedBy;
 
     @Column(name = "is_deleted", nullable = false)
-    private Boolean isDeleted;
+    private boolean isDeleted;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
@@ -37,7 +37,12 @@ public abstract class UpdateBaseEntity extends BaseEntity {
         super(createdBy);
         this.isDeleted = false;
     }
-    
+
+    public boolean getIsDeleted() {
+        return isDeleted;
+    }
+
+
     public void softDelete(Integer deletedBy) {
         this.isDeleted = true;
         this.deletedBy = deletedBy;
