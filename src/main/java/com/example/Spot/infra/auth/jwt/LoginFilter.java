@@ -55,11 +55,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String authority = authentication.getAuthorities().iterator().next().getAuthority();
         Role role = Role.valueOf(authority.replace("ROLE_", ""));
 
-        // ✅ access (짧게)
+        // access (짧게)
         long accessExpMs = 1000L * 60 * 30; // 30분 예시
         String accessToken = jwtUtil.createJwt(userId, role, accessExpMs);
 
-        // ✅ refresh (길게) - DB 저장 없음
+        // refresh (길게) - DB 저장 없음
         long refreshExpMs = 1000L * 60 * 60 * 24 * 14; // 14일 예시
         String refreshToken = jwtUtil.createRefreshToken(userId, refreshExpMs);
 
