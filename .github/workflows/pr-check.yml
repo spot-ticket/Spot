@@ -33,61 +33,18 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: gradle
+    
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Create application.yml for testing
-      run: |
-        cat > src/main/resources/application.yml << 'EOF'
-        spring:
-          application:
-            name: Spot
-          datasource:
-            url: jdbc:postgresql://localhost:5432/myapp_db
-            username: admin
-            password: secret
-            driver-class-name: org.postgresql.Driver
-          jpa:
-            open-in-view: false
-            hibernate:
-              ddl-auto: update
-            show-sql: true
-            properties:
-              hibernate:
-                format_sql: true
-                dialect: org.hibernate.dialect.PostgreSQLDialect
-          jwt:
-            secret: "test_secret_key_must_be_at_least_32_characters_long_for_hs256_algorithm"
-
-        security:
-          refresh-token:
-            expire-days: 14
-
-        toss:
-          payments:
-            base-url: https://api.tosspayments.com
-            billingKey: test_billing_key
-            customerKey: customer_test
-            secretKey: test_sk_test
-            clientKey: test_ck_test
-            timeout: 10
-
-        service:
-          active-regions: 종로구
-        
-        mail:
-          host: smtp.gmail.com
-          port: 587
-          username: spotemail3@gmail.com
-          password: "dyeweirngiowjexf"
-          properties:
-            mail.debug: true
-            mail.connection timeout: 5000
-            mail.smtp.auth: true
-            mail.smtp.starttls.enable: true
-            mail.smtp.starttls.required: true
-        EOF
+    - name: Make application.properties
+        run: |
+          mkdir -p ./src/main/resources
+          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
+        shell: bash
 
     - name: Check code formatting
       run: ./gradlew checkstyleMain checkstyleTest

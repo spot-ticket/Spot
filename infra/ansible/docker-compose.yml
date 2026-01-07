@@ -1,0 +1,15 @@
+services:
+  app:
+    image: ${DOCKER_IMAGE:-your-dockerhub-username/your-app:latest}
+    container_name: spring-app
+    ports:
+      - "8080:8080"
+    restart: always
+    environment:
+      - SPRING_PROFILES_ACTIVE=prod
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8080/actuator/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
