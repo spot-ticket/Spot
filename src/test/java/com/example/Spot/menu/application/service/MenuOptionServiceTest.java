@@ -120,7 +120,7 @@ class MenuOptionServiceTest {
         CustomUserDetails user = createMockUser(Role.OWNER);
 
         // 가게 생성
-        StoreEntity store = createStoreEntity(UUID.randomUUID());
+        StoreEntity store = createStoreEntity(storeId);
 
         // 유저와 가게 연결
         connectStoreAndUser(store, user.getUserEntity());
@@ -141,7 +141,7 @@ class MenuOptionServiceTest {
         given(menuOptionRepository.findById(optionId)).willReturn(Optional.of(option));
 
         // 2. When
-        UpdateMenuOptionResponseDto result = menuOptionService.updateMenuOption(user.getUserEntity(), storeId, optionId, request);
+        UpdateMenuOptionResponseDto result = menuOptionService.updateMenuOption(user.getUserEntity(), storeId, menuId, optionId, request);
 
         // 3. Then
         assertThat(result.getName()).isEqualTo("수정된옵션");
