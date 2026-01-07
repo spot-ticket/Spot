@@ -16,9 +16,8 @@ import com.example.Spot.menu.presentation.dto.response.CreateMenuOptionResponseD
 import com.example.Spot.menu.presentation.dto.response.MenuOptionResponseDto;
 import com.example.Spot.menu.presentation.dto.response.UpdateMenuOptionResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
-import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.Role;
-
+import com.example.Spot.user.domain.entity.UserEntity;
 
 import lombok.RequiredArgsConstructor;
 
