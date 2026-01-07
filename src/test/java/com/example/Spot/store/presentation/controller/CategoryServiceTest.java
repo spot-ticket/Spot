@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import com.example.Spot.global.TestSupport;
 import com.example.Spot.store.domain.entity.CategoryEntity;
 import com.example.Spot.store.domain.entity.StoreCategoryEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
@@ -18,7 +19,7 @@ import com.example.Spot.store.domain.repository.StoreCategoryRepository;
 import com.example.Spot.store.domain.repository.StoreRepository;
 
 @DataJpaTest
-class CategoryServiceTest {
+class CategoryServiceTest extends TestSupport {
 
     @Autowired
     private CategoryRepository categoryRepository;
@@ -125,7 +126,7 @@ class CategoryServiceTest {
         CategoryEntity savedCategory =
                 categoryRepository.save(category);
 
-        savedCategory.softDelete(); // soft delete
+        savedCategory.softDelete(TEST_USER_ID); // soft delete
         categoryRepository.save(savedCategory);
 
         // when
@@ -217,7 +218,7 @@ class CategoryServiceTest {
         storeRepository.save(activeStore);
 
         StoreEntity savedDeletedStore = storeRepository.save(deletedStore);
-        savedDeletedStore.softDelete();
+        savedDeletedStore.softDelete(TEST_USER_ID);
         storeRepository.save(savedDeletedStore);
 
         storeViewRepository.save(
@@ -340,7 +341,7 @@ class CategoryServiceTest {
         CategoryEntity saved =
                 categoryRepository.save(category);
 
-        saved.softDelete();
+        saved.softDelete(TEST_USER_ID);
         categoryRepository.save(saved);
 
         // when
@@ -363,7 +364,7 @@ class CategoryServiceTest {
                 categoryRepository.save(category);
 
         // when
-        saved.softDelete();
+        saved.softDelete(TEST_USER_ID);
         categoryRepository.save(saved);
 
         // then
@@ -388,7 +389,7 @@ class CategoryServiceTest {
 
         CategoryEntity savedDeleted =
                 categoryRepository.save(deleted);
-        savedDeleted.softDelete();
+        savedDeleted.softDelete(TEST_USER_ID);
         categoryRepository.save(savedDeleted);
 
         // when

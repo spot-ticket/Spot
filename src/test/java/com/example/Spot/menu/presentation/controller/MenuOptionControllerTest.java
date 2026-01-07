@@ -4,6 +4,15 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
+import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import java.util.List;
 import java.util.UUID;
@@ -23,12 +32,6 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.csrf;
-import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.user;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.menu.application.service.MenuOptionService;
@@ -40,8 +43,8 @@ import com.example.Spot.menu.presentation.dto.response.CreateMenuOptionResponseD
 import com.example.Spot.menu.presentation.dto.response.MenuOptionResponseDto;
 import com.example.Spot.menu.presentation.dto.response.UpdateMenuOptionResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
-import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.domain.entity.UserEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebMvcTest(MenuOptionController.class)
@@ -124,7 +127,7 @@ class MenuOptionControllerTest {
 
     @Test
     @DisplayName("[PATCH] 메뉴 수정 테스트 성공")
-    void 메뉴_수정_테스트() throws Exception{
+    void 메뉴_수정_테스트() throws Exception {
         // given
         UUID storeId = UUID.randomUUID();
         UUID menuId = UUID.randomUUID();
@@ -172,9 +175,9 @@ class MenuOptionControllerTest {
         UUID optionId = UUID.randomUUID();
 
         CustomUserDetails mockUser = createMockUser(Role.OWNER);
-        StoreEntity store = createStoreEntity(storeId);
-        MenuEntity menu = createMenuEntity(store, menuId);
-        MenuOptionEntity option = createMenuOptionEntity(menu, optionId, "면 추가");
+//        StoreEntity store = createStoreEntity(storeId);
+//        MenuEntity menu = createMenuEntity(store, menuId);
+//        MenuOptionEntity option = createMenuOptionEntity(menu, optionId, "면 추가");
 
         willDoNothing().given(menuOptionService)
                 .deleteMenuOption(any(UserEntity.class), eq(storeId), eq(menuId), eq(optionId));

@@ -10,10 +10,11 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import com.example.Spot.global.TestSupport;
 import com.example.Spot.store.domain.entity.StoreEntity;
 
 @DataJpaTest
-class StoreRepositoryTest {
+class StoreRepositoryTest extends TestSupport {
 
     @Autowired
     private StoreRepository storeRepository;
@@ -88,7 +89,7 @@ class StoreRepositoryTest {
         StoreEntity savedStore = storeRepository.save(store);
 
         //when
-        savedStore.softDelete();
+        savedStore.softDelete(TEST_USER_ID);
         StoreEntity deletedStore = storeRepository.save(savedStore);
 
         //then
@@ -122,7 +123,7 @@ class StoreRepositoryTest {
         storeRepository.save(activeStore);
 
         StoreEntity saved = storeRepository.save(deletedStore);
-        saved.softDelete();
+        saved.softDelete(TEST_USER_ID);
         storeRepository.save(saved);
 
         //when
@@ -169,7 +170,7 @@ class StoreRepositoryTest {
                 .build();
 
         StoreEntity savedStore = storeRepository.save(store);
-        savedStore.softDelete();
+        savedStore.softDelete(TEST_USER_ID);
         storeRepository.save(savedStore);
 
         //when
