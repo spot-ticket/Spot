@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-class MenuOptionEntityTest {
+import com.example.Spot.global.TestSupport;
+
+class MenuOptionEntityTest extends TestSupport {
 
     @Test
     @DisplayName("메뉴 옵션이 정상적으로 등록되었습니다.")
@@ -69,7 +71,7 @@ class MenuOptionEntityTest {
         MenuOptionEntity menuOption = MenuOptionEntity.builder().build();
 
         // 2. when
-        menuOption.softDelete(); // 혹은 delete()
+        menuOption.softDelete(TEST_USER_ID); // 혹은 delete()
 
         // 3. then
         assertThat(menuOption.getIsDeleted()).isTrue();
