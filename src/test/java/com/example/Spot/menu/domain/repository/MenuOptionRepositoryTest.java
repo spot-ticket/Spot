@@ -36,11 +36,12 @@ class MenuOptionRepositoryTest {
     private MenuOptionEntity soldOutOption; // 품절 옵션
 
     @BeforeEach
-    void 가게_메뉴_메뉴_옵션_생성() {
+    void 가게_메뉴_옵션_생성() {
         // [Given] 1. StoreEntity 생성 및 저장
         StoreEntity store = StoreEntity.builder()
                 .name("원조역삼막국수")
-                .address("서울시 강남구")
+                .addressDetail("서울시 강남구")
+                .roadAddress("서울시 강남구 테헤란로 123")
                 .phoneNumber("02-4321-8765")
                 .openTime(LocalTime.of(11, 0))
                 .closeTime(LocalTime.of(21, 0))
@@ -80,37 +81,32 @@ class MenuOptionRepositoryTest {
     }
 
     @Test
-    @DisplayName("[손님] 구매 가능한 옵션만 조회 (품절 / 삭제 제외)")
-    void 구매_가능한_옵션_테스트() {
-        List<MenuOptionEntity> activeOptions = menuOptionRepository.findAllByMenuIdAndIsDeletedFalse(savedMenu.getId());
-
-        assertThat(activeOptions)
-                .extracting("name", "detail", "price", "isDeleted", "isAvailable")
-                .containsExactly(tuple("육전 추가", "4조각", 4000, false, true))
-                .doesNotContain(tuple("면 추가", "곱빼기", 2500, false, false));
-    }
-
-    @Test
-    @DisplayName("[가게] 삭제된 옵션을 제외하고 모든 옵션을 조회")
-    void 삭제_옵션_제외_테스트() {
-        // 삭제된 옵션 생성
+    @DisplayName("[손님/가게] 삭제된 옵션을 제외한 모든 옵션 조회 테스트")
+    void 옵션_제외_조회() {
+        // 1. 삭제된 옵션 생성
         MenuOptionEntity deletedOption = MenuOptionEntity.builder()
                 .menu(savedMenu)
                 .name("삭제된 옵션")
-                .detail("재료 수급 문제")
+                .detail("삭제 테스트용")
                 .price(1)
                 .build();
         deletedOption.softDelete();
         menuOptionRepository.save(deletedOption);
 
+        // 2. When
         List<MenuOptionEntity> storeOptions = menuOptionRepository.findAllByMenuIdAndIsDeletedFalse(savedMenu.getId());
 
+        // 3. Then
         assertThat(storeOptions)
                 .extracting("name", "isDeleted", "isAvailable")
                 .contains(
+                        // 품절된("면 추가") 것도 잘 나오는지 확인 (Good!)
                         tuple("육전 추가", false, true),
                         tuple("면 추가", false, false)
                 )
-                .doesNotContain(tuple("삭제된 옵션", true, true));
+                .doesNotContain(
+                        // [수정] 5개 개수를 맞춰줘야 비교가 가능합니다.
+                        tuple("삭제된 옵션", true, true)
+                );
     }
 }

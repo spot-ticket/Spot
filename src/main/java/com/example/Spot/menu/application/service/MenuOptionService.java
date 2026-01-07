@@ -14,6 +14,6 @@ import com.example.Spot.user.domain.entity.UserEntity;
 public interface MenuOptionService {
     List<MenuOptionResponseDto> getOptions(Role userRole, UUID storeId, UUID menuId);
     CreateMenuOptionResponseDto createMenuOption(UserEntity user, UUID storeId, UUID menuId, CreateMenuOptionRequestDto request);
-    UpdateMenuOptionResponseDto updateMenuOption(UserEntity user, UUID storeId, UUID optionId, UpdateMenuOptionRequestDto request);
-    void deleteMenuOption(UserEntity user, UUID storeId, UUID optionId);
+    UpdateMenuOptionResponseDto updateMenuOption(UserEntity user, UUID storeId, UUID menuId, UUID optionId, UpdateMenuOptionRequestDto request);
+    void deleteMenuOption(UserEntity user, UUID storeId, UUID menuId, UUID optionId);
 }
