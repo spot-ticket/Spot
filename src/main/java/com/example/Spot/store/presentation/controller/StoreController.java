@@ -1,8 +1,10 @@
 package com.example.Spot.store.presentation.controller;
 
-import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -56,10 +58,13 @@ public class StoreController {
     
     // 3. 매장 전체 조회
     @GetMapping
-    public ResponseEntity<List<StoreListResponse>> getAllStores(
+    public ResponseEntity<Page<StoreListResponse>> getAllStores(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size,
             @AuthenticationPrincipal Integer userId
     ) {
-        return ResponseEntity.ok(storeService.getAllStores(userId));
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(storeService.getAllStores(userId, pageable));
     }
     
     // 4. 매장 기본 정보 수정
@@ -99,10 +104,13 @@ public class StoreController {
     
     // 7. 매장 이름으로 검색
     @GetMapping("/search")
-    public ResponseEntity<List<StoreListResponse>> searchStores(
+    public ResponseEntity<Page<StoreListResponse>> searchStores(
             @RequestParam String keyword,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "50") int size,
             @AuthenticationPrincipal Integer userId
     ) {
-        return ResponseEntity.ok(storeService.searchStoresByName(keyword, userId));
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(storeService.searchStoresByName(keyword, userId, pageable));
     }
 }
