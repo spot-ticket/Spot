@@ -18,7 +18,7 @@ jobs:
           cache: 'gradle'
 
       - name: Run Snyk to check for vulnerabilities
-        uses: snyk/actions/java@master
+        uses: snyk/actions/gradle@master
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
