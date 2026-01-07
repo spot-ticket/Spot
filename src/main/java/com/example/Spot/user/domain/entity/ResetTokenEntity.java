@@ -25,7 +25,7 @@ public class ResetTokenEntity extends UpdateBaseEntity {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(name = "auth_id", nullable = false)
+    @Column(name = "user_auth_id", nullable = false)
     private UUID authId;
 
     @Column(name = "reset_token_hash", nullable = false, unique = true)
