@@ -53,7 +53,7 @@ public class UserController {
     }
     
     // 닉네임으로 사용자 검색
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("hasAnyRole('MASTER','OWNER','MANAGER')")
     @GetMapping("/search")
     public ResponseEntity<List<UserResponseDTO>> searchUsers(
             @RequestParam String nickname
