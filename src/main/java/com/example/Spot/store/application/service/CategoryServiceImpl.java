@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import com.example.Spot.user.domain.entity.UserEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -109,12 +110,12 @@ public class CategoryServiceImpl implements CategoryService {
     // delete
     @Override
     @Transactional
-    public void delete(UUID categoryId) {
+    public void delete(UUID categoryId, UserEntity user) {
         CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(categoryId)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found: " + categoryId));
 
         // soft delete
-        category.softDelete();
+        category.softDelete(user.getId());
     }
 
 

@@ -31,7 +31,7 @@ dependencies {
 	testAnnotationProcessor 'org.projectlombok:lombok'
 
 	implementation 'org.springframework.boot:spring-boot-starter-validation'
-	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui:2.8.5'
+	implementation 'org.springdoc:springdoc-openapi-starter-webmvc-ui@2.8.10'
 
 	runtimeOnly 'org.postgresql:postgresql'
 
@@ -63,10 +63,18 @@ tasks.withType(JavaCompile) {
 }
 
 checkstyle {
-    toolVersion = '10.12.5'
+    toolVersion = '10.25.0'
     configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
     maxWarnings = 0
     ignoreFailures = false
+}
+
+configurations.checkstyle {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'org.apache.commons' && details.requested.name == 'commons-lang3') {
+            details.useVersion '3.18.0'
+        }
+    }
 }
 
 tasks.withType(Checkstyle) {
