@@ -1,6 +1,7 @@
 package com.example.Spot.user.presentation.controller;
 
 import java.util.List;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -56,7 +57,7 @@ public class UserController {
     @GetMapping("/search")
     public ResponseEntity<List<UserResponseDTO>> searchUsers(
             @RequestParam String nickname
-    ){
+    ) {
         return ResponseEntity.ok(userService.searchUsersByNickname(nickname));
     }
 }
