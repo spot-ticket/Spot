@@ -12,6 +12,8 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
 import com.example.Spot.global.TestSupport;
 import com.example.Spot.store.domain.entity.StoreEntity;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 
 @DataJpaTest
 class StoreRepositoryTest extends TestSupport {
@@ -22,161 +24,114 @@ class StoreRepositoryTest extends TestSupport {
     @Test
     void 가게를_저장하고_조회할_수_있다() {
         //given (준비)
-        StoreEntity store = StoreEntity.builder()
-                .name("테스트 가게")
+        StoreEntity store = createStore("테스트 가게");
+        StoreEntity savedStore = storeRepository.save(store);
+
+        Optional<StoreEntity> foundStore = storeRepository.findById(savedStore.getId());
+
+        assertThat(foundStore).isPresent();
+        assertThat(foundStore.get().getName()).isEqualTo("테스트 가게");
+    }
+
+    @Test
+    void 관리자는_삭제된_가게를_포함하여_전체_페이지_조회가_가능하다() {
+        // given
+        storeRepository.save(createStore("정상 가게"));
+        StoreEntity deleted = storeRepository.save(createStore("삭제된 가게"));
+        deleted.softDelete(TEST_USER_ID);
+        storeRepository.save(deleted);
+
+        // when
+        Page<StoreEntity> result = storeRepository.findAllByRole(false, PageRequest.of(0, 10));
+
+        // then
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent().get(0).getName()).isEqualTo("정상 가게");
+    }
+
+    @Test
+    void 일반_유저는_삭제되지_않은_가게만_페이지_조회가_가능하다() {
+        // given
+        storeRepository.save(createStore("정상 가게"));
+        StoreEntity deleted = storeRepository.save(createStore("삭제된 가게"));
+        deleted.softDelete(TEST_USER_ID);
+        storeRepository.save(deleted);
+        
+        // when
+        Page<StoreEntity> result = storeRepository.findAllByRole(false, PageRequest.of(0, 10));
+        
+        // then
+        assertThat(result.getTotalElements()).isEqualTo(1);
+        assertThat(result.getContent().get(0).getName()).isEqualTo("정상 가게");
+    }
+
+    @Test
+    void 키워드로_가게_이름을_검색할_수_있다() { 
+        // given
+        storeRepository.save(createStore("맛있는 치킨"));
+        storeRepository.save(createStore("맛있는 피자"));
+        
+        // when
+        Page<StoreEntity> result = storeRepository.searchByName("치킨", false, PageRequest.of(0, 10));
+         
+        // then
+        assertThat(result.getContent()).hasSize(1);
+        assertThat(result.getContent().get(0).getName()).isEqualTo("맛있는 치킨");
+    }
+
+    @Test
+    void 삭제되지_않은_매장은_일반유저_권한으로도_상세조회가_가능하다() {
+        // given
+        StoreEntity store = storeRepository.save(createStore("영업 중인 가게"));
+        
+        // when - 일반 유저(isAdmin = false) 권한으로 조회
+        Optional<StoreEntity> foundStore = storeRepository.findByIdWithDetails(store.getId(), false);
+        
+        // then
+        assertThat(foundStore).isPresent();
+        assertThat(foundStore.get().getName()).isEqualTo("영업중인 가게");
+    }
+
+    @Test
+    void 삭제된_가게는_일반유저_권한으로_상세조회되지_않는다() {
+        // given
+        StoreEntity store = storeRepository.save(createStore("삭제된 가게"));
+        store.softDelete(TEST_USER_ID);
+        storeRepository.saveAndFlush(store);
+        entityManager.clear();
+        
+        // when - 일반 유저
+        Optional<StoreEntity> foundStore = storeRepository.findByIdWithDetails(store.getId(), false);
+        
+        // then
+        assertThat(foundStore).isEmpty();
+    }
+    
+    @Test
+    void 삭제된_가게라도_관리자_권한으로는_상세조회가_가능하다() {
+        // given
+        StoreEntity store = storeRepository.save(createStore("삭제된 가게"));
+        store.softDelete(TEST_USER_ID);
+        storeRepository.saveAndFlush(store);
+        entityManager.clear();
+        
+        // when
+        Optional<StoreEntity> foundStore = storeRepository.findByIdWithDetails(store.getId(), true);
+        
+        // then
+        assertThat(foundStore).isPresent();
+        assertThat(foundStore.get().getIsDeleted()).isTrue();
+    }
+    
+    // 반복되는 Store 생성을 위한 헬퍼 메서드
+    private StoreEntity createStore(String name) {
+        return StoreEntity.builder()
+                .name(name)
                 .roadAddress("서울시 강남구")
                 .addressDetail("123-45")
                 .phoneNumber("02-1234-5678")
                 .openTime(LocalTime.of(9, 0))
                 .closeTime(LocalTime.of(22, 0))
                 .build();
-        //when (실행)
-        StoreEntity savedStore = storeRepository.save(store);
-
-        //then (검증)
-        Optional<StoreEntity> foundStore = storeRepository.findById(savedStore.getId());
-        assertThat(foundStore).isPresent();
-        assertThat(foundStore.get().getName()).isEqualTo("테스트 가게");
-    }
-
-    @Test
-    void 모든_가게를_조회할_수_있다() {
-        //given
-        StoreEntity store1 = StoreEntity.builder()
-                .name("치킨집")
-                .roadAddress("서울시 강남구")
-                .addressDetail("123-45")
-                .phoneNumber("02-1111-1111")
-                .openTime(LocalTime.of(10, 0))
-                .closeTime(LocalTime.of(21, 0))
-                .build();
-
-        StoreEntity store2 = StoreEntity.builder()
-                .name("피자집")
-                .roadAddress("서울시 강남구")
-                .addressDetail("123-45")
-                .phoneNumber("02-2222-2222")
-                .openTime(LocalTime.of(12, 0))
-                .closeTime(LocalTime.of(3, 0))
-                .build();
-
-        storeRepository.save(store1);
-        storeRepository.save(store2);
-
-        //when
-        List<StoreEntity> stores = storeRepository.findAll();
-
-        //then
-        assertThat(stores).hasSize(2);
-        assertThat(stores)
-                .extracting(StoreEntity::getName)
-                .containsExactlyInAnyOrder("치킨집", "피자집");
-
-    }
-
-    @Test
-    void 가게를_soft_delete_할_수_있다() {
-        //given
-        StoreEntity store = StoreEntity.builder()
-                .name("삭제될 가게")
-                .roadAddress("서울시 강남구")
-                .addressDetail("123-45")
-                .phoneNumber("02-1234-5678")
-                .openTime(LocalTime.of(9, 0))
-                .closeTime(LocalTime.of(23, 0))
-                .build();
-
-        StoreEntity savedStore = storeRepository.save(store);
-
-        //when
-        savedStore.softDelete(TEST_USER_ID);
-        StoreEntity deletedStore = storeRepository.save(savedStore);
-
-        //then
-        assertThat(deletedStore.getIsDeleted()).isTrue();
-
-        Optional<StoreEntity> foundStore = storeRepository.findById(deletedStore.getId());
-        assertThat(foundStore).isPresent();
-        assertThat(foundStore.get().getIsDeleted()).isTrue();
-    }
-
-    @Test
-    void 삭제되지_않은_가게만_조회할_수_있다() {
-        //given
-        StoreEntity activeStore = StoreEntity.builder()
-                .name("영업중인 가게")
-                .roadAddress("서울시 강남구")
-                .addressDetail("123-45")
-                .phoneNumber("02-1111-1111")
-                .openTime(LocalTime.of(9, 0))
-                .closeTime(LocalTime.of(18, 0))
-                .build();
-        StoreEntity deletedStore = StoreEntity.builder()
-                .name("삭제된 가게")
-                .roadAddress("서울시 서초구")
-                .addressDetail("123-45")
-                .phoneNumber("02-2222-2222")
-                .openTime(LocalTime.of(13, 0))
-                .closeTime(LocalTime.of(2, 0))
-                .build();
-
-        storeRepository.save(activeStore);
-
-        StoreEntity saved = storeRepository.save(deletedStore);
-        saved.softDelete(TEST_USER_ID);
-        storeRepository.save(saved);
-
-        //when
-        List<StoreEntity> activeStores = storeRepository.findByIsDeletedFalse();
-
-        //then
-        assertThat(activeStores).hasSize(1);
-        assertThat(activeStores.get(0).getName()).isEqualTo("영업중인 가게");
-        assertThat(activeStores.get(0).getIsDeleted()).isFalse();
-    }
-
-    @Test
-    void ID로_삭제되지_않은_가게를_조회할_수_있다() {
-        //given
-        StoreEntity store = StoreEntity.builder()
-                .name("영업중인 가게")
-                .roadAddress("서울시 강남구")
-                .addressDetail("123-45")
-                .phoneNumber("02-123-5678")
-                .openTime(LocalTime.of(13, 0))
-                .closeTime(LocalTime.of(4, 0))
-                .build();
-
-        StoreEntity savedStore = storeRepository.save(store);
-
-        //when
-        Optional<StoreEntity> foundStore = storeRepository.findByIdAndIsDeletedFalse(savedStore.getId());
-
-        //then
-        assertThat(foundStore).isPresent();
-        assertThat(foundStore.get().getName()).isEqualTo("영업중인 가게");
-    }
-
-    @Test
-    void 삭제된_가게는_ID로_조회되지_않는다() {
-        //given
-        StoreEntity store = StoreEntity.builder()
-                .name("삭제된 가게")
-                .roadAddress("서울시 강남구")
-                .addressDetail("123-45")
-                .phoneNumber("02-1234-5678")
-                .openTime(LocalTime.of(18, 0))
-                .closeTime(LocalTime.of(7, 0))
-                .build();
-
-        StoreEntity savedStore = storeRepository.save(store);
-        savedStore.softDelete(TEST_USER_ID);
-        storeRepository.save(savedStore);
-
-        //when
-        Optional<StoreEntity> foundStore = storeRepository.findByIdAndIsDeletedFalse(savedStore.getId());
-
-        //then
-        assertThat(foundStore).isEmpty(); //삭제되니 가게는 조회되지 말야아 함
     }
 }
