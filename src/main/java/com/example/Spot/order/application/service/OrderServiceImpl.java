@@ -52,6 +52,13 @@ public class OrderServiceImpl implements OrderService {
         StoreEntity store = storeRepository.findById(requestDto.getStoreId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 가게입니다."));
 
+        // 영업시간 체크
+        if (!store.isOpenNow()) {
+            throw new IllegalArgumentException(
+                    String.format("현재 영업시간이 아닙니다. 영업시간: %s ~ %s",
+                            store.getOpenTime(), store.getCloseTime()));
+        }
+
         String orderNumber = generateOrderNumber();
 
         OrderEntity order = OrderEntity.builder()
@@ -129,18 +136,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponseDto> getUserOrdersByFilters(Integer userId, UUID storeId, LocalDateTime date, OrderStatus status) {
-        // 1. 기본 주문 목록 조회
         List<OrderEntity> orders = getBaseUserOrders(userId, storeId, date);
-        
-        // 2. 상태 필터 적용
         return applyFiltersAndMap(orders, date, status);
     }
 
     private List<OrderResponseDto> getStoreOrdersByFilters(UUID storeId, Integer customerId, LocalDateTime date, OrderStatus status) {
-        // 1. 기본 주문 목록 조회
         List<OrderEntity> orders = getBaseStoreOrders(storeId, customerId, date);
-        
-        // 2. 상태 필터 적용
         return applyFiltersAndMap(orders, date, status);
     }
 
