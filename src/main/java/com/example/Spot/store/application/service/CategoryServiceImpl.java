@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import com.example.Spot.user.domain.entity.UserEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -15,10 +14,11 @@ import com.example.Spot.store.domain.repository.CategoryRepository;
 import com.example.Spot.store.domain.repository.StoreCategoryRepository;
 import com.example.Spot.store.presentation.dto.request.CategoryRequestDTO;
 import com.example.Spot.store.presentation.dto.response.CategoryResponseDTO;
+import com.example.Spot.user.domain.entity.UserEntity;
+
 
 import lombok.RequiredArgsConstructor;
 
-import static org.springframework.data.jpa.domain.AbstractAuditable_.createdBy;
 
 @Service
 @RequiredArgsConstructor

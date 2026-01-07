@@ -1,7 +1,4 @@
 package com.example.Spot.infra.auth.jwt;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -10,10 +7,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.user.domain.Role;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
