@@ -123,7 +123,7 @@ public class CategoryServiceImpl implements CategoryService {
         return new CategoryResponseDTO.StoreSummary(
                 s.getId(),
                 s.getName(),
-                s.getAddress(),
+                s.getRoadAddress(),
                 s.getPhoneNumber(),
                 s.getOpenTime(),
                 s.getCloseTime()
