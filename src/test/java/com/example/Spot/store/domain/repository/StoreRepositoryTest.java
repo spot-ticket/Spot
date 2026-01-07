@@ -3,18 +3,20 @@ package com.example.Spot.store.domain.repository;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.LocalTime;
-import java.util.List;
 import java.util.Optional;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
-
-import com.example.Spot.global.TestSupport;
-import com.example.Spot.store.domain.entity.StoreEntity;
+import org.springframework.context.annotation.Import;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 
+import com.example.Spot.config.TestConfig;
+import com.example.Spot.global.TestSupport;
+import com.example.Spot.store.domain.entity.StoreEntity;
+
+@Import(TestConfig.class)
 @DataJpaTest
 class StoreRepositoryTest extends TestSupport {
 
@@ -82,7 +84,7 @@ class StoreRepositoryTest extends TestSupport {
     @Test
     void 삭제되지_않은_매장은_일반유저_권한으로도_상세조회가_가능하다() {
         // given
-        StoreEntity store = storeRepository.save(createStore("영업 중인 가게"));
+        StoreEntity store = storeRepository.save(createStore("영업중인 가게"));
         
         // when - 일반 유저(isAdmin = false) 권한으로 조회
         Optional<StoreEntity> foundStore = storeRepository.findByIdWithDetails(store.getId(), false);
