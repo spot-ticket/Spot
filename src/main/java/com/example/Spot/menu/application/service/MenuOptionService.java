@@ -8,8 +8,8 @@ import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionRequestDto
 import com.example.Spot.menu.presentation.dto.response.CreateMenuOptionResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuOptionResponseDto;
 import com.example.Spot.menu.presentation.dto.response.UpdateMenuOptionResponseDto;
-import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.domain.entity.UserEntity;
+import com.example.Spot.user.domain.Role;
 
 public interface MenuOptionService {
     List<MenuOptionResponseDto> getOptions(Role userRole, UUID storeId, UUID menuId);
