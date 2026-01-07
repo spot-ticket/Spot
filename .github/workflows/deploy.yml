@@ -26,6 +26,9 @@ jobs:
           mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
         shell: bash
+      
+      - name: Build with Gradle
+        run: ./gradlew build -x test
 
       - name: Docker Build & Push
         run: |
