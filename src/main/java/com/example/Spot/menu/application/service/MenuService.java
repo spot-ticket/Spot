@@ -10,8 +10,8 @@ import com.example.Spot.menu.presentation.dto.response.CreateMenuResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuAdminResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuPublicResponseDto;
 import com.example.Spot.menu.presentation.dto.response.UpdateMenuResponseDto;
-import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.domain.entity.UserEntity;
 
 public interface MenuService {
     List<MenuAdminResponseDto> getMenusForAdmin(UUID storeId, Role userRole);  // [관리자, 가게]
