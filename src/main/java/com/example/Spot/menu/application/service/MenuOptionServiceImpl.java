@@ -3,14 +3,14 @@ package com.example.Spot.menu.application.service;
 import java.util.List;
 import java.util.UUID;
 
-import com.example.Spot.store.domain.entity.StoreEntity;
-import com.example.Spot.user.domain.entity.UserEntity;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
+import com.example.Spot.store.domain.entity.StoreEntity;
+import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.menu.domain.repository.MenuOptionRepository;
 import com.example.Spot.menu.domain.repository.MenuRepository;
 import com.example.Spot.menu.presentation.dto.request.CreateMenuOptionRequestDto;
@@ -142,10 +142,8 @@ public class MenuOptionServiceImpl implements MenuOptionService {
             if (!isMyStore) {
                 throw new AccessDeniedException("해당 가게에 대한 수정 권한이 없습니다.");
             }
-        }
-
-        // 3. 그 외의 Role이 접근 시 차단
-        else {
+        } else {
+            // 3. 그 외의 Role이 접근 시 차단
             throw new AccessDeniedException("접근 권한이 없습니다.");
         }
     }
