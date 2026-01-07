@@ -6,9 +6,10 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import com.example.Spot.global.TestSupport;
 import com.example.Spot.store.domain.entity.StoreEntity;
 
-class MenuEntityTest {
+class MenuEntityTest extends TestSupport {
 
     @Test
     @DisplayName("메뉴가 정상적으로 등록되었습니다.")
@@ -80,7 +81,7 @@ class MenuEntityTest {
     void deleteMenu() {
         MenuEntity menu = MenuEntity.builder().build();
 
-        menu.softDelete();
+        menu.softDelete(TEST_USER_ID);
 
         assertThat(menu.getIsDeleted()).isTrue();
     }

@@ -12,13 +12,14 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
+import com.example.Spot.global.TestSupport;
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.StoreRepository;
 
 @DataJpaTest
-class MenuOptionRepositoryTest {
+class MenuOptionRepositoryTest extends TestSupport {
     @Autowired
     private StoreRepository storeRepository;
 
@@ -90,7 +91,7 @@ class MenuOptionRepositoryTest {
                 .detail("삭제 테스트용")
                 .price(1)
                 .build();
-        deletedOption.softDelete();
+        deletedOption.softDelete(TEST_USER_ID);
         menuOptionRepository.save(deletedOption);
 
         // 2. When
