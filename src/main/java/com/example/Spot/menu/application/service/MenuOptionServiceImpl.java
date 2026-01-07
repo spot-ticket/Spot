@@ -3,6 +3,7 @@ package com.example.Spot.menu.application.service;
 import java.util.List;
 import java.util.UUID;
 
+import com.example.Spot.infra.auth.security.CustomUserDetails;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -69,12 +70,17 @@ public class MenuOptionServiceImpl implements MenuOptionService {
 
     // 메뉴 옵션 업데이트
     @Transactional
-    public UpdateMenuOptionResponseDto updateMenuOption(UserEntity user, UUID storeId, UUID optionId, UpdateMenuOptionRequestDto request) {
+    public UpdateMenuOptionResponseDto updateMenuOption(UserEntity user, UUID storeId, UUID menuId, UUID optionId, UpdateMenuOptionRequestDto request) {
         MenuOptionEntity option = menuOptionRepository.findById(optionId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 옵션이 존재하지 않습니다."));
 
+        // URL 경로의 menuId와 실제 DB 데이터가 일치하는지 검증
+        if (!option.getMenu().getId().equals(menuId)) {
+            throw new IllegalArgumentException("해당 메뉴에 속하지 않는 옵션입니다.");
+        }
+
         if (option.getIsDeleted()) {
-            throw new IllegalArgumentException("삭제된 옵션은 수정할 수 없습니다.");
+            throw new IllegalArgumentException("삭제된 옵션입니다.");
         }
 
         StoreEntity store = option.getMenu().getStore();
@@ -86,11 +92,7 @@ public class MenuOptionServiceImpl implements MenuOptionService {
         validatePermission(store, user);
 
         // 업데이트 (Dirty Checking)
-        option.updateOption(
-                request.getName(),
-                request.getPrice(),
-                request.getDetail()
-        );
+        option.updateOption(request.getName(), request.getPrice(), request.getDetail());
 
         if (request.getIsAvailable() != null) {
             option.changeAvailable(request.getIsAvailable());
@@ -101,12 +103,17 @@ public class MenuOptionServiceImpl implements MenuOptionService {
 
     // 메뉴 옵션 삭제
     @Transactional
-    public void deleteMenuOption (UserEntity user, UUID storeId, UUID optionId) {
+    public void deleteMenuOption (UserEntity user, UUID storeId, UUID menuId, UUID optionId) {
         MenuOptionEntity option = menuOptionRepository.findById(optionId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 옵션이 존재하지 않습니다."));
 
+        // URL 경로의 menuId와 실제 DB 데이터가 일치하는지 검증
+        if (!option.getMenu().getId().equals(menuId)) {
+            throw new IllegalArgumentException("해당 메뉴에 속하지 않는 옵션입니다.");
+        }
+
         if (option.getIsDeleted()) {
-            throw new IllegalArgumentException("이미 삭제된 메뉴입니다.");
+            throw new IllegalArgumentException("이미 삭제된 옵션입니다.");
         }
 
         StoreEntity store = option.getMenu().getStore();
