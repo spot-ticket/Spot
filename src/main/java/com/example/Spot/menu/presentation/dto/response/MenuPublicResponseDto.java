@@ -11,7 +11,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
 @Getter
 @NoArgsConstructor
 public class MenuPublicResponseDto {
@@ -33,9 +32,6 @@ public class MenuPublicResponseDto {
     @JsonProperty("is_available")
     private Boolean isAvailable;
 
-    @JsonProperty("is_hidden")
-    private Boolean isHidden;
-
     private List<MenuOptionResponseDto> options;
 
     public static MenuPublicResponseDto of(MenuEntity menu, List<MenuOptionEntity> options) {
@@ -49,7 +45,6 @@ public class MenuPublicResponseDto {
         dto.description = menu.getDescription();
         dto.imageUrl = menu.getImageUrl();
         dto.isAvailable = menu.getIsAvailable();
-        dto.isHidden = menu.getIsHidden();
 
         // menu.getOptions() 대신 파라미터로 받은 options를 사용
         dto.options = options.stream()

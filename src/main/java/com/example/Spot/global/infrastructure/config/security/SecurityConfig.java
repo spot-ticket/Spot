@@ -65,7 +65,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         // 누구나 접근 가능 (로그인, 회원가입, 토큰 갱신)
-                        .requestMatchers("/login", "/", "api/join", "/auth/refresh").permitAll()
+                        .requestMatchers("/api/login", "/", "/api/join", "/auth/refresh").permitAll()
                         
                         // 관리자 전용
                         .requestMatchers("/admin").hasRole("ADMIN")
