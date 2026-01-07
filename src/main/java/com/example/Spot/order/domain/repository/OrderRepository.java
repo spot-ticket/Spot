@@ -83,5 +83,31 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
             @Param("storeId") UUID storeId,
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay") LocalDateTime endOfDay);
+
+    // MASTER/MANAGER 전용 - 전체 매장 주문 조회
+    @Query("SELECT o FROM OrderEntity o " +
+            "ORDER BY o.createdAt DESC")
+    List<OrderEntity> findAllOrders();
+
+    @Query("SELECT o FROM OrderEntity o " +
+            "WHERE o.createdAt BETWEEN :startDate AND :endDate " +
+            "ORDER BY o.createdAt DESC")
+    List<OrderEntity> findAllOrdersByDateRange(
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
+
+    @Query("SELECT o FROM OrderEntity o " +
+            "WHERE o.store.id = :storeId " +
+            "ORDER BY o.createdAt DESC")
+    List<OrderEntity> findAllOrdersByStoreId(@Param("storeId") UUID storeId);
+
+    @Query("SELECT o FROM OrderEntity o " +
+            "WHERE o.store.id = :storeId " +
+            "AND o.createdAt BETWEEN :startDate AND :endDate " +
+            "ORDER BY o.createdAt DESC")
+    List<OrderEntity> findAllOrdersByStoreIdAndDateRange(
+            @Param("storeId") UUID storeId,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate);
 }
 

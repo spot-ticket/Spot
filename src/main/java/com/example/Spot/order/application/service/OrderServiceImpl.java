@@ -166,6 +166,12 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    public List<OrderResponseDto> getAllOrders(UUID storeId, LocalDateTime date, OrderStatus status) {
+        List<OrderEntity> orders = getBaseAllOrders(storeId, date);
+        return applyFiltersAndMap(orders, date, status);
+    }
+
+    @Override
     @Transactional
     public OrderResponseDto acceptOrder(UUID orderId, Integer estimatedTime) {
         OrderEntity order = orderRepository.findById(orderId)
@@ -305,6 +311,20 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    private List<OrderEntity> getBaseAllOrders(UUID storeId, LocalDateTime date) {
+        if (storeId != null && date != null) {
+            LocalDateTime[] range = getDateRange(date);
+            return orderRepository.findAllOrdersByStoreIdAndDateRange(storeId, range[0], range[1]);
+        } else if (storeId != null) {
+            return orderRepository.findAllOrdersByStoreId(storeId);
+        } else if (date != null) {
+            LocalDateTime[] range = getDateRange(date);
+            return orderRepository.findAllOrdersByDateRange(range[0], range[1]);
+        } else {
+            return orderRepository.findAllOrders();
+        }
+    }
+
     private List<OrderResponseDto> applyFiltersAndMap(List<OrderEntity> orders, LocalDateTime date, OrderStatus status) {
         return orders.stream()
                 .filter(o -> status == null || o.getOrderStatus().equals(status))
@@ -322,4 +342,3 @@ public class OrderServiceImpl implements OrderService {
         return order.getCreatedAt().isAfter(start) && order.getCreatedAt().isBefore(end);
     }
 }
-

@@ -25,7 +25,10 @@ public interface OrderService {
     // Owner 전용
     List<OrderResponseDto> getMyStoreOrders(Integer userId, Integer customerId, LocalDateTime date, OrderStatus status);
     List<OrderResponseDto> getMyStoreActiveOrders(Integer userId);
-    
+
+    // MASTER/MANAGER 전용 - 전체 매장 주문 조회
+    List<OrderResponseDto> getAllOrders(UUID storeId, LocalDateTime date, OrderStatus status);
+
     // 주문 상태 변경 (Owner/Chef)
     OrderResponseDto acceptOrder(UUID orderId, Integer estimatedTime);
     OrderResponseDto rejectOrder(UUID orderId, String reason);
@@ -45,4 +48,3 @@ public interface OrderService {
     OrderResponseDto completePayment(UUID orderId);
     OrderResponseDto failPayment(UUID orderId);
 }
-
