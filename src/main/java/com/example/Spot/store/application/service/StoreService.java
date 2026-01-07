@@ -159,7 +159,7 @@ public class StoreService {
         StoreEntity store = findStoreWithAuthority(storeId, currentUser);
         
         // 6.2 공통 메서드 호출
-        store.softDelete();
+        store.softDelete(userId);
     }
     
     // 7. 매장 이름으로 검색
