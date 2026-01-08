@@ -13,7 +13,9 @@ public class FakeEmailSender implements EmailSender {
 
     public EmailPayload lastEmail() {
         EmailPayload p = last.get();
-        if (p == null) throw new IllegalStateException("아직 발송된 메일이 없습니다.");
+        if (p == null) {
+            throw new IllegalStateException("아직 발송된 메일이 없습니다.");
+        }
         return p;
     }
 
