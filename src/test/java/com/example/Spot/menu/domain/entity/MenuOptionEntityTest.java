@@ -69,7 +69,7 @@ class MenuOptionEntityTest {
         MenuOptionEntity menuOption = MenuOptionEntity.builder().build();
 
         // 2. when
-        menuOption.softDelete(); // 혹은 delete()
+        menuOption.softDelete(0); // 혹은 delete()
 
         // 3. then
         assertThat(menuOption.getIsDeleted()).isTrue();

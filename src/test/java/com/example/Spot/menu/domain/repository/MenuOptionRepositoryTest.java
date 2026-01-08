@@ -3,6 +3,7 @@ package com.example.Spot.menu.domain.repository;
 import static org.assertj.core.api.Assertions.assertThat; // 검증을 위한 AssertJ
 import static org.assertj.core.api.Assertions.tuple;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -16,6 +17,7 @@ import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.StoreRepository;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @DataJpaTest
 class MenuOptionRepositoryTest {
@@ -47,6 +49,8 @@ class MenuOptionRepositoryTest {
                 .closeTime(LocalTime.of(21, 0))
                 .build();
 
+        ReflectionTestUtils.setField(store, "createdBy", 123);
+        ReflectionTestUtils.setField(store, "createdAt", LocalDateTime.now());
         // Store의 ID가 필요하므로 먼저 저장
         savedStore = storeRepository.save(store);
 
@@ -57,6 +61,9 @@ class MenuOptionRepositoryTest {
                 .category("한식")
                 .price(11000)
                 .build();
+
+        ReflectionTestUtils.setField(menu, "createdBy", 123);
+        ReflectionTestUtils.setField(menu, "createdAt", LocalDateTime.now());
         savedMenu = menuRepository.save(menu);
 
         // 구매 가능 옵션
@@ -66,6 +73,9 @@ class MenuOptionRepositoryTest {
                 .detail("4조각")
                 .price(4000)
                 .build();
+
+        ReflectionTestUtils.setField(option, "createdBy", 123);
+        ReflectionTestUtils.setField(option, "createdAt", LocalDateTime.now());
         savedOption = menuOptionRepository.save(option);
 
         // 품절된 옵션
@@ -75,6 +85,9 @@ class MenuOptionRepositoryTest {
                 .detail("곱빼기")
                 .price(2500)
                 .build();
+
+        ReflectionTestUtils.setField(soldOption, "createdBy", 123);
+        ReflectionTestUtils.setField(soldOption, "createdAt", LocalDateTime.now());
 
         soldOption.changeAvailable(false);
         soldOutOption = menuOptionRepository.save(soldOption);
@@ -90,7 +103,11 @@ class MenuOptionRepositoryTest {
                 .detail("삭제 테스트용")
                 .price(1)
                 .build();
-        deletedOption.softDelete();
+        deletedOption.softDelete(0);
+
+        ReflectionTestUtils.setField(deletedOption, "createdBy", 123);
+        ReflectionTestUtils.setField(deletedOption, "createdAt", LocalDateTime.now());
+
         menuOptionRepository.save(deletedOption);
 
         // 2. When
