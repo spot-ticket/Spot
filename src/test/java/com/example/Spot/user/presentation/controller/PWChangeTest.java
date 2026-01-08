@@ -4,10 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import com.example.Spot.user.application.security.TokenHashing;
-import com.example.Spot.user.domain.entity.ResetTokenEntity;
-import com.example.Spot.user.domain.repository.ResetTokenRepository;
-import com.example.Spot.user.infrastructure.repository.FakeEmailSender;
+import java.util.Optional;
+
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -18,15 +16,17 @@ import org.springframework.http.MediaType;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 
+import com.example.Spot.user.application.security.TokenHashing;
 import com.example.Spot.user.application.service.JoinService;
 import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.domain.entity.ResetTokenEntity;
 import com.example.Spot.user.domain.entity.UserAuthEntity;
+import com.example.Spot.user.domain.repository.ResetTokenRepository;
 import com.example.Spot.user.domain.repository.UserAuthRepository;
+import com.example.Spot.user.infrastructure.repository.FakeEmailSender;
 import com.example.Spot.user.presentation.dto.request.JoinDTO;
 
 import jakarta.transaction.Transactional;
-
-import java.util.Optional;
 
 
 
@@ -151,7 +151,9 @@ class PWChangeTest {
         // 예: "token: 64e19557...."
         String key = "token:";
         int idx = body.indexOf(key);
-        if (idx == -1) return "";
+        if (idx == -1) {
+            return "";
+        }
         String after = body.substring(idx + key.length()).trim();
         int end = after.indexOf("\n");
         return (end == -1) ? after.trim() : after.substring(0, end).trim();

@@ -2,8 +2,6 @@ package com.example.Spot.config;
 
 import java.util.Optional;
 
-import com.example.Spot.user.infrastructure.repository.EmailSender;
-import com.example.Spot.user.infrastructure.repository.FakeEmailSender;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Primary;
@@ -11,6 +9,9 @@ import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+
+import com.example.Spot.user.infrastructure.repository.EmailSender;
+import com.example.Spot.user.infrastructure.repository.FakeEmailSender;
 
 @TestConfiguration
 @EnableJpaAuditing
