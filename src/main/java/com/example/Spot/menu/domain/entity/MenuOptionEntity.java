@@ -76,11 +76,6 @@ public class MenuOptionEntity extends UpdateBaseEntity {
         if (detail != null) {
             this.detail = detail;
         }
-
-        // 4. 판매 상태 수정
-        if (isAvailable != null) {
-            this.isAvailable = isAvailable;
-        }
     }
 
     public void changeAvailable(Boolean isAvailable) {

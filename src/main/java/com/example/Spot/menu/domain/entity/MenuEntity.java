@@ -7,7 +7,6 @@ import java.util.UUID;
 import com.example.Spot.global.common.UpdateBaseEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -66,9 +65,7 @@ public class MenuEntity extends UpdateBaseEntity {
     @Column(name = "is_hidden")
     private Boolean isHidden = false;
 
-    // [핵심] 부모가 저장/수정/삭제될 때 자식도 같이 처리 + 리스트에서 빼면 DB 삭제
-    @OneToMany(mappedBy = "menu", fetch = FetchType.LAZY,
-            cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "menu", fetch = FetchType.LAZY)
     private List<MenuOptionEntity> options = new ArrayList<>();
 
     @Builder
