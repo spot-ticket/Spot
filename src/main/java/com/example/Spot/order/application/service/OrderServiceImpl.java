@@ -3,10 +3,12 @@ package com.example.Spot.order.application.service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,14 +43,19 @@ public class OrderServiceImpl implements OrderService {
     private final StoreUserRepository storeUserRepository;
     private final MenuRepository menuRepository;
     private final MenuOptionRepository menuOptionRepository;
-    
-    private final AtomicInteger orderSequence = new AtomicInteger(0);
 
     @Override
     @Transactional
     public OrderResponseDto createOrder(OrderCreateRequestDto requestDto, Integer userId) {
         StoreEntity store = storeRepository.findById(requestDto.getStoreId())
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 가게입니다."));
+
+        // 영업시간 체크
+        if (!store.isOpenNow()) {
+            throw new IllegalArgumentException(
+                    String.format("현재 영업시간이 아닙니다. 영업시간: %s ~ %s",
+                            store.getOpenTime(), store.getCloseTime()));
+        }
 
         String orderNumber = generateOrderNumber();
 
@@ -127,18 +134,12 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponseDto> getUserOrdersByFilters(Integer userId, UUID storeId, LocalDateTime date, OrderStatus status) {
-        // 1. 기본 주문 목록 조회
         List<OrderEntity> orders = getBaseUserOrders(userId, storeId, date);
-        
-        // 2. 상태 필터 적용
         return applyFiltersAndMap(orders, date, status);
     }
 
     private List<OrderResponseDto> getStoreOrdersByFilters(UUID storeId, Integer customerId, LocalDateTime date, OrderStatus status) {
-        // 1. 기본 주문 목록 조회
         List<OrderEntity> orders = getBaseStoreOrders(storeId, customerId, date);
-        
-        // 2. 상태 필터 적용
         return applyFiltersAndMap(orders, date, status);
     }
 
@@ -163,6 +164,76 @@ public class OrderServiceImpl implements OrderService {
         return orderRepository.findActiveOrdersByStoreId(storeId).stream()
                 .map(OrderResponseDto::from)
                 .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<OrderResponseDto> getAllOrders(UUID storeId, LocalDateTime date, OrderStatus status) {
+        List<OrderEntity> orders = getBaseAllOrders(storeId, date);
+        return applyFiltersAndMap(orders, date, status);
+    }
+
+    // ========== 페이지네이션 ==========
+
+    @Override
+    public Page<OrderResponseDto> getUserOrdersWithPagination(
+            Integer userId,
+            UUID storeId,
+            LocalDateTime date,
+            OrderStatus status,
+            Pageable pageable) {
+
+        LocalDateTime[] range = date != null ? getDateRange(date) : new LocalDateTime[]{null, null};
+
+        Page<OrderEntity> orderPage = orderRepository.findUserOrdersWithFilters(
+                userId,
+                storeId,
+                status,
+                range[0],
+                range[1],
+                pageable);
+
+        return orderPage.map(OrderResponseDto::from);
+    }
+
+    @Override
+    public Page<OrderResponseDto> getMyStoreOrdersWithPagination(
+            Integer userId,
+            Integer customerId,
+            LocalDateTime date,
+            OrderStatus status,
+            Pageable pageable) {
+
+        UUID storeId = getStoreIdByUserId(userId);
+        LocalDateTime[] range = date != null ? getDateRange(date) : new LocalDateTime[]{null, null};
+
+        Page<OrderEntity> orderPage = orderRepository.findStoreOrdersWithFilters(
+                storeId,
+                customerId,
+                status,
+                range[0],
+                range[1],
+                pageable);
+
+        return orderPage.map(OrderResponseDto::from);
+    }
+
+    @Override
+    public Page<OrderResponseDto> getAllOrdersWithPagination(
+            UUID storeId,
+            LocalDateTime date,
+            OrderStatus status,
+            Pageable pageable) {
+
+        LocalDateTime[] range = date != null ? getDateRange(date) : new LocalDateTime[]{null, null};
+
+        Page<OrderEntity> orderPage = orderRepository.findAllOrdersWithFilters(
+                storeId,
+                status,
+                range[0],
+                range[1],
+                pageable);
+
+        return orderPage.map(OrderResponseDto::from);
     }
 
     @Override
@@ -256,11 +327,20 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // ========== Private Helper Methods ==========
-    
-    // 주문 번호 생성 (예: ORDER-20260105-0001)
+
     private String generateOrderNumber() {
         String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        int sequence = orderSequence.incrementAndGet();
+        String datePattern = "ORDER-" + date + "-%";
+
+        Optional<String> lastOrderNumber = orderRepository.findTopOrderNumberByDatePattern(datePattern);
+
+        int sequence = 1;
+        if (lastOrderNumber.isPresent()) {
+            String lastNumber = lastOrderNumber.get();
+            String lastSeq = lastNumber.substring(lastNumber.lastIndexOf('-') + 1);
+            sequence = Integer.parseInt(lastSeq) + 1;
+        }
+
         return String.format("ORDER-%s-%04d", date, sequence);
     }
 
@@ -305,6 +385,20 @@ public class OrderServiceImpl implements OrderService {
         }
     }
 
+    private List<OrderEntity> getBaseAllOrders(UUID storeId, LocalDateTime date) {
+        if (storeId != null && date != null) {
+            LocalDateTime[] range = getDateRange(date);
+            return orderRepository.findAllOrdersByStoreIdAndDateRange(storeId, range[0], range[1]);
+        } else if (storeId != null) {
+            return orderRepository.findAllOrdersByStoreId(storeId);
+        } else if (date != null) {
+            LocalDateTime[] range = getDateRange(date);
+            return orderRepository.findAllOrdersByDateRange(range[0], range[1]);
+        } else {
+            return orderRepository.findAllOrders();
+        }
+    }
+
     private List<OrderResponseDto> applyFiltersAndMap(List<OrderEntity> orders, LocalDateTime date, OrderStatus status) {
         return orders.stream()
                 .filter(o -> status == null || o.getOrderStatus().equals(status))
@@ -322,4 +416,3 @@ public class OrderServiceImpl implements OrderService {
         return order.getCreatedAt().isAfter(start) && order.getCreatedAt().isBefore(end);
     }
 }
-
