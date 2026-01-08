@@ -11,7 +11,10 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
+
+import com.example.Spot.config.TestConfig;
 
 import com.example.Spot.payments.domain.entity.PaymentEntity;
 import com.example.Spot.payments.domain.entity.PaymentEntity.PaymentMethod;
@@ -20,6 +23,7 @@ import com.example.Spot.payments.domain.entity.PaymentHistoryEntity.PaymentStatu
 
 @DataJpaTest
 @ActiveProfiles("test")
+@Import(TestConfig.class)
 class PaymentRepositoryTest {
 
   @Autowired private PaymentRepository paymentRepository;
