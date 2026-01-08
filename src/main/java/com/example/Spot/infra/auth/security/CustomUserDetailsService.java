@@ -33,7 +33,7 @@ public class CustomUserDetailsService implements UserDetailsService {
                 );
 
         // p_user_auth 조회 (비밀번호 해시)
-        UserAuthEntity auth = userAuthRepository.findByUserId(user.getId())
+        UserAuthEntity auth = userAuthRepository.findByUser_Id(user.getId())
                 .orElseThrow(() ->
                         new UsernameNotFoundException("AUTH_NOT_FOUND")
                 );

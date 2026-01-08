@@ -4,6 +4,7 @@ import lombok.Getter;
 
 public class AuthTokenDTO {
 
+    // Logout & Refresh
     @Getter
     public static class LogoutRequest {
         private String refreshToken;
@@ -13,4 +14,5 @@ public class AuthTokenDTO {
     public static class RefreshRequest {
         private String refreshToken;
     }
+
 }
