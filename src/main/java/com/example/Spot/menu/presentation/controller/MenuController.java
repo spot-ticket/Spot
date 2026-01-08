@@ -24,11 +24,11 @@ import com.example.Spot.menu.presentation.dto.request.UpdateMenuRequestDto;
 import com.example.Spot.menu.presentation.dto.response.CreateMenuResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuAdminResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuPublicResponseDto;
+import com.example.Spot.menu.presentation.dto.response.MenuResponseDto;
 import com.example.Spot.menu.presentation.dto.response.UpdateMenuResponseDto;
 import com.example.Spot.user.domain.Role;
 
 import lombok.RequiredArgsConstructor;
-
 
 @RestController
 @RequestMapping("/api/stores/{storeId}/menus")
@@ -39,7 +39,7 @@ public class MenuController {
 
     // 메뉴 전체 조회
     @GetMapping
-    public ApiResponse<List<?>> getMenus(
+    public ApiResponse<List<? extends MenuResponseDto>> getMenus(
             @PathVariable UUID storeId,
             @AuthenticationPrincipal CustomUserDetails user
     ) {
@@ -70,8 +70,6 @@ public class MenuController {
             @RequestBody CreateMenuRequestDto request,
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-
-        // 현재 유저가 소속된 가게 맞는지 확인
         CreateMenuResponseDto data = menuService.createMenu(storeId, request, user.getUserEntity());
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
@@ -85,7 +83,6 @@ public class MenuController {
             @RequestBody UpdateMenuRequestDto request,
             @AuthenticationPrincipal CustomUserDetails user
     ) {
-        // 현재 유저가 소속된 가게 맞는지 확인
         UpdateMenuResponseDto data = menuService.updateMenu(menuId, request, user.getUserEntity());
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);

@@ -37,30 +37,35 @@ public class MenuEntity extends UpdateBaseEntity {
     @JoinColumn(name = "store_id")     // DB 테이블에 생길 컬럼 이름
     private StoreEntity store;
 
+    // 메뉴명
     @Column(nullable = false, length = 50)
     private String name;
 
+    // 카테고리
     @Column(nullable = false, length = 50)
     private String category;
 
+    // 가격
     @Column(nullable = false)
     private Integer price;
 
-    // [추가] 손님에게 보여줄 상세 설명
+    // 메뉴 상세 설명
     @Column(length = 255)
     private String description;
 
-    // [추가] 메뉴 이미지 URL
+    // 메뉴 이미지 URL
     @Column(name = "image_url")
     private String imageUrl;
 
+    // 품절 여부 체크
     @Column(name = "is_available")
     private Boolean isAvailable = true;
 
+    // 숨김 여부 체크
     @Column(name = "is_hidden")
     private Boolean isHidden = false;
 
-    // [추가] DTO 변환을 위한 양방향 매핑 (DB에는 영향 없음)
+    // DTO 변환을 위한 양방향 매핑 (DB에는 영향 없음)
     // mappedBy = "menu"는 MenuOptionEntity의 'menu' 변수명을 가리킴
     @OneToMany(mappedBy = "menu", fetch = FetchType.LAZY)
     private List<MenuOptionEntity> options = new ArrayList<>();
@@ -77,6 +82,7 @@ public class MenuEntity extends UpdateBaseEntity {
     }
 
     public void updateMenu(String name, Integer price, String category, String description, String imageUrl) {
+
         // 1. 이름이 들어오면 수정
         if (name != null && !name.isBlank()) {
             this.name = name;

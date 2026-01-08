@@ -137,7 +137,7 @@ public class MenuServiceImpl implements MenuService {
         // 유저가 이 가게 소속인지 확인
         validateOwner(menu.getStore(), user, "본인 가게의 메뉴만 삭제할 수 있습니다.");
 
-        menu.softDelete();
+        menu.softDelete(user.getId());
     }
 
     // 7. 메뉴 숨김

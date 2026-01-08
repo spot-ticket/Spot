@@ -1,5 +1,8 @@
 package com.example.Spot.user.application.service;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -50,9 +53,9 @@ public class UserService {
         UserEntity user = userRepository.findById(loginUserId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        user.softDelete();
+        user.softDelete(user.getId());
     }
-
+    
 
     private UserResponseDTO toResponse(UserEntity user) {
         return new UserResponseDTO(
@@ -66,5 +69,12 @@ public class UserService {
                 user.getAge(),
                 user.isMale()
         );
+    }
+    
+    public List<UserResponseDTO> searchUsersByNickname(String nickname) {
+        List<UserEntity> users = userRepository.findByNicknameContaining(nickname);
+        return users.stream()
+                .map(this::toResponse)
+                .collect(Collectors.toList());
     }
 }

@@ -19,6 +19,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.example.Spot.menu.domain.repository.MenuOptionRepository;
@@ -30,6 +31,7 @@ import com.example.Spot.menu.presentation.dto.response.MenuOptionResponseDto;
 import com.example.Spot.menu.presentation.dto.response.UpdateMenuOptionResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.domain.entity.UserEntity;
 
 @ExtendWith(MockitoExtension.class)
 class MenuOptionServiceTest {
@@ -55,10 +57,12 @@ class MenuOptionServiceTest {
 
         MenuOptionEntity option = createMenuOptionEntity(menu, "곱빼기", "면 추가", 1000, optionId);
 
+        given(menuRepository.findById(menuId)).willReturn(Optional.of(menu));
+
         given(menuOptionRepository.findAllByMenuIdAndIsDeletedFalse(menuId))
                 .willReturn(List.of(option));
 
-        List<MenuOptionResponseDto> result = menuOptionService.getOptions(menuId, Role.OWNER);
+        List<MenuOptionResponseDto> result = menuOptionService.getOptions(Role.OWNER, storeId, menuId);
 
         assertThat(result).hasSize(1);
         assertThat(result.getFirst().getName()).isEqualTo("곱빼기");
@@ -70,9 +74,20 @@ class MenuOptionServiceTest {
     @Test
     @DisplayName("메뉴 옵션을 생성")
     void 메뉴_옵션_생성_테스트() {
-        // 1. Given
+        // Given
+        UUID storeId = UUID.randomUUID();
         UUID menuId = UUID.randomUUID();
-        StoreEntity store = createStoreEntity(UUID.randomUUID());
+
+        // 인증된 유저 정보
+        CustomUserDetails user = createMockUser(Role.OWNER);
+
+        // 가게 생성
+        StoreEntity store = createStoreEntity(storeId);
+
+        // 유저와 가게 연결
+        connectStoreAndUser(store, user.getUserEntity());
+
+        // 메뉴 생성
         MenuEntity menu = createMenuEntity(store, "가라아게덮밥", 11000, menuId);
 
         // 요청 DTO (생성자나 Builder 방식에 맞춰 수정 필요)
@@ -85,7 +100,7 @@ class MenuOptionServiceTest {
         // save는 리턴값이 없거나 엔티티를 반환하지만, 여기선 검증만 하면 되므로 Mocking 생략 가능하거나 any() 처리
 
         // 2. When
-        CreateMenuOptionResponseDto result = menuOptionService.createMenuOption(menuId, request);
+        CreateMenuOptionResponseDto result = menuOptionService.createMenuOption(user.getUserEntity(), storeId, menuId, request);
 
         // 3. Then
         assertThat(result.getName()).isEqualTo("밥 추가");
@@ -98,10 +113,24 @@ class MenuOptionServiceTest {
     @DisplayName("[수정] 메뉴 옵션을 성공적으로 수정한다")
     void 메뉴_옵션_수정_테스트() {
         // 1. Given
+        UUID storeId = UUID.randomUUID();
         UUID optionId = UUID.randomUUID();
-        MenuEntity menu = createMenuEntity(createStoreEntity(UUID.randomUUID()), "메뉴", 1000, UUID.randomUUID());
+        UUID menuId = UUID.randomUUID();
 
-        MenuOptionEntity option = createMenuOptionEntity(menu, "기존옵션", "설명", 1000, optionId);
+        // 인증된 유저 정보
+        CustomUserDetails user = createMockUser(Role.OWNER);
+
+        // 가게 생성
+        StoreEntity store = createStoreEntity(storeId);
+
+        // 유저와 가게 연결
+        connectStoreAndUser(store, user.getUserEntity());
+
+        // 메뉴 생성
+        MenuEntity menu = createMenuEntity(store, "메뉴", 1000, menuId);
+
+        // 메뉴 옵션 생성
+        MenuOptionEntity option = createMenuOptionEntity(menu, "테스트옵션", "테스트", 1000, optionId);
 
         // DTO 생성 및 값 주입
         UpdateMenuOptionRequestDto request = new UpdateMenuOptionRequestDto();
@@ -113,7 +142,7 @@ class MenuOptionServiceTest {
         given(menuOptionRepository.findById(optionId)).willReturn(Optional.of(option));
 
         // 2. When
-        UpdateMenuOptionResponseDto result = menuOptionService.updateMenuOption(optionId, request);
+        UpdateMenuOptionResponseDto result = menuOptionService.updateMenuOption(user.getUserEntity(), storeId, menuId, optionId, request);
 
         // 3. Then
         assertThat(result.getName()).isEqualTo("수정된옵션");
@@ -126,7 +155,21 @@ class MenuOptionServiceTest {
     private StoreEntity createStoreEntity(UUID storeId) {
         StoreEntity store = StoreEntity.builder().build();
         ReflectionTestUtils.setField(store, "id", storeId);
+
+        ReflectionTestUtils.setField(store, "users", new ArrayList<>());
         return store;
+    }
+
+    private void connectStoreAndUser(StoreEntity store, UserEntity user) {
+        // StoreUserEntity가 가게와 유저의 중간 다리 역할을 합니다.
+        com.example.Spot.store.domain.entity.StoreUserEntity storeUser =
+                com.example.Spot.store.domain.entity.StoreUserEntity.builder()
+                        .store(store)
+                        .user(user)
+                        .build();
+
+        // validatePermission은 store.getUsers()를 통해 유저의 소속된 가게 확인
+        store.getUsers().add(storeUser);
     }
 
     private MenuEntity createMenuEntity(StoreEntity store, String name, Integer price, UUID menuId) {
@@ -140,7 +183,6 @@ class MenuOptionServiceTest {
                 .options(new ArrayList<>())
                 .build();
 
-        // ID는 DB 저장 시 생성되므로, 테스트에선 강제로 넣어줘야 함
         ReflectionTestUtils.setField(menu, "id", menuId);
         return menu;
     }
@@ -155,5 +197,19 @@ class MenuOptionServiceTest {
 
         ReflectionTestUtils.setField(option, "id", optionId);
         return option;
+    }
+
+    private CustomUserDetails createMockUser(Role userRole) {
+        UserEntity userEntity = UserEntity.builder()
+                .username("test_boss")
+                .nickname("사장님")
+                .email("boss@test.com")
+                .addressDetail("서울시 강남구")
+                .role(userRole)
+                .build();
+
+        ReflectionTestUtils.setField(userEntity, "id", 1);
+
+        return new CustomUserDetails(userEntity);
     }
 }

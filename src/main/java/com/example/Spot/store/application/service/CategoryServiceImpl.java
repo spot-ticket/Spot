@@ -14,8 +14,11 @@ import com.example.Spot.store.domain.repository.CategoryRepository;
 import com.example.Spot.store.domain.repository.StoreCategoryRepository;
 import com.example.Spot.store.presentation.dto.request.CategoryRequestDTO;
 import com.example.Spot.store.presentation.dto.response.CategoryResponseDTO;
+import com.example.Spot.user.domain.entity.UserEntity;
+
 
 import lombok.RequiredArgsConstructor;
+
 
 @Service
 @RequiredArgsConstructor
@@ -109,12 +112,12 @@ public class CategoryServiceImpl implements CategoryService {
     // delete
     @Override
     @Transactional
-    public void delete(UUID categoryId) {
+    public void delete(UUID categoryId, UserEntity user) {
         CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(categoryId)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found: " + categoryId));
 
         // soft delete
-        category.softDelete();
+        category.softDelete(user.getId());
     }
 
 

@@ -24,6 +24,7 @@ import com.example.Spot.payments.infrastructure.client.TossPaymentClient;
 import com.example.Spot.payments.infrastructure.dto.TossPaymentResponse;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
+import com.example.Spot.store.domain.repository.StoreUserRepository;
 import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.repository.UserRepository;
 
@@ -50,6 +51,7 @@ public class PaymentService {
   private final PaymentKeyRepository paymentKeyRepository;
   private final UserRepository userRepository;
   private final OrderRepository orderRepository;
+  private final StoreUserRepository storeUserRepository;
 
   // 주문 수락 이후에 동작되어야 함
   // 프론트가 없으니까 자동 결제로 대체. 결제는 프론트 페이지가 요구됨
@@ -365,5 +367,49 @@ public class PaymentService {
         .cancelReason(cancelReason)
         .canceledAt((LocalDateTime) row[3])
         .build();
+  }
+
+  // ***************** //
+  // 소유권 검증 메서드 //
+  // ***************** //
+
+  public void validateOrderOwnership(UUID orderId, Integer userId) {
+    OrderEntity order = findOrder(orderId);
+    if (!order.getUserId().equals(userId)) {
+      throw new IllegalStateException("해당 주문에 대한 접근 권한이 없습니다.");
+    }
+  }
+
+  public void validatePaymentOwnership(UUID paymentId, Integer userId) {
+    PaymentEntity payment = findPayment(paymentId);
+    if (!payment.getUserId().equals(userId)) {
+      throw new IllegalStateException("해당 결제에 대한 접근 권한이 없습니다.");
+    }
+  }
+
+  public Integer getPaymentOwnerId(UUID paymentId) {
+    PaymentEntity payment = findPayment(paymentId);
+    return payment.getUserId();
+  }
+
+  // ************************ //
+  // OWNER 가게 소유권 검증 메서드 //
+  // ************************ //
+
+  public void validateOrderStoreOwnership(UUID orderId, Integer userId) {
+    OrderEntity order = findOrder(orderId);
+    UUID storeId = order.getStore().getId();
+    if (!storeUserRepository.existsByStoreIdAndUserId(storeId, userId)) {
+      throw new IllegalStateException("해당 주문의 가게에 대한 접근 권한이 없습니다.");
+    }
+  }
+
+  public void validatePaymentStoreOwnership(UUID paymentId, Integer userId) {
+    PaymentEntity payment = findPayment(paymentId);
+    OrderEntity order = findOrder(payment.getOrderId());
+    UUID storeId = order.getStore().getId();
+    if (!storeUserRepository.existsByStoreIdAndUserId(storeId, userId)) {
+      throw new IllegalStateException("해당 결제의 가게에 대한 접근 권한이 없습니다.");
+    }
   }
 }

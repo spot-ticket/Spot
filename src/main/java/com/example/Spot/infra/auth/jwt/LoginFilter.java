@@ -1,5 +1,4 @@
 package com.example.Spot.infra.auth.jwt;
-
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
@@ -8,10 +7,13 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.user.domain.Role;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+
 
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
@@ -31,16 +33,23 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
     @Override
     public Authentication attemptAuthentication(HttpServletRequest request, HttpServletResponse response) throws AuthenticationException {
-        // 클라이언트 요청에서 username, password 추출
-        String username = obtainUsername(request);
-        String password = obtainPassword(request);
+        try {
+            // JSON body 읽기, 파싱
+            String body = request.getReader().lines().reduce("", (a, b) -> a + b);
+            ObjectMapper om = new ObjectMapper();
+            JsonNode json = om.readTree(body);
 
-        // 스프링 시큐리티에서 username과 password를 검증하기 위해서는 token에 담아야 함
-        // null - 추후에 role 등으로
-        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(username, password, null);
+            String username = json.get("username").asText();
+            String password = json.get("password").asText();
 
-        //token에 담은 검증을 위한 AuthenticationManager로 전달
-        return authenticationManager.authenticate(authToken);
+            UsernamePasswordAuthenticationToken authToken =
+                    new UsernamePasswordAuthenticationToken(username, password);
+
+            return authenticationManager.authenticate(authToken);
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override
@@ -55,11 +64,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         String authority = authentication.getAuthorities().iterator().next().getAuthority();
         Role role = Role.valueOf(authority.replace("ROLE_", ""));
 
-        // ✅ access (짧게)
+        // access (짧게)
         long accessExpMs = 1000L * 60 * 30; // 30분 예시
         String accessToken = jwtUtil.createJwt(userId, role, accessExpMs);
 
-        // ✅ refresh (길게) - DB 저장 없음
+        // refresh (길게) - DB 저장 없음
         long refreshExpMs = 1000L * 60 * 60 * 24 * 14; // 14일 예시
         String refreshToken = jwtUtil.createRefreshToken(userId, refreshExpMs);
 

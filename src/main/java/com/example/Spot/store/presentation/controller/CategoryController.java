@@ -1,10 +1,10 @@
 package com.example.Spot.store.presentation.controller;
-
 import java.util.List;
 import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -15,12 +15,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.store.application.service.CategoryService;
 import com.example.Spot.store.presentation.dto.request.CategoryRequestDTO;
 import com.example.Spot.store.presentation.dto.response.CategoryResponseDTO;
+import com.example.Spot.user.domain.entity.UserEntity;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 
 @RestController
 @RequiredArgsConstructor
@@ -63,7 +66,8 @@ public class CategoryController {
     @PreAuthorize("hasAnyRole('MASTER','MANAGER')")
     @DeleteMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID categoryId) {
-        categoryService.delete(categoryId);
+    public void delete(@PathVariable UUID categoryId, @AuthenticationPrincipal CustomUserDetails principal) {
+        UserEntity user = principal.getUserEntity();
+        categoryService.delete(categoryId, user);
     }
 }

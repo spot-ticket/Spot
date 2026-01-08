@@ -5,6 +5,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -39,17 +43,23 @@ public class OwnerOrderController {
     private final OrderService orderService;
 
     @GetMapping("/my-store")
-    public ResponseEntity<ApiResponse<List<OrderResponseDto>>> getMyStoreOrders(
+    public ResponseEntity<ApiResponse<Page<OrderResponseDto>>> getMyStoreOrders(
             @AuthenticationPrincipal CustomUserDetails userDetails,
             @RequestParam(required = false) Integer customerId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
-            @RequestParam(required = false) OrderStatus status) {
-        
+            @RequestParam(required = false) OrderStatus status,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "DESC") Sort.Direction direction) {
+
         Integer userId = userDetails.getUserId();
         LocalDateTime dateTime = date != null ? date.atStartOfDay() : null;
-        
-        List<OrderResponseDto> response = orderService.getMyStoreOrders(userId, customerId, dateTime, status);
-        
+        Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
+
+        Page<OrderResponseDto> response = orderService.getMyStoreOrdersWithPagination(
+                userId, customerId, dateTime, status, pageable);
+
         return ResponseEntity
                 .status(OrderSuccessCode.ORDER_LIST_FOUND.getStatus())
                 .body(ApiResponse.onSuccess(OrderSuccessCode.ORDER_LIST_FOUND, response));

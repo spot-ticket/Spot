@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -82,20 +85,17 @@ public class StoreService {
     }
 
     // 3. 매장 전체 조회
-    public List<StoreListResponse> getAllStores(Integer userId) {
+    public Page<StoreListResponse> getAllStores(Integer userId, Pageable pageable) {
         // 3.1 사용자의 권한 확인
         UserEntity currentUser = getValidatedUser(userId);
         boolean isAdmin = checkIsAdmin(currentUser);
 
         // 3.2 레포지토리 호출 (관리자는 삭제된 것 포함)
-        List<StoreEntity> stores = storeRepository.findAllByRole(isAdmin);
+        Page<StoreEntity> stores = storeRepository.findAllByRole(isAdmin, pageable);
+        
+        // 3.3 서비스지역 기반 필터링 페이지네이션
+        return convertToPageResponse(stores, isAdmin, pageable);
 
-        // 3.3 엔티티 리스트 스트림을 사용해 DTO 리스트로 변환하여 반환
-        return stores.stream()
-                // 일반 유저라면 activeRegions에 포함된 매장만 필터링하여 반환
-                .filter(store -> isAdmin || isServiceable(store.getRoadAddress()))
-                .map(StoreListResponse::fromEntity)
-                .toList();
     }
 
     // 4. 매장 기본 정보 수정
@@ -159,7 +159,20 @@ public class StoreService {
         StoreEntity store = findStoreWithAuthority(storeId, currentUser);
         
         // 6.2 공통 메서드 호출
-        store.softDelete();
+        store.softDelete(userId);
+    }
+    
+    // 7. 매장 이름으로 검색
+    public Page<StoreListResponse> searchStoresByName(String keyword, Integer userId, Pageable pageable) {
+        // 7.1 사용자의 권한 확인
+        UserEntity currentUser = getValidatedUser(userId);
+        boolean isAdmin = checkIsAdmin(currentUser);
+
+        // 7.2 레포지토리 호출
+        Page<StoreEntity> stores = storeRepository.searchByName(keyword, isAdmin, pageable);
+
+        // 7.3 서비스지역 기반 필터링 페이지네이션
+        return convertToPageResponse(stores, isAdmin, pageable);
     }
     
     // ----- [공통 검증 로직] -----
@@ -205,5 +218,19 @@ public class StoreService {
     private UserEntity getValidatedUser(Integer userId) {
         return userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+    }
+    
+    // 6. 서비스지역기반 필터링 공통 메서드
+    private Page<StoreListResponse> convertToPageResponse(Page<StoreEntity> stores, boolean isAdmin, Pageable pageable) {
+        if (isAdmin) {
+            return stores.map(StoreListResponse::fromEntity);
+        }
+
+        List<StoreListResponse> filteredContent = stores.getContent().stream()
+                .filter(store -> isServiceable(store.getRoadAddress()))
+                .map(StoreListResponse::fromEntity)
+                .toList();
+
+        return new PageImpl<>(filteredContent, pageable, stores.getTotalElements());
     }
 }
