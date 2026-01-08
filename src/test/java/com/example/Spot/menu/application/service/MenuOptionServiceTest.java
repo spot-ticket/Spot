@@ -11,17 +11,15 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-import com.example.Spot.infra.auth.security.CustomUserDetails;
-import com.example.Spot.user.domain.entity.UserEntity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.example.Spot.menu.domain.repository.MenuOptionRepository;
@@ -33,6 +31,7 @@ import com.example.Spot.menu.presentation.dto.response.MenuOptionResponseDto;
 import com.example.Spot.menu.presentation.dto.response.UpdateMenuOptionResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.domain.entity.UserEntity;
 
 @ExtendWith(MockitoExtension.class)
 class MenuOptionServiceTest {
