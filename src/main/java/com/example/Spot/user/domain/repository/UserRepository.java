@@ -19,7 +19,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
     Optional<UserEntity> findRoleById(Integer id);
 
     Optional<UserEntity> findById(Integer id);
-    //UserEntity findByEmail(String email);
+    Optional<UserEntity> findByEmail(String email);
     
     // 검색한 닉네임을 포함하는 유저 정보 조회
     List<UserEntity> findByNicknameContaining(String nickname);
