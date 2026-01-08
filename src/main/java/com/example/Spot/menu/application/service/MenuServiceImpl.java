@@ -110,12 +110,13 @@ public class MenuServiceImpl implements MenuService {
                 request.getPrice(),
                 request.getCategory(),
                 request.getDescription(),
-                request.getImageUrl()
+                request.getImageUrl(),
+                0
         );
 
         // 품절 여부 (값이 왔을 때만)
         if (request.getIsAvailable() != null) {
-            menu.changeAvailable(request.getIsAvailable());
+            menu.changeAvailable(request.getIsAvailable(), 0);
         }
 
         return new UpdateMenuResponseDto(menu);
@@ -157,7 +158,7 @@ public class MenuServiceImpl implements MenuService {
         validateOwner(menu.getStore(), user, "본인 가게의 메뉴만 숨길 수 있습니다.");
 
         // 숨김 처리
-        menu.changeHidden(request.getIsHidden());
+        menu.changeHidden(request.getIsHidden(), 0);
     }
 
     // Helper - 유저의 소속 가게 검증

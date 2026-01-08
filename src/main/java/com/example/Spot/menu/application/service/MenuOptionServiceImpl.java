@@ -90,10 +90,10 @@ public class MenuOptionServiceImpl implements MenuOptionService {
         validatePermission(store, user);
 
         // 업데이트 (Dirty Checking)
-        option.updateOption(request.getName(), request.getPrice(), request.getDetail());
+        option.updateOption(request.getName(), request.getPrice(), request.getDetail(), 0);
 
         if (request.getIsAvailable() != null) {
-            option.changeAvailable(request.getIsAvailable());
+            option.changeAvailable(request.getIsAvailable(), 0);
         }
 
         return new UpdateMenuOptionResponseDto(option);
