@@ -150,8 +150,7 @@ public class StoreEntity extends UpdateBaseEntity {
 
         if (this.openTime.isBefore(this.closeTime)) {
             return !now.isBefore(this.openTime) && !now.isAfter(this.closeTime);
-        }
-        else {
+        } else {
             return !now.isBefore(this.openTime) || !now.isAfter(this.closeTime);
         }
     }

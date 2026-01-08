@@ -1,7 +1,9 @@
 package com.example.Spot.store.presentation.controller;
 
+
 import static org.assertj.core.api.Assertions.assertThat;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -9,7 +11,9 @@ import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
+import com.example.Spot.config.TestConfig;
 import com.example.Spot.global.TestSupport;
 import com.example.Spot.store.domain.entity.CategoryEntity;
 import com.example.Spot.store.domain.entity.StoreCategoryEntity;
@@ -19,6 +23,7 @@ import com.example.Spot.store.domain.repository.StoreCategoryRepository;
 import com.example.Spot.store.domain.repository.StoreRepository;
 
 @DataJpaTest
+@Import(TestConfig.class)
 class CategoryServiceTest extends TestSupport {
 
     @Autowired
@@ -32,7 +37,6 @@ class CategoryServiceTest extends TestSupport {
 
     @Test
     void 카테고리_전체를_조회할_수_있다() {
-        // given
         CategoryEntity chicken = CategoryEntity.builder()
                 .name("치킨")
                 .build();
@@ -74,11 +78,9 @@ class CategoryServiceTest extends TestSupport {
         storeViewRepository.save(view1);
         storeViewRepository.save(view2);
 
-        // when
         List<CategoryEntity> categories =
-                categoryRepository.findByIsDeletedFalse();
+                categoryRepository.findAllByIsDeletedFalse();
 
-        // then
         assertThat(categories).hasSize(2);
 
         CategoryEntity foundChicken = categories.stream()
@@ -95,10 +97,8 @@ class CategoryServiceTest extends TestSupport {
                 .containsExactlyInAnyOrder("BBQ 강남점", "교촌 역삼점");
     }
 
-
     @Test
     void ID로_삭제되지_않은_카테고리를_조회할_수_있다() {
-        // given
         CategoryEntity category = CategoryEntity.builder()
                 .name("치킨")
                 .build();
@@ -106,11 +106,9 @@ class CategoryServiceTest extends TestSupport {
         CategoryEntity savedCategory =
                 categoryRepository.save(category);
 
-        // when
         Optional<CategoryEntity> foundCategory =
                 categoryRepository.findByIdAndIsDeletedFalse(savedCategory.getId());
 
-        // then
         assertThat(foundCategory).isPresent();
         assertThat(foundCategory.get().getName()).isEqualTo("치킨");
         assertThat(foundCategory.get().getIsDeleted()).isFalse();
@@ -118,7 +116,6 @@ class CategoryServiceTest extends TestSupport {
 
     @Test
     void 삭제된_카테고리는_ID로_조회되지_않는다() {
-        // given
         CategoryEntity category = CategoryEntity.builder()
                 .name("분식")
                 .build();
@@ -126,20 +123,17 @@ class CategoryServiceTest extends TestSupport {
         CategoryEntity savedCategory =
                 categoryRepository.save(category);
 
-        savedCategory.softDelete(TEST_USER_ID); // soft delete
+        savedCategory.softDelete(TEST_USER_ID);
         categoryRepository.save(savedCategory);
 
-        // when
         Optional<CategoryEntity> foundCategory =
                 categoryRepository.findByIdAndIsDeletedFalse(savedCategory.getId());
 
-        // then
         assertThat(foundCategory).isEmpty();
     }
 
     @Test
     void 카테고리_단일_조회시_해당_카테고리에_속한_매장을_조회할_수_있다() {
-        // given
         CategoryEntity category = CategoryEntity.builder()
                 .name("커피")
                 .build();
@@ -176,7 +170,6 @@ class CategoryServiceTest extends TestSupport {
         storeViewRepository.save(view1);
         storeViewRepository.save(view2);
 
-        // when
         CategoryEntity foundCategory =
                 categoryRepository.findByIdAndIsDeletedFalse(category.getId())
                         .orElseThrow();
@@ -184,7 +177,6 @@ class CategoryServiceTest extends TestSupport {
         List<StoreCategoryEntity> stores =
                 storeViewRepository.findByCategoryAndIsDeletedFalse(foundCategory);
 
-        // then
         assertThat(stores)
                 .hasSize(2)
                 .extracting("store.name")
@@ -194,7 +186,6 @@ class CategoryServiceTest extends TestSupport {
     @Test
     @Disabled("StoreView relationship not yet implemented")
     void 카테고리_단일_조회시_삭제된_매장은_포함되지_않는다() {
-        // given
         CategoryEntity category = CategoryEntity.builder()
                 .name("디저트")
                 .build();
@@ -235,11 +226,9 @@ class CategoryServiceTest extends TestSupport {
                         .build()
         );
 
-        // when
         List<StoreCategoryEntity> stores =
                 storeViewRepository.findByCategoryAndIsDeletedFalse(category);
 
-        // then
         assertThat(stores)
                 .hasSize(1)
                 .first()
@@ -249,19 +238,15 @@ class CategoryServiceTest extends TestSupport {
                 });
     }
 
-    // 생성
     @Test
     void 카테고리를_생성할_수_있다() {
-        // given
         CategoryEntity category = CategoryEntity.builder()
                 .name("커피")
                 .build();
 
-        // when
         CategoryEntity savedCategory =
                 categoryRepository.save(category);
 
-        // then
         assertThat(savedCategory.getId()).isNotNull();
         assertThat(savedCategory.getName()).isEqualTo("커피");
         assertThat(savedCategory.getIsDeleted()).isFalse();
@@ -271,22 +256,18 @@ class CategoryServiceTest extends TestSupport {
 
     @Test
     void 카테고리_생성시_isDeleted는_false로_저장된다() {
-        // given
         CategoryEntity category = CategoryEntity.builder()
                 .name("분식")
                 .build();
 
-        // when
         CategoryEntity saved =
                 categoryRepository.save(category);
 
-        // then
         assertThat(saved.getIsDeleted()).isFalse();
     }
 
     @Test
     void 여러_카테고리를_생성할_수_있다() {
-        // given
         CategoryEntity category1 = CategoryEntity.builder()
                 .name("치킨")
                 .build();
@@ -295,11 +276,9 @@ class CategoryServiceTest extends TestSupport {
                 .name("일식")
                 .build();
 
-        // when
         categoryRepository.save(category1);
         categoryRepository.save(category2);
 
-        // then
         List<CategoryEntity> categories =
                 categoryRepository.findAll();
 
@@ -308,32 +287,8 @@ class CategoryServiceTest extends TestSupport {
                 .containsExactlyInAnyOrder("치킨", "일식");
     }
 
-
-    // 수정
-    @Test
-    @Disabled("Category update method not yet implemented")
-    void 카테고리_이름을_수정할_수_있다() {
-        // given
-        CategoryEntity category = CategoryEntity.builder()
-                .name("커피")
-                .build();
-
-        CategoryEntity saved =
-                categoryRepository.save(category);
-
-        // when
-        saved.updateName("디저트");
-        CategoryEntity updated =
-                categoryRepository.save(saved);
-
-        // then
-        assertThat(updated.getName()).isEqualTo("디저트");
-        assertThat(updated.getUpdatedAt()).isAfter(updated.getCreatedAt());
-    }
-
     @Test
     void 삭제되지_않은_카테고리만_수정_대상이_된다() {
-        // given
         CategoryEntity category = CategoryEntity.builder()
                 .name("분식")
                 .build();
@@ -344,18 +299,14 @@ class CategoryServiceTest extends TestSupport {
         saved.softDelete(TEST_USER_ID);
         categoryRepository.save(saved);
 
-        // when
         Optional<CategoryEntity> found =
                 categoryRepository.findByIdAndIsDeletedFalse(saved.getId());
 
-        // then
         assertThat(found).isEmpty();
     }
 
-    //삭제
     @Test
     void 카테고리를_soft_delete_할_수_있다() {
-        // given
         CategoryEntity category = CategoryEntity.builder()
                 .name("야식")
                 .build();
@@ -363,11 +314,9 @@ class CategoryServiceTest extends TestSupport {
         CategoryEntity saved =
                 categoryRepository.save(category);
 
-        // when
         saved.softDelete(TEST_USER_ID);
         categoryRepository.save(saved);
 
-        // then
         CategoryEntity deleted =
                 categoryRepository.findById(saved.getId()).orElseThrow();
 
@@ -376,7 +325,6 @@ class CategoryServiceTest extends TestSupport {
 
     @Test
     void 삭제된_카테고리는_전체_조회에서_제외된다() {
-        // given
         CategoryEntity active = CategoryEntity.builder()
                 .name("분식")
                 .build();
@@ -392,11 +340,9 @@ class CategoryServiceTest extends TestSupport {
         savedDeleted.softDelete(TEST_USER_ID);
         categoryRepository.save(savedDeleted);
 
-        // when
         List<CategoryEntity> categories =
                 categoryRepository.findByIsDeletedFalse();
 
-        // then
         assertThat(categories)
                 .hasSize(1)
                 .first()
@@ -406,5 +352,7 @@ class CategoryServiceTest extends TestSupport {
                 });
     }
 
-
+    private LocalDateTime now() {
+        return LocalDateTime.now();
+    }
 }

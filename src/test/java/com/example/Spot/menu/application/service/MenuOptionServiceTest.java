@@ -57,6 +57,8 @@ class MenuOptionServiceTest {
 
         MenuOptionEntity option = createMenuOptionEntity(menu, "곱빼기", "면 추가", 1000, optionId);
 
+        given(menuRepository.findById(menuId)).willReturn(Optional.of(menu));
+
         given(menuOptionRepository.findAllByMenuIdAndIsDeletedFalse(menuId))
                 .willReturn(List.of(option));
 
