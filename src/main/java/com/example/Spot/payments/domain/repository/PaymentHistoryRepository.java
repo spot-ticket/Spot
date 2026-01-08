@@ -42,4 +42,26 @@ public interface PaymentHistoryRepository extends JpaRepository<PaymentHistoryEn
         """)
   List<Object[]> findByPaymentIdAndStatusesWithPayment(
       @Param("paymentId") UUID paymentId, @Param("statuses") List<PaymentStatus> statuses);
+
+  // 일정 시간 동안 READY 또는 IN_PROGRESS 상태로 멈춰있는 결제 조회 (타임아웃 처리용)
+  @Query(
+      """
+        SELECT h FROM PaymentHistoryEntity h
+        WHERE h.paymentId IN (
+            SELECT sub.paymentId FROM PaymentHistoryEntity sub
+            WHERE sub.id = (
+                SELECT MAX(sub2.id) FROM PaymentHistoryEntity sub2
+                WHERE sub2.paymentId = sub.paymentId
+            )
+            GROUP BY sub.paymentId
+            HAVING MAX(sub.paymentStatus) IN ('READY', 'IN_PROGRESS')
+        )
+        AND h.createdAt = (
+            SELECT MAX(h2.createdAt) FROM PaymentHistoryEntity h2
+            WHERE h2.paymentId = h.paymentId
+        )
+        AND h.paymentStatus IN ('READY', 'IN_PROGRESS')
+        AND h.createdAt < :timeoutThreshold
+        """)
+  List<PaymentHistoryEntity> findStalePayments(@Param("timeoutThreshold") java.time.LocalDateTime timeoutThreshold);
 }
