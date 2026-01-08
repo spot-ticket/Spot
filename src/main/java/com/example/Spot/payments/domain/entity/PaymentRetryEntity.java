@@ -115,6 +115,10 @@ public class PaymentRetryEntity extends BaseEntity {
     this.lastErrorMessage = reason;
   }
 
+  public void markAsInProgress() {
+    this.status = RetryStatus.IN_PROGRESS;
+  }
+
   public boolean canRetry() {
     return this.status == RetryStatus.PENDING
         && this.attemptCount < this.maxRetryCount
