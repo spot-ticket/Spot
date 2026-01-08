@@ -2,8 +2,7 @@ package com.example.Spot.user.infrastructure.repository;
 
 
 
-import com.example.Spot.user.infrastructure.respository.EmailSender;
-
+import com.example.Spot.user.infrastructure.repository.EmailSender;
 import java.util.concurrent.atomic.AtomicReference;
 
 public class FakeEmailSender implements EmailSender {

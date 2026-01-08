@@ -2,7 +2,7 @@ package com.example.Spot.config;
 
 import java.util.Optional;
 
-import com.example.Spot.user.infrastructure.respository.EmailSender;
+import com.example.Spot.user.infrastructure.repository.EmailSender;
 import com.example.Spot.user.infrastructure.repository.FakeEmailSender;
 import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
