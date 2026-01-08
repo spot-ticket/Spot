@@ -10,7 +10,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class MenuOptionResponseDto {
+public class MenuOptionAdminResponseDto {
 
     @JsonProperty("option_id")
     private UUID id;
@@ -40,13 +40,17 @@ public class MenuOptionResponseDto {
     @JsonProperty("deleted_by")
     private Integer deletedBy;
 
-    public MenuOptionResponseDto(MenuOptionEntity menuOption) {
+    public MenuOptionAdminResponseDto(MenuOptionEntity menuOption) {
         this.id = menuOption.getId();
         this.menuId = menuOption.getMenu().getId();
         this.name = menuOption.getName();
         this.detail = menuOption.getDetail();
         this.price = menuOption.getPrice();
         this.isAvailable = menuOption.getIsAvailable();
+        this.isHidden = menuOption.getIsHidden();
         this.isDeleted = menuOption.getIsDeleted();
+        this.createdBy = menuOption.getCreatedBy();
+        this.updatedBy = menuOption.getUpdatedBy();
+        this.deletedBy = menuOption.getDeletedBy();
     }
 }

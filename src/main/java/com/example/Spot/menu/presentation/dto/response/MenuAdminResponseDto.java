@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class MenuAdminResponseDto implements MenuResponseDto {
+public class MenuAdminResponseDto {
 
     @JsonProperty("menu_id")
     private UUID id;
@@ -42,6 +42,15 @@ public class MenuAdminResponseDto implements MenuResponseDto {
     @JsonProperty("updated_at")
     private LocalDateTime updatedAt;
 
+    @JsonProperty("created_by")
+    private Integer createdBy;
+
+    @JsonProperty("updated_by")
+    private Integer updatedBy;
+
+    @JsonProperty("deleted_by")
+    private Integer deletedBy;
+
     public MenuAdminResponseDto(MenuEntity menu) {
         this.id = menu.getId();
         this.storeId = menu.getStore().getId();
@@ -55,5 +64,8 @@ public class MenuAdminResponseDto implements MenuResponseDto {
         this.isHidden = menu.getIsHidden();
         this.createdAt = menu.getCreatedAt();
         this.updatedAt = menu.getUpdatedAt();
+        this.createdBy = menu.getCreatedBy();
+        this.updatedBy = menu.getUpdatedBy();
+        this.deletedBy = menu.getDeletedBy();
     }
 }
