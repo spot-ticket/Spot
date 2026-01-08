@@ -22,10 +22,10 @@ import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.repository.UserAuthRepository;
 import com.example.Spot.user.domain.repository.UserRepository;
 import com.example.Spot.user.presentation.dto.request.JoinDTO;
-import com.example.Spot.global.TestSupport;
-
 
 import jakarta.transaction.Transactional;
+
+
 
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -293,7 +293,7 @@ class UserServiceTest {
 
     // 회원탈퇴 test 1
     @Test
-    void 회원탈퇴_jwt_인증_본인만_가능() throws Exception{
+    void 회원탈퇴_jwt_인증_본인만_가능() throws Exception {
         // given -1 회원가입
         JoinDTO join = new JoinDTO();
         join.setUsername("Testuser");
