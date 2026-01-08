@@ -3,7 +3,10 @@ package com.example.Spot.payments.presentation.controller;
 import java.util.UUID;
 
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,8 +20,6 @@ import com.example.Spot.payments.application.service.PaymentService;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
 import com.example.Spot.user.domain.Role;
-import com.example.Spot.user.domain.entity.UserEntity;
-import com.example.Spot.user.domain.repository.UserRepository;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +30,6 @@ import lombok.RequiredArgsConstructor;
 public class PaymentController {
 
     private final PaymentService paymentService;
-    private final UserRepository userReposity;
 
     @PostMapping("/{order_id}/confirm")
     @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
@@ -97,9 +97,13 @@ public class PaymentController {
     }
 
     private void validateAccessByRole(Integer userId, UUID orderId, UUID paymentId) {
-        UserEntity user = userReposity.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다. id: " + userId));
-        Role role = user.getRole();
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Role role = authentication.getAuthorities().stream()
+            .map(GrantedAuthority::getAuthority)
+            .filter(auth -> auth.startsWith("ROLE_"))
+            .map(auth -> Role.valueOf(auth.substring(5)))
+            .findFirst()
+            .orElseThrow(() -> new IllegalStateException("역할 정보를 찾을 수 없습니다."));
 
         switch (role) {
             case CUSTOMER -> {
@@ -119,7 +123,6 @@ public class PaymentController {
                 }
             }
             case MANAGER, MASTER -> {
-
             }
             default -> throw new IllegalStateException("허용되지 않은 역할입니다.");
         }

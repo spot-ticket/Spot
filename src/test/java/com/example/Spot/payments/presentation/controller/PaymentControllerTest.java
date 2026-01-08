@@ -31,13 +31,11 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 
-import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.payments.application.service.PaymentService;
 import com.example.Spot.payments.domain.entity.PaymentEntity.PaymentMethod;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
 import com.example.Spot.user.domain.Role;
-import com.example.Spot.user.domain.entity.UserEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebMvcTest(PaymentController.class)
@@ -64,15 +62,11 @@ class PaymentControllerTest {
     userId = 1;
   }
 
-  private CustomUserDetails createUserDetails(Role role) {
-    UserEntity user = UserEntity.forAuthentication(userId, role);
-    return new CustomUserDetails(user);
-  }
-
   private void setSecurityContext(Role role) {
-    CustomUserDetails userDetails = createUserDetails(role);
+    List<org.springframework.security.core.authority.SimpleGrantedAuthority> authorities =
+        List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_" + role.name()));
     UsernamePasswordAuthenticationToken authentication =
-        new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+        new UsernamePasswordAuthenticationToken(userId, null, authorities);
     SecurityContextHolder.getContext().setAuthentication(authentication);
   }
 
