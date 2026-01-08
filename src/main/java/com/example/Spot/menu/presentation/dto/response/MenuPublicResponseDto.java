@@ -13,7 +13,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class MenuPublicResponseDto {
+public class MenuPublicResponseDto implements MenuResponseDto {
 
     @JsonProperty("menu_id")
     private UUID id;

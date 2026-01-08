@@ -23,10 +23,10 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.example.Spot.order.domain.entity.OrderEntity;
 import com.example.Spot.order.domain.repository.OrderRepository;
-import com.example.Spot.payments.domain.entity.PaymentEntity.PaymentMethod;
 import com.example.Spot.payments.domain.entity.PaymentEntity;
-import com.example.Spot.payments.domain.entity.PaymentHistoryEntity.PaymentStatus;
+import com.example.Spot.payments.domain.entity.PaymentEntity.PaymentMethod;
 import com.example.Spot.payments.domain.entity.PaymentHistoryEntity;
+import com.example.Spot.payments.domain.entity.PaymentHistoryEntity.PaymentStatus;
 import com.example.Spot.payments.domain.repository.PaymentHistoryRepository;
 import com.example.Spot.payments.domain.repository.PaymentKeyRepository;
 import com.example.Spot.payments.domain.repository.PaymentRepository;
@@ -76,7 +76,7 @@ class PaymentServiceTest {
 
   @Nested
   @DisplayName("preparePayment 테스트 - 결제 준비")
-  class 결제_준비_테스트 {
+  class PaymentPrepareTest {
 
     @Test
     @DisplayName("정상: 새로운 결제 요청이 성공한다")
@@ -141,7 +141,7 @@ class PaymentServiceTest {
 
   @Nested
   @DisplayName("preparePayment 멱등성 테스트 - 중복 결제 방지")
-  class 멱등성_테스트 {
+  class IdempotencyTest {
 
     @Test
     @DisplayName("예외: 동일 orderId로 READY 상태의 결제가 있으면 중복 결제가 차단된다")
@@ -248,7 +248,7 @@ class PaymentServiceTest {
 
   @Nested
   @DisplayName("recordPaymentProgress 테스트 - 결제 진행 상태 기록")
-  class 결제_진행_상태_기록_테스트 {
+  class PaymentStatusHistoryTest {
 
     @Test
     @DisplayName("예외: 이미 처리된 결제면 IllegalStateException이 발생한다")

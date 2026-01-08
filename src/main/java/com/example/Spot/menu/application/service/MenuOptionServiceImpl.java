@@ -1,9 +1,7 @@
 package com.example.Spot.menu.application.service;
-
 import java.util.List;
 import java.util.UUID;
 
-import com.example.Spot.infra.auth.security.CustomUserDetails;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

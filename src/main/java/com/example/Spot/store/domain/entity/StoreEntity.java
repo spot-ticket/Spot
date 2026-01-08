@@ -38,9 +38,10 @@ public class StoreEntity extends UpdateBaseEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
+    @Column(name = "road_address", nullable = false)
     private String roadAddress; // 예: 서울특별시 종로구 사직로 161 //
 
+    @Column(name = "address_detail", nullable = false)
     private String addressDetail;
 
     @Column(name = "phone_number")
@@ -131,12 +132,39 @@ public class StoreEntity extends UpdateBaseEntity {
         if (closeTime != null) {
             this.closeTime = closeTime;
         }
-        
+
         if (categories != null) {
             this.storeCategoryMaps.clear(); // 기존 연결 해제(orphanRemova l=true 작동)
             for (CategoryEntity category : categories) {
                 this.addCategory(category); // 새로운 카테고리 연결
             }
+        }
+    }
+
+    public boolean isOpenNow() {
+        if (this.openTime == null || this.closeTime == null) {
+            return true; // 영업시간이 설정되지 않은 경우 24시간 영업으로 간주
+        }
+
+        LocalTime now = LocalTime.now();
+
+        if (this.openTime.isBefore(this.closeTime)) {
+            return !now.isBefore(this.openTime) && !now.isAfter(this.closeTime);
+        }
+        else {
+            return !now.isBefore(this.openTime) || !now.isAfter(this.closeTime);
+        }
+    }
+
+    public boolean isOpenAt(LocalTime time) {
+        if (this.openTime == null || this.closeTime == null) {
+            return true;
+        }
+
+        if (this.openTime.isBefore(this.closeTime)) {
+            return !time.isBefore(this.openTime) && !time.isAfter(this.closeTime);
+        } else {
+            return !time.isBefore(this.openTime) || !time.isAfter(this.closeTime);
         }
     }
 }
