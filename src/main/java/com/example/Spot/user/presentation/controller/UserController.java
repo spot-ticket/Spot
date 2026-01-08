@@ -2,6 +2,8 @@ package com.example.Spot.user.presentation.controller;
 
 import java.util.List;
 
+import com.example.Spot.global.presentation.ApiResponse;
+import com.example.Spot.global.presentation.code.GeneralSuccessCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
@@ -30,34 +32,38 @@ public class UserController {
     // 본인 조회
     @PreAuthorize("#userId == authentication.principal or hasRole('ADMIN')")
     @GetMapping("/{userId}")
-    public UserResponseDTO get(@PathVariable Integer userId) {
-        return userService.getByUserId(userId);
+    public ApiResponse<UserResponseDTO> get(@PathVariable Integer userId) {
+        UserResponseDTO result = userService.getByUserId(userId);
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, result);
     }
 
     // 수정
     @PreAuthorize("#userId == authentication.principal or hasRole('ADMIN')")
     @PatchMapping("/{userId}")
-    public UserResponseDTO update(
+    public ApiResponse<UserResponseDTO> update(
             @PathVariable Integer userId,
             @RequestBody UserUpdateRequestDTO request
     ) {
-        return userService.updateById(userId, request);
+        UserResponseDTO result = userService.updateById(userId, request);
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, result);
     }
 
     // 삭제
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/me")
-    public void delete(Authentication authentication) {
+    public ApiResponse<Void> delete(Authentication authentication) {
         Integer loginUserId = (Integer) authentication.getPrincipal();
         userService.deleteMe(loginUserId);
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, null);
     }
     
     // 닉네임으로 사용자 검색
     @PreAuthorize("hasAnyRole('MASTER','OWNER','MANAGER')")
     @GetMapping("/search")
-    public ResponseEntity<List<UserResponseDTO>> searchUsers(
+    public ApiResponse<List<UserResponseDTO>> searchUsers(
             @RequestParam String nickname
     ) {
-        return ResponseEntity.ok(userService.searchUsersByNickname(nickname));
+        List<UserResponseDTO> result = userService.searchUsersByNickname(nickname);
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, result);
     }
 }

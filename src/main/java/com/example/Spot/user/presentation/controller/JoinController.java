@@ -1,5 +1,7 @@
 package com.example.Spot.user.presentation.controller;
 
+import com.example.Spot.global.presentation.ApiResponse;
+import com.example.Spot.global.presentation.code.GeneralSuccessCode;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,7 +20,8 @@ public class JoinController {
     }
 
     @PostMapping("/api/join")
-    public void joinProcess(@RequestBody JoinDTO joinDTO) {
+    public ApiResponse<Void> joinProcess(@RequestBody JoinDTO joinDTO) {
         joinService.joinProcess(joinDTO);
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, null);
     }
 }
