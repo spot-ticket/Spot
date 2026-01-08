@@ -189,5 +189,11 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
             Pageable pageable);
+
+    // 주문 번호 생성을 위한 날짜별 마지막 주문 번호 조회
+    @Query("SELECT o.orderNumber FROM OrderEntity o " +
+            "WHERE o.orderNumber LIKE :datePattern " +
+            "ORDER BY o.orderNumber DESC")
+    Optional<String> findTopOrderNumberByDatePattern(@Param("datePattern") String datePattern);
 }
 

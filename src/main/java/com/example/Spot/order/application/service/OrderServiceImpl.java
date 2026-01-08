@@ -3,8 +3,8 @@ package com.example.Spot.order.application.service;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
@@ -43,8 +43,6 @@ public class OrderServiceImpl implements OrderService {
     private final StoreUserRepository storeUserRepository;
     private final MenuRepository menuRepository;
     private final MenuOptionRepository menuOptionRepository;
-    
-    private final AtomicInteger orderSequence = new AtomicInteger(0);
 
     @Override
     @Transactional
@@ -329,11 +327,20 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // ========== Private Helper Methods ==========
-    
-    // 주문 번호 생성 (예: ORDER-20260105-0001)
+
     private String generateOrderNumber() {
         String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        int sequence = orderSequence.incrementAndGet();
+        String datePattern = "ORDER-" + date + "-%";
+
+        Optional<String> lastOrderNumber = orderRepository.findTopOrderNumberByDatePattern(datePattern);
+
+        int sequence = 1;
+        if (lastOrderNumber.isPresent()) {
+            String lastNumber = lastOrderNumber.get();
+            String lastSeq = lastNumber.substring(lastNumber.lastIndexOf('-') + 1);
+            sequence = Integer.parseInt(lastSeq) + 1;
+        }
+
         return String.format("ORDER-%s-%04d", date, sequence);
     }
 
