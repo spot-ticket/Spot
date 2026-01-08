@@ -11,7 +11,7 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @NoArgsConstructor
-public class MenuAdminResponseDto implements MenuResponseDto {
+public class MenuAdminResponseDto {
 
     @JsonProperty("menu_id")
     private UUID id;
