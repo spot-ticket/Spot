@@ -7,7 +7,7 @@ fake = Faker('ko_KR')
 
 # 설정
 NUM_USERS = 1000
-NUM_STORES = 100
+NUM_STORES = 1000
 NUM_CATEGORIES = 20
 NUM_MENUS_PER_STORE = (5, 15)  # 가게당 메뉴 수 범위
 NUM_OPTIONS_PER_MENU = (0, 5)  # 메뉴당 옵션 수 범위
@@ -40,6 +40,19 @@ OPTION_TEMPLATES = [
     ('추가 토핑', ['치즈 추가', '야채 추가', '고기 추가', '계란 추가']),
     ('음료', ['콜라', '사이다', '제로콜라', '환타']),
 ]
+
+# 종로구 도로명 주소 템플릿
+JONGNO_ROADS = [
+    '종로', '세종대로', '율곡로', '창경궁로', '삼일대로', '대학로', '혜화로',
+    '자하문로', '북촌로', '삼청로', '윤보선길', '계동길', '가회로', '인사동길',
+    '청계천로', '돈화문로', '종로1가', '종로2가', '종로3가', '종로4가', '종로5가'
+]
+
+def generate_jongno_address():
+    """종로구 도로명 주소 생성"""
+    road = random.choice(JONGNO_ROADS)
+    building_num = random.randint(1, 300)
+    return f"서울특별시 종로구 {road} {building_num}"
 
 # 주문 상태
 ORDER_STATUSES = ['PENDING', 'ACCEPTED', 'COOKING', 'READY', 'COMPLETED', 'CANCELLED']
@@ -151,7 +164,7 @@ class DataGenerator:
             })
 
             print(f"INSERT INTO p_store (id, name, road_address, address_detail, phone_number, open_time, close_time, is_deleted, deleted_at, deleted_by, created_at, created_by, updated_at, updated_by) VALUES")
-            print(f"({sql_format(store_id)}, {sql_format(store_name)}, {sql_format(fake.address())}, {sql_format(fake.building_name() or f'{random.randint(1, 10)}층')}, {sql_format(fake.phone_number())}, '09:00:00', '22:00:00', false, NULL, NULL, {sql_format(created_at)}, {created_by}, {sql_format(updated_at)}, {updated_by});")
+            print(f"({sql_format(store_id)}, {sql_format(store_name)}, {sql_format(generate_jongno_address())}, {sql_format(fake.building_name() or f'{random.randint(1, 10)}층')}, {sql_format(fake.phone_number())}, '09:00:00', '22:00:00', false, NULL, NULL, {sql_format(created_at)}, {created_by}, {sql_format(updated_at)}, {updated_by});")
 
             # Store-Category 연결 (1-3개 카테고리)
             assigned_categories = random.sample(self.categories, random.randint(1, min(3, len(self.categories))))
