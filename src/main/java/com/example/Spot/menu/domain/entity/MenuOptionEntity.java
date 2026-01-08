@@ -53,14 +53,17 @@ public class MenuOptionEntity extends UpdateBaseEntity {
     private Boolean isHidden = false;
 
     @Builder
-    public MenuOptionEntity(MenuEntity menu, String name, String detail, Integer price) {
+    public MenuOptionEntity(MenuEntity menu, String name, String detail, Integer price, Integer createdBy) {
+        super(createdBy);
         this.menu = menu;
         this.name = name;
         this.detail = detail;
         this.price = price;
     }
 
-    public void updateOption(String name, Integer price, String detail) {
+    public void updateOption(String name, Integer price, String detail, Integer updatedBy) {
+
+        this.updateBy(updatedBy);
 
         // 1. 이름이 들어오면 수정
         if (name != null && !name.isBlank()) {
@@ -78,11 +81,13 @@ public class MenuOptionEntity extends UpdateBaseEntity {
         }
     }
 
-    public void changeAvailable(Boolean isAvailable) {
+    public void changeAvailable(Boolean isAvailable, Integer updatedBy) {
+        this.updateBy(updatedBy);
         this.isAvailable = isAvailable;
     }
 
-    public void changeHidden(Boolean isHidden) {
+    public void changeHidden(Boolean isHidden, Integer updatedBy) {
         this.isHidden = isHidden;
+        this.updateBy(updatedBy);
     }
 }

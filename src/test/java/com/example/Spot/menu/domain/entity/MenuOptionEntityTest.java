@@ -5,7 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-class MenuOptionEntityTest {
+import com.example.Spot.global.TestSupport;
+
+class MenuOptionEntityTest extends TestSupport {
 
     // 테스를 위한 임의의 유저 ID
     private static final Integer TEST_USER_ID = 107;
@@ -24,9 +26,11 @@ class MenuOptionEntityTest {
                 .name("육전추가")
                 .detail("4조각")
                 .price(4000)
+                .createdBy(TEST_USER_ID)
                 .build();
 
         // then
+        assertThat(menuOption.getCreatedBy()).isEqualTo(TEST_USER_ID);
         assertThat(menuOption.getMenu()).isEqualTo(menu);
         assertThat(menuOption.getName()).isEqualTo("육전추가");
         assertThat(menuOption.getDetail()).isEqualTo("4조각");
@@ -35,6 +39,7 @@ class MenuOptionEntityTest {
         System.out.println("====== [옵션 등록 결과] ======");
         System.out.println("옵션명: " + menuOption.getName());
         System.out.println("가격: " + menuOption.getPrice());
+        System.out.println("등록자: " + menuOption.getCreatedBy());
         System.out.println("============================\n");
     }
 
@@ -46,6 +51,7 @@ class MenuOptionEntityTest {
                 .name("육전추가")
                 .detail("4조각")
                 .price(4000)
+                .createdBy(103)
                 .build();
 
         System.out.println("====== [수정 전] ======");
@@ -53,9 +59,10 @@ class MenuOptionEntityTest {
         System.out.println("가격: " + menuOption.getPrice());
 
         // 2. when
-        menuOption.updateOption("면추가", 2000, "곱빼기");
+        menuOption.updateOption("면추가", 2000, "곱빼기", TEST_USER_ID);
 
         // 3. then
+        assertThat(menuOption.getUpdatedBy()).isEqualTo(TEST_USER_ID);
         assertThat(menuOption.getName()).isEqualTo("면추가");
         assertThat(menuOption.getDetail()).isEqualTo("곱빼기");
         assertThat(menuOption.getPrice()).isEqualTo(2000);
@@ -63,6 +70,7 @@ class MenuOptionEntityTest {
         System.out.println("====== [수정 후] ======");
         System.out.println("옵션명: " + menuOption.getName());
         System.out.println("가격: " + menuOption.getPrice());
+        System.out.println("수정자: " + menuOption.getUpdatedBy());
         System.out.println("============================\n");
     }
 
@@ -73,13 +81,15 @@ class MenuOptionEntityTest {
         MenuOptionEntity menuOption = MenuOptionEntity.builder().build();
 
         // when
-        menuOption.changeAvailable(false);
+        menuOption.changeAvailable(false, TEST_USER_ID);
 
         // then
+        assertThat(menuOption.getUpdatedBy()).isEqualTo(TEST_USER_ID);
         assertThat(menuOption.getIsAvailable()).isFalse();
 
         System.out.println("====== [품절 처리 결과] ======");
         System.out.println("품절 여부: " + !menuOption.getIsAvailable()); // false면 품절(true)
+        System.out.println("수정자: " + menuOption.getUpdatedBy());
         System.out.println("============================\n");
     }
 
