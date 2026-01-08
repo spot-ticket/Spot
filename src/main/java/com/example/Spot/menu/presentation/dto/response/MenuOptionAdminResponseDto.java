@@ -25,8 +25,20 @@ public class MenuOptionResponseDto {
     @JsonProperty("is_available")
     private Boolean isAvailable;
 
+    @JsonProperty("is_hidden")
+    private Boolean isHidden;
+
     @JsonProperty("is_deleted")
     private Boolean isDeleted;
+
+    @JsonProperty("created_by")
+    private Integer createdBy;
+
+    @JsonProperty("updated_by")
+    private Integer updatedBy;
+
+    @JsonProperty("deleted_by")
+    private Integer deletedBy;
 
     public MenuOptionResponseDto(MenuOptionEntity menuOption) {
         this.id = menuOption.getId();

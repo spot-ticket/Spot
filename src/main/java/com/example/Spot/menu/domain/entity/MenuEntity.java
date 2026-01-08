@@ -7,6 +7,7 @@ import java.util.UUID;
 import com.example.Spot.global.common.UpdateBaseEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
 
+import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -65,14 +66,13 @@ public class MenuEntity extends UpdateBaseEntity {
     @Column(name = "is_hidden")
     private Boolean isHidden = false;
 
-    // DTO 변환을 위한 양방향 매핑 (DB에는 영향 없음)
-    // mappedBy = "menu"는 MenuOptionEntity의 'menu' 변수명을 가리킴
-    @OneToMany(mappedBy = "menu", fetch = FetchType.LAZY)
+    // [핵심] 부모가 저장/수정/삭제될 때 자식도 같이 처리 + 리스트에서 빼면 DB 삭제
+    @OneToMany(mappedBy = "menu", fetch = FetchType.LAZY,
+            cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MenuOptionEntity> options = new ArrayList<>();
 
     @Builder
-    public MenuEntity(StoreEntity store, String name, String category, Integer price, String description, String imageUrl, List<MenuOptionEntity> options, Integer createdBy) {
-        super(createdBy);
+    public MenuEntity(StoreEntity store, String name, String category, Integer price, String description, String imageUrl, List<MenuOptionEntity> options) {
         this.store = store;
         this.name = name;
         this.category = category;
@@ -82,9 +82,7 @@ public class MenuEntity extends UpdateBaseEntity {
         this.options = (options != null) ? options : new ArrayList<>();
     }
 
-    public void updateMenu(String name, Integer price, String category, String description, String imageUrl, Integer updatedBy) {
-
-        this.updateBy(updatedBy);
+    public void updateMenu(String name, Integer price, String category, String description, String imageUrl) {
 
         // 1. 이름이 들어오면 수정
         if (name != null && !name.isBlank()) {
@@ -112,13 +110,11 @@ public class MenuEntity extends UpdateBaseEntity {
         }
     }
 
-    public void changeAvailable(Boolean isAvailable, Integer updatedBy) {
-        this.updateBy(updatedBy);
+    public void changeAvailable(Boolean isAvailable) {
         this.isAvailable = isAvailable;
     }
 
-    public void changeHidden(Boolean isHidden, Integer updatedBy) {
+    public void changeHidden(Boolean isHidden) {
         this.isHidden = isHidden;
-        this.updateBy(updatedBy);
     }
 }
