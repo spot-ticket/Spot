@@ -22,6 +22,8 @@ import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.repository.UserAuthRepository;
 import com.example.Spot.user.domain.repository.UserRepository;
 import com.example.Spot.user.presentation.dto.request.JoinDTO;
+import com.example.Spot.global.TestSupport;
+
 
 import jakarta.transaction.Transactional;
 
@@ -127,10 +129,6 @@ class UserServiceTest {
                 )
                 .andExpect(status().isOk());
 
-
-
-
-
     }
 
 
@@ -168,7 +166,7 @@ class UserServiceTest {
 
         // when 2 + then: /users/me 조회
         mockMvc.perform(
-                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/users/{id}", "id")
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get("/api/users/{userId}", "id")
 
                                 .header("Authorization", "Bearer " + token)
                 )
@@ -186,62 +184,62 @@ class UserServiceTest {
     }
 
     /* 회원 조회 test */
-    // 구현되지 않은 메서드 사용으로 임시 주석처리
-    // 회원 조회 api 구현 시 주석 해제
-//    @Test
-//    void 회원정보_수정_이메일_주소_닉네임() throws Exception {
-//        // given: 회원가입
-//        JoinDTO join = new JoinDTO();
-//        join.setUsername("testuser");
-//        join.setPassword("1234");
-//        join.setNickname("oldNick");
-//        join.setEmail("old@test.com");
-//        join.setAddress("OldAddress");
-//        join.setRole(Role.CUSTOMER);
-//        join.setMale(true);
-//        join.setAge(20);
-//
-//        joinService.joinProcess(join);
-//
-//        UserEntity user = userRepository.findByUsername("testuser")
-//                .orElseThrow();
-//
-//        // 로그인 → JWT
-//        MvcResult loginResult = mockMvc.perform(
-//                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/login")
-//                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-//                                .param("username", "testuser")
-//                                .param("password", "1234")
-//                )
-//                .andReturn();
-//
-//        String token = loginResult.getResponse()
-//                .getHeader("Authorization")
-//                .substring("Bearer ".length());
-//
-//        // when: 회원정보 수정
-//        mockMvc.perform(
-//                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-//                                .patch("/api/users/{id}", user.getId())
-//                                .header("Authorization", "Bearer " + token)
-//                                .contentType(MediaType.APPLICATION_JSON)
-//                                .content("""
-//                                    {
-//                                      "email": "new@test.com",
-//                                      "address": "NewAddress",
-//                                      "nickname": "newNick"
-//                                    }
-//                                """)
-//                )
-//                .andExpect(status().isOk());
-//
-//        // then: DB 반영 확인
-//
-//        UserEntity updated = userRepository.findById(user.getId()).orElseThrow();
-//        assertThat(updated.getEmail()).isEqualTo("new@test.com");
-//        assertThat(updated.getAddress()).isEqualTo("NewAddress");
-//        assertThat(updated.getNickname()).isEqualTo("newNick");
-//    }
+    @Test
+    void 회원정보_수정_이메일_주소_닉네임() throws Exception {
+        // given: 회원가입
+        JoinDTO join = new JoinDTO();
+        join.setUsername("testuser");
+        join.setPassword("1234");
+        join.setNickname("oldNick");
+        join.setEmail("old@test.com");
+        join.setRoadAddress("OldRoadAddress");
+        join.setAddressDetail("OldAddressDetail");
+        join.setRole(Role.CUSTOMER);
+        join.setMale(true);
+        join.setAge(20);
+
+        joinService.joinProcess(join);
+
+        UserEntity user = userRepository.findByUsername("testuser")
+                .orElseThrow();
+
+        // 로그인 → JWT
+        MvcResult loginResult = mockMvc.perform(
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/login")
+                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                                .param("username", "testuser")
+                                .param("password", "1234")
+                )
+                .andReturn();
+
+        String token = loginResult.getResponse()
+                .getHeader("Authorization")
+                .substring("Bearer ".length());
+
+        // when: 회원정보 수정
+        mockMvc.perform(
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                                .patch("/api/users/{userId}", user.getId())
+                                .header("Authorization", "Bearer " + token)
+                                .contentType(MediaType.APPLICATION_JSON)
+                                .content("""
+                                    {
+                                      "email": "new@test.com",
+                                      "address": "NewAddress",
+                                      "nickname": "newNick"
+                                    }
+                                """)
+                )
+                .andExpect(status().isOk());
+
+        // then: DB 반영 확인
+
+        UserEntity updated = userRepository.findById(user.getId()).orElseThrow();
+        assertThat(updated.getEmail()).isEqualTo("new@test.com");
+        assertThat(updated.getRoadAddress()).isEqualTo("NewRoadAddress");
+        assertThat(updated.getRoadAddress()).isEqualTo("NewAddressDetail");
+        assertThat(updated.getNickname()).isEqualTo("newNick");
+    }
 
 
     @Test
@@ -277,7 +275,7 @@ class UserServiceTest {
 
         // when: 로그아웃
         mockMvc.perform(
-                org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/logout")
+                org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/logout")
                         .header("Authorization", "Bearer " + token)
         ).andExpect(status().is2xxSuccessful());
 
@@ -294,63 +292,63 @@ class UserServiceTest {
 
 
     // 회원탈퇴 test 1
-    // 구현되지 않은 메서드 사용 - 오류 발생으로 임시 주석 처리
-//    @Test
-//    void 회원탈퇴_jwt_인증_본인만_가능() throws Exception{
-//        // given -1 회원가입
-//        JoinDTO join = new JoinDTO();
-//        join.setUsername("Testuser");
-//        join.setPassword("1234");
-//        join.setNickname("spot");
-//        join.setAddress("Seoul");
-//        join.setEmail("spot@test.com");
-//        join.setRole(Role.CUSTOMER);
-//        join.setMale(true);
-//        join.setAge(24);
-//
-//        joinService.joinProcess(join);
-//
-//        UserEntity user = userRepository.findByUsername("Testuser")
-//                .orElseThrow();
-//
-//        Integer userId = user.getId(); // 아직 구현 x
-//
-//        // given -2 로그인 → JWT 발급
-//        MvcResult loginResult = mockMvc.perform(
-//                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/login")
-//                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
-//                                .param("username", "Testuser")
-//                                .param("password", "1234")
-//                )
-//                .andExpect(status().isOk())   // 302/204면 수정
-//                .andReturn();
-//
-//        String token = loginResult.getResponse()
-//                .getHeader("Authorization")
-//                .substring("Bearer ".length());
-//
-//        // when: 회원 탈퇴 요청
-//        mockMvc.perform(
-//                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-//                                .delete("/api/users/{id}", userId)
-//                                .header("Authorization", "Bearer " + token)
-//                )
-//                .andExpect(status().isNoContent()); // 또는 isOk()
-//
-//        // then -1 User soft delete 확인
-//        UserEntity deletedUser = userRepository.findById(userId)
-//                .orElseThrow();
-//
-//        assertThat(deletedUser.getIsDeleted()).isTrue();
-//
-//        // then -2 UserAuth soft delete 확인 (있다면)
-//        UserAuthEntity auth = userAuthRepository
-//                .findByUser_Username("Testuser")
-//                .orElseThrow();
-//
-//        assertThat(auth.getIsDeleted()).isTrue();
-//
-//    }
+    @Test
+    void 회원탈퇴_jwt_인증_본인만_가능() throws Exception{
+        // given -1 회원가입
+        JoinDTO join = new JoinDTO();
+        join.setUsername("Testuser");
+        join.setPassword("1234");
+        join.setNickname("spot");
+        join.setRoadAddress("Seoul");
+        join.setAddressDetail("123-45");
+        join.setEmail("spot@test.com");
+        join.setRole(Role.CUSTOMER);
+        join.setMale(true);
+        join.setAge(24);
+
+        joinService.joinProcess(join);
+
+        UserEntity user = userRepository.findByUsername("Testuser")
+                .orElseThrow();
+
+        Integer userId = user.getId(); // 아직 구현 x
+
+        // given -2 로그인 → JWT 발급
+        MvcResult loginResult = mockMvc.perform(
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/login")
+                                .contentType(MediaType.APPLICATION_FORM_URLENCODED)
+                                .param("username", "Testuser")
+                                .param("password", "1234")
+                )
+                .andExpect(status().isOk())   // 302/204면 수정
+                .andReturn();
+
+        String token = loginResult.getResponse()
+                .getHeader("Authorization")
+                .substring("Bearer ".length());
+
+        // when: 회원 탈퇴 요청
+        mockMvc.perform(
+                        org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                                .delete("/api/users/me", userId)
+                                .header("Authorization", "Bearer " + token)
+                )
+                .andExpect(status().isNoContent()); // 또는 isOk()
+
+        // then -1 User soft delete 확인
+        UserEntity deletedUser = userRepository.findById(userId)
+                .orElseThrow();
+
+        assertThat(deletedUser.getIsDeleted()).isTrue();
+
+        // then -2 UserAuth soft delete 확인 (있다면)
+        UserAuthEntity auth = userAuthRepository
+                .findByUser_Username("Testuser")
+                .orElseThrow();
+
+        assertThat(auth.getIsDeleted()).isTrue();
+
+    }
 
 
     // 회원탈퇴 test 2
@@ -358,7 +356,7 @@ class UserServiceTest {
     void 회원탈퇴_실패_JWT없음() throws Exception {
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .delete("/api/users/{id}", 1)
+                                .delete("/api/users/me", 1)
                 )
                 .andExpect(status().is4xxClientError()); // 401 / 403
     }
@@ -411,7 +409,7 @@ class UserServiceTest {
         // user1이 user2 삭제 시도 → 실패
         mockMvc.perform(
                         org.springframework.test.web.servlet.request.MockMvcRequestBuilders
-                                .delete("/api/users/{id}", user2.getId())
+                                .delete("/api/users/me", user2.getId())
                                 .header("Authorization", "Bearer " + token)
                 )
                 .andExpect(status().isForbidden()); // 또는 isNotFound()
