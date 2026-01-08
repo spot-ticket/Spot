@@ -81,14 +81,14 @@ public class CustomerOrderControllerTest {
         CustomUserDetails user = new CustomUserDetails(UserEntity.forAuthentication(5, Role.CUSTOMER));
         OrderResponseDto dto = OrderResponseDto.builder().orderNumber("N").build();
         Page<OrderResponseDto> page = new PageImpl<>(List.of(dto));
-        when(orderService.getUserOrdersWithPagination(5, null, null, null, org.mockito.ArgumentMatchers.any()))
+        when(orderService.getUserOrdersWithPagination(org.mockito.ArgumentMatchers.eq(5), org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.any()))
                 .thenReturn(page);
 
         var res = controller.getMyOrders(user, null, null, null, 0, 20, "createdAt", Sort.Direction.DESC);
         assertThat(res.getStatusCode()).isEqualTo(com.example.Spot.order.presentation.code.OrderSuccessCode.ORDER_LIST_FOUND.getStatus());
         assertThat(res.getBody().getResult()).hasSize(1);
-        
-        verify(orderService).getUserOrdersWithPagination(org.mockito.ArgumentMatchers.eq(5), org.mockito.ArgumentMatchers.eq(null), org.mockito.ArgumentMatchers.eq(null), org.mockito.ArgumentMatchers.eq(null), org.mockito.ArgumentMatchers.any());
+
+        verify(orderService).getUserOrdersWithPagination(org.mockito.ArgumentMatchers.eq(5), org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.isNull(), org.mockito.ArgumentMatchers.any());
     }
 
     @Test

@@ -18,12 +18,10 @@ import com.example.Spot.order.domain.enums.OrderStatus;
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
-    @Query("SELECT o FROM OrderEntity o " +
+    @Query("SELECT DISTINCT o FROM OrderEntity o " +
             "LEFT JOIN FETCH o.store s " +
             "LEFT JOIN FETCH o.orderItems oi " +
             "LEFT JOIN FETCH oi.menu " +
-            "LEFT JOIN FETCH oi.orderItemOptions oio " +
-            "LEFT JOIN FETCH oio.menuOption " +
             "WHERE o.id = :orderId")
     Optional<OrderEntity> findByIdWithDetails(@Param("orderId") UUID orderId);
 
