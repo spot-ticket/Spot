@@ -15,7 +15,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.ActiveProfiles;
 
 import com.example.Spot.config.TestConfig;
-
 import com.example.Spot.payments.domain.entity.PaymentEntity;
 import com.example.Spot.payments.domain.entity.PaymentEntity.PaymentMethod;
 import com.example.Spot.payments.domain.entity.PaymentHistoryEntity;
