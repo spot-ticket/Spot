@@ -14,6 +14,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -175,7 +176,15 @@ class MenuControllerTest {
 
     // Helper
     private StoreEntity createStoreEntity(UUID storeId) {
-        StoreEntity store = StoreEntity.builder().build();
+        StoreEntity store = StoreEntity.builder()
+                                       .name("테스트 스토어")
+                                       .roadAddress("여기는 로드 넘버 원")
+                                       .addressDetail("123-45")
+                                       .phoneNumber("02-1234-5678")
+                                       .openTime(LocalTime.of(9, 0))
+                                       .closeTime(LocalTime.of(22, 0))
+                                       .build();
+
         ReflectionTestUtils.setField(store, "id", storeId);
         return store;
     }
