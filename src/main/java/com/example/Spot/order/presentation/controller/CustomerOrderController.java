@@ -30,6 +30,7 @@ import com.example.Spot.order.presentation.code.OrderSuccessCode;
 import com.example.Spot.order.presentation.dto.request.OrderCancelRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 import com.example.Spot.order.presentation.dto.response.OrderResponseDto;
+import com.example.Spot.order.presentation.swagger.CustomerOrderApi;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -38,10 +39,11 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/orders")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('CUSTOMER')")
-public class CustomerOrderController {
+public class CustomerOrderController implements CustomerOrderApi {
 
     private final OrderService orderService;
 
+    @Override
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponseDto>> createOrder(
             @Valid @RequestBody OrderCreateRequestDto requestDto,
