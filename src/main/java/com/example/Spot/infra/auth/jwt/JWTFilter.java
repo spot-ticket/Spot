@@ -40,8 +40,6 @@ public class JWTFilter extends OncePerRequestFilter {
         }
         System.out.println("authorization now");
 
-
-
         String token = authorization.substring(7);
 
         // 유효한 토큰만 통과
@@ -58,7 +56,6 @@ public class JWTFilter extends OncePerRequestFilter {
                 filterChain.doFilter(request, response);
                 return;
             }
-
 
             Integer userId = jwtUtil.getUserId(token);
             Role role = jwtUtil.getRole(token);

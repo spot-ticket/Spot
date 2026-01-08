@@ -34,7 +34,6 @@ public class JWTUtil {
         return Integer.valueOf(sub);
     }
 
-
     // Role enum으로 리턴
     public Role getRole(String token) {
         String roleStr = Jwts.parser()
@@ -70,7 +69,6 @@ public class JWTUtil {
                 .signWith(secretKey)
                 .compact();
     }
-
 
     // Refresh Token
     public String createRefreshToken(Integer userId, long expiredMs) {

@@ -1,8 +1,10 @@
 package com.example.Spot.menu.presentation.dto.response;
 
 import java.util.UUID;
+
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 

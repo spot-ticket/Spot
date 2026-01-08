@@ -13,10 +13,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.test.context.ActiveProfiles;
 
-import com.example.Spot.payments.domain.entity.PaymentEntity.PaymentMethod;
 import com.example.Spot.payments.domain.entity.PaymentEntity;
-import com.example.Spot.payments.domain.entity.PaymentHistoryEntity.PaymentStatus;
+import com.example.Spot.payments.domain.entity.PaymentEntity.PaymentMethod;
 import com.example.Spot.payments.domain.entity.PaymentHistoryEntity;
+import com.example.Spot.payments.domain.entity.PaymentHistoryEntity.PaymentStatus;
 
 @DataJpaTest
 @ActiveProfiles("test")

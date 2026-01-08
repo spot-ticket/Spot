@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.Spot.user.application.service.JoinService;
 import com.example.Spot.user.presentation.dto.request.JoinDTO;
 
-
 @RestController
 public class JoinController {
 

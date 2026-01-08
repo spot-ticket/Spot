@@ -12,7 +12,6 @@ import com.example.Spot.user.presentation.dto.response.TokenPairResponse;
 
 import lombok.RequiredArgsConstructor;
 
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")
