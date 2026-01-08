@@ -3,6 +3,7 @@ package com.example.Spot.menu.domain.repository;
 import static org.assertj.core.api.Assertions.assertThat; // 검증을 위한 AssertJ
 import static org.assertj.core.api.Assertions.tuple;
 
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.List;
 
@@ -15,6 +16,7 @@ import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.StoreRepository; // StoreRepository 필요
+import org.springframework.test.util.ReflectionTestUtils;
 
 @DataJpaTest
 class MenuRepositoryTest {
@@ -40,6 +42,9 @@ class MenuRepositoryTest {
                 .closeTime(LocalTime.of(21, 0))
                 .build();
 
+        ReflectionTestUtils.setField(store, "createdBy", 123); // ID 타입이 Long이라면 123L
+        ReflectionTestUtils.setField(store, "createdAt", LocalDateTime.now());
+
         // Store의 ID가 필요하므로 먼저 저장
         savedStore = storeRepository.save(store);
 
@@ -51,6 +56,9 @@ class MenuRepositoryTest {
                 .description("")
                 .imageUrl("")
                 .build();
+
+        ReflectionTestUtils.setField(menu, "createdBy", 123); // ID 타입이 Long이라면 123L
+        ReflectionTestUtils.setField(menu, "createdAt", LocalDateTime.now());
 
         savedMenu = menuRepository.save(menu);
     }
@@ -113,7 +121,11 @@ class MenuRepositoryTest {
                 .price(10000)
                 .category("테스트")
                 .build();
-        deletedMenu.softDelete();
+        deletedMenu.softDelete(0);
+
+        ReflectionTestUtils.setField(deletedMenu, "createdBy", 123);
+        ReflectionTestUtils.setField(deletedMenu, "createdAt", LocalDateTime.now());
+
         menuRepository.save(deletedMenu);
 
         // [When]
