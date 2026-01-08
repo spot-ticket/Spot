@@ -53,7 +53,8 @@ public class MenuOptionEntity extends UpdateBaseEntity {
     private Boolean isHidden = false;
 
     @Builder
-    public MenuOptionEntity(MenuEntity menu, String name, String detail, Integer price) {
+    public MenuOptionEntity(MenuEntity menu, String name, String detail, Integer price, Integer createdBy) {
+        super(createdBy);
         this.menu = menu;
         this.name = name;
         this.detail = detail;

@@ -62,14 +62,17 @@ public class MenuEntity extends UpdateBaseEntity {
     private Boolean isAvailable = true;
 
     // 숨김 여부 체크
-    @Column(name = "is_hidden")
-    private Boolean isHidden = false;
+  @Column(name = "is_hidden")
+  private Boolean isHidden = false;
 
+    // DTO 변환을 위한 양방향 매핑 (DB에는 영향 없음)
+    // mappedBy = "menu"는 MenuOptionEntity의 'menu' 변수명을 가리킴
     @OneToMany(mappedBy = "menu", fetch = FetchType.LAZY)
     private List<MenuOptionEntity> options = new ArrayList<>();
 
     @Builder
-    public MenuEntity(StoreEntity store, String name, String category, Integer price, String description, String imageUrl, List<MenuOptionEntity> options) {
+    public MenuEntity(StoreEntity store, String name, String category, Integer price, String description, String imageUrl, List<MenuOptionEntity> options, Integer createdBy) {
+        super(createdBy);
         this.store = store;
         this.name = name;
         this.category = category;

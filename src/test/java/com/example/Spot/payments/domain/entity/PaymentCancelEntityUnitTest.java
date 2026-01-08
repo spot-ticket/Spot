@@ -13,7 +13,7 @@ class PaymentCancelEntityUnitTest {
 
   @Nested
   @DisplayName("PaymentCancelEntity 생성 테스트")
-  class 결제_취소_엔티티_생성_테스트 {
+  class PaymentCancelEntityCreateTest {
 
     @Test
     @DisplayName("정상: 결제 취소 엔티티가 모든 정보를 포함하여 생성되어야 한다")
@@ -43,7 +43,7 @@ class PaymentCancelEntityUnitTest {
 
   @Nested
   @DisplayName("PaymentCancelEntity 생성 실패 테스트")
-  class 결제_취소_엔티티_생성_실패_테스트 {
+  class PaymentCancelEntityCreateFailTest {
 
     @Test
     @DisplayName("예외: 취소 사유가 null이면 IllegalArgumentException이 발생한다")

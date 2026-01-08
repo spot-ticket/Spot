@@ -1,8 +1,25 @@
 package com.example.Spot.payments.presentation.controller;
 
+import java.util.UUID;
+
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.Spot.global.presentation.ApiResponse;
+import com.example.Spot.global.presentation.code.GeneralSuccessCode;
+import com.example.Spot.infra.auth.security.CustomUserDetails;
+import com.example.Spot.payments.application.service.PaymentService;
+import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
+import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
+import com.example.Spot.user.domain.Role;
+
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
@@ -10,49 +27,98 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PaymentController {
 
-  // private final PaymentService paymentService;
+    private final PaymentService paymentService;
 
-  // @PostMapping("/confirm")
-  // public ApiResponse<PaymentResponseDto.Confirm> confirmPayment(
-  //     @Valid @RequestBody PaymentRequestDto.Confirm request
-  // ) {
-  //     PaymentResponseDto.Confirm response = paymentService.confirmPaymentBilling(request);
-  //     return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
-  // }
+    @PostMapping("/{order_id}/confirm")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
+    public ApiResponse<PaymentResponseDto.Confirm> confirmPayment(
+            @PathVariable("order_id") UUID orderId,
+            @Valid @RequestBody PaymentRequestDto.Confirm request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-  // @PostMapping("/cancel")
-  // public ApiResponse<PaymentResponseDto.Cancel> cancelPayment(
-  //     @Valid @RequestBody PaymentRequestDto.Cancel request
-  // ) {
-  //     PaymentResponseDto.Cancel response = paymentService.cancelPayment(request);
-  //     return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
-  // }
+        validateAccessByRole(userDetails, orderId, null);
 
-  // @GetMapping
-  // public ApiResponse<PaymentResponseDto.PaymentList> getAllPayment() {
-  //     PaymentResponseDto.PaymentList response = paymentService.getAllPayment();
-  //     return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
-  // }
+        UUID paymentId = paymentService.preparePayment(request);
+        PaymentResponseDto.Confirm response = paymentService.executePaymentBilling(paymentId);
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
+    }
 
-  // @GetMapping("/{paymentId}")
-  // public ApiResponse<PaymentResponseDto.PaymentDetail> getDetailPayment(
-  //     @PathVariable UUID paymentId
-  // ) {
-  //     PaymentResponseDto.PaymentDetail response = paymentService.getDetailPayment(paymentId);
-  //     return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
-  // }
+    @PostMapping("/{order_id}/cancel")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
+    public ApiResponse<PaymentResponseDto.Cancel> cancelPayment(
+            @PathVariable("order_id") UUID orderId,
+            @Valid @RequestBody PaymentRequestDto.Cancel request,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
 
-  // @GetMapping("/cancel")
-  // public ApiResponse<PaymentResponseDto.CancelList> getAllPaymentCancel() {
-  //     PaymentResponseDto.CancelList response = paymentService.getAllPaymentCancel();
-  //     return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
-  // }
+        validateAccessByRole(userDetails, orderId, null);
 
-  // @GetMapping("/{paymentId}/cancel")
-  // public ApiResponse<PaymentResponseDto.CancelList> getDetailPaymentCancel(
-  //     @PathVariable UUID paymentId
-  // ) {
-  //     PaymentResponseDto.CancelList response = paymentService.getDetailPaymentCancel(paymentId);
-  //     return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
-  // }
+        PaymentResponseDto.Cancel response = paymentService.executeCancel(request);
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
+    }
+
+    @GetMapping
+    @PreAuthorize("hasAnyRole('MANAGER', 'MASTER')")
+    public ApiResponse<PaymentResponseDto.PaymentList> getAllPayment() {
+        PaymentResponseDto.PaymentList response = paymentService.getAllPayment();
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
+    }
+
+    @GetMapping("/{paymentId}")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
+    public ApiResponse<PaymentResponseDto.PaymentDetail> getDetailPayment(
+            @PathVariable UUID paymentId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        validateAccessByRole(userDetails, null, paymentId);
+
+        PaymentResponseDto.PaymentDetail response = paymentService.getDetailPayment(paymentId);
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
+    }
+
+    @GetMapping("/cancel")
+    @PreAuthorize("hasAnyRole('MANAGER', 'MASTER')")
+    public ApiResponse<PaymentResponseDto.CancelList> getAllPaymentCancel() {
+        PaymentResponseDto.CancelList response = paymentService.getAllPaymentCancel();
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
+    }
+
+    @GetMapping("/{paymentId}/cancel")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
+    public ApiResponse<PaymentResponseDto.CancelList> getDetailPaymentCancel(
+            @PathVariable UUID paymentId,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+
+        validateAccessByRole(userDetails, null, paymentId);
+
+        PaymentResponseDto.CancelList response = paymentService.getDetailPaymentCancel(paymentId);
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
+    }
+
+    private void validateAccessByRole(CustomUserDetails userDetails, UUID orderId, UUID paymentId) {
+        Role role = userDetails.getUserEntity().getRole();
+        Integer userId = userDetails.getUserId();
+
+        switch (role) {
+            case CUSTOMER -> {
+                if (orderId != null) {
+                    paymentService.validateOrderOwnership(orderId, userId);
+                }
+                if (paymentId != null) {
+                    paymentService.validatePaymentOwnership(paymentId, userId);
+                }
+            }
+            case OWNER -> {
+                if (orderId != null) {
+                    paymentService.validateOrderStoreOwnership(orderId, userId);
+                }
+                if (paymentId != null) {
+                    paymentService.validatePaymentStoreOwnership(paymentId, userId);
+                }
+            }
+            case MANAGER, MASTER -> {
+
+            }
+            default -> throw new IllegalStateException("허용되지 않은 역할입니다.");
+        }
+    }
 }

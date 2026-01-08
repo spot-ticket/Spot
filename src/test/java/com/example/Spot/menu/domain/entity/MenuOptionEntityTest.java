@@ -5,7 +5,12 @@ import static org.assertj.core.api.Assertions.assertThat;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
-class MenuOptionEntityTest {
+import com.example.Spot.global.TestSupport;
+
+class MenuOptionEntityTest extends TestSupport {
+
+    // 테스를 위한 임의의 유저 ID
+    private static final Integer TEST_USER_ID = 107;
 
     // 테스를 위한 임의의 유저 ID
     private static final Integer TEST_USER_ID = 107;
