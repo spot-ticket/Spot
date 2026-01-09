@@ -14,11 +14,8 @@ import com.example.Spot.store.domain.repository.CategoryRepository;
 import com.example.Spot.store.domain.repository.StoreCategoryRepository;
 import com.example.Spot.store.presentation.dto.request.CategoryRequestDTO;
 import com.example.Spot.store.presentation.dto.response.CategoryResponseDTO;
-import com.example.Spot.user.domain.entity.UserEntity;
-
 
 import lombok.RequiredArgsConstructor;
-
 
 @Service
 @RequiredArgsConstructor
