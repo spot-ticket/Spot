@@ -15,6 +15,9 @@ import io.jsonwebtoken.Jwts;
 
 @Component
 public class JWTUtil {
+    /*
+      JWT Util: 토큰 생성, id와 role 리턴 수행
+     */
 
     // jwt secret값 불러와서 암호화
     private SecretKey secretKey;
