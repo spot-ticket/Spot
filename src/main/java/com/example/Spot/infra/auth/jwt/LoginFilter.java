@@ -17,6 +17,9 @@ import jakarta.servlet.http.HttpServletResponse;
 
 
 public class LoginFilter extends UsernamePasswordAuthenticationFilter {
+    /*
+      로그인 요청, 인증 처리
+     */
 
     // 검증을 담당하는 부분 = authentication manager
     private final AuthenticationManager authenticationManager;
