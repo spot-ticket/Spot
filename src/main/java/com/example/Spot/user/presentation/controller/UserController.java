@@ -36,7 +36,7 @@ public class UserController implements UserApi {
     }
 
     @Override
-    @PreAuthorize("#userId == authentication.principal or hasRole('ADMIN')")
+    @PreAuthorize("#userId == principal.userId or hasRole('ADMIN')")
     @PatchMapping("/{userId}")
     public UserResponseDTO update(
             @PathVariable Integer userId,

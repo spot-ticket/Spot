@@ -25,6 +25,7 @@ public class CustomUserDetails implements UserDetails {
         this.userAuthEntity = null;
     }
 
+    // API(Controller)에서 사용 - id, role
     public UserEntity getUserEntity() {
         return userEntity;
     }
