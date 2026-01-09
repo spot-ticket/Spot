@@ -2,6 +2,7 @@ package com.example.Spot.payments.presentation.controller;
 
 import java.util.UUID;
 
+import com.example.Spot.infra.auth.security.CustomUserDetails;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -36,7 +37,9 @@ public class PaymentController {
     public ApiResponse<PaymentResponseDto.Confirm> confirmPayment(
             @PathVariable("order_id") UUID orderId,
             @Valid @RequestBody PaymentRequestDto.Confirm request,
-            @AuthenticationPrincipal Integer userId) {
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        Integer userId = principal.getUserId();
 
         validateAccessByRole(userId, orderId, null);
 
@@ -50,8 +53,9 @@ public class PaymentController {
     public ApiResponse<PaymentResponseDto.Cancel> cancelPayment(
             @PathVariable("order_id") UUID orderId,
             @Valid @RequestBody PaymentRequestDto.Cancel request,
-            @AuthenticationPrincipal Integer userId) {
-
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        Integer userId = principal.getUserId();
         validateAccessByRole(userId, orderId, null);
 
         PaymentResponseDto.Cancel response = paymentService.executeCancel(request);
@@ -69,7 +73,9 @@ public class PaymentController {
     @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
     public ApiResponse<PaymentResponseDto.PaymentDetail> getDetailPayment(
             @PathVariable UUID paymentId,
-            @AuthenticationPrincipal Integer userId) {
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        Integer userId = principal.getUserId();
 
         validateAccessByRole(userId, null, paymentId);
 
@@ -88,7 +94,9 @@ public class PaymentController {
     @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
     public ApiResponse<PaymentResponseDto.CancelList> getDetailPaymentCancel(
             @PathVariable UUID paymentId,
-            @AuthenticationPrincipal Integer userId) {
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        Integer userId = principal.getUserId();
 
         validateAccessByRole(userId, null, paymentId);
 

@@ -3,6 +3,9 @@ package com.example.Spot.menu.presentation.controller;
 import java.util.List;
 import java.util.UUID;
 
+import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.domain.entity.UserEntity;
+import org.apache.catalina.User;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -37,11 +40,12 @@ public class MenuOptionController {
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
     @GetMapping
     public ApiResponse<List<MenuOptionResponseDto>> getOptions(
-            @AuthenticationPrincipal CustomUserDetails user,
+            @AuthenticationPrincipal CustomUserDetails principal,
             @PathVariable UUID storeId,
             @PathVariable UUID menuId
     ) {
-        List<MenuOptionResponseDto> data = menuOptionService.getOptions(user.getUserEntity().getRole(), storeId, menuId);
+        Role role = principal.getUserEntity().getRole();
+        List<MenuOptionResponseDto> data = menuOptionService.getOptions(role, storeId, menuId);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
     }
@@ -50,12 +54,13 @@ public class MenuOptionController {
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
     @PostMapping
     public ApiResponse<CreateMenuOptionResponseDto> createMenuOption(
-            @AuthenticationPrincipal CustomUserDetails user,
+            @AuthenticationPrincipal CustomUserDetails principal,
             @PathVariable UUID storeId,
             @PathVariable UUID menuId,
             @RequestBody CreateMenuOptionRequestDto request
     ) {
-        CreateMenuOptionResponseDto data = menuOptionService.createMenuOption(user.getUserEntity(), storeId, menuId, request);
+        UserEntity userEntity = principal.getUserEntity();
+        CreateMenuOptionResponseDto data = menuOptionService.createMenuOption(userEntity, storeId, menuId, request);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
     }
@@ -64,13 +69,14 @@ public class MenuOptionController {
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
     @PatchMapping("/{optionId}")
     public ApiResponse<UpdateMenuOptionResponseDto> updateMenuOption(
-            @AuthenticationPrincipal CustomUserDetails user,
+            @AuthenticationPrincipal CustomUserDetails principal,
             @PathVariable UUID storeId,
             @PathVariable UUID menuId,
             @PathVariable UUID optionId,
             @RequestBody UpdateMenuOptionRequestDto request
     ) {
-        UpdateMenuOptionResponseDto data = menuOptionService.updateMenuOption(user.getUserEntity(), storeId, menuId, optionId, request);
+        UserEntity userEntity = principal.getUserEntity();
+        UpdateMenuOptionResponseDto data = menuOptionService.updateMenuOption(userEntity, storeId, menuId, optionId, request);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
     }
@@ -79,12 +85,14 @@ public class MenuOptionController {
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
     @DeleteMapping("/{optionId}")
     public ApiResponse<String> deleteMenuOption(
-            @AuthenticationPrincipal CustomUserDetails user,
+            @AuthenticationPrincipal CustomUserDetails principal,
             @PathVariable UUID storeId,
             @PathVariable UUID menuId,
             @PathVariable UUID optionId
     ) {
-        menuOptionService.deleteMenuOption(user.getUserEntity(), storeId, menuId, optionId);
+        UserEntity userEntity = principal.getUserEntity();
+
+        menuOptionService.deleteMenuOption(userEntity, storeId, menuId, optionId);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, "해당 옵션이 삭제되었습니다.");
     }
