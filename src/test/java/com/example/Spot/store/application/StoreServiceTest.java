@@ -128,11 +128,12 @@ public class StoreServiceTest {
                 .hasMessageContaining("관리 권한이 없습니다.");
     }
     
+    @Test
     void 매장_생성_성공_테스트() {
         // 1. Given
         Integer userId = 1;
         UserEntity user = createUser(userId, Role.OWNER);
-        // 가짜 DTO 생성 
+        // 가짜 DTO 생성
         StoreCreateRequest request = new StoreCreateRequest(
                 "새로운 가게", "서울시 강남구", "101호", "02-123-4567",
                 LocalTime.of(9, 0), LocalTime.of(22, 0), 
@@ -141,7 +142,11 @@ public class StoreServiceTest {
          
         given(userRepository.findById(anyInt())).willReturn(Optional.of(user));
         given(categoryRepository.findByName("한식")).willReturn(Optional.of(new CategoryEntity("한식")));
-        given(storeRepository.save(any(StoreEntity.class))).willAnswer(invocation -> invocation.getArgument(0));
+        given(storeRepository.save(any(StoreEntity.class))).willAnswer(invocation -> {
+            StoreEntity store = invocation.getArgument(0);
+            ReflectionTestUtils.setField(store, "id", UUID.randomUUID());
+            return store;
+        });
         
         // 2. When
         UUID resultId = storeService.createStore(request, userId);
