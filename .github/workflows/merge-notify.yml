@@ -1,0 +1,21 @@
+name: Merge Notification
+
+on:
+  pull_request:
+    types: [closed] # PR이 닫혔을 때만 트리거
+
+jobs:
+  notify:
+    # 닫힌 이유가 '머지'였을 때만 실행
+    if: github.event.pull_request.merged == true
+    runs-on: ubuntu-latest
+    steps:
+      - name: Send Discord Notification
+        uses: tsickert/discord-webhook@v5.3.0
+        with:
+          webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          content: |
+            ✅ **PR이 ${{ github.base_ref }} 브랜치에 머지되었습니다!**
+            **PR:** ${{ github.event.pull_request.title }}
+            **작성자:** ${{ github.event.pull_request.user.login }}
+            **설명:** ${{ github.event.pull_request.body }}
