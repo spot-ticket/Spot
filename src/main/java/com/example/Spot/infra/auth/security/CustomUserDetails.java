@@ -14,6 +14,7 @@ public class CustomUserDetails implements UserDetails {
     private final UserEntity userEntity;
     private final UserAuthEntity userAuthEntity;
 
+    // 로그인(UserDetailsService 용)
     public CustomUserDetails(UserEntity userEntity, UserAuthEntity userAuthEntity) {
         this.userEntity = userEntity;
         this.userAuthEntity = userAuthEntity;
