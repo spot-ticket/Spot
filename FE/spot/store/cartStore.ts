@@ -4,18 +4,23 @@ import type { Menu, MenuOption, CartItem, Cart } from '@/types';
 
 interface CartState {
   cart: Cart | null;
+  hasHydrated: boolean;
   addItem: (storeId: string, storeName: string, menu: Menu, quantity: number, options: MenuOption[]) => void;
   removeItem: (menuId: string) => void;
   updateQuantity: (menuId: string, quantity: number) => void;
   clearCart: () => void;
   getTotal: () => number;
   getItemCount: () => number;
+  setHasHydrated: (value: boolean) => void;
 }
 
 export const useCartStore = create<CartState>()(
   persist(
     (set, get) => ({
       cart: null,
+      hasHydrated: false,
+
+      setHasHydrated: (value) => set({ hasHydrated: value }),
 
       addItem: (storeId, storeName, menu, quantity, options) => {
         const { cart } = get();
@@ -114,6 +119,9 @@ export const useCartStore = create<CartState>()(
     }),
     {
       name: 'cart-storage',
+      onRehydrateStorage: () => (state) => {
+        state?.setHasHydrated(true);
+      },
     }
   )
 );

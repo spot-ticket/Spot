@@ -8,20 +8,20 @@ import { Button } from '@/components/ui/Button';
 
 export default function MyPage() {
   const router = useRouter();
-  const { user, isAuthenticated, logout } = useAuthStore();
+  const { user, isAuthenticated, hasHydrated, logout } = useAuthStore();
 
   useEffect(() => {
-    if (!isAuthenticated) {
+    if (hasHydrated && !isAuthenticated) {
       router.push('/login');
     }
-  }, [isAuthenticated, router]);
+  }, [hasHydrated, isAuthenticated, router]);
 
   const handleLogout = () => {
     logout();
     router.push('/');
   };
 
-  if (!user) {
+  if (!hasHydrated || !user) {
     return null;
   }
 

@@ -1,5 +1,5 @@
 import api from './api';
-import type { ApiResponse, Store, Category } from '@/types';
+import type { Store, Category } from '@/types';
 
 interface PageResponse<T> {
   content: T[];
@@ -20,8 +20,8 @@ export const storeApi = {
 
   // 가게 상세 조회
   getStore: async (storeId: string): Promise<Store> => {
-    const response = await api.get<ApiResponse<Store>>(`/api/stores/${storeId}`);
-    return response.data.result;
+    const response = await api.get<Store>(`/api/stores/${storeId}`);
+    return response.data;
   },
 
   // 가게 검색
@@ -34,23 +34,24 @@ export const storeApi = {
 
   // 카테고리 목록 조회
   getCategories: async (): Promise<Category[]> => {
-    const response = await api.get<ApiResponse<Category[]>>('/api/categories');
-    return response.data.result;
+    const response = await api.get<Category[]>('/api/categories');
+    return response.data;
   },
 
   // 카테고리별 가게 조회
-  getStoresByCategory: async (
-    categoryName: string,
-    page = 0,
-    size = 20
-  ): Promise<PageResponse<Store>> => {
-    const response = await api.get<PageResponse<Store>>(
-      `/api/categories/${categoryName}/stores`,
-      {
-        params: { page, size },
-      }
+  getStoresByCategory: async (categoryName: string): Promise<PageResponse<Store>> => {
+    const response = await api.get<Store[]>(
+      `/api/categories/${categoryName}/stores`
     );
-    return response.data;
+    // 백엔드가 List로 반환하므로 PageResponse 형태로 변환
+    const stores = response.data;
+    return {
+      content: stores,
+      totalPages: 1,
+      totalElements: stores.length,
+      size: stores.length,
+      number: 0,
+    };
   },
 };
 

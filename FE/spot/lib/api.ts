@@ -20,11 +20,24 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// 401 에러 시 로그인 리다이렉트를 하지 않을 경로들
+const publicPaths = ['/api/stores', '/api/categories', '/api/menus'];
+
+const isPublicPath = (url: string | undefined): boolean => {
+  if (!url) return false;
+  return publicPaths.some((path) => url.startsWith(path));
+};
+
 // 응답 인터셉터 - 토큰 만료 처리
 api.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+
+    // 공개 경로는 401 에러가 발생해도 로그인 리다이렉트 하지 않음
+    if (error.response?.status === 401 && isPublicPath(originalRequest.url)) {
+      return Promise.reject(error);
+    }
 
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;

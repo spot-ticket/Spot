@@ -8,8 +8,10 @@ import { useCartStore } from '@/store/cartStore';
 
 export function Header() {
   const router = useRouter();
-  const { user, isAuthenticated, logout } = useAuthStore();
-  const itemCount = useCartStore((state) => state.getItemCount());
+  const { user, isAuthenticated, hasHydrated: authHydrated, logout } = useAuthStore();
+  const { getItemCount, hasHydrated: cartHydrated } = useCartStore();
+  const itemCount = getItemCount();
+  const hasHydrated = authHydrated && cartHydrated;
 
   const handleLogout = () => {
     logout();
@@ -58,24 +60,28 @@ export function Header() {
 
           {/* 우측 메뉴 */}
           <div className="flex items-center space-x-4">
-            {/* 장바구니 */}
-            <Link href="/cart" className="relative p-2 text-gray-600 hover:text-orange-500">
-              <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
-                />
-              </svg>
-              {itemCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
-                  {itemCount}
-                </span>
-              )}
-            </Link>
+            {/* 장바구니 - 로그인한 사용자만 표시 */}
+            {hasHydrated && isAuthenticated && (
+              <Link href="/cart" className="relative p-2 text-gray-600 hover:text-orange-500">
+                <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"
+                  />
+                </svg>
+                {itemCount > 0 && (
+                  <span className="absolute -top-1 -right-1 bg-orange-500 text-white text-xs font-bold rounded-full h-5 w-5 flex items-center justify-center">
+                    {itemCount}
+                  </span>
+                )}
+              </Link>
+            )}
 
-            {isAuthenticated && user ? (
+            {!hasHydrated ? (
+              <div className="w-24 h-8" />
+            ) : isAuthenticated && user ? (
               <div className="flex items-center space-x-4">
                 <Link
                   href="/orders"

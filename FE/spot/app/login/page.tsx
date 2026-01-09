@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
@@ -9,7 +8,6 @@ import { authApi } from '@/lib/auth';
 import { useAuthStore } from '@/store/authStore';
 
 export default function LoginPage() {
-  const router = useRouter();
   const { setUser } = useAuthStore();
   const [formData, setFormData] = useState({
     username: '',
@@ -32,16 +30,35 @@ export default function LoginPage() {
     try {
       const response = await authApi.login(formData);
 
-      console.log(response);
+      console.log('로그인 응답:', response);
       // 토큰에서 사용자 정보 파싱
       const tokenInfo = authApi.parseToken(response.accessToken);
+      console.log('토큰 정보:', tokenInfo);
 
       if (tokenInfo) {
-        const user = await authApi.getMe(tokenInfo.userId);
-        setUser(user);
+        try {
+          const user = await authApi.getMe(tokenInfo.userId);
+          console.log('사용자 정보:', user);
+          setUser(user);
+        } catch (userError) {
+          console.error('사용자 정보 조회 실패:', userError);
+          // getMe 실패해도 기본 사용자 정보로 인증 상태 유지
+          setUser({
+            id: tokenInfo.userId,
+            username: formData.username,
+            role: tokenInfo.role as 'CUSTOMER' | 'OWNER' | 'CHEF' | 'MANAGER' | 'MASTER',
+            nickname: formData.username,
+            email: '',
+            roadAddress: '',
+            addressDetail: '',
+            age: 0,
+            male: true,
+          });
+        }
       }
 
-      router.push('/');
+      // 상태가 localStorage에 저장된 후 페이지 이동 (새로고침으로 hydration 보장)
+      window.location.href = '/';
     } catch (err) {
       console.error('Login error:', err);
       setError('아이디 또는 비밀번호가 올바르지 않습니다.');
