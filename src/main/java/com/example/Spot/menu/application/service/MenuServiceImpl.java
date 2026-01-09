@@ -69,7 +69,7 @@ public class MenuServiceImpl implements MenuService {
         validateOwner(store, user, "본인 가게의 메뉴만 조회할 수 있습니다.");
 
         List<MenuEntity> menus;
-        boolean isAdmin = user.getRole() == Role.MANAGER || user.getRole() == Role.MASTER;
+        boolean isAdmin = user.getRole() == Role.OWNER || user.getRole() == Role.MANAGER || user.getRole() == Role.MASTER;
 
         // 관리자(마스터, 매니저, 오너)인지 아닌지 판단
         if (isAdmin) {
