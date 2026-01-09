@@ -3,6 +3,7 @@ package com.example.Spot.infra.auth.security;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import com.example.Spot.user.domain.Role;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
@@ -81,5 +82,9 @@ public class CustomUserDetails implements UserDetails {
 
     public Integer getUserId() {
         return userEntity.getId();
+    }
+
+    public Role getUserRole(){
+        return userEntity.getRole();
     }
 }
