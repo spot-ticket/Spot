@@ -21,6 +21,17 @@ spring:
   jwt:
     secret: test-jwt-secret-key-for-testing-purposes-must-be-at-least-256-bits-long
 
+toss:
+  payments:
+    secret-key: test_sk_dummy_key_for_testing
+    base-url: https://api.tosspayments.com
+    billingKey: test_billing_key_for_testing
+    customerKey: test_customer_key_for_testing
+    timeout: 30000
+
+service:
+  active-regions: 서울,경기,인천
+
 logging:
   level:
     org.hibernate.SQL: DEBUG

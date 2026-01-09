@@ -13,11 +13,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Spot.global.presentation.ApiResponse;
 import com.example.Spot.global.presentation.code.GeneralSuccessCode;
-import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.payments.application.service.PaymentService;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
 import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.domain.entity.UserEntity;
+import com.example.Spot.user.domain.repository.UserRepository;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,15 +29,16 @@ import lombok.RequiredArgsConstructor;
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final UserRepository userReposity;
 
     @PostMapping("/{order_id}/confirm")
     @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
     public ApiResponse<PaymentResponseDto.Confirm> confirmPayment(
             @PathVariable("order_id") UUID orderId,
             @Valid @RequestBody PaymentRequestDto.Confirm request,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+            @AuthenticationPrincipal Integer userId) {
 
-        validateAccessByRole(userDetails, orderId, null);
+        validateAccessByRole(userId, orderId, null);
 
         UUID paymentId = paymentService.preparePayment(request);
         PaymentResponseDto.Confirm response = paymentService.executePaymentBilling(paymentId);
@@ -48,9 +50,9 @@ public class PaymentController {
     public ApiResponse<PaymentResponseDto.Cancel> cancelPayment(
             @PathVariable("order_id") UUID orderId,
             @Valid @RequestBody PaymentRequestDto.Cancel request,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+            @AuthenticationPrincipal Integer userId) {
 
-        validateAccessByRole(userDetails, orderId, null);
+        validateAccessByRole(userId, orderId, null);
 
         PaymentResponseDto.Cancel response = paymentService.executeCancel(request);
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
@@ -67,9 +69,9 @@ public class PaymentController {
     @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
     public ApiResponse<PaymentResponseDto.PaymentDetail> getDetailPayment(
             @PathVariable UUID paymentId,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+            @AuthenticationPrincipal Integer userId) {
 
-        validateAccessByRole(userDetails, null, paymentId);
+        validateAccessByRole(userId, null, paymentId);
 
         PaymentResponseDto.PaymentDetail response = paymentService.getDetailPayment(paymentId);
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
@@ -86,17 +88,18 @@ public class PaymentController {
     @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
     public ApiResponse<PaymentResponseDto.CancelList> getDetailPaymentCancel(
             @PathVariable UUID paymentId,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
+            @AuthenticationPrincipal Integer userId) {
 
-        validateAccessByRole(userDetails, null, paymentId);
+        validateAccessByRole(userId, null, paymentId);
 
         PaymentResponseDto.CancelList response = paymentService.getDetailPaymentCancel(paymentId);
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
     }
 
-    private void validateAccessByRole(CustomUserDetails userDetails, UUID orderId, UUID paymentId) {
-        Role role = userDetails.getUserEntity().getRole();
-        Integer userId = userDetails.getUserId();
+    private void validateAccessByRole(Integer userId, UUID orderId, UUID paymentId) {
+        UserEntity user = userReposity.findById(userId)
+            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다. id: " + userId));
+        Role role = user.getRole();
 
         switch (role) {
             case CUSTOMER -> {

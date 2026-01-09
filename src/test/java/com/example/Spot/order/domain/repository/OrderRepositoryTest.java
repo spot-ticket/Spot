@@ -10,10 +10,12 @@ import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager;
-import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
+import org.springframework.context.annotation.Import;
 
+import com.example.Spot.config.TestConfig;
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.example.Spot.order.domain.entity.OrderEntity;
@@ -22,7 +24,8 @@ import com.example.Spot.order.domain.entity.OrderItemOptionEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
 
 @DataJpaTest
-@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.ANY)
+@AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
+@Import(TestConfig.class)
 public class OrderRepositoryTest {
 
     @Autowired
@@ -36,7 +39,11 @@ public class OrderRepositoryTest {
 
     @BeforeEach
     void setUp() {
-        store = StoreEntity.builder().name("TestStore").roadAddress("TestAddr").build();
+        store = StoreEntity.builder()
+                .name("TestStore")
+                .roadAddress("TestAddr")
+                .addressDetail("TestDetail")
+                .build();
         em.persist(store);
 
         menu = MenuEntity.builder()
@@ -188,8 +195,6 @@ public class OrderRepositoryTest {
 
     @Test
     void 오늘의_활성_주문을_조회하면_오늘_수락된_진행중인_주문만_수락시간순으로_반환된다() {
-        LocalDateTime today = LocalDateTime.now();
-        LocalDateTime yesterday = today.minusDays(1);
         LocalDateTime startOfDay = LocalDateTime.of(LocalDate.now(), LocalTime.MIN);
         LocalDateTime endOfDay = LocalDateTime.of(LocalDate.now().plusDays(1), LocalTime.MIN);
         
