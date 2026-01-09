@@ -3,6 +3,9 @@ import java.util.List;
 import java.util.UUID;
 
 import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,7 +20,6 @@ import com.example.Spot.menu.presentation.dto.response.MenuOptionResponseDto;
 import com.example.Spot.menu.presentation.dto.response.UpdateMenuOptionResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.user.domain.Role;
-import com.example.Spot.user.domain.entity.UserEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -50,14 +52,14 @@ public class MenuOptionServiceImpl implements MenuOptionService {
 
     // 메뉴 옵션 생성
     @Transactional
-    public CreateMenuOptionResponseDto createMenuOption(UserEntity user, UUID storeId, UUID menuId, CreateMenuOptionRequestDto request) {
+    public CreateMenuOptionResponseDto createMenuOption(Integer userId, UUID storeId, UUID menuId, CreateMenuOptionRequestDto request) {
         MenuEntity menu = menuRepository.findActiveMenuById(menuId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메뉴가 존재하지 않습니다."));
 
         // URL의 storeId와 실제 메뉴의 storeId가 같은지 검증
         validateMenuBelongsToStore(menu.getStore(), storeId);
 
-        validatePermission(menu.getStore(), user);
+        validatePermissionByUserId(menu.getStore(), userId);
 
         MenuOptionEntity option = request.toEntity(menu);
 
@@ -68,7 +70,7 @@ public class MenuOptionServiceImpl implements MenuOptionService {
 
     // 메뉴 옵션 업데이트
     @Transactional
-    public UpdateMenuOptionResponseDto updateMenuOption(UserEntity user, UUID storeId, UUID menuId, UUID optionId, UpdateMenuOptionRequestDto request) {
+    public UpdateMenuOptionResponseDto updateMenuOption(Integer userId, UUID storeId, UUID menuId, UUID optionId, UpdateMenuOptionRequestDto request) {
         MenuOptionEntity option = menuOptionRepository.findById(optionId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 옵션이 존재하지 않습니다."));
 
@@ -87,7 +89,7 @@ public class MenuOptionServiceImpl implements MenuOptionService {
         validateMenuBelongsToStore(store, storeId);
 
         // 권한 검증
-        validatePermission(store, user);
+        validatePermissionByUserId(store, userId);
 
         // 업데이트 (Dirty Checking)
         option.updateOption(request.getName(), request.getPrice(), request.getDetail());
@@ -101,7 +103,7 @@ public class MenuOptionServiceImpl implements MenuOptionService {
 
     // 메뉴 옵션 삭제
     @Transactional
-    public void deleteMenuOption (UserEntity user, UUID storeId, UUID menuId, UUID optionId) {
+    public void deleteMenuOption(Integer userId, UUID storeId, UUID menuId, UUID optionId) {
         MenuOptionEntity option = menuOptionRepository.findById(optionId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 옵션이 존재하지 않습니다."));
 
@@ -120,12 +122,22 @@ public class MenuOptionServiceImpl implements MenuOptionService {
         validateMenuBelongsToStore(store, storeId);
 
         // 권한 검증
-        validatePermission(store, user);
+        validatePermissionByUserId(store, userId);
 
-        option.softDelete(user.getId());
+        option.softDelete(userId);
     }
 
-    // Helper
+    // Helper - SecurityContextHolder에서 Role 가져오기
+    private Role getCurrentRole() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getAuthorities().stream()
+                .map(GrantedAuthority::getAuthority)
+                .filter(auth -> auth.startsWith("ROLE_"))
+                .map(auth -> Role.valueOf(auth.substring(5)))
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("역할 정보를 찾을 수 없습니다."));
+    }
+
     // 메뉴가 요청된 가게에 소속되어 있는지 확인
     private void validateMenuBelongsToStore(StoreEntity menuStore, UUID requestStoreId) {
         if (!menuStore.getId().equals(requestStoreId)) {
@@ -133,16 +145,18 @@ public class MenuOptionServiceImpl implements MenuOptionService {
         }
     }
 
-    private void validatePermission(StoreEntity store, UserEntity user) {
-        // 1. 관리자(MASTER)는 무조건 통과
-        if (user.getRole() == Role.MASTER || user.getRole() == Role.MANAGER) {
+    private void validatePermissionByUserId(StoreEntity store, Integer userId) {
+        Role role = getCurrentRole();
+
+        // 1. 관리자(MASTER, MANAGER)는 무조건 통과
+        if (role == Role.MASTER || role == Role.MANAGER) {
             return;
         }
 
         // 2. 사장님(OWNER)인 경우
-        if (user.getRole() == Role.OWNER) {
+        if (role == Role.OWNER) {
             boolean isMyStore = store.getUsers().stream()
-                    .anyMatch(storeUser -> storeUser.getUser().getId().equals(user.getId()));
+                    .anyMatch(storeUser -> storeUser.getUser().getId().equals(userId));
 
             if (!isMyStore) {
                 throw new AccessDeniedException("해당 가게에 대한 수정 권한이 없습니다.");

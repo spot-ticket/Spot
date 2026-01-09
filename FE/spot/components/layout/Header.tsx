@@ -24,7 +24,7 @@ export function Header() {
         <div className="flex items-center justify-between h-16">
           {/* 로고 */}
           <Link href="/" className="flex items-center">
-            <span className="text-2xl font-bold text-orange-500">HERE</span>
+            <span className="text-2xl font-bold text-orange-500">SPOT</span>
             <span className="ml-2 text-sm text-gray-500">픽업 주문</span>
           </Link>
 

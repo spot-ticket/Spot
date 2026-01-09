@@ -11,7 +11,7 @@ export function Footer() {
           {/* 로고 및 설명 */}
           <div className="col-span-1 md:col-span-2">
             <Link href="/" className="text-2xl font-bold text-orange-500">
-              HERE
+              SPOT
             </Link>
             <p className="mt-4 text-sm">
               빠르고 편리한 음식 픽업 서비스

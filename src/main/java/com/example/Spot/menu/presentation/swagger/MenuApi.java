@@ -8,7 +8,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.example.Spot.global.presentation.ApiResponse;
-import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.menu.presentation.dto.request.CreateMenuRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuHiddenRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuRequestDto;
@@ -32,7 +31,7 @@ public interface MenuApi {
     })
     ApiResponse<List<? extends MenuResponseDto>> getMenus(
             @Parameter(description = "매장 ID") @PathVariable UUID storeId,
-            @AuthenticationPrincipal CustomUserDetails user);
+            @AuthenticationPrincipal Integer userId);
 
     @Operation(summary = "메뉴 상세 조회", description = "특정 메뉴의 상세 정보를 조회합니다.")
     @ApiResponses({
@@ -51,7 +50,7 @@ public interface MenuApi {
     ApiResponse<CreateMenuResponseDto> createMenu(
             @Parameter(description = "매장 ID") @PathVariable UUID storeId,
             @RequestBody CreateMenuRequestDto request,
-            @AuthenticationPrincipal CustomUserDetails user);
+            @AuthenticationPrincipal Integer userId);
 
     @Operation(summary = "메뉴 수정", description = "메뉴 정보를 수정합니다.")
     @ApiResponses({
@@ -62,7 +61,7 @@ public interface MenuApi {
     ApiResponse<UpdateMenuResponseDto> updateMenu(
             @Parameter(description = "메뉴 ID") @PathVariable UUID menuId,
             @RequestBody UpdateMenuRequestDto request,
-            @AuthenticationPrincipal CustomUserDetails user);
+            @AuthenticationPrincipal Integer userId);
 
     @Operation(summary = "메뉴 삭제", description = "메뉴를 삭제합니다.")
     @ApiResponses({
@@ -72,7 +71,7 @@ public interface MenuApi {
     })
     ApiResponse<String> deleteMenu(
             @Parameter(description = "메뉴 ID") @PathVariable UUID menuId,
-            @AuthenticationPrincipal CustomUserDetails user);
+            @AuthenticationPrincipal Integer userId);
 
     @Operation(summary = "메뉴 숨김 처리", description = "메뉴를 숨김/숨김 해제 처리합니다.")
     @ApiResponses({
@@ -83,5 +82,5 @@ public interface MenuApi {
     ApiResponse<String> hiddenMenu(
             @Parameter(description = "메뉴 ID") @PathVariable UUID menuId,
             @RequestBody UpdateMenuHiddenRequestDto request,
-            @AuthenticationPrincipal CustomUserDetails user);
+            @AuthenticationPrincipal Integer userId);
 }

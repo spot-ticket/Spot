@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.Spot.global.presentation.ApiResponse;
-import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.presentation.dto.request.OrderCancelRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
@@ -36,14 +35,14 @@ public interface CustomerOrderApi {
     })
     ResponseEntity<ApiResponse<OrderResponseDto>> createOrder(
             @Valid @RequestBody OrderCreateRequestDto requestDto,
-            @AuthenticationPrincipal CustomUserDetails userDetails);
+            @AuthenticationPrincipal Integer userId);
 
     @Operation(summary = "내 주문 목록 조회", description = "본인의 주문 목록을 페이지네이션으로 조회합니다.")
     @ApiResponses({
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공")
     })
     ResponseEntity<ApiResponse<Page<OrderResponseDto>>> getMyOrders(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @AuthenticationPrincipal Integer userId,
             @Parameter(description = "매장 ID (필터)") @RequestParam(required = false) UUID storeId,
             @Parameter(description = "날짜 (필터)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @Parameter(description = "주문 상태 (필터)") @RequestParam(required = false) OrderStatus status,
@@ -57,7 +56,7 @@ public interface CustomerOrderApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공")
     })
     ResponseEntity<ApiResponse<List<OrderResponseDto>>> getMyActiveOrders(
-            @AuthenticationPrincipal CustomUserDetails userDetails);
+            @AuthenticationPrincipal Integer userId);
 
     @Operation(summary = "주문 취소 (고객)", description = "고객이 본인의 주문을 취소합니다.")
     @ApiResponses({

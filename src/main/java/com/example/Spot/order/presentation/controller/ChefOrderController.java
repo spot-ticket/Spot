@@ -13,7 +13,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Spot.global.presentation.ApiResponse;
-import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.order.application.service.OrderService;
 import com.example.Spot.order.presentation.code.OrderSuccessCode;
 import com.example.Spot.order.presentation.dto.response.OrderResponseDto;
@@ -30,11 +29,10 @@ public class ChefOrderController {
 
     @GetMapping("/chef/today")
     public ResponseEntity<ApiResponse<List<OrderResponseDto>>> getChefTodayOrders(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        
-        Integer userId = userDetails.getUserId();
+            @AuthenticationPrincipal Integer userId) {
+
         List<OrderResponseDto> response = orderService.getChefTodayOrders(userId);
-        
+
         return ResponseEntity
                 .status(OrderSuccessCode.ORDER_LIST_FOUND.getStatus())
                 .body(ApiResponse.onSuccess(OrderSuccessCode.ORDER_LIST_FOUND, response));
@@ -43,7 +41,7 @@ public class ChefOrderController {
     @PatchMapping("/{orderId}/start-cooking")
     public ResponseEntity<ApiResponse<OrderResponseDto>> startCooking(@PathVariable UUID orderId) {
         OrderResponseDto response = orderService.startCooking(orderId);
-        
+
         return ResponseEntity
                 .status(OrderSuccessCode.ORDER_COOKING_STARTED.getStatus())
                 .body(ApiResponse.onSuccess(OrderSuccessCode.ORDER_COOKING_STARTED, response));
@@ -52,10 +50,9 @@ public class ChefOrderController {
     @PatchMapping("/{orderId}/ready")
     public ResponseEntity<ApiResponse<OrderResponseDto>> readyForPickup(@PathVariable UUID orderId) {
         OrderResponseDto response = orderService.readyForPickup(orderId);
-        
+
         return ResponseEntity
                 .status(OrderSuccessCode.ORDER_READY.getStatus())
                 .body(ApiResponse.onSuccess(OrderSuccessCode.ORDER_READY, response));
     }
 }
-

@@ -23,7 +23,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Spot.global.presentation.ApiResponse;
-import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.order.application.service.OrderService;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.presentation.code.OrderSuccessCode;
@@ -47,11 +46,10 @@ public class CustomerOrderController implements CustomerOrderApi {
     @PostMapping
     public ResponseEntity<ApiResponse<OrderResponseDto>> createOrder(
             @Valid @RequestBody OrderCreateRequestDto requestDto,
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        
-        Integer userId = userDetails.getUserId();
+            @AuthenticationPrincipal Integer userId) {
+
         OrderResponseDto response = orderService.createOrder(requestDto, userId);
-        
+
         return ResponseEntity
                 .status(OrderSuccessCode.ORDER_CREATED.getStatus())
                 .body(ApiResponse.onSuccess(OrderSuccessCode.ORDER_CREATED, response));
@@ -59,7 +57,7 @@ public class CustomerOrderController implements CustomerOrderApi {
 
     @GetMapping("/my")
     public ResponseEntity<ApiResponse<Page<OrderResponseDto>>> getMyOrders(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @AuthenticationPrincipal Integer userId,
             @RequestParam(required = false) UUID storeId,
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @RequestParam(required = false) OrderStatus status,
@@ -68,7 +66,6 @@ public class CustomerOrderController implements CustomerOrderApi {
             @RequestParam(defaultValue = "createdAt") String sortBy,
             @RequestParam(defaultValue = "DESC") Sort.Direction direction) {
 
-        Integer userId = userDetails.getUserId();
         LocalDateTime dateTime = date != null ? date.atStartOfDay() : null;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
@@ -82,11 +79,10 @@ public class CustomerOrderController implements CustomerOrderApi {
 
     @GetMapping("/my/active")
     public ResponseEntity<ApiResponse<List<OrderResponseDto>>> getMyActiveOrders(
-            @AuthenticationPrincipal CustomUserDetails userDetails) {
-        
-        Integer userId = userDetails.getUserId();
+            @AuthenticationPrincipal Integer userId) {
+
         List<OrderResponseDto> response = orderService.getUserActiveOrders(userId);
-        
+
         return ResponseEntity
                 .status(OrderSuccessCode.ORDER_LIST_FOUND.getStatus())
                 .body(ApiResponse.onSuccess(OrderSuccessCode.ORDER_LIST_FOUND, response));
@@ -96,12 +92,11 @@ public class CustomerOrderController implements CustomerOrderApi {
     public ResponseEntity<ApiResponse<OrderResponseDto>> customerCancelOrder(
             @PathVariable UUID orderId,
             @Valid @RequestBody OrderCancelRequestDto requestDto) {
-        
+
         OrderResponseDto response = orderService.customerCancelOrder(orderId, requestDto.getReason());
-        
+
         return ResponseEntity
                 .status(OrderSuccessCode.ORDER_CANCELLED.getStatus())
                 .body(ApiResponse.onSuccess(OrderSuccessCode.ORDER_CANCELLED, response));
     }
 }
-

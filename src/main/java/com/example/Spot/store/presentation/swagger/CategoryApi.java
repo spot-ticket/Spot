@@ -7,7 +7,6 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
-import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.store.presentation.dto.request.CategoryRequestDTO;
 import com.example.Spot.store.presentation.dto.response.CategoryResponseDTO;
 
@@ -62,5 +61,5 @@ public interface CategoryApi {
     })
     void delete(
             @Parameter(description = "카테고리 ID") @PathVariable UUID categoryId,
-            @AuthenticationPrincipal CustomUserDetails principal);
+            @AuthenticationPrincipal Integer userId);
 }

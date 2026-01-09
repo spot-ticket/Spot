@@ -61,6 +61,7 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
         CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
         Integer userId = principal.getUserId();
 
+
         String authority = authentication.getAuthorities().iterator().next().getAuthority();
         Role role = Role.valueOf(authority.replace("ROLE_", ""));
 

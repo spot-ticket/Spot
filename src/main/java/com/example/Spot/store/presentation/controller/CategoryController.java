@@ -15,12 +15,10 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.store.application.service.CategoryService;
 import com.example.Spot.store.presentation.dto.request.CategoryRequestDTO;
 import com.example.Spot.store.presentation.dto.response.CategoryResponseDTO;
 import com.example.Spot.store.presentation.swagger.CategoryApi;
-import com.example.Spot.user.domain.entity.UserEntity;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -67,8 +65,7 @@ public class CategoryController implements CategoryApi {
     @PreAuthorize("hasAnyRole('MASTER','MANAGER')")
     @DeleteMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID categoryId, @AuthenticationPrincipal CustomUserDetails principal) {
-        UserEntity user = principal.getUserEntity();
-        categoryService.delete(categoryId, user);
+    public void delete(@PathVariable UUID categoryId, @AuthenticationPrincipal Integer userId) {
+        categoryService.delete(categoryId, userId);
     }
 }

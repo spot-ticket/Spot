@@ -14,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.Spot.global.presentation.ApiResponse;
-import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.presentation.dto.request.OrderAcceptRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderCancelRequestDto;
@@ -35,7 +34,7 @@ public interface OwnerOrderApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공")
     })
     ResponseEntity<ApiResponse<Page<OrderResponseDto>>> getMyStoreOrders(
-            @AuthenticationPrincipal CustomUserDetails userDetails,
+            @AuthenticationPrincipal Integer userId,
             @Parameter(description = "고객 ID (필터)") @RequestParam(required = false) Integer customerId,
             @Parameter(description = "날짜 (필터)") @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date,
             @Parameter(description = "주문 상태 (필터)") @RequestParam(required = false) OrderStatus status,
@@ -49,7 +48,7 @@ public interface OwnerOrderApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "200", description = "조회 성공")
     })
     ResponseEntity<ApiResponse<List<OrderResponseDto>>> getMyStoreActiveOrders(
-            @AuthenticationPrincipal CustomUserDetails userDetails);
+            @AuthenticationPrincipal Integer userId);
 
     @Operation(summary = "주문 수락", description = "주문을 수락하고 예상 준비 시간을 설정합니다.")
     @ApiResponses({

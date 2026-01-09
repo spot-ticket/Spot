@@ -51,7 +51,7 @@ public class PaymentController {
             @PathVariable("order_id") UUID orderId,
             @Valid @RequestBody PaymentRequestDto.Cancel request,
             @AuthenticationPrincipal Integer userId) {
-
+        
         validateAccessByRole(userId, orderId, null);
 
         PaymentResponseDto.Cancel response = paymentService.executeCancel(request);

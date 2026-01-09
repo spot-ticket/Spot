@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 import com.example.Spot.global.presentation.ApiResponse;
-import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
 
@@ -29,7 +28,7 @@ public interface PaymentApi {
     ApiResponse<PaymentResponseDto.Confirm> confirmPayment(
             @Parameter(description = "주문 ID") @PathVariable("order_id") UUID orderId,
             @Valid @RequestBody PaymentRequestDto.Confirm request,
-            @AuthenticationPrincipal CustomUserDetails userDetails);
+            @AuthenticationPrincipal Integer userId);
 
     @Operation(summary = "결제 취소", description = "결제를 취소합니다.")
     @ApiResponses({
@@ -40,7 +39,7 @@ public interface PaymentApi {
     ApiResponse<PaymentResponseDto.Cancel> cancelPayment(
             @Parameter(description = "주문 ID") @PathVariable("order_id") UUID orderId,
             @Valid @RequestBody PaymentRequestDto.Cancel request,
-            @AuthenticationPrincipal CustomUserDetails userDetails);
+            @AuthenticationPrincipal Integer userId);
 
     @Operation(summary = "결제 목록 조회", description = "모든 결제 목록을 조회합니다. (관리자 전용)")
     @ApiResponses({
@@ -57,7 +56,7 @@ public interface PaymentApi {
     })
     ApiResponse<PaymentResponseDto.PaymentDetail> getDetailPayment(
             @Parameter(description = "결제 ID") @PathVariable UUID paymentId,
-            @AuthenticationPrincipal CustomUserDetails userDetails);
+            @AuthenticationPrincipal Integer userId);
 
     @Operation(summary = "취소 목록 조회", description = "모든 결제 취소 목록을 조회합니다. (관리자 전용)")
     @ApiResponses({
@@ -74,5 +73,5 @@ public interface PaymentApi {
     })
     ApiResponse<PaymentResponseDto.CancelList> getDetailPaymentCancel(
             @Parameter(description = "결제 ID") @PathVariable UUID paymentId,
-            @AuthenticationPrincipal CustomUserDetails userDetails);
+            @AuthenticationPrincipal Integer userId);
 }
