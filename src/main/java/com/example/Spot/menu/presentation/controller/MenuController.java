@@ -3,6 +3,7 @@ package com.example.Spot.menu.presentation.controller;
 import java.util.List;
 import java.util.UUID;
 
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -25,11 +26,9 @@ import com.example.Spot.menu.presentation.dto.response.CreateMenuResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuResponseDto;
 import com.example.Spot.menu.presentation.dto.response.UpdateMenuResponseDto;
 import com.example.Spot.user.application.service.UserService;
-import com.example.Spot.user.domain.entity.UserEntity;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
 
 @RestController
 @RequestMapping("/api/stores/{storeId}/menus")
@@ -43,10 +42,9 @@ public class MenuController {
     @GetMapping
     public ApiResponse<List<? extends MenuResponseDto>> getMenus(
             @PathVariable UUID storeId,
-            @AuthenticationPrincipal CustomUserDetails principal
+            @AuthenticationPrincipal Integer userId
     ) {
 
-        Integer userId = principal.getUserId();
         List<? extends MenuResponseDto> data = menuService.getMenus(storeId, userId);
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
     }
@@ -56,10 +54,8 @@ public class MenuController {
     public ApiResponse<MenuResponseDto> getMenuDetail(
             @PathVariable UUID storeId,
             @PathVariable UUID menuId,
-            @AuthenticationPrincipal CustomUserDetails principal
+            @AuthenticationPrincipal Integer userId
     ) {
-
-        Integer userId = principal.getUserId();
         MenuResponseDto response = menuService.getMenuDetail(storeId, menuId, userId);
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
     }
@@ -70,10 +66,9 @@ public class MenuController {
     public ApiResponse<CreateMenuResponseDto> createMenu(
             @PathVariable UUID storeId,
             @Valid @RequestBody CreateMenuRequestDto request,
-            @AuthenticationPrincipal CustomUserDetails principal
+            @AuthenticationPrincipal Integer userId
     ) {
 
-        Integer userId = principal.getUserId();
         CreateMenuResponseDto data = menuService.createMenu(storeId, request, userId);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
@@ -86,10 +81,8 @@ public class MenuController {
             @PathVariable UUID storeId,
             @PathVariable UUID menuId,
             @Valid @RequestBody UpdateMenuRequestDto request,
-            @AuthenticationPrincipal CustomUserDetails principal
+            @AuthenticationPrincipal Integer userId
     ) {
-
-        Integer userId = principal.getUserId();
         UpdateMenuResponseDto data = menuService.updateMenu(storeId, menuId, request, userId);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
@@ -101,10 +94,9 @@ public class MenuController {
     @DeleteMapping("/{menuId}")
     public ApiResponse<String> deleteMenu(
             @PathVariable UUID menuId,
-            @AuthenticationPrincipal CustomUserDetails principal
+            @AuthenticationPrincipal CustomUserDetails user
     ) {
-        UserEntity userEntity = principal.getUserEntity();
-        menuService.deleteMenu(menuId, userEntity);
+        menuService.deleteMenu(menuId, user.getUserEntity());
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, "메뉴가 삭제되었습니다.");
     }
@@ -115,10 +107,9 @@ public class MenuController {
     public ApiResponse<String> hiddenMenu(
             @PathVariable UUID menuId,
             @RequestBody UpdateMenuHiddenRequestDto request,
-            @AuthenticationPrincipal CustomUserDetails principal
+            @AuthenticationPrincipal CustomUserDetails user
     ) {
-        UserEntity userEntity = principal.getUserEntity();
-        menuService.hiddenMenu(menuId, request, userEntity);
+        menuService.hiddenMenu(menuId, request, user.getUserEntity());
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, "해당 메뉴를 숨김 처리하였습니다.");
     }
