@@ -20,6 +20,8 @@ import com.example.Spot.payments.application.service.PaymentService;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
 import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.domain.entity.UserEntity;
+import com.example.Spot.user.domain.repository.UserRepository;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class PaymentController {
 
     private final PaymentService paymentService;
+    private final UserRepository userReposity;
 
     @PostMapping("/{order_id}/confirm")
     @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
