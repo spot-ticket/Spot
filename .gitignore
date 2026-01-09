@@ -2,6 +2,8 @@ src/main/resources/application.yaml
 src/main/resources/application.yml
 src/main/resources/application-*.yml
 !src/main/resources/application-example.yml
+src/test/resources/application-*.yml
+src/test/resources/application.yml
 
 ### Gradle ###
 .gradle/
@@ -39,3 +41,9 @@ Thumbs.db
 ### Log files ###
 *.log
 logs/
+
+
+### infra ###
+infra/terraform/provider.tf
+infra/terraform/terraform.*
+infra/terraform/.terraform*

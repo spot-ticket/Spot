@@ -11,6 +11,8 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class MenuOptionResponseDto {
+
+    @JsonProperty("option_id")
     private UUID id;
 
     @JsonProperty("menu_id")

@@ -15,7 +15,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import com.example.Spot.infra.auth.jwt.JWTFilter;
 import com.example.Spot.infra.auth.jwt.JWTUtil;
 import com.example.Spot.infra.auth.jwt.LoginFilter;
-import com.example.Spot.user.application.service.TokenService;
 
 @Configuration
 @EnableWebSecurity
@@ -26,13 +25,12 @@ public class SecurityConfig {
     private final AuthenticationConfiguration authenticationConfiguration;
     //JWTUtil 주입
     private final JWTUtil jwtUtil;
-    // TokenService 주입
-    private final TokenService tokenService;
+//    // TokenService 주입
+//    private final TokenService tokenService;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil, TokenService tokenService) {
+    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
         this.authenticationConfiguration = authenticationConfiguration;
         this.jwtUtil = jwtUtil;
-        this.tokenService = tokenService;
     }
 
     //AuthenticationManager Bean 등록
@@ -51,6 +49,10 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
+        LoginFilter loginFilter =
+                new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil);
+        loginFilter.setFilterProcessesUrl("/api/login");
+
         // CSRF disable
         http
                 .csrf(auth -> auth.disable());
@@ -67,7 +69,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         // 누구나 접근 가능 (로그인, 회원가입, 토큰 갱신)
-                        .requestMatchers("/login", "/", "/join", "/auth/refresh").permitAll()
+                        .requestMatchers("/api/login", "/", "/api/join", "/auth/refresh", "/swagger-ui/*", "v3/api-docs", "/v3/api-docs/*").permitAll()
                         
                         // 관리자 전용
                         .requestMatchers("/admin").hasRole("ADMIN")
@@ -81,8 +83,10 @@ public class SecurityConfig {
         );
 
         //필터 추가 LoginFilter()는 인자를 받음 (AuthenticationManager() 메소드에 authenticationConfiguration 객체를 넣어야 함) 따라서 등록 필요
-        http
-                .addFilterAt(new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil, tokenService), UsernamePasswordAuthenticationFilter.class);
+        http.addFilterAt(
+                loginFilter,
+                UsernamePasswordAuthenticationFilter.class
+        );
 
         http
                 .sessionManagement(session -> session

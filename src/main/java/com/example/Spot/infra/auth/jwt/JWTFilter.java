@@ -1,5 +1,4 @@
 package com.example.Spot.infra.auth.jwt;
-
 import java.io.IOException;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -16,7 +15,13 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
+
+
 public class JWTFilter extends OncePerRequestFilter {
+    /*
+      JWT Filter: 토큰 검증 / 파싱 수행
+     */
+
     // jwtUtil을 주입받음
     private final JWTUtil jwtUtil;
 
@@ -26,39 +31,54 @@ public class JWTFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain) throws ServletException, IOException {
-
-        //request에서 Authorization 헤더를 찾음
+        // request에서 Authorization 헤더를 찾음
         String authorization = request.getHeader("Authorization");
 
-        //Authorization 헤더 검증
+        // Authorization 헤더 검증
         if (authorization == null || !authorization.startsWith("Bearer ")) {
 
             System.out.println("token null");
             filterChain.doFilter(request, response);
 
-            //조건이 해당되면 메소드 종료 (필수)
+            //조건이 해당 시 메소드 종료
             return;
         }
         System.out.println("authorization now");
 
-
-
         String token = authorization.substring(7);
 
-        //유효한 토큰만 통과
+
+        // 유효한 토큰만 통과
         try {
-            String username = jwtUtil.getUsername(token);
+            // refresh 토큰은 SecurityContext에 올리지 않음
+            if (jwtUtil.isExpired(token)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
+            String type = jwtUtil.getTokenType(token);
+            if (!"access".equals(type)) {
+
+                filterChain.doFilter(request, response);
+                return;
+            }
+
+            Integer userId = jwtUtil.getUserId(token);
             Role role = jwtUtil.getRole(token);
 
-            UserEntity userEntity = UserEntity.forAuthentication(username, role);
-            CustomUserDetails customUserDetails = new CustomUserDetails(userEntity);
+            // userId integer로 받아옴 -> cutomedtails으료 변경 시 삭제
+//            List<SimpleGrantedAuthority> authorities =
+//                    List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
+            // custom details로 변경
+            UserEntity userForAuth = UserEntity.forAuthentication(userId, role);
+            CustomUserDetails principal = new CustomUserDetails(userForAuth);
+
+            //debug
+            System.out.println("Authorities = " + principal.getAuthorities().stream()
+                    .map(org.springframework.security.core.GrantedAuthority::getAuthority)
+                    .toList());
 
             Authentication authToken =
-                    new UsernamePasswordAuthenticationToken(
-                            customUserDetails,
-                            null,
-                            customUserDetails.getAuthorities()
-                    );
+                    new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
 
             SecurityContextHolder.getContext().setAuthentication(authToken);
 
@@ -74,36 +94,6 @@ public class JWTFilter extends OncePerRequestFilter {
             response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
             return;
         }
-
-//        //Bearer 부분 제거 후 순수 토큰만 획득
-//        String token = authorization.split(" ")[1];
-//        //토큰 소멸 시간 검증
-//        if (jwtUtil.isExpired(token)) {
-//
-//            System.out.println("token expired");
-//            filterChain.doFilter(request, response);
-//
-//            //조건이 해당되면 메소드 종료 (필수)
-//            return;
-//        }
-//
-//        //토큰에서 username과 role 획득
-//        String username = jwtUtil.getUsername(token);
-//        Role role = jwtUtil.getRole(token);
-//
-//        //userEntity를 생성하여 값 set
-//        UserEntity userEntity = UserEntity.forAuthentication(username, role);
-//        userEntity.setUsername(username);
-//        userEntity.setRole(role);
-//
-//
-//        //UserDetails에 회원 정보 객체 담기
-//        CustomUserDetails customUserDetails = new CustomUserDetails(userEntity);
-//
-//        //스프링 시큐리티 인증 토큰 생성
-//        Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
-//        //세션에 사용자 등록
-//        SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
     }

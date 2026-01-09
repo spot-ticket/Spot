@@ -1,7 +1,5 @@
 package com.example.Spot.menu.presentation.dto.request;
 
-import java.util.UUID;
-
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -12,14 +10,9 @@ import jakarta.validation.constraints.NotNull;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
 @Getter
 @NoArgsConstructor
 public class CreateMenuRequestDto {
-
-    @NotNull(message = "가게 ID는 필수입니다.")
-    @JsonProperty("store_id")
-    private UUID storeId;
 
     @NotBlank(message = "메뉴명은 필수입니다.")
     private String name;

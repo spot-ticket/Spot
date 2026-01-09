@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -19,8 +21,8 @@ public interface StoreRepository extends JpaRepository<StoreEntity, UUID> {
             "LEFT JOIN FETCH s.storeCategoryMaps sc " +
             "LEFT JOIN FETCH sc.category " +
             "WHERE (:isAdmin = true OR s.isDeleted = false)")
-    List<StoreEntity> findAllByRole(@Param("isAdmin") boolean isAdmin);
-
+    Page<StoreEntity> findAllByRole(@Param("isAdmin") boolean isAdmin, Pageable pageable);
+    
     // 상세 조회: or을 통해 권한 혹은 소프트제거 여부에 따른 조회범위 설정
     @Query("SELECT s FROM StoreEntity s " +
             "LEFT JOIN FETCH s.storeCategoryMaps sc " +
@@ -32,7 +34,12 @@ public interface StoreRepository extends JpaRepository<StoreEntity, UUID> {
     Optional<StoreEntity> findByIdWithDetails(@Param("id") UUID id, @Param("isAdmin") boolean isAdmin);
 
     // 검색 기능
-    List<StoreEntity> findByNameContainingAndIsDeletedFalse(String name);
+    @Query("SELECT DISTINCT s FROM StoreEntity s " +
+            "LEFT JOIN FETCH s.storeCategoryMaps sc " +
+            "LEFT JOIN FETCH sc.category " +
+            "WHERE s.name LIKE %:keyword% " +
+            "AND (:isAdmin = true OR s.isDeleted = false)")
+    Page<StoreEntity> searchByName(@Param("keyword") String keyword, @Param("isAdmin") boolean isAdmin, Pageable pageable);
 
     // 특정 유저가 담당하는 매장 조회 (중간 테이블 Join)
     @Query("SELECT s FROM StoreEntity s " +

@@ -1,19 +1,20 @@
 package com.example.Spot.menu.presentation.dto.response;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
+import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
-
 @Getter
 @NoArgsConstructor
-public class MenuPublicResponseDto {
+public class MenuPublicResponseDto implements MenuResponseDto {
 
     @JsonProperty("menu_id")
     private UUID id;
@@ -32,24 +33,25 @@ public class MenuPublicResponseDto {
     @JsonProperty("is_available")
     private Boolean isAvailable;
 
-    @JsonProperty("is_hidden")
-    private Boolean isHidden;
-
     private List<MenuOptionResponseDto> options;
 
-    public MenuPublicResponseDto(MenuEntity menu) {
-        this.id = menu.getId();
-        this.storeId = menu.getStore().getId();
-        this.name = menu.getName();
-        this.category = menu.getCategory();
-        this.price = menu.getPrice();
-        this.description = menu.getDescription();
-        this.imageUrl = menu.getImageUrl();
-        this.isAvailable = menu.getIsAvailable();
-        this.isHidden = menu.getIsHidden();
-        this.options = menu.getOptions().stream()
-                .filter(opt -> !opt.getIsDeleted())
-                .map(MenuOptionResponseDto::new)
-                .collect(Collectors.toList());
+    public static MenuPublicResponseDto of(MenuEntity menu, List<MenuOptionEntity> options) {
+        MenuPublicResponseDto dto = new MenuPublicResponseDto();
+
+        dto.id = menu.getId();
+        dto.storeId = menu.getStore().getId();
+        dto.name = menu.getName();
+        dto.category = menu.getCategory();
+        dto.price = menu.getPrice();
+        dto.description = menu.getDescription();
+        dto.imageUrl = menu.getImageUrl();
+        dto.isAvailable = menu.getIsAvailable();
+
+        // [수정 포인트] options가 null이면 에러 대신 빈 리스트([]) 반환
+        dto.options = (options != null)
+                ? options.stream().map(MenuOptionResponseDto::new).collect(Collectors.toList())
+                : Collections.emptyList();
+
+        return dto;
     }
 }

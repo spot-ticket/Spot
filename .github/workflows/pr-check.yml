@@ -33,48 +33,18 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: gradle
+    
+    - name: Setup Gradle
+      uses: gradle/actions/setup-gradle@v3
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
-    - name: Create application.yml for testing
+    - name: Make application.properties
       run: |
-        cat > src/main/resources/application.yml << 'EOF'
-        spring:
-          application:
-            name: Spot
-          datasource:
-            url: jdbc:postgresql://localhost:5432/myapp_db
-            username: admin
-            password: secret
-            driver-class-name: org.postgresql.Driver
-          jpa:
-            open-in-view: false
-            hibernate:
-              ddl-auto: update
-            show-sql: true
-            properties:
-              hibernate:
-                format_sql: true
-                dialect: org.hibernate.dialect.PostgreSQLDialect
-          jwt:
-            secret: "test_secret_key_must_be_at_least_32_characters_long_for_hs256_algorithm"
-
-        security:
-          refresh-token:
-            expire-days: 14
-
-        toss:
-          payments:
-            base-url: https://api.tosspayments.com
-            billingKey: test_billing_key
-            customerKey: customer_test
-            secretKey: test_sk_test
-            clientKey: test_ck_test
-
-        service:
-          active-regions: 종로구
-        EOF
+        mkdir -p ./src/main/resources
+        echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
+      shell: bash
 
     - name: Check code formatting
       run: ./gradlew checkstyleMain checkstyleTest
@@ -89,17 +59,36 @@ jobs:
 
     - name: Test application startup
       run: |
-        timeout 30s ./gradlew bootRun &
+        ./gradlew bootRun > bootrun.log 2>&1 &
         APP_PID=$!
-        sleep 20
-        if kill -0 $APP_PID 2>/dev/null; then
-          echo "Application started successfully"
-          kill $APP_PID
-          exit 0
-        else
-          echo "Application failed to start"
-          exit 1
-        fi
+        echo "Started bootRun with PID: $APP_PID"
+
+        # 최대 60초 대기하면서 애플리케이션 시작 확인
+        for i in {1..60}; do
+          # 로그에서 시작 완료 메시지 확인
+          if grep -q "Started SpotApplication" bootrun.log 2>/dev/null; then
+            echo "✅ Application started successfully after ${i}s"
+            kill $APP_PID 2>/dev/null || true
+            exit 0
+          fi
+
+          # 프로세스가 죽었는지 확인
+          if ! kill -0 $APP_PID 2>/dev/null; then
+            echo "❌ Application process terminated unexpectedly"
+            echo "=== bootRun log ==="
+            cat bootrun.log
+            exit 1
+          fi
+
+          sleep 1
+        done
+
+        echo "❌ Application failed to start within 60 seconds"
+        echo "=== bootRun log ==="
+        cat bootrun.log
+        kill $APP_PID 2>/dev/null || true
+        exit 1
+      timeout-minutes: 2
 
     - name: Upload build artifacts
       if: failure()

@@ -38,10 +38,11 @@ public class StoreEntity extends UpdateBaseEntity {
     @Column(nullable = false)
     private String name;
 
-    @Column(nullable = false)
-    private String address; // 예: 서울특별시 종로구 사직로 161 //
+    @Column(name = "road_address", nullable = false)
+    private String roadAddress; // 예: 서울특별시 종로구 사직로 161 //
 
-    private String detailAddress;
+    @Column(name = "address_detail", nullable = false)
+    private String addressDetail;
 
     @Column(name = "phone_number")
     private String phoneNumber;
@@ -71,15 +72,15 @@ public class StoreEntity extends UpdateBaseEntity {
     @Builder
     public StoreEntity(
             String name,
-            String address,
-            String detailAddress,
+            String roadAddress,
+            String addressDetail,
             String phoneNumber,
             LocalTime openTime,
             LocalTime closeTime
     ) {
         this.name = name;
-        this.address = address;
-        this.detailAddress = detailAddress;
+        this.roadAddress = roadAddress;
+        this.addressDetail = addressDetail;
         this.phoneNumber = phoneNumber;
         this.openTime = openTime;
         this.closeTime = closeTime;
@@ -106,16 +107,21 @@ public class StoreEntity extends UpdateBaseEntity {
 
     public void updateStoreDetails(
             String name,
-            String address,
+            String roadAddress,
+            String addressDetail,
             String phoneNumber,
             LocalTime openTime,
-            LocalTime closeTime
+            LocalTime closeTime,
+            List<CategoryEntity> categories
     ) {
         if (name != null) {
             this.name = name;
         }
-        if (address != null) {
-            this.address = address;
+        if (roadAddress != null) {
+            this.roadAddress = roadAddress;
+        }
+        if (addressDetail != null) {
+            this.addressDetail = addressDetail;
         }
         if (phoneNumber != null) {
             this.phoneNumber = phoneNumber;
@@ -125,6 +131,39 @@ public class StoreEntity extends UpdateBaseEntity {
         }
         if (closeTime != null) {
             this.closeTime = closeTime;
+        }
+
+        if (categories != null) {
+            this.storeCategoryMaps.clear(); // 기존 연결 해제(orphanRemova l=true 작동)
+            for (CategoryEntity category : categories) {
+                this.addCategory(category); // 새로운 카테고리 연결
+            }
+        }
+    }
+
+    public boolean isOpenNow() {
+        if (this.openTime == null || this.closeTime == null) {
+            return true; // 영업시간이 설정되지 않은 경우 24시간 영업으로 간주
+        }
+
+        LocalTime now = LocalTime.now();
+
+        if (this.openTime.isBefore(this.closeTime)) {
+            return !now.isBefore(this.openTime) && !now.isAfter(this.closeTime);
+        } else {
+            return !now.isBefore(this.openTime) || !now.isAfter(this.closeTime);
+        }
+    }
+
+    public boolean isOpenAt(LocalTime time) {
+        if (this.openTime == null || this.closeTime == null) {
+            return true;
+        }
+
+        if (this.openTime.isBefore(this.closeTime)) {
+            return !time.isBefore(this.openTime) && !time.isAfter(this.closeTime);
+        } else {
+            return !time.isBefore(this.openTime) || !time.isAfter(this.closeTime);
         }
     }
 }

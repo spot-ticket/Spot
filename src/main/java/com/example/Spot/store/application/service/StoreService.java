@@ -2,9 +2,11 @@ package com.example.Spot.store.application.service;
 
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,8 +17,9 @@ import com.example.Spot.store.domain.repository.CategoryRepository;
 import com.example.Spot.store.domain.repository.StoreRepository;
 import com.example.Spot.store.presentation.dto.request.StoreCreateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
+import com.example.Spot.store.presentation.dto.request.StoreUserUpdateRequest;
+import com.example.Spot.store.presentation.dto.response.StoreDetailResponse;
 import com.example.Spot.store.presentation.dto.response.StoreListResponse;
-import com.example.Spot.store.presentation.dto.response.StoreResponse;
 import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.repository.UserRepository;
@@ -38,24 +41,22 @@ public class StoreService {
 
     // 1. 매장 생성
     @Transactional
-    public UUID createStore(StoreCreateRequest dto, UserEntity currentUser) {
+    public UUID createStore(StoreCreateRequest dto, Integer userId) {
         
-        // 1.1 매장 엔티티 생성(DTO -> Entity)
-        StoreEntity store = dto.toEntity();
-
-        // 1.2 카테고리 연결
-        List<CategoryEntity> categories = categoryRepository.findAllById(dto.getCategoryIds());
-        // 입력받은 ID 개수와 DB에서 찾아온 엔티티 개수가 다르면 에러!
-        if (categories.size() != dto.getCategoryIds().size()) {
-            throw new EntityNotFoundException("일부 카테고리 ID가 유효하지 않습니다.");
-        }
-        categories.forEach(store::addCategory);
+        // 1.1 DTO에 넘겨줄 카테고리 리스트를 생성
+        List<CategoryEntity> categories = dto.categoryNames().stream()
+                .map(name -> categoryRepository.findByName(name)
+                        .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다.: " + name)))
+                .toList();
+        
+        // 1.2 매장 엔티티 생성(DTO -> Entity)
+        StoreEntity store = dto.toEntity(categories);
 
         // 1.3 DTO에 담겨온 ID로 유저를 찾아서 스태프 등록
-        UserEntity owner = userRepository.findById(dto.getOwnerId())
-                .orElseThrow(() -> new EntityNotFoundException("오너를 찾을 수 없습니다: " + dto.getOwnerId()));
-        UserEntity chef = userRepository.findById(dto.getChefId())
-                .orElseThrow(() -> new EntityNotFoundException("셰프를 찾을 수 없습니다: " + dto.getOwnerId()));
+        UserEntity owner = userRepository.findById(dto.ownerId())
+                .orElseThrow(() -> new EntityNotFoundException("오너를 찾을 수 없습니다: " + dto.ownerId()));
+        UserEntity chef = userRepository.findById(dto.chefId())
+                .orElseThrow(() -> new EntityNotFoundException("셰프를 찾을 수 없습니다: " + dto.chefId()));
 
         store.addStoreUser(owner);
         store.addStoreUser(chef);
@@ -64,9 +65,10 @@ public class StoreService {
     }
 
     // 2. 매장 상세 조회
-    public StoreResponse getStoreDetails(UUID storeId, UserEntity currentUser) {
+    public StoreDetailResponse getStoreDetails(UUID storeId, Integer userId) {
 
-        // 2.1 현재 사용자의 권한 확인(True/False)
+        // 2.1 유저 조회 및 권한 확인
+        UserEntity currentUser = getValidatedUser(userId);
         boolean isAdmin = checkIsAdmin(currentUser);
 
         // 2.2 레포지토리 호출
@@ -75,79 +77,102 @@ public class StoreService {
         
         // 2.3 서비스 가능 지역인지 검증
         if (!isAdmin) {
-            boolean isServiceable = activeRegions.stream()
-                    .anyMatch(region -> store.getAddress().contains(region));
-            
-            if (!isServiceable) {
-                throw new AccessDeniedException("현재 픽업 서비스가 제공되지 않는 지역의 매장입니다.");
-            }
+            validateServiceRegion(store.getRoadAddress());
         }
         
         // 2.4 Entity를 DTO(Response)로 변환하여 반환
-        return StoreResponse.fromEntity(store);
+        return StoreDetailResponse.fromEntity(store);
     }
 
     // 3. 매장 전체 조회
-    public List<StoreListResponse> getAllStores(UserEntity currentUser) {
+    public Page<StoreListResponse> getAllStores(Integer userId, Pageable pageable) {
         // 3.1 사용자의 권한 확인
+        UserEntity currentUser = getValidatedUser(userId);
         boolean isAdmin = checkIsAdmin(currentUser);
 
         // 3.2 레포지토리 호출 (관리자는 삭제된 것 포함)
-        List<StoreEntity> stores = storeRepository.findAllByRole(isAdmin);
-
-        // 3.3 엔티티 리스트 스트림을 사용해 DTO 리스트로 변환하여 반환
-        return stores.stream()
-                // 일반 유저라면 activeRegions에 포함된 매장만 필터링하여 반환
-                .filter(store -> isAdmin || activeRegions.stream()
-                        .anyMatch(region -> store.getAddress().contains(region)))
-                .map(StoreListResponse::fromEntity)
-                .collect(Collectors.toList());
-    }
-
-    // 4. 매장 정보 수정
-    public void updateStore(UUID storeId, StoreUpdateRequest request, UserEntity currentUser) {
-        // 4.1 [공통 로직] 조회 + 관리자 스위치 + 소유권 검증 
-        StoreEntity store = findStoreWithAuthority(storeId, currentUser);
+        Page<StoreEntity> stores = storeRepository.findAllByRole(isAdmin, pageable);
         
-        // 4.2 기본 정보 업데이트 (Dirty Checking 활용)
-        store.updateStoreDetails(
-                request.getName(),
-                request.getAddress(),
-                request.getPhoneNumber(),
-                request.getOpenTime(),
-                request.getCloseTime()
-        );
+        // 3.3 서비스지역 기반 필터링 페이지네이션
+        return convertToPageResponse(stores, isAdmin, pageable);
 
-        // 4.4 카테고리 교체 (Dirty Checking 활용)
-        if (request.getCategoryIds() != null) {
-            store.getStoreCategoryMaps().clear();
-
-            for (UUID categoryId : request.getCategoryIds()) {
-                CategoryEntity category = categoryRepository.findById(categoryId)
-                        .orElseThrow(() -> new EntityNotFoundException("카테고리를 찾을 수 없습니다."));
-                store.addCategory(category);
-            }
-        }
-
-        // 4.5 스태프(셰프/오너) 교체 
-        if (request.getStaffUserIds() != null) {
-            store.getUsers().clear();
-            for (Integer userId : request.getStaffUserIds()) {
-                UserEntity staff = userRepository.findById(userId)
-                        .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 수 없습니다."));
-                store.addStoreUser(staff);
-            }
-        }
     }
 
-    // 5. 매장 삭제
+    // 4. 매장 기본 정보 수정
     @Transactional
-    public void deletedStore(UUID storeId, UserEntity currentUser) {
-        // 5.1 [공통 로직] 조회 및 권한 체크
+    public void updateStore(UUID storeId, StoreUpdateRequest request, Integer userId) {
+        // 4.1 [공통 로직] 조회 + 관리자 스위치 + 소유권 검증
+        UserEntity currentUser = getValidatedUser(userId);
         StoreEntity store = findStoreWithAuthority(storeId, currentUser);
         
-        // 5.2 공통 메서드 호출
-        store.softDelete();
+        // 4.2 카테고리 이름 리스트를 엔티티 리스트로 변환
+        List<CategoryEntity> categories = null;
+        if (request.categoryNames() != null) {
+            categories = request.categoryNames().stream()
+                    .map(name -> categoryRepository.findByName(name)
+                            .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 카테고리: " + name)))
+                    .toList();
+        }
+        
+        // 4.3 엔티티 내부 메서드 호출
+        store.updateStoreDetails(
+                request.name(),
+                request.roadAddress(),
+                request.addressDetail(),
+                request.phoneNumber(),
+                request.openTime(),
+                request.closeTime(),
+                categories
+        );
+    }
+    
+    // 5. 매장 직원 정보 수정
+    @Transactional
+    public void updateStoreStaff(UUID storeId, StoreUserUpdateRequest request, Integer userId) {
+        UserEntity currentUser = getValidatedUser(userId);
+        StoreEntity store = findStoreWithAuthority(storeId, currentUser);
+        
+        for (StoreUserUpdateRequest.UserChange change : request.changes()) {
+            UserEntity targetUser = userRepository.findById(change.userId())
+                    .orElseThrow(() -> new EntityNotFoundException("유저를 찾을 . 없습니다: " + change.userId()));
+            
+            if (change.action() == StoreUserUpdateRequest.Action.ADD) {
+                // 중복 체크
+                boolean alreadyStaff = store.getUsers().stream()
+                        .anyMatch(su -> su.getUser().getId().equals(change.userId()));
+                
+                if (!alreadyStaff) {
+                    // targetUser가 이미 내부에 자신의 Role을 가지고 있으므로 그대로 등록
+                    store.addStoreUser(targetUser);
+                }
+            } else if (change.action() == StoreUserUpdateRequest.Action.REMOVE) {
+                store.getUsers().removeIf(su -> su.getUser().getId().equals(change.userId()));
+            }
+        }
+    }
+
+    // 6. 매장 삭제
+    @Transactional
+    public void deleteStore(UUID storeId, Integer userId) {
+        // 6.1 [공통 로직] 조회 및 권한 체크
+        UserEntity currentUser = getValidatedUser(userId);
+        StoreEntity store = findStoreWithAuthority(storeId, currentUser);
+        
+        // 6.2 공통 메서드 호출
+        store.softDelete(userId);
+    }
+    
+    // 7. 매장 이름으로 검색
+    public Page<StoreListResponse> searchStoresByName(String keyword, Integer userId, Pageable pageable) {
+        // 7.1 사용자의 권한 확인
+        UserEntity currentUser = getValidatedUser(userId);
+        boolean isAdmin = checkIsAdmin(currentUser);
+
+        // 7.2 레포지토리 호출
+        Page<StoreEntity> stores = storeRepository.searchByName(keyword, isAdmin, pageable);
+
+        // 7.3 서비스지역 기반 필터링 페이지네이션
+        return convertToPageResponse(stores, isAdmin, pageable);
     }
     
     // ----- [공통 검증 로직] -----
@@ -175,5 +200,37 @@ public class StoreService {
             }
         }
         return store;
+    }
+    
+    // 3. 서비스 가능한 지역 여부 확인
+    private boolean isServiceable(String roadAddress) {
+        return activeRegions.stream().anyMatch(roadAddress::contains);
+    }
+    
+    // 4. 서비스 지역 검증(예외 발생) - 상세 조회에서 서비스 불가능 지역일 경우 접근 차단 후 에러 메시지 출력
+    private void validateServiceRegion(String roadAddress) {
+        if (!isServiceable(roadAddress)) {
+            throw new AccessDeniedException("현재 픽업 서비스가 제공되지 않는 지역의 매장입니다.");
+        }
+    }
+    
+    // 5. userId(Integer)로 UserEntity를 조회하고 권한 검증 준비
+    private UserEntity getValidatedUser(Integer userId) {
+        return userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+    }
+    
+    // 6. 서비스지역기반 필터링 공통 메서드
+    private Page<StoreListResponse> convertToPageResponse(Page<StoreEntity> stores, boolean isAdmin, Pageable pageable) {
+        if (isAdmin) {
+            return stores.map(StoreListResponse::fromEntity);
+        }
+
+        List<StoreListResponse> filteredContent = stores.getContent().stream()
+                .filter(store -> isServiceable(store.getRoadAddress()))
+                .map(StoreListResponse::fromEntity)
+                .toList();
+
+        return new PageImpl<>(filteredContent, pageable, stores.getTotalElements());
     }
 }

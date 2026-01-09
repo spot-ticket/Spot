@@ -25,6 +25,7 @@ public class CustomUserDetails implements UserDetails {
         this.userAuthEntity = null;
     }
 
+    // API(Controller)에서 사용 - id, role
     public UserEntity getUserEntity() {
         return userEntity;
     }
@@ -37,14 +38,6 @@ public class CustomUserDetails implements UserDetails {
         Collection<GrantedAuthority> collection = new ArrayList<>();
 
         collection.add(() -> "ROLE_" + userEntity.getRole().name());
-//        collection.add(new GrantedAuthority() {
-//
-//            @Override
-//            public String getAuthority() {
-//
-//                return String.valueOf(userEntity.getRole());
-//            }
-//        });
 
         return collection;
     }

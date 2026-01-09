@@ -80,7 +80,7 @@ class MenuEntityTest {
     void deleteMenu() {
         MenuEntity menu = MenuEntity.builder().build();
 
-        menu.softDelete();
+        menu.softDelete(0);
 
         assertThat(menu.getIsDeleted()).isTrue();
     }
