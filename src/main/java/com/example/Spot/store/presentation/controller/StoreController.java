@@ -25,6 +25,7 @@ import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUserUpdateRequest;
 import com.example.Spot.store.presentation.dto.response.StoreDetailResponse;
 import com.example.Spot.store.presentation.dto.response.StoreListResponse;
+import com.example.Spot.store.presentation.swagger.StoreApi;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,11 +33,11 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/stores")
 @RequiredArgsConstructor
-public class StoreController {
+public class StoreController implements StoreApi {
     
     private final StoreService storeService;
 
-    // 1. 매장 생성
+    @Override
     @PostMapping
     @PreAuthorize("hasAnyRole('MASTER','OWNER','MANAGER')")
     public ResponseEntity<UUID> createStore(
@@ -47,7 +48,7 @@ public class StoreController {
         return ResponseEntity.status(HttpStatus.CREATED).body(storeId);
     }
 
-    // 2. 매장 상세 조회
+    @Override
     @GetMapping("/{storeId}")
     public ResponseEntity<StoreDetailResponse> getStoreDetails(
             @PathVariable UUID storeId,
@@ -56,7 +57,7 @@ public class StoreController {
         return ResponseEntity.ok(storeService.getStoreDetails(storeId, userId));
     }
     
-    // 3. 매장 전체 조회
+    @Override
     @GetMapping
     public ResponseEntity<Page<StoreListResponse>> getAllStores(
             @RequestParam(defaultValue = "0") int page,
@@ -67,7 +68,7 @@ public class StoreController {
         return ResponseEntity.ok(storeService.getAllStores(userId, pageable));
     }
     
-    // 4. 매장 기본 정보 수정
+    @Override
     @PatchMapping("/{storeId}")
     @PreAuthorize("hasAnyRole('MASTER','OWNER','MANAGER')")
     public ResponseEntity<Void> updateStore(
@@ -79,7 +80,7 @@ public class StoreController {
         return ResponseEntity.noContent().build();
     }
     
-    // 5. 매장 직원 정보 수정
+    @Override
     @PatchMapping("/{storeId}/staff")
     @PreAuthorize("hasAnyRole('MASTER','OWNER','MANAGER')")
     public ResponseEntity<Void> updateStoreStaff(
@@ -91,7 +92,7 @@ public class StoreController {
         return ResponseEntity.noContent().build();
     }
     
-    // 6. 매장 삭제 (Soft Delete)
+    @Override
     @DeleteMapping("/{storeId}")
     @PreAuthorize("hasAnyRole('MASTER','OWNER','MANAGER')")
     public ResponseEntity<Void> deleteStore(
@@ -102,7 +103,7 @@ public class StoreController {
         return ResponseEntity.noContent().build();
     }
     
-    // 7. 매장 이름으로 검색
+    @Override
     @GetMapping("/search")
     public ResponseEntity<Page<StoreListResponse>> searchStores(
             @RequestParam String keyword,

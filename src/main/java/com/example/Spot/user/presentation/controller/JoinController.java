@@ -6,9 +6,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Spot.user.application.service.JoinService;
 import com.example.Spot.user.presentation.dto.request.JoinDTO;
+import com.example.Spot.user.presentation.swagger.JoinApi;
 
 @RestController
-public class JoinController {
+public class JoinController implements JoinApi {
 
     private final JoinService joinService;
 
@@ -16,6 +17,7 @@ public class JoinController {
         this.joinService = joinService;
     }
 
+    @Override
     @PostMapping("/api/join")
     public void joinProcess(@RequestBody JoinDTO joinDTO) {
         joinService.joinProcess(joinDTO);

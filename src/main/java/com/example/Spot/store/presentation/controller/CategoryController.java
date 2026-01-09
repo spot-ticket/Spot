@@ -19,6 +19,7 @@ import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.store.application.service.CategoryService;
 import com.example.Spot.store.presentation.dto.request.CategoryRequestDTO;
 import com.example.Spot.store.presentation.dto.response.CategoryResponseDTO;
+import com.example.Spot.store.presentation.swagger.CategoryApi;
 import com.example.Spot.user.domain.entity.UserEntity;
 
 import jakarta.validation.Valid;
@@ -28,23 +29,23 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/categories")
-public class CategoryController {
+public class CategoryController implements CategoryApi {
 
     private final CategoryService categoryService;
 
-    // 카테고리 전체 조회
+    @Override
     @GetMapping
     public List<CategoryResponseDTO.CategoryItem> getAll() {
         return categoryService.getAll();
     }
 
-    // 카테고리별 매장 조회
+    @Override
     @GetMapping("/{categoryName}/stores")
     public List<CategoryResponseDTO.StoreSummary> getStores(@PathVariable String categoryName) {
         return categoryService.getStoresByCategoryName(categoryName);
     }
 
-    // 카테고리 생성
+    @Override
     @PreAuthorize("hasAnyRole('MASTER','MANAGER')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
@@ -52,7 +53,7 @@ public class CategoryController {
         return categoryService.create(request);
     }
 
-    // 카테고리 수정
+    @Override
     @PreAuthorize("hasAnyRole('MASTER','MANAGER')")
     @PatchMapping("/{categoryId}")
     public CategoryResponseDTO.CategoryDetail update(
@@ -62,7 +63,7 @@ public class CategoryController {
         return categoryService.update(categoryId, request);
     }
 
-    // 카테고리 삭제(soft delete)
+    @Override
     @PreAuthorize("hasAnyRole('MASTER','MANAGER')")
     @DeleteMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)

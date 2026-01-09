@@ -26,6 +26,7 @@ import com.example.Spot.menu.presentation.dto.response.MenuAdminResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuPublicResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuResponseDto;
 import com.example.Spot.menu.presentation.dto.response.UpdateMenuResponseDto;
+import com.example.Spot.menu.presentation.swagger.MenuApi;
 import com.example.Spot.user.domain.Role;
 
 import lombok.RequiredArgsConstructor;
@@ -33,11 +34,11 @@ import lombok.RequiredArgsConstructor;
 @RestController
 @RequestMapping("/api/stores/{storeId}/menus")
 @RequiredArgsConstructor
-public class MenuController {
+public class MenuController implements MenuApi {
 
     private final MenuService menuService;
 
-    // 메뉴 전체 조회
+    @Override
     @GetMapping
     public ApiResponse<List<? extends MenuResponseDto>> getMenus(
             @PathVariable UUID storeId,
@@ -56,13 +57,13 @@ public class MenuController {
         }
     }
 
-    // 메뉴 상세 조회
+    @Override
     @GetMapping("/{menuId}")
     public ApiResponse<MenuPublicResponseDto> getMenuDetail(@PathVariable UUID menuId) {
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, menuService.getMenuDetail(menuId));
     }
 
-    // 메뉴 생성
+    @Override
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
     @PostMapping
     public ApiResponse<CreateMenuResponseDto> createMenu(
@@ -75,7 +76,7 @@ public class MenuController {
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
     }
 
-    // 메뉴 변경
+    @Override
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
     @PatchMapping("/{menuId}")
     public ApiResponse<UpdateMenuResponseDto> updateMenu(
@@ -89,7 +90,7 @@ public class MenuController {
 
     }
 
-    // 메뉴 삭제
+    @Override
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
     @DeleteMapping("/{menuId}")
     public ApiResponse<String> deleteMenu(
@@ -101,7 +102,7 @@ public class MenuController {
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, "메뉴가 삭제되었습니다.");
     }
 
-    // 메뉴 숨김
+    @Override
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
     @PatchMapping("/{menuId}/hide")
     public ApiResponse<String> hiddenMenu(

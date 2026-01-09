@@ -17,24 +17,25 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.Spot.user.application.service.UserService;
 import com.example.Spot.user.presentation.dto.request.UserUpdateRequestDTO;
 import com.example.Spot.user.presentation.dto.response.UserResponseDTO;
+import com.example.Spot.user.presentation.swagger.UserApi;
 
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/users")
-public class UserController {
+public class UserController implements UserApi {
 
     private final UserService userService;
     
-    // 본인 조회
+    @Override
     @PreAuthorize("#userId == authentication.principal or hasRole('ADMIN')")
     @GetMapping("/{userId}")
     public UserResponseDTO get(@PathVariable Integer userId) {
         return userService.getByUserId(userId);
     }
 
-    // 수정
+    @Override
     @PreAuthorize("#userId == authentication.principal or hasRole('ADMIN')")
     @PatchMapping("/{userId}")
     public UserResponseDTO update(
@@ -44,15 +45,15 @@ public class UserController {
         return userService.updateById(userId, request);
     }
 
-    // 삭제
+    @Override
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/me")
     public void delete(Authentication authentication) {
         Integer loginUserId = (Integer) authentication.getPrincipal();
         userService.deleteMe(loginUserId);
     }
-    
-    // 닉네임으로 사용자 검색
+
+    @Override
     @PreAuthorize("hasAnyRole('MASTER','OWNER','MANAGER')")
     @GetMapping("/search")
     public ResponseEntity<List<UserResponseDTO>> searchUsers(

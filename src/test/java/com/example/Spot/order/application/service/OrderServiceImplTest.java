@@ -4,8 +4,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -16,20 +14,13 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
-import org.mockito.Mockito;
 
-import com.example.Spot.menu.domain.entity.MenuEntity;
-import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.example.Spot.menu.domain.repository.MenuOptionRepository;
 import com.example.Spot.menu.domain.repository.MenuRepository;
 import com.example.Spot.order.domain.entity.OrderEntity;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.domain.repository.OrderRepository;
-import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
-import com.example.Spot.order.presentation.dto.request.OrderItemOptionRequestDto;
-import com.example.Spot.order.presentation.dto.request.OrderItemRequestDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
-import com.example.Spot.store.domain.entity.StoreUserEntity;
 import com.example.Spot.store.domain.repository.StoreRepository;
 import com.example.Spot.store.domain.repository.StoreUserRepository;
 

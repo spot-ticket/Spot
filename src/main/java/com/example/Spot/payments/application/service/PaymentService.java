@@ -13,7 +13,6 @@ import com.example.Spot.global.presentation.advice.ResourceNotFoundException;
 import com.example.Spot.order.domain.entity.OrderEntity;
 import com.example.Spot.order.domain.repository.OrderRepository;
 import com.example.Spot.payments.domain.entity.PaymentEntity;
-import com.example.Spot.store.domain.repository.StoreUserRepository;
 import com.example.Spot.payments.domain.entity.PaymentHistoryEntity;
 import com.example.Spot.payments.domain.entity.PaymentKeyEntity;
 import com.example.Spot.payments.domain.entity.PaymentRetryEntity;
@@ -25,6 +24,7 @@ import com.example.Spot.payments.infrastructure.client.TossPaymentClient;
 import com.example.Spot.payments.infrastructure.dto.TossPaymentResponse;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
+import com.example.Spot.store.domain.repository.StoreUserRepository;
 import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.repository.UserRepository;
 
