@@ -2,7 +2,6 @@ package com.example.Spot.payments.presentation.controller;
 
 import java.util.UUID;
 
-import com.example.Spot.infra.auth.security.CustomUserDetails;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Spot.global.presentation.ApiResponse;
 import com.example.Spot.global.presentation.code.GeneralSuccessCode;
+import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.payments.application.service.PaymentService;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
@@ -23,6 +23,7 @@ import com.example.Spot.user.domain.repository.UserRepository;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+
 
 @RestController
 @RequestMapping("/api/payments")

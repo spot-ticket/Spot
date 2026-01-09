@@ -79,8 +79,7 @@ public class CustomUserDetails implements UserDetails {
         return true;
     }
 
-    public Integer getUserId()
-    {
+    public Integer getUserId() {
         return userEntity.getId();
     }
 }

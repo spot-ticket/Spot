@@ -3,9 +3,6 @@ package com.example.Spot.menu.presentation.controller;
 import java.util.List;
 import java.util.UUID;
 
-import com.example.Spot.user.domain.Role;
-import com.example.Spot.user.domain.entity.UserEntity;
-import org.apache.catalina.User;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -26,8 +23,11 @@ import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionRequestDto
 import com.example.Spot.menu.presentation.dto.response.CreateMenuOptionResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuOptionResponseDto;
 import com.example.Spot.menu.presentation.dto.response.UpdateMenuOptionResponseDto;
+import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.domain.entity.UserEntity;
 
 import lombok.RequiredArgsConstructor;
+
 
 @RestController
 @RequestMapping("/api/stores/{storeId}/menus/{menuId}/options")
