@@ -2,6 +2,7 @@ name: PR Check
 
 on:
   pull_request:
+    types: [opened, reopened, closed]
     branches: [ dev, main ]
 
 jobs:
@@ -98,3 +99,14 @@ jobs:
         path: |
           build/reports/
           build/test-results/
+
+    - name: Send Discord Notification
+      if: github.event.pull_request.merged == true
+      uses: tsickert/discord-webhook@v5.3.0
+      with:
+        webhook-url: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        content: |
+          ✅**PR이 ${{ github.base_ref }} 브랜치에 머지되었습니다!**
+          **PR:** ${{ github.event.pull_request.title }}
+          **작성자:** ${{ github.event.pull_request.user.login }}
+          **설명:** ${{ github.event.pull_request.body }}
