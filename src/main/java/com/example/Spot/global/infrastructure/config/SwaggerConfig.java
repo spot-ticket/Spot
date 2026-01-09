@@ -31,7 +31,7 @@ public class SwaggerConfig {
 
     private Info apiInfo() {
         return new Info()
-                .title("Spot API") 
+                .title("Spot API")
                 .description("Spot 픽업 서비스 API 문서")
                 .version("1.0.0");
     }
