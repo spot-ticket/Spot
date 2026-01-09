@@ -6,33 +6,29 @@ import java.util.UUID;
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public record CreateMenuResponseDto(
-        @JsonProperty("menu_id")
-        UUID id,
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-        String name,
+@Getter
+@NoArgsConstructor
+public class CreateMenuResponseDto {
 
-        String category,
+    @JsonProperty("menu_id")
+    private UUID id;
 
-        Integer price,
+    @JsonProperty("store_id")
+    private UUID storeId;
 
-        String description,
+    private String name;
 
-        @JsonProperty("image_url")
-        String imageUrl,
+    @JsonProperty("created_at")
+    private LocalDateTime createdAt;
 
-        LocalDateTime createdAt
-) {
-    // Entity를 DTO로 변환하는 생성자
     public CreateMenuResponseDto(MenuEntity menu) {
-        this(
-                menu.getId(),
-                menu.getName(),
-                menu.getCategory(),
-                menu.getPrice(),
-                menu.getDescription(),
-                menu.getImageUrl(),
-                menu.getCreatedAt()
-        );
+        this.id = menu.getId();
+        this.storeId = menu.getStore().getId();
+        this.name = menu.getName();
+        this.createdAt = menu.getCreatedAt();
     }
+
 }

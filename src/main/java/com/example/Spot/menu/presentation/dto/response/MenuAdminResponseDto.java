@@ -1,13 +1,9 @@
 package com.example.Spot.menu.presentation.dto.response;
 
 import java.time.LocalDateTime;
-import java.util.Collections;
-import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
-import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Getter;
@@ -46,10 +42,7 @@ public class MenuAdminResponseDto implements MenuResponseDto {
     @JsonProperty("updated_at")
     private LocalDateTime updatedAt;
 
-    @JsonProperty("options")
-    private List<MenuOptionResponseDto> options;
-
-    public MenuAdminResponseDto(MenuEntity menu, List<MenuOptionEntity> options) {
+    public MenuAdminResponseDto(MenuEntity menu) {
         this.id = menu.getId();
         this.storeId = menu.getStore().getId();
         this.name = menu.getName();
@@ -62,9 +55,5 @@ public class MenuAdminResponseDto implements MenuResponseDto {
         this.isHidden = menu.getIsHidden();
         this.createdAt = menu.getCreatedAt();
         this.updatedAt = menu.getUpdatedAt();
-
-        this.options = (options != null)
-                ? options.stream().map(MenuOptionResponseDto::new).collect(Collectors.toList())
-                : Collections.emptyList();
     }
 }

@@ -6,46 +6,46 @@ import java.util.UUID;
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-public record UpdateMenuResponseDto(
-        @JsonProperty("menu_id")
-        UUID menuId,
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-        @JsonProperty("store_id")
-        UUID storeId,
+@Getter
+@NoArgsConstructor
+public class UpdateMenuResponseDto {
+    @JsonProperty("menu_id")
+    private UUID menuId;
 
-        String name,
+    @JsonProperty("store_id")
+    private UUID storeId;
 
-        String category,
+    private String name;
 
-        Integer price,
+    private String category;
+    private Integer price;
+    private String description;
 
-        String description,
+    @JsonProperty("image_url")
+    private String imageUrl;
 
-        @JsonProperty("image_url")
-        String imageUrl,
+    @JsonProperty("is_available")
+    private Boolean isAvailable;
 
-        @JsonProperty("is_available")
-        Boolean isAvailable,
+    @JsonProperty("is_hidden")
+    private Boolean isHidden;
 
-        @JsonProperty("is_hidden")
-        Boolean isHidden,
+    @JsonProperty("updated_at")
+    private LocalDateTime updatedAt;
 
-        @JsonProperty("updated_at")
-        LocalDateTime updatedAt
-) {
-    // Entity -> DTO 변환 생성자
     public UpdateMenuResponseDto(MenuEntity menu) {
-        this(
-                menu.getId(),
-                menu.getStore().getId(),
-                menu.getName(),
-                menu.getCategory(),
-                menu.getPrice(),
-                menu.getDescription(),
-                menu.getImageUrl(),
-                menu.getIsAvailable(),
-                menu.getIsHidden(),
-                menu.getUpdatedAt()
-        );
+        this.menuId = menu.getId();
+        this.storeId = menu.getStore().getId();
+        this.name = menu.getName();
+        this.category = menu.getCategory();
+        this.price = menu.getPrice();
+        this.description = menu.getDescription();
+        this.imageUrl = menu.getImageUrl();
+        this.isAvailable = menu.getIsAvailable();
+        this.isHidden = menu.getIsHidden();
+        this.updatedAt = menu.getUpdatedAt();
     }
 }

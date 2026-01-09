@@ -1,6 +1,5 @@
 package com.example.Spot.menu.presentation.dto.response;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -47,10 +46,10 @@ public class MenuPublicResponseDto implements MenuResponseDto {
         dto.imageUrl = menu.getImageUrl();
         dto.isAvailable = menu.getIsAvailable();
 
-        // [수정 포인트] options가 null이면 에러 대신 빈 리스트([]) 반환
-        dto.options = (options != null)
-                ? options.stream().map(MenuOptionResponseDto::new).collect(Collectors.toList())
-                : Collections.emptyList();
+        // menu.getOptions() 대신 파라미터로 받은 options를 사용
+        dto.options = options.stream()
+                .map(MenuOptionResponseDto::new)
+                .collect(Collectors.toList());
 
         return dto;
     }
