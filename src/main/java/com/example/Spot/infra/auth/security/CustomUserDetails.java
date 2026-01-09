@@ -6,14 +6,17 @@ import java.util.Collection;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
+import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.domain.entity.UserAuthEntity;
 import com.example.Spot.user.domain.entity.UserEntity;
+
 
 public class CustomUserDetails implements UserDetails {
 
     private final UserEntity userEntity;
     private final UserAuthEntity userAuthEntity;
 
+    // 로그인(UserDetailsService 용)
     public CustomUserDetails(UserEntity userEntity, UserAuthEntity userAuthEntity) {
         this.userEntity = userEntity;
         this.userAuthEntity = userAuthEntity;
@@ -80,5 +83,9 @@ public class CustomUserDetails implements UserDetails {
 
     public Integer getUserId() {
         return userEntity.getId();
+    }
+
+    public Role getUserRole() {
+        return userEntity.getRole();
     }
 }
