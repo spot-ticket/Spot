@@ -132,7 +132,7 @@ class MenuControllerTest {
 
         MenuEntity menu = createMenuEntity(createStoreEntity(storeId), request.getName(), menuId);
 
-        given(menuService.updateMenu(eq(menuId), any(UpdateMenuRequestDto.class), any()))
+        given(menuService.updateMenu(eq(storeId), eq(menuId), any(UpdateMenuRequestDto.class), any()))
                 .willReturn(new UpdateMenuResponseDto(menu));
 
         // When & Then
