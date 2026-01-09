@@ -77,7 +77,7 @@ class MenuControllerTest {
         MenuPublicResponseDto responseDto = MenuPublicResponseDto.of(menu, new ArrayList<>());
 
         // 가짜 서비스 설정
-        given(menuService.getMenuDetail(menuId)).willReturn(responseDto);
+        given(menuService.getMenuDetail(storeId, menuId, 0)).willReturn(responseDto);
 
         // when & then (실행 및 검증)
         mockMvc.perform(get("/api/stores/{storeId}/menus/{menuId}", storeId, menuId)
@@ -103,7 +103,7 @@ class MenuControllerTest {
         StoreEntity store = createStoreEntity(storeId);
         MenuEntity menu = createMenuEntity(store, request.getName(), menuId);
 
-        given(menuService.createMenu(eq(storeId), any(CreateMenuRequestDto.class), any(UserEntity.class)))
+        given(menuService.createMenu(eq(storeId), any(CreateMenuRequestDto.class), any()))
                 .willReturn(new CreateMenuResponseDto(menu));
 
         // 2. When & Then
