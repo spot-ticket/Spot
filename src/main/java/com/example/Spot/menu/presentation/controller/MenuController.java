@@ -3,6 +3,7 @@ package com.example.Spot.menu.presentation.controller;
 import java.util.List;
 import java.util.UUID;
 
+
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -22,75 +23,73 @@ import com.example.Spot.menu.presentation.dto.request.CreateMenuRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuHiddenRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuRequestDto;
 import com.example.Spot.menu.presentation.dto.response.CreateMenuResponseDto;
-import com.example.Spot.menu.presentation.dto.response.MenuAdminResponseDto;
-import com.example.Spot.menu.presentation.dto.response.MenuPublicResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuResponseDto;
 import com.example.Spot.menu.presentation.dto.response.UpdateMenuResponseDto;
-import com.example.Spot.menu.presentation.swagger.MenuApi;
-import com.example.Spot.user.domain.Role;
+import com.example.Spot.user.application.service.UserService;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/api/stores/{storeId}/menus")
 @RequiredArgsConstructor
-public class MenuController implements MenuApi {
+public class MenuController {
 
     private final MenuService menuService;
+    private final UserService userService;
 
-    @Override
+    // 메뉴 전체 조회
     @GetMapping
     public ApiResponse<List<? extends MenuResponseDto>> getMenus(
             @PathVariable UUID storeId,
-            @AuthenticationPrincipal CustomUserDetails user
+            @AuthenticationPrincipal Integer userId
     ) {
-        // 비로그인 유저
-        Role role = (user != null) ? user.getUserEntity().getRole() : Role.CUSTOMER;
 
-        // 유저 권한에 따른 접근 처리
-        if (role == Role.CUSTOMER) {
-            List<MenuPublicResponseDto> data = menuService.getMenusForCustomer(storeId);
-            return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
-        } else {
-            List<MenuAdminResponseDto> data = menuService.getMenusForAdmin(storeId, role);
-            return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
-        }
+        List<? extends MenuResponseDto> data = menuService.getMenus(storeId, userId);
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
     }
 
-    @Override
+    // 메뉴 상세 조회
     @GetMapping("/{menuId}")
-    public ApiResponse<MenuPublicResponseDto> getMenuDetail(@PathVariable UUID menuId) {
-        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, menuService.getMenuDetail(menuId));
+    public ApiResponse<MenuResponseDto> getMenuDetail(
+            @PathVariable UUID storeId,
+            @PathVariable UUID menuId,
+            @AuthenticationPrincipal Integer userId
+    ) {
+        MenuResponseDto response = menuService.getMenuDetail(storeId, menuId, userId);
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
     }
 
-    @Override
+    // 메뉴 생성
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
     @PostMapping
     public ApiResponse<CreateMenuResponseDto> createMenu(
             @PathVariable UUID storeId,
-            @RequestBody CreateMenuRequestDto request,
-            @AuthenticationPrincipal CustomUserDetails user
+            @Valid @RequestBody CreateMenuRequestDto request,
+            @AuthenticationPrincipal Integer userId
     ) {
-        CreateMenuResponseDto data = menuService.createMenu(storeId, request, user.getUserEntity());
+
+        CreateMenuResponseDto data = menuService.createMenu(storeId, request, userId);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
     }
 
-    @Override
+    // 메뉴 변경
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
     @PatchMapping("/{menuId}")
     public ApiResponse<UpdateMenuResponseDto> updateMenu(
+            @PathVariable UUID storeId,
             @PathVariable UUID menuId,
-            @RequestBody UpdateMenuRequestDto request,
-            @AuthenticationPrincipal CustomUserDetails user
+            @Valid @RequestBody UpdateMenuRequestDto request,
+            @AuthenticationPrincipal Integer userId
     ) {
-        UpdateMenuResponseDto data = menuService.updateMenu(menuId, request, user.getUserEntity());
+        UpdateMenuResponseDto data = menuService.updateMenu(storeId, menuId, request, userId);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
 
     }
 
-    @Override
+    // 메뉴 삭제
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
     @DeleteMapping("/{menuId}")
     public ApiResponse<String> deleteMenu(
@@ -102,7 +101,7 @@ public class MenuController implements MenuApi {
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, "메뉴가 삭제되었습니다.");
     }
 
-    @Override
+    // 메뉴 숨김
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
     @PatchMapping("/{menuId}/hide")
     public ApiResponse<String> hiddenMenu(

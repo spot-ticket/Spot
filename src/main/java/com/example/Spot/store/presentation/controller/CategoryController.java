@@ -4,7 +4,9 @@ import java.util.UUID;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
@@ -36,6 +38,9 @@ public class CategoryController implements CategoryApi {
     @Override
     @GetMapping
     public List<CategoryResponseDTO.CategoryItem> getAll() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println(auth);
+
         return categoryService.getAll();
     }
 
@@ -50,6 +55,9 @@ public class CategoryController implements CategoryApi {
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryResponseDTO.CategoryDetail create(@RequestBody @Valid CategoryRequestDTO.Create request) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        System.out.println(auth);
+
         return categoryService.create(request);
     }
 
