@@ -176,12 +176,12 @@ class DataGenerator:
                 print(f"({sql_format(sc_id)}, {sql_format(store_id)}, {sql_format(cat['id'])}, {sql_format(created_at)}, {created_by}, {sql_format(sc_updated_at)}, {sc_updated_by}, false, NULL, NULL);")
 
             # Store-User 연결 (점주)
-            owner_id = random.choice(self.users)
+            ownerID = random.choice(self.users)
             su_id = str(uuid.uuid4())
             su_updated_at = self.random_updated_at(created_at)
             su_updated_by = self.random_updated_by()
             print(f"INSERT INTO p_store_user (id, store_id, user_id, created_at, created_by, updated_at, updated_by, is_deleted, deleted_at, deleted_by) VALUES")
-            print(f"({sql_format(su_id)}, {sql_format(store_id)}, {owner_id}, {sql_format(created_at)}, {created_by}, {sql_format(su_updated_at)}, {su_updated_by}, false, NULL, NULL);")
+            print(f"({sql_format(su_id)}, {sql_format(store_id)}, {ownerID}, {sql_format(created_at)}, {created_by}, {sql_format(su_updated_at)}, {su_updated_by}, false, NULL, NULL);")
         print()
     
     def generate_menus(self):
