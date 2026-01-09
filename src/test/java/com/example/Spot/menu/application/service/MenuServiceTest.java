@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.example.Spot.menu.presentation.dto.response.MenuResponseDto;
+import com.example.Spot.user.domain.entity.UserEntity;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,6 +49,9 @@ class MenuServiceTest {
         UUID menuId1 = UUID.randomUUID(); // 메뉴1 ID 생성
         UUID menuId2 = UUID.randomUUID(); // 메뉴2 ID 생성
 
+        // 가짜 유저 생성
+        UserEntity user = UserEntity.builder().build();
+
         // 가짜 Store 생성
         StoreEntity store = StoreEntity.builder().build();
         ReflectionTestUtils.setField(store, "id", storeId);
@@ -60,7 +65,7 @@ class MenuServiceTest {
 
         // 2. When (실행)
         // Service 로직에 맞춰 Role.MASTER 혹은 MANAGER 사용
-        List<MenuAdminResponseDto> result = menuService.getMenusForAdmin(storeId, Role.MASTER);
+        List<MenuAdminResponseDto> result = menuService.getMenusForAdmin(storeId, user);
 
         // 3. Then (검증)
         assertThat(result).hasSize(2);
@@ -85,6 +90,9 @@ class MenuServiceTest {
         UUID storeId = UUID.randomUUID();
         UUID menuId = UUID.randomUUID();
 
+        // 가짜 유저 생성
+        UserEntity user = UserEntity.builder().build();
+
         // 가짜 Store 생성
         StoreEntity store = StoreEntity.builder()
                 .build();
@@ -97,7 +105,7 @@ class MenuServiceTest {
                 .willReturn(List.of(menu));
 
         // 2. When (실행)
-        List<MenuAdminResponseDto> result = menuService.getMenusForAdmin(storeId, Role.OWNER);
+        List<MenuAdminResponseDto> result = menuService.getMenusForAdmin(storeId, user);
 
         // 3. Then (검증)
         assertThat(result).hasSize(1);
@@ -127,7 +135,7 @@ class MenuServiceTest {
         given(menuOptionRepository.findAllByMenuIdAndIsDeletedFalse(menuId))
                 .willReturn(Collections.emptyList());
 
-        MenuPublicResponseDto result = menuService.getMenuDetail(menuId);
+        MenuResponseDto result = menuService.getMenuDetail(storeId, menuId, 0);
 
         assertThat(result.getName()).isEqualTo("육전물막국수");
         assertThat(result.getPrice()).isEqualTo(13000);
