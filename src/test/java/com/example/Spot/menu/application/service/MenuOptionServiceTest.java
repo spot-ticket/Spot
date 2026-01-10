@@ -65,8 +65,8 @@ class MenuOptionServiceTest {
         List<MenuOptionResponseDto> result = menuOptionService.getOptions(Role.OWNER, storeId, menuId);
 
         assertThat(result).hasSize(1);
-        assertThat(result.getFirst().getName()).isEqualTo("곱빼기");
-        assertThat(result.getFirst().getPrice()).isEqualTo(1000);
+        assertThat(result.getFirst().getOptionName()).isEqualTo("곱빼기");
+        assertThat(result.getFirst().getOptionPrice()).isEqualTo(1000);
 
         verify(menuOptionRepository, times(1)).findAllByMenuIdAndIsDeletedFalse(menuId);
     }
