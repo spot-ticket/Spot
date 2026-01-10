@@ -26,13 +26,25 @@ import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemOptionRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemRequestDto;
 import com.example.Spot.order.presentation.dto.response.OrderResponseDto;
+import com.example.Spot.payments.domain.entity.PaymentCancelEntity;
+import com.example.Spot.payments.domain.entity.PaymentEntity;
+import com.example.Spot.payments.domain.entity.PaymentHistoryEntity;
+import com.example.Spot.payments.domain.entity.PaymentKeyEntity;
+import com.example.Spot.payments.domain.repository.PaymentCancelRepository;
+import com.example.Spot.payments.domain.repository.PaymentHistoryRepository;
+import com.example.Spot.payments.domain.repository.PaymentKeyRepository;
+import com.example.Spot.payments.domain.repository.PaymentRepository;
+import com.example.Spot.payments.infrastructure.client.TossPaymentClient;
+import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.entity.StoreUserEntity;
 import com.example.Spot.store.domain.repository.StoreRepository;
 import com.example.Spot.store.domain.repository.StoreUserRepository;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 @Transactional(readOnly = true)
@@ -43,6 +55,11 @@ public class OrderServiceImpl implements OrderService {
     private final StoreUserRepository storeUserRepository;
     private final MenuRepository menuRepository;
     private final MenuOptionRepository menuOptionRepository;
+    private final PaymentRepository paymentRepository;
+    private final PaymentKeyRepository paymentKeyRepository;
+    private final PaymentHistoryRepository paymentHistoryRepository;
+    private final PaymentCancelRepository paymentCancelRepository;
+    private final TossPaymentClient tossPaymentClient;
 
     @Override
     @Transactional
@@ -291,8 +308,13 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponseDto customerCancelOrder(UUID orderId, String reason) {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
-        
+
+        // 주문 취소 처리
         order.cancelOrder(reason, CancelledBy.CUSTOMER);
+
+        // 결제 취소 처리
+        cancelPaymentIfExists(orderId, "고객 주문 취소: " + reason);
+
         return OrderResponseDto.from(order);
     }
 
@@ -301,9 +323,64 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponseDto storeCancelOrder(UUID orderId, String reason) {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
-        
+
+        // 주문 취소 처리
         order.cancelOrder(reason, CancelledBy.STORE);
+
+        // 결제 취소 처리
+        cancelPaymentIfExists(orderId, "가게 주문 취소: " + reason);
+
         return OrderResponseDto.from(order);
+    }
+
+    private void cancelPaymentIfExists(UUID orderId, String cancelReason) {
+        // 해당 주문의 완료된 결제가 있는지 확인
+        Optional<PaymentEntity> paymentOpt = paymentRepository.findActivePaymentByOrderId(orderId);
+
+        if (paymentOpt.isEmpty()) {
+            log.info("주문 ID {}에 대한 결제 정보가 없습니다. 결제 취소를 건너뜁니다.", orderId);
+            return;
+        }
+
+        PaymentEntity payment = paymentOpt.get();
+
+        // 결제 키 조회
+        Optional<PaymentKeyEntity> paymentKeyOpt = paymentKeyRepository.findByPaymentId(payment.getId());
+
+        if (paymentKeyOpt.isEmpty()) {
+            log.warn("결제 ID {}에 대한 결제 키가 없습니다. 결제 취소를 건너뜁니다.", payment.getId());
+            return;
+        }
+
+        PaymentKeyEntity paymentKey = paymentKeyOpt.get();
+
+        try {
+            // Toss 결제 취소 API 호출
+            log.info("결제 취소 요청 - 결제 ID: {}, 주문 ID: {}, 사유: {}", payment.getId(), orderId, cancelReason);
+            tossPaymentClient.cancelPayment(paymentKey.getPaymentKey(), cancelReason, 10);
+            log.info("결제 취소 완료 - 결제 ID: {}", payment.getId());
+
+            // PaymentHistory에 취소 기록 추가
+            PaymentHistoryEntity cancelHistory = PaymentHistoryEntity.builder()
+                    .paymentId(payment.getId())
+                    .status(PaymentHistoryEntity.PaymentStatus.CANCELLED)
+                    .build();
+            paymentHistoryRepository.save(cancelHistory);
+
+            // PaymentCancel 테이블에 취소 정보 저장
+            PaymentCancelEntity paymentCancel = PaymentCancelEntity.builder()
+                    .paymentHistoryId(cancelHistory.getId())
+                    .reason(cancelReason)
+                    .build();
+            paymentCancelRepository.save(paymentCancel);
+
+            log.info("결제 취소 정보 저장 완료 - PaymentHistory ID: {}, PaymentCancel ID: {}",
+                    cancelHistory.getId(), paymentCancel.getId());
+
+        } catch (Exception e) {
+            log.error("결제 취소 실패 - 결제 ID: {}, 오류: {}", payment.getId(), e.getMessage(), e);
+            throw new RuntimeException("결제 취소 중 오류가 발생했습니다: " + e.getMessage(), e);
+        }
     }
 
     @Override
