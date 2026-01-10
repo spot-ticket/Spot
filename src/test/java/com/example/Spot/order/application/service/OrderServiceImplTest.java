@@ -20,6 +20,11 @@ import com.example.Spot.menu.domain.repository.MenuRepository;
 import com.example.Spot.order.domain.entity.OrderEntity;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.domain.repository.OrderRepository;
+import com.example.Spot.payments.domain.repository.PaymentCancelRepository;
+import com.example.Spot.payments.domain.repository.PaymentHistoryRepository;
+import com.example.Spot.payments.domain.repository.PaymentKeyRepository;
+import com.example.Spot.payments.domain.repository.PaymentRepository;
+import com.example.Spot.payments.infrastructure.client.TossPaymentClient;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.StoreRepository;
 import com.example.Spot.store.domain.repository.StoreUserRepository;
@@ -28,25 +33,51 @@ public class OrderServiceImplTest {
 
     @Mock
     private OrderRepository orderRepository;
-    
+
     @Mock
     private StoreRepository storeRepository;
-    
+
     @Mock
     private StoreUserRepository storeUserRepository;
-    
+
     @Mock
     private MenuRepository menuRepository;
-    
+
     @Mock
     private MenuOptionRepository menuOptionRepository;
+
+    @Mock
+    private PaymentRepository paymentRepository;
+
+    @Mock
+    private PaymentKeyRepository paymentKeyRepository;
+
+    @Mock
+    private PaymentHistoryRepository paymentHistoryRepository;
+
+    @Mock
+    private PaymentCancelRepository paymentCancelRepository;
+
+    @Mock
+    private TossPaymentClient tossPaymentClient;
 
     private OrderServiceImpl service;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        service = new OrderServiceImpl(orderRepository, storeRepository, storeUserRepository, menuRepository, menuOptionRepository);
+        service = new OrderServiceImpl(
+            orderRepository,
+            storeRepository,
+            storeUserRepository,
+            menuRepository,
+            menuOptionRepository,
+            paymentRepository,
+            paymentKeyRepository,
+            paymentHistoryRepository,
+            paymentCancelRepository,
+            tossPaymentClient
+        );
     }
 
     // ============ Payment Tests ============
