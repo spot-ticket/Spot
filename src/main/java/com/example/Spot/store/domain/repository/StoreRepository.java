@@ -50,12 +50,18 @@ public interface StoreRepository extends JpaRepository<StoreEntity, UUID> {
             "AND s.isDeleted = false")
     List<StoreEntity> findAllByOwnerId(@Param("userId") Integer userId);
 
-
+    // 주소와 매장명이 같은 삭제되지 않은 매장이 존재하는지 확인
+    // soft delete된 매장은 제외
+    boolean existsByRoadAddressAndAddressDetailAndNameAndIsDeletedFalse(
+            String roadAddress,
+            String addressDetail,
+            String name
+    );
+    
     // category-repo
     // 삭제되지 않은 가게 전체 조회
     List<StoreEntity> findByIsDeletedFalse();
 
     // ID로 삭제되지 않은 가게 조회
     Optional<StoreEntity> findByIdAndIsDeletedFalse(UUID id);
-
 }
