@@ -102,7 +102,7 @@ class MenuOptionControllerTest {
         CustomUserDetails mockUser = createMockUser(Role.OWNER);
         StoreEntity store = createStoreEntity(storeId);
         MenuEntity menu = createMenuEntity(store, menuId);
-        MenuOptionEntity option = createMenuOptionEntity(menu, optionId, request.getName());
+        MenuOptionEntity option = createMenuOptionEntity(menu, optionId, request.getOptionName());
 
         CreateMenuOptionResponseDto response = new CreateMenuOptionResponseDto(option);
 

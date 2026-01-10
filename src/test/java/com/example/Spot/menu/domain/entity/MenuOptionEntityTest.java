@@ -59,7 +59,7 @@ class MenuOptionEntityTest {
         menuOption.changeAvailable(false);
 
         // 3. then
-        assertThat(menuOption.getIsAvailable()).isFalse();
+        assertThat(menuOption.isAvailable()).isFalse();
     }
 
     @Test
