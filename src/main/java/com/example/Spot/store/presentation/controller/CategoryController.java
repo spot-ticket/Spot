@@ -51,7 +51,7 @@ public class CategoryController implements CategoryApi {
     }
 
     @Override
-    @PreAuthorize("hasAnyRole('MASTER','MANAGER')")
+    @PreAuthorize("hasAnyRole('MASTER','MANAGER','OWNER')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
     public CategoryResponseDTO.CategoryDetail create(@RequestBody @Valid CategoryRequestDTO.Create request) {

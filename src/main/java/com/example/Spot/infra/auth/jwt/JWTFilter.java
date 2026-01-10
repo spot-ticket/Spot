@@ -36,14 +36,11 @@ public class JWTFilter extends OncePerRequestFilter {
 
         // Authorization 헤더 검증
         if (authorization == null || !authorization.startsWith("Bearer ")) {
-
-            System.out.println("token null");
             filterChain.doFilter(request, response);
 
             //조건이 해당 시 메소드 종료
             return;
         }
-        System.out.println("authorization now");
 
         String token = authorization.substring(7);
 
@@ -65,17 +62,8 @@ public class JWTFilter extends OncePerRequestFilter {
             Integer userId = jwtUtil.getUserId(token);
             Role role = jwtUtil.getRole(token);
 
-            // userId integer로 받아옴 -> cutomedtails으료 변경 시 삭제
-//            List<SimpleGrantedAuthority> authorities =
-//                    List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
-            // custom details로 변경
             UserEntity userForAuth = UserEntity.forAuthentication(userId, role);
             CustomUserDetails principal = new CustomUserDetails(userForAuth);
-
-            //debug
-            System.out.println("Authorities = " + principal.getAuthorities().stream()
-                    .map(org.springframework.security.core.GrantedAuthority::getAuthority)
-                    .toList());
 
             Authentication authToken =
                     new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());

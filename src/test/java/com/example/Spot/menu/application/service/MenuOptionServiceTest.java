@@ -146,7 +146,7 @@ class MenuOptionServiceTest {
 
         // 3. Then
         assertThat(result.getName()).isEqualTo("수정된옵션");
-        assertThat(option.getIsAvailable()).isFalse();
+        assertThat(option.isAvailable()).isFalse();
 
         verify(menuOptionRepository, times(1)).findById(optionId);
     }

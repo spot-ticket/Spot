@@ -2,7 +2,6 @@ package com.example.Spot.menu.presentation.dto.request;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
@@ -26,18 +25,21 @@ public class CreateMenuRequestDto {
 
     private String description;
 
-    @NotBlank(message = "메뉴 이미지는 필수입니다.")
-    @JsonProperty("image_url")
     private String imageUrl;
 
     public MenuEntity toEntity(StoreEntity store) {
+        // imageUrl이 null이거나 빈 문자열이면 기본 이미지 사용
+        String finalImageUrl = (imageUrl == null || imageUrl.isBlank())
+            ? "https://via.placeholder.com/300x200?text=Menu+Image"
+            : imageUrl;
+
         return MenuEntity.builder()
                 .store(store)
                 .name(name)
                 .category(category)
                 .price(price)
                 .description(description)
-                .imageUrl(imageUrl)
+                .imageUrl(finalImageUrl)
                 .build();
     }
 }

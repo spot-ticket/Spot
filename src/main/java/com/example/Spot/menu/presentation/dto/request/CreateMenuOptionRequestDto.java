@@ -14,20 +14,19 @@ import lombok.NoArgsConstructor;
 public class CreateMenuOptionRequestDto {
 
     @NotBlank(message = "옵션명은 필수입니다.")
-    private String name;
+    private String optionName;
+    private String optionDetail;
 
-    private String detail;
-
-    @NotNull(message = "가격은 필수입니다.")
-    @Min(value =  0, message = "가격은 0원 이상이어야 합니다.")
-    private Integer price;
+    @NotNull(message = "메뉴 옵션 가격은 필수입니다.")
+    @Min(value =  0, message = "메뉴 옵션 추가 가격은 0원 이상이어야 합니다.")
+    private Integer optionPrice;
 
     public MenuOptionEntity toEntity(MenuEntity menu) {
         return MenuOptionEntity.builder()
                 .menu(menu)
-                .name(name)
-                .detail(detail)
-                .price(price)
+                .name(optionName)
+                .detail(optionDetail)
+                .price(optionPrice)
                 .build();
     }
 }
