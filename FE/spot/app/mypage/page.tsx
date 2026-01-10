@@ -81,31 +81,68 @@ export default function MyPage() {
 
       {/* 메뉴 */}
       <div className="bg-white rounded-xl shadow-md divide-y">
-        <Link
-          href="/orders"
-          className="flex items-center justify-between p-4 hover:bg-gray-50"
-        >
-          <div className="flex items-center gap-3">
-            <span className="text-xl">📋</span>
-            <span className="text-gray-900">주문 내역</span>
-          </div>
-          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </Link>
+        {/* CUSTOMER 전용 메뉴 */}
+        {user.role === 'CUSTOMER' && (
+          <>
+            <Link
+              href="/orders"
+              className="flex items-center justify-between p-4 hover:bg-gray-50"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-xl">📋</span>
+                <span className="text-gray-900">주문 내역</span>
+              </div>
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
 
-        <Link
-          href="/cart"
-          className="flex items-center justify-between p-4 hover:bg-gray-50"
-        >
-          <div className="flex items-center gap-3">
-            <span className="text-xl">🛒</span>
-            <span className="text-gray-900">장바구니</span>
-          </div>
-          <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-          </svg>
-        </Link>
+            <Link
+              href="/cart"
+              className="flex items-center justify-between p-4 hover:bg-gray-50"
+            >
+              <div className="flex items-center gap-3">
+                <span className="text-xl">🛒</span>
+                <span className="text-gray-900">장바구니</span>
+              </div>
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </Link>
+          </>
+        )}
+
+        {/* OWNER 전용 메뉴 */}
+        {user.role === 'OWNER' && (
+          <Link
+            href="/mypage/store"
+            className="flex items-center justify-between p-4 hover:bg-gray-50"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-xl">🏪</span>
+              <span className="text-gray-900">내 가게 관리</span>
+            </div>
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        )}
+
+        {/* CHEF 전용 메뉴 */}
+        {user.role === 'CHEF' && (
+          <Link
+            href="/mypage/chef"
+            className="flex items-center justify-between p-4 hover:bg-gray-50"
+          >
+            <div className="flex items-center gap-3">
+              <span className="text-xl">👨‍🍳</span>
+              <span className="text-gray-900">소속 가게 등록</span>
+            </div>
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          </Link>
+        )}
 
         <button
           onClick={handleLogout}

@@ -15,6 +15,9 @@ export const storeApi = {
     const response = await api.get<PageResponse<Store>>('/api/stores', {
       params: { page, size },
     });
+
+    console.log("==");
+    console.log(response);
     return response.data;
   },
 
