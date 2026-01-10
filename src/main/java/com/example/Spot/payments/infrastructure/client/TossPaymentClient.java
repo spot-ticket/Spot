@@ -1,6 +1,7 @@
 package com.example.Spot.payments.infrastructure.client;
 
 import java.util.Map;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpEntity;
@@ -33,7 +34,7 @@ public class TossPaymentClient {
   public TossPaymentResponse requestBillingPayment(
       String billingKey,
       Long amount,
-      String orderId,
+      UUID orderId,
       String orderName,
       String customerKey,
       Integer timeout) {
@@ -50,17 +51,14 @@ public class TossPaymentClient {
     HttpEntity<Map<String, Object>> request = new HttpEntity<>(requestBody, headers);
 
     try {
-      ResponseEntity<String> rawResponse =
-          restTemplate.postForEntity(url, request, String.class);
-
       ResponseEntity<TossPaymentResponse> response =
           restTemplate.postForEntity(url, request, TossPaymentResponse.class);
+
       return response.getBody();
     } catch (HttpClientErrorException e) {
-
       throw new RuntimeException("[TossPayment] 자동결제 실패 HttpClientErrorException: " + e.getMessage());
     } catch (Exception e) {
-
+      e.printStackTrace();
       throw new RuntimeException("[TossPayment] 자동결제 실패: " + e.getMessage());
     }
   }

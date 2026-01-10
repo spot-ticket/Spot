@@ -51,12 +51,8 @@ public class PaymentService {
   private final UserBillingAuthRepository userBillingAuthRepository;
 
   // 주문 수락 이후에 동작되어야 함
-  // 프론트가 없으니까 자동 결제로 대체. 결제는 프론트 페이지가 요구됨
-  // billingKey를 받으려면 프론트 로직이 요구되어서 customer_id는 1로 고정됨
   // https://docs.tosspayments.com/reference/using-api/webhook-events 참고
 
-  // READY -> IN_PROGRESS -> DONE / ABORTED
-  // 하나의 로직을 3단계로 나눔. 여러 장애로 결제 실패 이유를 알기 위함.
   // preparePayment -> executePaymentBilling -> executeTossPayment -> success or fail
 
   @Transactional
@@ -129,6 +125,7 @@ public class PaymentService {
     return paymentHistory;
   }
 
+  // [Toss]
   private TossPaymentResponse executeTossPaymentBilling(UUID paymentId) {
     PaymentEntity payment = findPayment(paymentId);
 
@@ -145,7 +142,7 @@ public class PaymentService {
             "[PaymentService] 등록된 Billing Key가 없습니다. 먼저 Billing Key를 입력해주세요.");
       }
 
-      String uniqueOrderId = paymentId.toString() + "_" + System.currentTimeMillis();
+      UUID uniqueOrderId = payment.getOrderId();
 
       return tossPaymentClient.requestBillingPayment(
           billingKey,
@@ -155,6 +152,7 @@ public class PaymentService {
           billingAuth.getCustomerKey(),
           this.timeout);
     } catch (Exception e) {
+      
       recordFailure(paymentId, e);
       throw new RuntimeException("[PaymentService] 자동결제 실패: " + e.getMessage(), e);
     }

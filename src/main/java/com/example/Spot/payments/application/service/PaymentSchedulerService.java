@@ -131,7 +131,7 @@ public class PaymentSchedulerService {
 
             // 발급받은 빌링키로 결제 요청
             // 매번 고유한 orderId 생성 (UUID + timestamp)
-            String uniqueOrderId = paymentId.toString() + "_" + System.currentTimeMillis();
+            UUID uniqueOrderId = payment.getOrderId();
 
             TossPaymentResponse response = tossPaymentClient.requestBillingPayment(
                     billingKey,
