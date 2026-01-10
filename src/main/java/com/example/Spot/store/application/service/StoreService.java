@@ -11,6 +11,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.Spot.global.presentation.advice.DuplicateResourceException;
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.repository.MenuRepository;
 import com.example.Spot.menu.presentation.dto.response.MenuPublicResponseDto;
@@ -42,10 +43,19 @@ public class StoreService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final MenuRepository menuRepository;
-
+    
     // 1. 매장 생성
     @Transactional
     public UUID createStore(StoreCreateRequest dto, Integer userId) {
+        
+        // 1.0 중복 체크: 도로명주소 + 상세주소 + 매장명( soft delete 제외)
+        if (storeRepository.existsByRoadAddressAndAddressDetailAndNameAndIsDeletedFalse(
+                dto.roadAddress(), dto.addressDetail(), dto.name())) {
+            throw new DuplicateResourceException(
+                    String.format("이미 존재하는 매장입니다. (주소: %s %s, 매장명: %s)",
+                        dto.roadAddress(), dto.addressDetail(), dto.name())
+            );
+        }
         
         // 1.1 DTO에 넘겨줄 카테고리 리스트를 생성
         List<CategoryEntity> categories = dto.categoryNames().stream()

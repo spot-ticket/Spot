@@ -74,7 +74,17 @@ public class GlobalExceptionHandler {
                 .status(GeneralErrorCode.FORBIDDEN.getStatus())
                 .body(ApiResponse.onFailure(GeneralErrorCode.FORBIDDEN, null));
     }
+    
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<ApiResponse<?>> handleDuplicateResource(DuplicateResourceException e) {
+        
+        log.warn("[DuplicateResourceException] {}", e.getMessage());
 
+        return ResponseEntity
+                .status(GeneralErrorCode.CONFLICT.getStatus())
+                .body(ApiResponse.onFailure(GeneralErrorCode.CONFLICT, null));
+    }
+    
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<?>> handleUnexpectedException(Exception e) {
 
