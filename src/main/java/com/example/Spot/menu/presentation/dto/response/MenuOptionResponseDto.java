@@ -12,17 +12,11 @@ import lombok.NoArgsConstructor;
 public class MenuOptionResponseDto {
 
     private UUID id;
-
     private UUID menuId;
-
     private String optionName;
-
     private String detail;
-
     private Integer optionPrice;
-
     private Boolean isAvailable;
-
     private Boolean isDeleted;
 
     public MenuOptionResponseDto(MenuOptionEntity menuOption) {
@@ -31,7 +25,7 @@ public class MenuOptionResponseDto {
         this.optionName = menuOption.getName();
         this.detail = menuOption.getDetail();
         this.optionPrice = menuOption.getPrice();
-        this.isAvailable = menuOption.getIsAvailable();
+        this.isAvailable = menuOption.isAvailable();
         this.isDeleted = menuOption.getIsDeleted();
     }
 }

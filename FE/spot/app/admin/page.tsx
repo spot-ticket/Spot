@@ -1,0 +1,678 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import { useAuth } from '@/store/authStore';
+import {
+  adminUserApi,
+  adminOrderApi,
+  adminStoreApi,
+  adminStatsApi,
+  type AdminStats,
+} from '@/lib/admin';
+import type { User, OrderResponse, Store, PageResponse } from '@/types';
+import Button from '@/components/ui/Button';
+
+type TabType = 'dashboard' | 'users' | 'orders' | 'stores';
+
+export default function AdminPage() {
+  const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<TabType>('dashboard');
+  const [isLoading, setIsLoading] = useState(false);
+
+  // 대시보드 데이터
+  const [stats, setStats] = useState<AdminStats | null>(null);
+
+  // 사용자 데이터
+  const [users, setUsers] = useState<PageResponse<User> | null>(null);
+  const [userPage, setUserPage] = useState(0);
+
+  // 주문 데이터
+  const [orders, setOrders] = useState<PageResponse<OrderResponse> | null>(null);
+  const [orderPage, setOrderPage] = useState(0);
+
+  // 가게 데이터
+  const [stores, setStores] = useState<PageResponse<Store> | null>(null);
+  const [storePage, setStorePage] = useState(0);
+
+  // 대시보드 데이터 로드
+  const loadDashboard = async () => {
+    try {
+      setIsLoading(true);
+      const data = await adminStatsApi.getStats();
+      setStats(data);
+    } catch (error: any) {
+      console.error('대시보드 로드 실패:', error);
+      alert('대시보드 데이터를 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 사용자 목록 로드
+  const loadUsers = async (page = 0) => {
+    try {
+      setIsLoading(true);
+      const data = await adminUserApi.getAllUsers(page, 20);
+      setUsers(data);
+      setUserPage(page);
+    } catch (error) {
+      console.error('사용자 목록 로드 실패:', error);
+      alert('사용자 목록을 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 주문 목록 로드
+  const loadOrders = async (page = 0) => {
+    try {
+      setIsLoading(true);
+      const data = await adminOrderApi.getAllOrders(page, 20);
+      setOrders(data);
+      setOrderPage(page);
+    } catch (error) {
+      console.error('주문 목록 로드 실패:', error);
+      alert('주문 목록을 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 가게 목록 로드
+  const loadStores = async (page = 0) => {
+    try {
+      setIsLoading(true);
+      const data = await adminStoreApi.getAllStores(page, 20);
+      setStores(data);
+      setStorePage(page);
+    } catch (error) {
+      console.error('가게 목록 로드 실패:', error);
+      alert('가게 목록을 불러오는데 실패했습니다.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  // 탭 변경 시 데이터 로드
+  useEffect(() => {
+    switch (activeTab) {
+      case 'dashboard':
+        loadDashboard();
+        break;
+      case 'users':
+        loadUsers();
+        break;
+      case 'orders':
+        loadOrders();
+        break;
+      case 'stores':
+        loadStores();
+        break;
+    }
+  }, [activeTab]);
+
+  // 사용자 역할 변경
+  const handleUpdateUserRole = async (userId: number, newRole: string) => {
+    if (!confirm('사용자의 역할을 변경하시겠습니까?')) return;
+
+    try {
+      await adminUserApi.updateUserRole(userId, newRole);
+      alert('역할이 변경되었습니다.');
+      loadUsers(userPage);
+    } catch (error) {
+      console.error('역할 변경 실패:', error);
+      alert('역할 변경에 실패했습니다.');
+    }
+  };
+
+  // 사용자 삭제
+  const handleDeleteUser = async (userId: number) => {
+    if (!confirm('정말 이 사용자를 삭제하시겠습니까?')) return;
+
+    try {
+      await adminUserApi.deleteUser(userId);
+      alert('사용자가 삭제되었습니다.');
+      loadUsers(userPage);
+    } catch (error) {
+      console.error('사용자 삭제 실패:', error);
+      alert('사용자 삭제에 실패했습니다.');
+    }
+  };
+
+  // 주문 상태 변경
+  const handleUpdateOrderStatus = async (orderId: number, newStatus: string) => {
+    if (!confirm('주문 상태를 변경하시겠습니까?')) return;
+
+    try {
+      await adminOrderApi.updateOrderStatus(orderId, newStatus);
+      alert('주문 상태가 변경되었습니다.');
+      loadOrders(orderPage);
+    } catch (error) {
+      console.error('주문 상태 변경 실패:', error);
+      alert('주문 상태 변경에 실패했습니다.');
+    }
+  };
+
+  // 가게 승인
+  const handleApproveStore = async (storeId: string) => {
+    if (!confirm('이 가게를 승인하시겠습니까?')) return;
+
+    try {
+      await adminStoreApi.approveStore(storeId);
+      alert('가게가 승인되었습니다.');
+      loadStores(storePage);
+    } catch (error) {
+      console.error('가게 승인 실패:', error);
+      alert('가게 승인에 실패했습니다.');
+    }
+  };
+
+  // 가게 거절
+  const handleRejectStore = async (storeId: string) => {
+    if (!confirm('이 가게를 거절하시겠습니까?')) return;
+
+    try {
+      await adminStoreApi.rejectStore(storeId);
+      alert('가게가 거절되었습니다.');
+      loadStores(storePage);
+    } catch (error) {
+      console.error('가게 거절 실패:', error);
+      alert('가게 거절에 실패했습니다.');
+    }
+  };
+
+  // 가게 삭제
+  const handleDeleteStore = async (storeId: string) => {
+    if (!confirm('정말 이 가게를 삭제하시겠습니까?')) return;
+
+    try {
+      await adminStoreApi.deleteStore(storeId);
+      alert('가게가 삭제되었습니다.');
+      loadStores(storePage);
+    } catch (error) {
+      console.error('가게 삭제 실패:', error);
+      alert('가게 삭제에 실패했습니다.');
+    }
+  };
+
+  return (
+    <div>
+      {/* 헤더 */}
+      <div className="mb-8">
+        <h1 className="text-3xl font-bold text-gray-900">관리자 대시보드</h1>
+        <p className="mt-2 text-gray-600">
+          안녕하세요, {user?.nickname}님 ({user?.role})
+        </p>
+      </div>
+
+      {/* 탭 네비게이션 */}
+      <div className="border-b border-gray-200 mb-6">
+        <nav className="-mb-px flex space-x-8">
+          <button
+            onClick={() => setActiveTab('dashboard')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'dashboard'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            대시보드
+          </button>
+          <button
+            onClick={() => setActiveTab('users')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'users'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            사용자 관리
+          </button>
+          <button
+            onClick={() => setActiveTab('orders')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'orders'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            주문 관리
+          </button>
+          <button
+            onClick={() => setActiveTab('stores')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm ${
+              activeTab === 'stores'
+                ? 'border-blue-500 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            가게 관리
+          </button>
+        </nav>
+      </div>
+
+      {/* 탭 콘텐츠 */}
+      {isLoading ? (
+        <div className="flex justify-center py-12">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+        </div>
+      ) : (
+        <>
+          {/* 대시보드 탭 */}
+          {activeTab === 'dashboard' && stats && (
+            <div>
+              {/* 통계 카드 */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-sm font-medium text-gray-500">전체 사용자</h3>
+                  <p className="mt-2 text-3xl font-bold text-gray-900">
+                    {stats.totalUsers.toLocaleString()}
+                  </p>
+                </div>
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-sm font-medium text-gray-500">전체 주문</h3>
+                  <p className="mt-2 text-3xl font-bold text-gray-900">
+                    {stats.totalOrders.toLocaleString()}
+                  </p>
+                </div>
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-sm font-medium text-gray-500">전체 가게</h3>
+                  <p className="mt-2 text-3xl font-bold text-gray-900">
+                    {stats.totalStores.toLocaleString()}
+                  </p>
+                </div>
+                <div className="bg-white rounded-lg shadow p-6">
+                  <h3 className="text-sm font-medium text-gray-500">총 매출</h3>
+                  <p className="mt-2 text-3xl font-bold text-gray-900">
+                    {stats.totalRevenue.toLocaleString()}원
+                  </p>
+                </div>
+              </div>
+
+              {/* 최근 주문 */}
+              <div className="bg-white rounded-lg shadow">
+                <div className="px-6 py-4 border-b border-gray-200">
+                  <h3 className="text-lg font-medium text-gray-900">최근 주문</h3>
+                </div>
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          주문 ID
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          가게명
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          상태
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                          금액
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {stats.recentOrders.map((order) => (
+                        <tr key={order.id}>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            #{order.id}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {order.storeName}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                              {order.orderStatus}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {order.totalAmount.toLocaleString()}원
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* 사용자 관리 탭 */}
+          {activeTab === 'users' && users && (
+            <div className="bg-white rounded-lg shadow">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900">
+                  사용자 목록 (총 {users.totalElements}명)
+                </h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        ID
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        사용자명
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        닉네임
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        이메일
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        역할
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        작업
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {users.content.map((user) => (
+                      <tr key={user.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {user.id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {user.username}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {user.nickname}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {user.email}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <select
+                            value={user.role}
+                            onChange={(e) => handleUpdateUserRole(user.id, e.target.value)}
+                            className="text-sm border-gray-300 rounded-md"
+                          >
+                            <option value="CUSTOMER">CUSTOMER</option>
+                            <option value="OWNER">OWNER</option>
+                            <option value="CHEF">CHEF</option>
+                            <option value="MANAGER">MANAGER</option>
+                            <option value="MASTER">MASTER</option>
+                          </select>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleDeleteUser(user.id)}
+                          >
+                            삭제
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {/* 페이지네이션 */}
+              <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+                <Button
+                  variant="outline"
+                  disabled={userPage === 0}
+                  onClick={() => loadUsers(userPage - 1)}
+                >
+                  이전
+                </Button>
+                <span className="text-sm text-gray-700">
+                  {userPage + 1} / {users.totalPages} 페이지
+                </span>
+                <Button
+                  variant="outline"
+                  disabled={userPage >= users.totalPages - 1}
+                  onClick={() => loadUsers(userPage + 1)}
+                >
+                  다음
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* 주문 관리 탭 */}
+          {activeTab === 'orders' && orders && (
+            <div className="bg-white rounded-lg shadow">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900">
+                  주문 목록 (총 {orders.totalElements}건)
+                </h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        주문 ID
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        가게명
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        금액
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        상태
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        작업
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {orders.content.map((order) => (
+                      <tr key={order.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          #{order.id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.storeName}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {order.totalAmount.toLocaleString()}원
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <select
+                            value={order.orderStatus}
+                            onChange={(e) =>
+                              handleUpdateOrderStatus(order.id, e.target.value)
+                            }
+                            className="text-sm border-gray-300 rounded-md"
+                          >
+                            <option value="PAYMENT_PENDING">결제 대기</option>
+                            <option value="PENDING">승인 대기</option>
+                            <option value="ACCEPTED">승인됨</option>
+                            <option value="REJECTED">거절됨</option>
+                            <option value="COOKING">조리 중</option>
+                            <option value="READY">픽업 준비</option>
+                            <option value="COMPLETED">완료</option>
+                            <option value="CANCELLED">취소</option>
+                            <option value="PAYMENT_FAILED">결제 실패</option>
+                          </select>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              // 주문 상세 페이지로 이동 또는 모달 열기
+                              alert(`주문 #${order.id} 상세 정보`);
+                            }}
+                          >
+                            상세
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {/* 페이지네이션 */}
+              <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+                <Button
+                  variant="outline"
+                  disabled={orderPage === 0}
+                  onClick={() => loadOrders(orderPage - 1)}
+                >
+                  이전
+                </Button>
+                <span className="text-sm text-gray-700">
+                  {orderPage + 1} / {orders.totalPages} 페이지
+                </span>
+                <Button
+                  variant="outline"
+                  disabled={orderPage >= orders.totalPages - 1}
+                  onClick={() => loadOrders(orderPage + 1)}
+                >
+                  다음
+                </Button>
+              </div>
+            </div>
+          )}
+
+          {/* 가게 관리 탭 */}
+          {activeTab === 'stores' && stores && (
+            <div className="bg-white rounded-lg shadow">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h3 className="text-lg font-medium text-gray-900">
+                  가게 목록 (총 {stores.totalElements}개)
+                </h3>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="min-w-full divide-y divide-gray-200">
+                  <thead className="bg-gray-50">
+                    <tr>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        ID
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        가게명
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        주소
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        전화번호
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        상태
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        작업
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="bg-white divide-y divide-gray-200">
+                    {stores.content.map((store: any) => (
+                      <tr key={store.id}>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {store.id}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          {store.name}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-500">
+                          {store.roadAddress}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {store.phoneNumber}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              store.status === 'APPROVED'
+                                ? 'bg-green-100 text-green-800'
+                                : store.status === 'REJECTED'
+                                ? 'bg-red-100 text-red-800'
+                                : 'bg-yellow-100 text-yellow-800'
+                            }`}
+                          >
+                            {store.status === 'APPROVED'
+                              ? '승인됨'
+                              : store.status === 'REJECTED'
+                              ? '거부됨'
+                              : '승인 대기'}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
+                          {store.status === 'PENDING' && (
+                            <>
+                              <Button
+                                variant="primary"
+                                size="sm"
+                                onClick={() => handleApproveStore(store.id)}
+                              >
+                                승인
+                              </Button>
+                              <Button
+                                variant="danger"
+                                size="sm"
+                                onClick={() => handleRejectStore(store.id)}
+                              >
+                                거절
+                              </Button>
+                            </>
+                          )}
+                          {store.status === 'APPROVED' && (
+                            <Button
+                              variant="danger"
+                              size="sm"
+                              onClick={() => handleRejectStore(store.id)}
+                            >
+                              승인 취소
+                            </Button>
+                          )}
+                          {store.status === 'REJECTED' && (
+                            <Button
+                              variant="primary"
+                              size="sm"
+                              onClick={() => handleApproveStore(store.id)}
+                            >
+                              승인
+                            </Button>
+                          )}
+                          <Button
+                            variant="danger"
+                            size="sm"
+                            onClick={() => handleDeleteStore(store.id)}
+                          >
+                            삭제
+                          </Button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+              {/* 페이지네이션 */}
+              <div className="px-6 py-4 border-t border-gray-200 flex justify-between items-center">
+                <Button
+                  variant="outline"
+                  disabled={storePage === 0}
+                  onClick={() => loadStores(storePage - 1)}
+                >
+                  이전
+                </Button>
+                <span className="text-sm text-gray-700">
+                  {storePage + 1} / {stores.totalPages} 페이지
+                </span>
+                <Button
+                  variant="outline"
+                  disabled={storePage >= stores.totalPages - 1}
+                  onClick={() => loadStores(storePage + 1)}
+                >
+                  다음
+                </Button>
+              </div>
+            </div>
+          )}
+        </>
+      )}
+    </div>
+  );
+}

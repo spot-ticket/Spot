@@ -81,9 +81,12 @@ public class StoreService {
     // 2. 매장 상세 조회
     public StoreDetailResponse getStoreDetails(UUID storeId, Integer userId) {
 
-        // 2.1 유저 조회 및 권한 확인
-        UserEntity currentUser = getValidatedUser(userId);
-        boolean isAdmin = checkIsAdmin(currentUser);
+        // 2.1 유저 조회 및 권한 확인 (인증되지 않은 사용자는 null)
+        boolean isAdmin = false;
+        if (userId != null) {
+            UserEntity currentUser = getValidatedUser(userId);
+            isAdmin = checkIsAdmin(currentUser);
+        }
 
         // 2.2 레포지토리 호출
         StoreEntity store = storeRepository.findByIdWithDetails(storeId, isAdmin)
@@ -106,13 +109,16 @@ public class StoreService {
 
     // 3. 매장 전체 조회
     public Page<StoreListResponse> getAllStores(Integer userId, Pageable pageable) {
-        // 3.1 사용자의 권한 확인
-        UserEntity currentUser = getValidatedUser(userId);
-        boolean isAdmin = checkIsAdmin(currentUser);
+        // 3.1 사용자의 권한 확인 (인증되지 않은 사용자는 null)
+        boolean isAdmin = false;
+        if (userId != null) {
+            UserEntity currentUser = getValidatedUser(userId);
+            isAdmin = checkIsAdmin(currentUser);
+        }
 
         // 3.2 레포지토리 호출 (관리자는 삭제된 것 포함)
         Page<StoreEntity> stores = storeRepository.findAllByRole(isAdmin, pageable);
-        
+
         // 3.3 서비스지역 기반 필터링 페이지네이션
         return convertToPageResponse(stores, isAdmin, pageable);
 
@@ -184,15 +190,51 @@ public class StoreService {
     
     // 7. 매장 이름으로 검색
     public Page<StoreListResponse> searchStoresByName(String keyword, Integer userId, Pageable pageable) {
-        // 7.1 사용자의 권한 확인
-        UserEntity currentUser = getValidatedUser(userId);
-        boolean isAdmin = checkIsAdmin(currentUser);
+        // 7.1 사용자의 권한 확인 (인증되지 않은 사용자는 null)
+        boolean isAdmin = false;
+        if (userId != null) {
+            UserEntity currentUser = getValidatedUser(userId);
+            isAdmin = checkIsAdmin(currentUser);
+        }
 
         // 7.2 레포지토리 호출
         Page<StoreEntity> stores = storeRepository.searchByName(keyword, isAdmin, pageable);
 
         // 7.3 서비스지역 기반 필터링 페이지네이션
         return convertToPageResponse(stores, isAdmin, pageable);
+    }
+
+    // 8. 내 가게 목록 조회 (OWNER, CHEF)
+    public List<StoreListResponse> getMyStores(Integer userId) {
+        UserEntity currentUser = getValidatedUser(userId);
+
+        // OWNER나 CHEF만 자신의 가게를 조회할 수 있음
+        if (currentUser.getRole() != Role.OWNER && currentUser.getRole() != Role.CHEF) {
+            throw new AccessDeniedException("OWNER 또는 CHEF만 가게를 조회할 수 있습니다.");
+        }
+
+        List<StoreEntity> stores = storeRepository.findAllByOwnerId(userId);
+
+        return stores.stream()
+                .map(StoreListResponse::fromEntity)
+                .toList();
+    }
+
+    // 9. 가게 승인 상태 변경 (MANAGER, MASTER만 가능)
+    @Transactional
+    public void updateStoreStatus(UUID storeId, com.example.Spot.store.domain.StoreStatus status, Integer userId) {
+        UserEntity currentUser = getValidatedUser(userId);
+
+        // 관리자 권한 체크
+        if (!checkIsAdmin(currentUser)) {
+            throw new AccessDeniedException("관리자만 가게 승인 상태를 변경할 수 있습니다.");
+        }
+
+        // 가게 조회 (관리자는 삭제된 가게도 조회 가능)
+        StoreEntity store = storeRepository.findByIdWithDetails(storeId, true)
+                .orElseThrow(() -> new EntityNotFoundException("매장을 찾을 수 없습니다."));
+
+        store.updateStatus(status);
     }
     
     // ----- [공통 검증 로직] -----
@@ -245,12 +287,14 @@ public class StoreService {
         if (isAdmin) {
             return stores.map(StoreListResponse::fromEntity);
         }
-
         List<StoreListResponse> filteredContent = stores.getContent().stream()
-                .filter(store -> isServiceable(store.getRoadAddress()))
+                .filter(store -> {
+                    boolean serviceable = isServiceable(store.getRoadAddress());
+                    return serviceable;
+                })
                 .map(StoreListResponse::fromEntity)
                 .toList();
 
-        return new PageImpl<>(filteredContent, pageable, stores.getTotalElements());
+        return new PageImpl<>(filteredContent, pageable, filteredContent.size());
     }
 }

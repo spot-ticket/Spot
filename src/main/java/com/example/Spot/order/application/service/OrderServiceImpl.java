@@ -101,7 +101,7 @@ public class OrderServiceImpl implements OrderService {
                 MenuOptionEntity menuOption = menuOptionRepository.findById(optionDto.getMenuOptionId())
                         .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 옵션입니다: " + optionDto.getMenuOptionId()));
 
-                if (!menuOption.getIsAvailable()) {
+                if (!menuOption.isAvailable()) {
                     throw new IllegalArgumentException("선택할 수 없는 옵션입니다: " + menuOption.getName());
                 }
 

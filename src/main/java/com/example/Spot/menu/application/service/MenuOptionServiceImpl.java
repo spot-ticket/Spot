@@ -56,13 +56,11 @@ public class MenuOptionServiceImpl implements MenuOptionService {
 
         // URL의 storeId와 실제 메뉴의 storeId가 같은지 검증
         validateMenuBelongsToStore(menu.getStore(), storeId);
-
         validatePermission(menu.getStore(), user);
-
+        
         MenuOptionEntity option = request.toEntity(menu);
-
+        
         menuOptionRepository.save(option);
-
         return new CreateMenuOptionResponseDto(option);
     }
 

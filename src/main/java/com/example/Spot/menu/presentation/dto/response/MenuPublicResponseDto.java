@@ -16,18 +16,13 @@ import lombok.NoArgsConstructor;
 public class MenuPublicResponseDto implements MenuResponseDto {
 
     private UUID id;
-
     private UUID storeId;
-
     private String name;
     private String category;
     private Integer price;
     private String description;
-
     private String imageUrl;
-
     private Boolean isAvailable;
-
     private List<MenuOptionResponseDto> options;
 
     public static MenuPublicResponseDto of(MenuEntity menu, List<MenuOptionEntity> options) {

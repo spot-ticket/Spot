@@ -6,6 +6,15 @@ export interface ApiResponse<T> {
   result: T;
 }
 
+// 페이지네이션 응답 타입
+export interface PageResponse<T> {
+  content: T[];
+  totalPages: number;
+  totalElements: number;
+  size: number;
+  number: number;
+}
+
 // 사용자 관련 타입
 export type Role = 'CUSTOMER' | 'OWNER' | 'CHEF' | 'MANAGER' | 'MASTER';
 
@@ -52,6 +61,8 @@ export interface Store {
   phoneNumber: string;
   openTime: string;
   closeTime: string;
+  categoryNames?: string[];
+  status?: 'PENDING' | 'APPROVED' | 'REJECTED';
   categories?: Category[];
   menus?: Menu[];
 }
