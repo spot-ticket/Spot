@@ -11,6 +11,9 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.Spot.menu.domain.entity.MenuEntity;
+import com.example.Spot.menu.domain.repository.MenuRepository;
+import com.example.Spot.menu.presentation.dto.response.MenuPublicResponseDto;
 import com.example.Spot.store.domain.entity.CategoryEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.CategoryRepository;
@@ -38,6 +41,7 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
+    private final MenuRepository menuRepository;
 
     // 1. 매장 생성
     @Transactional
@@ -74,14 +78,20 @@ public class StoreService {
         // 2.2 레포지토리 호출
         StoreEntity store = storeRepository.findByIdWithDetails(storeId, isAdmin)
                 .orElseThrow(() -> new EntityNotFoundException("매장을 찾을 수 없습니다."));
-        
+
         // 2.3 서비스 가능 지역인지 검증
         if (!isAdmin) {
             validateServiceRegion(store.getRoadAddress());
         }
-        
-        // 2.4 Entity를 DTO(Response)로 변환하여 반환
-        return StoreDetailResponse.fromEntity(store);
+
+        // 2.4 메뉴 목록 조회
+        List<MenuEntity> menuEntities = menuRepository.findAllActiveMenus(storeId);
+        List<MenuPublicResponseDto> menus = menuEntities.stream()
+                .map(menu -> MenuPublicResponseDto.of(menu, menu.getOptions()))
+                .toList();
+
+        // 2.5 Entity를 DTO(Response)로 변환하여 반환
+        return StoreDetailResponse.fromEntity(store, menus);
     }
 
     // 3. 매장 전체 조회

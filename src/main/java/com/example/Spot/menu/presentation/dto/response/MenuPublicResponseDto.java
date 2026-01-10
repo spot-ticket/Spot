@@ -7,7 +7,6 @@ import java.util.stream.Collectors;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -16,10 +15,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MenuPublicResponseDto implements MenuResponseDto {
 
-    @JsonProperty("menu_id")
     private UUID id;
 
-    @JsonProperty("store_id")
     private UUID storeId;
 
     private String name;
@@ -27,10 +24,8 @@ public class MenuPublicResponseDto implements MenuResponseDto {
     private Integer price;
     private String description;
 
-    @JsonProperty("image_url")
     private String imageUrl;
 
-    @JsonProperty("is_available")
     private Boolean isAvailable;
 
     private List<MenuOptionResponseDto> options;

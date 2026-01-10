@@ -18,8 +18,6 @@ import com.example.Spot.payments.application.service.PaymentService;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
 import com.example.Spot.user.domain.Role;
-import com.example.Spot.user.domain.entity.UserEntity;
-import com.example.Spot.user.domain.repository.UserRepository;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -31,7 +29,6 @@ import lombok.RequiredArgsConstructor;
 public class PaymentController {
 
     private final PaymentService paymentService;
-    private final UserRepository userReposity;
 
     @PostMapping("/{order_id}/confirm")
     @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
@@ -40,9 +37,7 @@ public class PaymentController {
             @Valid @RequestBody PaymentRequestDto.Confirm request,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        Integer userId = principal.getUserId();
-
-        validateAccessByRole(userId, orderId, null);
+        validateAccessByRole(principal, orderId, null);
 
         UUID paymentId = paymentService.preparePayment(request);
         PaymentResponseDto.Confirm response = paymentService.executePaymentBilling(paymentId);
@@ -56,8 +51,7 @@ public class PaymentController {
             @Valid @RequestBody PaymentRequestDto.Cancel request,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        Integer userId = principal.getUserId();
-        validateAccessByRole(userId, orderId, null);
+        validateAccessByRole(principal, orderId, null);
 
         PaymentResponseDto.Cancel response = paymentService.executeCancel(request);
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
@@ -76,9 +70,7 @@ public class PaymentController {
             @PathVariable UUID paymentId,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        Integer userId = principal.getUserId();
-
-        validateAccessByRole(userId, null, paymentId);
+        validateAccessByRole(principal, null, paymentId);
 
         PaymentResponseDto.PaymentDetail response = paymentService.getDetailPayment(paymentId);
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
@@ -97,18 +89,33 @@ public class PaymentController {
             @PathVariable UUID paymentId,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        Integer userId = principal.getUserId();
-
-        validateAccessByRole(userId, null, paymentId);
+        validateAccessByRole(principal, null, paymentId);
 
         PaymentResponseDto.CancelList response = paymentService.getDetailPaymentCancel(paymentId);
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
     }
 
-    private void validateAccessByRole(Integer userId, UUID orderId, UUID paymentId) {
-        UserEntity user = userReposity.findById(userId)
-            .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 유저입니다. id: " + userId));
-        Role role = user.getRole();
+    @PostMapping("/billing-key")
+    public ApiResponse<PaymentResponseDto.SavedBillingKey> saveBillingKey(
+            @Valid @RequestBody PaymentRequestDto.SaveBillingKey request
+    ) {
+        PaymentResponseDto.SavedBillingKey response = paymentService.saveBillingKey(request);
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
+    }
+
+    @GetMapping("/billing-key/exists")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
+    public ApiResponse<Boolean> checkBillingKeyExists(
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        boolean exists = paymentService.hasBillingAuth(principal.getUserId());
+        System.out.println("빌링키 존재 여부: " + exists + " (UserId: " + principal.getUserId() + ")");
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, exists);
+    }
+
+    private void validateAccessByRole(CustomUserDetails principal, UUID orderId, UUID paymentId) {
+        Role role = principal.getUserRole();
+        Integer userId = principal.getUserId();
 
         switch (role) {
             case CUSTOMER -> {
@@ -128,7 +135,7 @@ public class PaymentController {
                 }
             }
             case MANAGER, MASTER -> {
-
+                // MANAGER와 MASTER는 모든 접근 허용
             }
             default -> throw new IllegalStateException("허용되지 않은 역할입니다.");
         }

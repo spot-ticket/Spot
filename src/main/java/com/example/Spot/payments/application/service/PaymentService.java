@@ -16,10 +16,12 @@ import com.example.Spot.payments.domain.entity.PaymentEntity;
 import com.example.Spot.payments.domain.entity.PaymentHistoryEntity;
 import com.example.Spot.payments.domain.entity.PaymentKeyEntity;
 import com.example.Spot.payments.domain.entity.PaymentRetryEntity;
+import com.example.Spot.payments.domain.entity.UserBillingAuthEntity;
 import com.example.Spot.payments.domain.repository.PaymentHistoryRepository;
 import com.example.Spot.payments.domain.repository.PaymentKeyRepository;
 import com.example.Spot.payments.domain.repository.PaymentRepository;
 import com.example.Spot.payments.domain.repository.PaymentRetryRepository;
+import com.example.Spot.payments.domain.repository.UserBillingAuthRepository;
 import com.example.Spot.payments.infrastructure.client.TossPaymentClient;
 import com.example.Spot.payments.infrastructure.dto.TossPaymentResponse;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
@@ -36,12 +38,6 @@ public class PaymentService {
 
   private final TossPaymentClient tossPaymentClient;
 
-  @Value("${toss.payments.billingKey}")
-  private String billingKey;
-
-  @Value("${toss.payments.customerKey}")
-  private String customerKey;
-
   @Value("${toss.payments.timeout}")
   private Integer timeout;
 
@@ -52,14 +48,11 @@ public class PaymentService {
   private final UserRepository userRepository;
   private final OrderRepository orderRepository;
   private final StoreUserRepository storeUserRepository;
+  private final UserBillingAuthRepository userBillingAuthRepository;
 
   // 주문 수락 이후에 동작되어야 함
-  // 프론트가 없으니까 자동 결제로 대체. 결제는 프론트 페이지가 요구됨
-  // billingKey를 받으려면 프론트 로직이 요구되어서 customer_id는 1로 고정됨
   // https://docs.tosspayments.com/reference/using-api/webhook-events 참고
 
-  // READY -> IN_PROGRESS -> DONE / ABORTED
-  // 하나의 로직을 3단계로 나눔. 여러 장애로 결제 실패 이유를 알기 위함.
   // preparePayment -> executePaymentBilling -> executeTossPayment -> success or fail
 
   @Transactional
@@ -72,7 +65,7 @@ public class PaymentService {
         .ifPresent(
             existingPayment -> {
               throw new IllegalStateException(
-                  "이미 해당 주문에 대한 결제가 진행 중이거나 완료되었습니다. paymentId: " + existingPayment.getId());
+                  "[PaymentService] 이미 해당 주문에 대한 결제가 진행 중이거나 완료되었습니다. paymentId: " + existingPayment.getId());
             });
 
     UserEntity user = findUser(request.userId());
@@ -98,7 +91,7 @@ public class PaymentService {
     return PaymentResponseDto.Confirm.builder()
         .paymentId(paymentId)
         .status(paymentHistory.getStatus().toString())
-        .amount(response.getAmount())
+        .amount(response.getTotalAmount())
         .build();
   }
 
@@ -107,10 +100,10 @@ public class PaymentService {
     PaymentHistoryEntity latestItem =
         paymentHistoryRepository
             .findTopByPaymentIdOrderByCreatedAtDesc(paymentId)
-            .orElseThrow(() -> new ResourceNotFoundException("결제 이력을 찾을 수 없습니다."));
+            .orElseThrow(() -> new ResourceNotFoundException("[PaymentService] 결제 이력을 찾을 수 없습니다."));
 
     if (latestItem.getStatus() != PaymentHistoryEntity.PaymentStatus.READY) {
-      throw new IllegalStateException("이미 처리된 결제입니다");
+      throw new IllegalStateException("[PaymentService] 이미 처리된 결제입니다");
     }
 
     createPaymentHistory(paymentId, PaymentHistoryEntity.PaymentStatus.IN_PROGRESS);
@@ -132,20 +125,36 @@ public class PaymentService {
     return paymentHistory;
   }
 
+  // [Toss]
   private TossPaymentResponse executeTossPaymentBilling(UUID paymentId) {
     PaymentEntity payment = findPayment(paymentId);
 
+    UserBillingAuthEntity billingAuth = userBillingAuthRepository
+        .findActiveByUserId(payment.getUserId())
+        .orElseThrow(() -> new IllegalStateException(
+            "[PaymentService] 등록된 결제 수단이 없습니다. 먼저 결제 수단을 등록해주세요. UserId: " + payment.getUserId()));
+
     try {
+      String billingKey = billingAuth.getBillingKey();
+
+      if (billingKey == null || billingKey.isEmpty()) {
+        throw new IllegalStateException(
+            "[PaymentService] 등록된 Billing Key가 없습니다. 먼저 Billing Key를 입력해주세요.");
+      }
+
+      UUID uniqueOrderId = payment.getOrderId();
+
       return tossPaymentClient.requestBillingPayment(
-          this.billingKey,
+          billingKey,
           payment.getTotalAmount(),
-          paymentId.toString(),
+          uniqueOrderId,
           payment.getPaymentTitle(),
-          this.customerKey,
+          billingAuth.getCustomerKey(),
           this.timeout);
     } catch (Exception e) {
+      
       recordFailure(paymentId, e);
-      throw new RuntimeException("자동결제 실패: " + e.getMessage(), e);
+      throw new RuntimeException("[PaymentService] 자동결제 실패: " + e.getMessage(), e);
     }
   }
 
@@ -162,7 +171,7 @@ public class PaymentService {
     PaymentKeyEntity paymentKeyEntity =
         paymentKeyRepository
             .findByPaymentId(request.paymentId())
-            .orElseThrow(() -> new IllegalStateException("결제 키가 없어 취소할 수 없습니다."));
+            .orElseThrow(() -> new IllegalStateException("[PaymentService] 결제 키가 없어 취소할 수 없습니다."));
 
         tossPaymentCancel(
             request.paymentId(), paymentKeyEntity.getPaymentKey(), request.cancelReason());
@@ -183,7 +192,7 @@ public class PaymentService {
       return tossPaymentClient.cancelPayment(paymentKey, cancelReason, this.timeout);
     } catch (Exception e) {
       recordFailure(paymentId, e);
-      throw new RuntimeException("결제 취소 실패: " + e.getMessage(), e);
+      throw new RuntimeException("[PaymentService] 결제 취소 실패: " + e.getMessage(), e);
     }
   }
 
@@ -192,10 +201,10 @@ public class PaymentService {
     PaymentHistoryEntity latestItem =
         paymentHistoryRepository
             .findTopByPaymentIdOrderByCreatedAtDesc(paymentId)
-            .orElseThrow(() -> new ResourceNotFoundException("결제 이력을 찾을 수 없습니다."));
+            .orElseThrow(() -> new ResourceNotFoundException("[PaymentService] 결제 이력을 찾을 수 없습니다."));
 
     if (latestItem.getStatus() != PaymentHistoryEntity.PaymentStatus.DONE) {
-      throw new IllegalStateException("결제 완료된 내역만 취소 가능합니다.");
+      throw new IllegalStateException("[PaymentService] 결제 완료된 내역만 취소 가능합니다.");
     }
 
     createPaymentHistory(paymentId, PaymentHistoryEntity.PaymentStatus.CANCELLED_IN_PROGRESS);
@@ -216,26 +225,26 @@ public class PaymentService {
 
   private void validatePaymentRequest(PaymentRequestDto.Confirm request) {
     if (request.paymentAmount() <= 0) {
-      throw new IllegalArgumentException("결제 금액은 0보다 커야 합니다");
+      throw new IllegalArgumentException("[PaymentService] 결제 금액은 0보다 커야 합니다");
     }
   }
 
   private OrderEntity findOrder(UUID orderId) {
     return orderRepository
         .findById(orderId)
-        .orElseThrow(() -> new ResourceNotFoundException("주문을 찾을 수 없습니다."));
+        .orElseThrow(() -> new ResourceNotFoundException("[PaymentService] 주문을 찾을 수 없습니다."));
   }
 
   private UserEntity findUser(Integer userId) {
     return userRepository
         .findById(userId)
-        .orElseThrow(() -> new ResourceNotFoundException("사용자를 찾을 수 없습니다."));
+        .orElseThrow(() -> new ResourceNotFoundException("[PaymentService] 사용자를 찾을 수 없습니다."));
   }
 
   private PaymentEntity findPayment(UUID paymentId) {
     return paymentRepository
         .findById(paymentId)
-        .orElseThrow(() -> new ResourceNotFoundException("결제를 찾을 수 없습니다."));
+        .orElseThrow(() -> new ResourceNotFoundException("[PaymentService] 결제를 찾을 수 없습니다."));
   }
 
   private PaymentEntity createPayment(
@@ -307,7 +316,7 @@ public class PaymentService {
     List<Object[]> results = paymentRepository.findPaymentWithLatestStatus(paymentId);
 
     if (results.isEmpty()) {
-      throw new ResourceNotFoundException("결제를 찾을 수 없습니다.");
+      throw new ResourceNotFoundException("[PaymentService] 결제를 찾을 수 없습니다.");
     }
 
     return mapToPaymentDetail(results.get(0));
@@ -376,14 +385,14 @@ public class PaymentService {
   public void validateOrderOwnership(UUID orderId, Integer userId) {
     OrderEntity order = findOrder(orderId);
     if (!order.getUserId().equals(userId)) {
-      throw new IllegalStateException("해당 주문에 대한 접근 권한이 없습니다.");
+      throw new IllegalStateException("[PaymentService] 해당 주문에 대한 접근 권한이 없습니다.");
     }
   }
 
   public void validatePaymentOwnership(UUID paymentId, Integer userId) {
     PaymentEntity payment = findPayment(paymentId);
     if (!payment.getUserId().equals(userId)) {
-      throw new IllegalStateException("해당 결제에 대한 접근 권한이 없습니다.");
+      throw new IllegalStateException("[PaymentService] 해당 결제에 대한 접근 권한이 없습니다.");
     }
   }
 
@@ -400,7 +409,7 @@ public class PaymentService {
     OrderEntity order = findOrder(orderId);
     UUID storeId = order.getStore().getId();
     if (!storeUserRepository.existsByStoreIdAndUserId(storeId, userId)) {
-      throw new IllegalStateException("해당 주문의 가게에 대한 접근 권한이 없습니다.");
+      throw new IllegalStateException("[PaymentService] 해당 주문의 가게에 대한 접근 권한이 없습니다.");
     }
   }
 
@@ -409,7 +418,65 @@ public class PaymentService {
     OrderEntity order = findOrder(payment.getOrderId());
     UUID storeId = order.getStore().getId();
     if (!storeUserRepository.existsByStoreIdAndUserId(storeId, userId)) {
-      throw new IllegalStateException("해당 결제의 가게에 대한 접근 권한이 없습니다.");
+      throw new IllegalStateException("[PaymentService] 해당 결제의 가게에 대한 접근 권한이 없습니다.");
     }
+  }
+
+  // *************** //
+  // 빌링 인증 정보 저장 //
+  // *************** //
+  @Transactional
+  public PaymentResponseDto.SavedBillingKey saveBillingKey(PaymentRequestDto.SaveBillingKey request) {
+    // 사용자 존재 확인
+    findUser(request.userId());
+
+    // 기존 빌링 인증 정보가 있다면 비활성화 (사용자당 하나의 활성 인증 정보만 유지)
+    userBillingAuthRepository.findActiveByUserId(request.userId())
+        .ifPresent(existing -> {
+          existing.deactivate();
+          userBillingAuthRepository.save(existing);
+        });
+
+          // 빌링키 발행
+    TossPaymentResponse billingKeyResponse = tossPaymentClient.issueBillingKey(
+          request.authKey(),
+          request.customerKey()
+    );
+
+    // authKey와 customerKey 저장
+    UserBillingAuthEntity billingAuth = UserBillingAuthEntity.builder()
+        .userId(request.userId())
+        .authKey(request.authKey())
+        .customerKey(request.customerKey())
+        .billingKey(billingKeyResponse.getBillingKey())
+        .issuedAt(LocalDateTime.now())
+        .build();
+
+    userBillingAuthRepository.save(billingAuth);
+
+    return PaymentResponseDto.SavedBillingKey.builder()
+        .userId(request.userId())
+        .customerKey(request.customerKey())
+        .billingKey(billingAuth.getBillingKey())
+        .savedAt(billingAuth.getIssuedAt())
+        .build();
+  }
+
+  // *************** //
+  // 빌링 인증 정보 존재 여부 확인 //
+  // *************** //
+  @Transactional(readOnly = true)
+  public boolean hasBillingAuth(Integer userId) {
+
+    boolean exists = userBillingAuthRepository.existsByUserIdAndIsActiveTrue(userId);
+
+    // 상세 조회로 실제 데이터 확인
+    userBillingAuthRepository.findActiveByUserId(userId)
+        .ifPresentOrElse(
+            auth -> System.out.println("실제 데이터 존재 - authKey: " + auth.getAuthKey() + ", isActive: " + auth.getIsActive()),
+            () -> System.out.println("실제 데이터 없음")
+        );
+
+    return exists;
   }
 }

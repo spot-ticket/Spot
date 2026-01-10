@@ -72,4 +72,12 @@ public class PaymentResponseDto {
   public record CancelList(
       @Schema(description = "취소 목록") List<CancelDetail> cancellations,
       @Schema(description = "총 취소 수", example = "5") int totalCount) {}
+
+  @Builder
+  @Schema(description = "빌링키 저장 응답")
+  public record SavedBillingKey(
+      @Schema(description = "사용자 ID", example = "1") Integer userId,
+      @Schema(description = "고객 키", example = "customer_1") String customerKey,
+      @Schema(description = "빌링키", example = "billing_key_xxxxx") String billingKey,
+      @Schema(description = "저장 시간", example = "2024-01-05T15:30:00") LocalDateTime savedAt) {}
 }
