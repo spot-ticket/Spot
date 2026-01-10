@@ -659,7 +659,7 @@ class PaymentServiceTest {
           .willReturn(inProgressHistory)
           .willReturn(doneHistory);
       given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
-      given(tossPaymentClient.requestBillingPayment(anyString(), anyLong(), anyString(), anyString(), anyString(), anyInt()))
+      given(tossPaymentClient.requestBillingPayment(anyString(), anyLong(), any(UUID.class), anyString(), anyString(), anyInt()))
           .willReturn(tossResponse);
       given(paymentKeyRepository.save(any(PaymentKeyEntity.class))).willReturn(paymentKeyEntity);
 
@@ -671,7 +671,7 @@ class PaymentServiceTest {
 
       assertThat(result.paymentId()).isEqualTo(paymentId);
       assertThat(result.amount()).isEqualTo(10000L);
-      verify(tossPaymentClient, times(1)).requestBillingPayment(anyString(), anyLong(), anyString(), anyString(), anyString(), anyInt());
+      verify(tossPaymentClient, times(1)).requestBillingPayment(anyString(), anyLong(), any(UUID.class), anyString(), anyString(), anyInt());
     }
 
     @Test
