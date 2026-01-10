@@ -18,10 +18,10 @@ public interface StoreCategoryRepository extends JpaRepository<StoreCategoryEnti
     @Query("""
         select scm
         from StoreCategoryEntity scm
-        join fetch scm.store s  
+        join fetch scm.store s
         where scm.category.id  = :categoryId
           and s.isDeleted = false
-          and s.isDeleted = false
+          and s.status = 'APPROVED'
     """)
     List<StoreCategoryEntity> findAllActiveByCategoryIdWithStore(@Param("categoryId") UUID categoryId);
 

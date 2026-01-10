@@ -13,6 +13,5 @@ import lombok.NoArgsConstructor;
 @Builder
 public class UpdateMenuHiddenRequestDto {
 
-    @JsonProperty("is_hidden")
     private Boolean isHidden; // 딱 이것만 받습니다.
 }

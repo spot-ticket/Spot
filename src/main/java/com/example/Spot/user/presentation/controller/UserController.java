@@ -29,14 +29,14 @@ public class UserController implements UserApi {
     private final UserService userService;
     
     @Override
-    @PreAuthorize("#userId == authentication.principal or hasRole('ADMIN')")
+    @PreAuthorize("#userId == authentication.principal.userId or hasAnyRole('MASTER','MANAGER')")
     @GetMapping("/{userId}")
     public UserResponseDTO get(@PathVariable Integer userId) {
         return userService.getByUserId(userId);
     }
 
     @Override
-    @PreAuthorize("#userId == principal.userId or hasRole('ADMIN')")
+    @PreAuthorize("#userId == authentication.principal.userId or hasAnyRole('MASTER','MANAGER')")
     @PatchMapping("/{userId}")
     public UserResponseDTO update(
             @PathVariable Integer userId,

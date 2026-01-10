@@ -11,7 +11,5 @@ public class UpdateMenuOptionRequestDto {
     private String name;
     private String detail;
     private Integer price;
-
-    @JsonProperty("is_available")
     private Boolean isAvailable;
 }

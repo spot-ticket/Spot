@@ -13,15 +13,9 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CreateMenuOptionResponseDto {
 
-    @JsonProperty("option_id")
     private UUID optionId;
-
-    @JsonProperty("menu_id")
     private UUID menuId;
-
     private String name;
-
-    @JsonProperty("created_at")
     private LocalDateTime createdAt;
 
     public CreateMenuOptionResponseDto(MenuOptionEntity option) {

@@ -17,36 +17,19 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MenuAdminResponseDto implements MenuResponseDto {
 
-    @JsonProperty("menu_id")
     private UUID id;
-
-    @JsonProperty("store_id")
     private UUID storeId;
-
     private String name;
     private String category;
     private Integer price;
     private String description;
-
-    @JsonProperty("image_url")
     private String imageUrl;
-
-    @JsonProperty("is_available")
     private Boolean isAvailable;
-
-    @JsonProperty("is_deleted")
     private Boolean isDeleted;
-
-    @JsonProperty("is_hidden")
     private Boolean isHidden;
-
-    @JsonProperty("created_at")
     private LocalDateTime createdAt;
-
-    @JsonProperty("updated_at")
     private LocalDateTime updatedAt;
 
-    @JsonProperty("options")
     private List<MenuOptionResponseDto> options;
 
     public MenuAdminResponseDto(MenuEntity menu, List<MenuOptionEntity> options) {
