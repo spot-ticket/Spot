@@ -428,7 +428,7 @@ public class PaymentService {
   @Transactional
   public PaymentResponseDto.SavedBillingKey saveBillingKey(PaymentRequestDto.SaveBillingKey request) {
     // 사용자 존재 확인
-    UserEntity user = findUser(request.userId());
+    findUser(request.userId());
 
     // 기존 빌링 인증 정보가 있다면 비활성화 (사용자당 하나의 활성 인증 정보만 유지)
     userBillingAuthRepository.findActiveByUserId(request.userId())
