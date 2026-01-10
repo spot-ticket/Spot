@@ -41,5 +41,4 @@ public class StoreCategoryEntity extends UpdateBaseEntity {
         this.category = category;
     }
 
-
 }

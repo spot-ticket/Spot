@@ -7,37 +7,32 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-@Getter
-@NoArgsConstructor
-public class CreateMenuRequestDto {
+public record CreateMenuRequestDto(
+        @NotBlank(message = "메뉴명은 필수입니다.")
+        String name,
 
-    @NotBlank(message = "메뉴명은 필수입니다.")
-    private String name;
+        @NotBlank(message = "카테고리는 필수입니다.")
+        String category,
 
-    @NotBlank(message = "카테고리는 필수입니다.")
-    private String category;
+        @NotNull(message = "가격은 필수입니다.")
+        @Min(value = 0, message = "가격은 0원 이상이어야 합니다.")
+        Integer price,
 
-    @NotNull(message = "가격은 필수입니다.")
-    @Min(value =  0, message = "가격은 0원 이상이어야 합니다.")
-    private Integer price;
+        String description,
 
-    private String description;
-
-    @NotBlank(message = "메뉴 이미지는 필수입니다.")
-    @JsonProperty("image_url")
-    private String imageUrl;
-
+        @JsonProperty("image_url")
+        String imageUrl
+) {
+    // Record 내부에 편의 메서드 작성 가능
     public MenuEntity toEntity(StoreEntity store) {
         return MenuEntity.builder()
                 .store(store)
-                .name(name)
-                .category(category)
-                .price(price)
-                .description(description)
-                .imageUrl(imageUrl)
+                .name(this.name)
+                .category(this.category)
+                .price(this.price)
+                .description(this.description)
+                .imageUrl(this.imageUrl)
                 .build();
     }
 }

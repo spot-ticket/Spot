@@ -2,24 +2,27 @@ package com.example.Spot.menu.presentation.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.Min;
+import jakarta.validation.constraints.Size;
 
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor // Builder 사용을 위해 필요
-@Builder            // 테스트 및 코드 작성 시 편리함 제공
-public class UpdateMenuRequestDto {
-    private String name;
-    private String category;
-    private Integer price;
-    private String description;
+public record UpdateMenuRequestDto(
 
-    @JsonProperty("image_url")
-    private String imageUrl;
+        @Size(min = 1, max = 50, message = "메뉴명은 1자 이상 50자 이하여야 합니다.")
+        String name,
 
-    @JsonProperty("is_available")
-    private Boolean isAvailable;
+        @Size(max = 20, message = "카테고리는 20자를 초과할 수 없습니다.")
+        String category,
+
+        @Min(value = 0, message = "가격은 0원 이상이어야 합니다.")
+        Integer price,
+
+        @Size(max = 100, message = "설명은 100자를 초과할 수 없습니다.")
+        String description,
+
+        @JsonProperty("image_url")
+        String imageUrl,
+
+        @JsonProperty("is_available")
+        Boolean isAvailable
+) {
 }

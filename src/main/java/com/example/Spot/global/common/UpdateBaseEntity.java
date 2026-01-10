@@ -42,7 +42,6 @@ public abstract class UpdateBaseEntity extends BaseEntity {
         return isDeleted;
     }
 
-
     public void softDelete(Integer deletedBy) {
         this.isDeleted = true;
         this.deletedBy = deletedBy;
