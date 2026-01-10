@@ -35,7 +35,6 @@ import com.example.Spot.payments.domain.repository.PaymentHistoryRepository;
 import com.example.Spot.payments.domain.repository.PaymentKeyRepository;
 import com.example.Spot.payments.domain.repository.PaymentRepository;
 import com.example.Spot.payments.infrastructure.client.TossPaymentClient;
-import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.entity.StoreUserEntity;
 import com.example.Spot.store.domain.repository.StoreRepository;
