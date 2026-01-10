@@ -3,7 +3,7 @@ package com.example.Spot.user.application.service;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
-import com.example.Spot.global.presentation.advice.DuplicateUserException;
+import com.example.Spot.global.presentation.advice.DuplicateResourceException;
 import com.example.Spot.user.domain.entity.UserAuthEntity;
 import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.repository.UserAuthRepository;
@@ -28,7 +28,7 @@ public class JoinService {
 
         // 존재하는 ID인지 확인
         if (userRepository.existsByUsername(joinDTO.getUsername())) {
-            throw new DuplicateUserException("USERNAME_ALREADY_EXISTS");
+            throw new DuplicateResourceException("USERNAME_ALREADY_EXISTS");
         }
 
         // User Entity 저장

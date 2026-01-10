@@ -36,7 +36,11 @@ public enum GeneralErrorCode implements BaseErrorCode {
     NOT_FOUND(HttpStatus.NOT_FOUND,
             "COMMON404_1",
             "요청한 리소스를 찾을 수 없습니다."),
-
+    
+    CONFLICT(HttpStatus.CONFLICT,
+            "COMMON409_1",
+            "중복된 리소스입니다."),
+    
     INTERNAL_SERVER_ERROR(HttpStatus.INTERNAL_SERVER_ERROR,
             "COMMON500_1",
             "서버 내부 오류가 발생했습니다."),
