@@ -51,11 +51,11 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 가게입니다."));
 
         // 영업시간 체크
-        if (!store.isOpenNow()) {
-            throw new IllegalArgumentException(
-                    String.format("현재 영업시간이 아닙니다. 영업시간: %s ~ %s",
-                            store.getOpenTime(), store.getCloseTime()));
-        }
+        // if (!store.isOpenNow()) {
+        //     throw new IllegalArgumentException(
+        //             String.format("현재 영업시간이 아닙니다. 영업시간: %s ~ %s",
+        //                     store.getOpenTime(), store.getCloseTime()));
+        // }
 
         String orderNumber = generateOrderNumber();
 

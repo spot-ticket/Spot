@@ -16,10 +16,8 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class MenuPublicResponseDto implements MenuResponseDto {
 
-    @JsonProperty("menu_id")
     private UUID id;
 
-    @JsonProperty("store_id")
     private UUID storeId;
 
     private String name;
@@ -27,10 +25,8 @@ public class MenuPublicResponseDto implements MenuResponseDto {
     private Integer price;
     private String description;
 
-    @JsonProperty("image_url")
     private String imageUrl;
 
-    @JsonProperty("is_available")
     private Boolean isAvailable;
 
     private List<MenuOptionResponseDto> options;
