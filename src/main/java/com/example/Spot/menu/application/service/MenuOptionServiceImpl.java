@@ -76,11 +76,11 @@ public class MenuOptionServiceImpl implements MenuOptionService {
         }
 
         // 업데이트 (Dirty Checking)
-        option.updateOption(request.getName(), request.getPrice(), request.getDetail());
+        option.updateOption(request.name(), request.price(), request.detail());
 
         // 메뉴 옵션 품절 여부 체크
-        if (request.getIsAvailable() != null) {
-            option.changeAvailable(request.getIsAvailable());
+        if (request.isAvailable() != null) {
+            option.changeAvailable(request.isAvailable());
         }
 
         return MenuOptionAdminResponseDto.of(option, userRole);
