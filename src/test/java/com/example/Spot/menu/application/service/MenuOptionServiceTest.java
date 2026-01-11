@@ -114,7 +114,7 @@ class MenuOptionServiceTest {
 
         // Then
         assertThat(result.name()).isEqualTo("수정된옵션");
-        assertThat(option.getIsAvailable()).isFalse(); // Dirty Checking
+        assertThat(option.isAvailable()).isFalse(); // Dirty Checking
     }
 
     @Test
@@ -147,7 +147,7 @@ class MenuOptionServiceTest {
         );
 
         // Then
-        assertThat(option.getIsHidden()).isTrue();
+        assertThat(option.isHidden()).isTrue();
     }
 
     @Test
