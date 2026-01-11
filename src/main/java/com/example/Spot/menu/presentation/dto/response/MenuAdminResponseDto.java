@@ -63,16 +63,30 @@ public record MenuAdminResponseDto(
 
         // 받아온 options 리스트를 그대로 DTO로 변환
         List<MenuOptionAdminResponseDto> optionDtos = (options != null)
-                ? options.stream().map(MenuOptionAdminResponseDto::new).toList()
+                ? options.stream()
+                .map(option -> MenuOptionAdminResponseDto.of(option, userRole))
+                .toList()
                 : Collections.emptyList();
 
         // 2. 권한 체크 로직 (여기로 이동)
+        LocalDateTime createdAt = null;
         Integer createdBy = null;
+
+        LocalDateTime updatedAt = null;
         Integer updatedBy = null;
+
+        LocalDateTime deletedAt = null;
+        Integer deletedBy = null;
 
         if (userRole == Role.MASTER || userRole == Role.MANAGER) {
             createdBy = menu.getCreatedBy();
+            createdAt = menu.getCreatedAt(); // 추가됨
+
             updatedBy = menu.getUpdatedBy();
+            updatedAt = menu.getUpdatedAt(); // 추가됨
+
+            deletedBy = menu.getDeletedBy();
+            deletedAt = menu.getDeletedAt();
         }
 
         return new MenuAdminResponseDto(
@@ -87,12 +101,15 @@ public record MenuAdminResponseDto(
                 menu.getIsAvailable(),
                 menu.getIsDeleted(),
                 menu.getIsHidden(),
-                menu.getCreatedAt(),
-                menu.getCreatedBy(),
-                menu.getUpdatedAt(),
-                menu.getUpdatedBy(),
-                menu.getDeletedAt(), // deletedAt은 Entity에 getter가 없다면 null 처리 혹은 추가 필요
-                menu.getDeletedBy()
+
+                createdAt,
+                createdBy,
+
+                updatedAt,
+                updatedBy,
+
+                deletedAt,
+                deletedBy
         );
     }
 }

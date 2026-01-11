@@ -33,7 +33,8 @@ public record MenuPublicResponseDto(
     public static MenuPublicResponseDto of(MenuEntity menu, List<MenuOptionEntity> options) {
         // 옵션 변환 로직 (Null Safe)
         List<MenuOptionPublicResponseDto> optionDtos = (options != null)
-                ? options.stream().map(MenuOptionPublicResponseDto::new).toList()
+                ? options.stream()
+                .map(MenuOptionPublicResponseDto::from).toList()
                 : Collections.emptyList();
 
         return new MenuPublicResponseDto(

@@ -3,34 +3,32 @@ package com.example.Spot.menu.presentation.dto.response;
 import java.util.UUID;
 
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public record MenuOptionPublicResponseDto(
+        @JsonProperty("option_id")
+        UUID id,
 
-@Getter
-@NoArgsConstructor
-public class MenuOptionPublicResponseDto { // 이름에 Public 명시
+        @JsonProperty("menu_id")
+        UUID menuId,
 
-    @JsonProperty("option_id")
-    private UUID id;
+        String name,
+        String detail,
+        Integer price,
 
-    @JsonProperty("menu_id")
-    private UUID menuId;
-
-    private String name;
-    private String detail;
-    private Integer price;
-
-    @JsonProperty("is_available")
-    private Boolean isAvailable;
-
-    public MenuOptionPublicResponseDto(MenuOptionEntity entity) {
-        this.id = entity.getId();
-        this.menuId = entity.getMenu().getId();
-        this.name = entity.getName();
-        this.detail = entity.getDetail();
-        this.price = entity.getPrice();
-        this.isAvailable = entity.getIsAvailable();
+        @JsonProperty("is_available")
+        Boolean isAvailable
+) {
+    public static MenuOptionPublicResponseDto from(MenuOptionEntity entity) {
+        return new MenuOptionPublicResponseDto(
+                entity.getId(),
+                entity.getMenu().getId(),
+                entity.getName(),
+                entity.getDetail(),
+                entity.getPrice(),
+                entity.getIsAvailable()
+        );
     }
 }
