@@ -13,11 +13,11 @@ public interface MenuOptionRepository extends JpaRepository<MenuOptionEntity, UU
     List<MenuOptionEntity> findAllByMenuIdInAndIsDeletedFalse(List<UUID> menuId);
 
     // [관리자용] 여러 메뉴의 옵션들 조회
-    List<MenuOptionEntity> findAllByMenuIdIn(List<UUID> menuId);
+    List<MenuOptionEntity> findAllByMenuIdIn(List<UUID> menuIds);
 
     // [관리자용] 특정 메뉴의 모든 옵션 조회 (삭제된 것 포함)
     List<MenuOptionEntity> findAllByMenuId(UUID menuId);
 
-    // [점주, 손님용] 특정 메뉴의 활성 옵션만 조회
+    // [가게, 손님용] 특정 메뉴의 활성 옵션만 조회
     List<MenuOptionEntity> findAllByMenuIdAndIsDeletedFalse(UUID menuId);
 }
