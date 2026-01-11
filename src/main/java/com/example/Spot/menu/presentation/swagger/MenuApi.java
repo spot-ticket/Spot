@@ -3,7 +3,6 @@ package com.example.Spot.menu.presentation.swagger;
 import java.util.List;
 import java.util.UUID;
 
-import com.example.Spot.menu.presentation.dto.response.MenuAdminResponseDto;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -14,6 +13,7 @@ import com.example.Spot.menu.presentation.dto.request.CreateMenuRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuHiddenRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuRequestDto;
 import com.example.Spot.menu.presentation.dto.response.CreateMenuResponseDto;
+import com.example.Spot.menu.presentation.dto.response.MenuAdminResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuPublicResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuResponseDto;
 

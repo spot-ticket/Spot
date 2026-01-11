@@ -2,9 +2,6 @@ package com.example.Spot.menu.application.service;
 
 import java.util.UUID;
 
-import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionHiddenRequestDto;
-import com.example.Spot.menu.presentation.dto.response.CreateMenuOptionResponseDto;
-import com.example.Spot.store.domain.repository.StoreRepository;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,9 +11,12 @@ import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.example.Spot.menu.domain.repository.MenuOptionRepository;
 import com.example.Spot.menu.domain.repository.MenuRepository;
 import com.example.Spot.menu.presentation.dto.request.CreateMenuOptionRequestDto;
+import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionHiddenRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionRequestDto;
+import com.example.Spot.menu.presentation.dto.response.CreateMenuOptionResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuOptionAdminResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
+import com.example.Spot.store.domain.repository.StoreRepository;
 import com.example.Spot.user.domain.Role;
 
 import lombok.RequiredArgsConstructor;

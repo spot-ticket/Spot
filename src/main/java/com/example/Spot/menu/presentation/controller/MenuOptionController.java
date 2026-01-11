@@ -2,9 +2,6 @@ package com.example.Spot.menu.presentation.controller;
 
 import java.util.UUID;
 
-import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionHiddenRequestDto;
-import com.example.Spot.menu.presentation.dto.response.MenuOptionAdminResponseDto;
-import jakarta.validation.Valid;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -20,10 +17,13 @@ import com.example.Spot.global.presentation.code.GeneralSuccessCode;
 import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.menu.application.service.MenuOptionService;
 import com.example.Spot.menu.presentation.dto.request.CreateMenuOptionRequestDto;
+import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionHiddenRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionRequestDto;
 import com.example.Spot.menu.presentation.dto.response.CreateMenuOptionResponseDto;
+import com.example.Spot.menu.presentation.dto.response.MenuOptionAdminResponseDto;
 import com.example.Spot.user.domain.Role;
 
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 
 @RestController
