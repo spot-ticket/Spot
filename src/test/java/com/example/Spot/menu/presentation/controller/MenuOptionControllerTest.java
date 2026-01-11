@@ -28,26 +28,23 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
-import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.util.ReflectionTestUtils;
+import org.springframework.test.web.servlet.MockMvc;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 
-// Domain & Infra
 import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.menu.application.service.MenuOptionService;
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
+import com.example.Spot.menu.presentation.dto.request.CreateMenuOptionRequestDto;
+import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionHiddenRequestDto;
+import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionRequestDto;
+import com.example.Spot.menu.presentation.dto.response.CreateMenuOptionResponseDto; // 추가됨
+import com.example.Spot.menu.presentation.dto.response.MenuOptionAdminResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.domain.entity.UserEntity;
-
-// DTOs
-import com.example.Spot.menu.presentation.dto.request.CreateMenuOptionRequestDto;
-import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionRequestDto;
-import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionHiddenRequestDto;
-import com.example.Spot.menu.presentation.dto.response.MenuOptionAdminResponseDto;
-import com.example.Spot.menu.presentation.dto.response.CreateMenuOptionResponseDto; // 추가됨
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @WebMvcTest(MenuOptionController.class)
 @AutoConfigureMockMvc
