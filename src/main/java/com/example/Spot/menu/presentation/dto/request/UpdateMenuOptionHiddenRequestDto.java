@@ -1,6 +1,7 @@
 package com.example.Spot.menu.presentation.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+
 import jakarta.validation.constraints.NotNull;
 
 public record UpdateMenuOptionHiddenRequestDto(
@@ -9,4 +10,3 @@ public record UpdateMenuOptionHiddenRequestDto(
         Boolean isHidden
 ) {
 }
-
