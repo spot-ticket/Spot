@@ -47,7 +47,6 @@ public class UserService {
         return toResponse(user);
     }
 
-
     @Transactional
     public void deleteMe(Integer loginUserId) {
         UserEntity user = userRepository.findById(loginUserId)
@@ -56,7 +55,6 @@ public class UserService {
         user.softDelete(user.getId());
     }
     
-
     private UserResponseDTO toResponse(UserEntity user) {
         return new UserResponseDTO(
                 user.getId(),

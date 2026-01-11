@@ -7,7 +7,6 @@ import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.Spot.user.domain.entity.UserEntity;
 
-
 public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
     // 중복 체크

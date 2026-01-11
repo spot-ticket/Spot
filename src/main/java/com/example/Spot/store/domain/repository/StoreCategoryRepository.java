@@ -25,12 +25,10 @@ public interface StoreCategoryRepository extends JpaRepository<StoreCategoryEnti
     """)
     List<StoreCategoryEntity> findAllActiveByCategoryIdWithStore(@Param("categoryId") UUID categoryId);
 
-
     // Store
     List<StoreCategoryEntity> findByCategoryAndIsDeletedFalse(CategoryEntity category);
 
     List<StoreCategoryEntity> findByStoreAndIsDeletedFalse(StoreEntity store);
-
 
     // Test
     Optional<StoreCategoryEntity> findByStoreAndCategoryAndIsDeletedFalse(

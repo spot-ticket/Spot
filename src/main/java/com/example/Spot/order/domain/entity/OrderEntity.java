@@ -99,7 +99,6 @@ public class OrderEntity extends BaseEntity {
     @Column(name = "reason", columnDefinition = "TEXT")
     private String reason; // 주문 취소/거절 이유
 
-
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItemEntity> orderItems = new ArrayList<>();
 

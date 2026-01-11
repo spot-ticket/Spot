@@ -33,7 +33,6 @@ public class CustomUserDetails implements UserDetails {
         return userEntity;
     }
 
-
     // role값 반환
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -49,7 +48,6 @@ public class CustomUserDetails implements UserDetails {
     public String getPassword() {
         return (userAuthEntity == null) ? "" : userAuthEntity.getHashedPassword();
     }
-
 
     @Override
     public String getUsername() {

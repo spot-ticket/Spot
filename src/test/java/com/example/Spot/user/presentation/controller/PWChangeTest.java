@@ -149,11 +149,6 @@ class PWChangeTest {
         return (start == -1 || end == -1) ? "" : json.substring(start + 1, end);
     }
 
-
-
-
-
-
     @Test
     void 패스워드변경_로그인상태_이메일인증() throws Exception {
         // given-1: 회원 생성
@@ -192,7 +187,6 @@ class PWChangeTest {
         assertThat(authHeader).startsWith("Bearer ");
 
         String token = authHeader.substring("Bearer ".length());
-
 
         // =========================
         // when-2: (로그인 상태) 비밀번호 변경용 이메일 인증 코드 발급
@@ -244,15 +238,6 @@ class PWChangeTest {
         // BCrypt 매칭 검증
         assertThat(passwordEncoder.matches("5678", authAfter.getHashedPassword())).isTrue();
         assertThat(passwordEncoder.matches("1234", authAfter.getHashedPassword())).isFalse();
-
-
-
-
-
-
-
-
-
 
     }
 
