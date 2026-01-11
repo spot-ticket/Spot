@@ -29,14 +29,17 @@ export const authApi = {
     if (authHeader) {
       const accessToken = authHeader.replace('Bearer ', '');
       Cookies.set('accessToken', accessToken, { expires: 1 / 48 }); // 30분
+      localStorage.setItem('accessToken', accessToken); // localStorage에도 저장
     }
 
     // 바디에서도 토큰 추출
     if (response.data.accessToken) {
       Cookies.set('accessToken', response.data.accessToken, { expires: 1 / 48 });
+      localStorage.setItem('accessToken', response.data.accessToken); // localStorage에도 저장
     }
     if (response.data.refreshToken) {
       Cookies.set('refreshToken', response.data.refreshToken, { expires: 14 });
+      localStorage.setItem('refreshToken', response.data.refreshToken); // localStorage에도 저장
     }
 
     return response.data;
@@ -55,6 +58,8 @@ export const authApi = {
     } finally {
       Cookies.remove('accessToken');
       Cookies.remove('refreshToken');
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
     }
   },
 

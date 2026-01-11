@@ -21,6 +21,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.store.application.service.StoreService;
+import com.example.Spot.store.domain.StoreStatus;
 import com.example.Spot.store.presentation.dto.request.StoreCreateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUserUpdateRequest;
@@ -58,12 +59,20 @@ public class StoreController implements StoreApi {
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
         Integer userId = principal.getUserId();
-
         UUID storeId = storeService.createStore(request, userId);
         return ResponseEntity.status(HttpStatus.CREATED).body(storeId);
     }
 
 
+
+    @GetMapping("/my")
+    @PreAuthorize("hasAnyRole('OWNER','CHEF')")
+    public ResponseEntity<java.util.List<StoreListResponse>> getMyStores(
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        Integer userId = principal.getUserId();
+        return ResponseEntity.ok(storeService.getMyStores(userId));
+    }
 
     @Override
     @GetMapping("/{storeId}")
@@ -71,7 +80,7 @@ public class StoreController implements StoreApi {
             @PathVariable UUID storeId,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        Integer userId = principal.getUserId();
+        Integer userId = principal != null ? principal.getUserId() : null;
         return ResponseEntity.ok(storeService.getStoreDetails(storeId, userId));
     }
 
@@ -82,7 +91,7 @@ public class StoreController implements StoreApi {
             @RequestParam(defaultValue = "50") int size,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        Integer userId = principal.getUserId();
+        Integer userId = principal != null ? principal.getUserId() : null;
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(storeService.getAllStores(userId, pageable));
     }
@@ -124,7 +133,19 @@ public class StoreController implements StoreApi {
         storeService.deleteStore(storeId, userId);
         return ResponseEntity.noContent().build();
     }
-    
+
+    @PatchMapping("/{storeId}/status")
+    @PreAuthorize("hasAnyRole('MASTER','MANAGER')")
+    public ResponseEntity<Void> updateStoreStatus(
+            @PathVariable UUID storeId,
+            @RequestParam StoreStatus status,
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        Integer userId = principal.getUserId();
+        storeService.updateStoreStatus(storeId, status, userId);
+        return ResponseEntity.noContent().build();
+    }
+
     @Override
     @GetMapping("/search")
     public ResponseEntity<Page<StoreListResponse>> searchStores(
@@ -133,7 +154,7 @@ public class StoreController implements StoreApi {
             @RequestParam(defaultValue = "50") int size,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        Integer userId = principal.getUserId();
+        Integer userId = principal != null ? principal.getUserId() : null;
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(storeService.searchStoresByName(keyword, userId, pageable));
     }

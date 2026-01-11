@@ -12,7 +12,9 @@ import com.example.Spot.menu.domain.repository.MenuOptionRepository;
 import com.example.Spot.menu.domain.repository.MenuRepository;
 import com.example.Spot.menu.presentation.dto.request.CreateMenuOptionRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionRequestDto;
-import com.example.Spot.menu.presentation.dto.response.MenuOptionAdminResponseDto;
+import com.example.Spot.menu.presentation.dto.response.CreateMenuOptionResponseDto;
+import com.example.Spot.menu.presentation.dto.response.MenuOptionResponseDto;
+import com.example.Spot.menu.presentation.dto.response.UpdateMenuOptionResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.domain.entity.UserEntity;
@@ -27,7 +29,7 @@ public class MenuOptionServiceImpl implements MenuOptionService {
 
     // 메뉴 옵션 조회
     @Transactional(readOnly = true)
-    public List<MenuOptionAdminResponseDto> getOptions(Role userRole, UUID storeId, UUID menuId) {
+    public List<MenuOptionResponseDto> getOptions(Role userRole, UUID storeId, UUID menuId) {
         // 가게 검증을 위해 메뉴를 먼저 조회
         MenuEntity menu = menuRepository.findById(menuId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메뉴가 존재하지 않습니다."));
@@ -43,30 +45,28 @@ public class MenuOptionServiceImpl implements MenuOptionService {
             options = menuOptionRepository.findAllByMenuIdAndIsDeletedFalse(menuId);
         }
 
-        return options.stream().map(MenuOptionAdminResponseDto::new).toList();
+        return options.stream().map(MenuOptionResponseDto::new).toList();
     }
 
     // 메뉴 옵션 생성
     @Transactional
-    public MenuOptionAdminResponseDto createMenuOption(UserEntity user, UUID storeId, UUID menuId, CreateMenuOptionRequestDto request) {
+    public CreateMenuOptionResponseDto createMenuOption(UserEntity user, UUID storeId, UUID menuId, CreateMenuOptionRequestDto request) {
         MenuEntity menu = menuRepository.findActiveMenuById(menuId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메뉴가 존재하지 않습니다."));
 
         // URL의 storeId와 실제 메뉴의 storeId가 같은지 검증
         validateMenuBelongsToStore(menu.getStore(), storeId);
-
         validatePermission(menu.getStore(), user);
-
+        
         MenuOptionEntity option = request.toEntity(menu);
-
+        
         menuOptionRepository.save(option);
-
-        return new MenuOptionAdminResponseDto(option);
+        return new CreateMenuOptionResponseDto(option);
     }
 
     // 메뉴 옵션 업데이트
     @Transactional
-    public MenuOptionAdminResponseDto updateMenuOption(UserEntity user, UUID storeId, UUID menuId, UUID optionId, UpdateMenuOptionRequestDto request) {
+    public UpdateMenuOptionResponseDto updateMenuOption(UserEntity user, UUID storeId, UUID menuId, UUID optionId, UpdateMenuOptionRequestDto request) {
         MenuOptionEntity option = menuOptionRepository.findById(optionId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 옵션이 존재하지 않습니다."));
 
@@ -88,13 +88,13 @@ public class MenuOptionServiceImpl implements MenuOptionService {
         validatePermission(store, user);
 
         // 업데이트 (Dirty Checking)
-        option.updateOption(request.getName(), request.getPrice(), request.getDetail(), 0);
+        option.updateOption(request.getName(), request.getPrice(), request.getDetail());
 
         if (request.getIsAvailable() != null) {
-            option.changeAvailable(request.getIsAvailable(), 0);
+            option.changeAvailable(request.getIsAvailable());
         }
 
-        return new MenuOptionAdminResponseDto(option);
+        return new UpdateMenuOptionResponseDto(option);
     }
 
     // 메뉴 옵션 삭제

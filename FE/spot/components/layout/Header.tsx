@@ -60,8 +60,8 @@ export function Header() {
 
           {/* 우측 메뉴 */}
           <div className="flex items-center space-x-4">
-            {/* 장바구니 - 로그인한 사용자만 표시 */}
-            {hasHydrated && isAuthenticated && (
+            {/* 장바구니 - CUSTOMER 역할만 표시 */}
+            {hasHydrated && isAuthenticated && user?.role === 'CUSTOMER' && (
               <Link href="/cart" className="relative p-2 text-gray-600 hover:text-orange-500">
                 <svg className="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path
@@ -83,12 +83,46 @@ export function Header() {
               <div className="w-24 h-8" />
             ) : isAuthenticated && user ? (
               <div className="flex items-center space-x-4">
-                <Link
-                  href="/orders"
-                  className="text-gray-600 hover:text-orange-500 text-sm font-medium"
-                >
-                  주문내역
-                </Link>
+                {/* 관리자 페이지 링크 - MASTER, MANAGER만 표시 */}
+                {(user.role === 'MASTER' || user.role === 'MANAGER') && (
+                  <Link
+                    href="/admin"
+                    className="text-gray-600 hover:text-orange-500 text-sm font-medium"
+                  >
+                    관리자
+                  </Link>
+                )}
+
+                {/* CUSTOMER 메뉴 */}
+                {user.role === 'CUSTOMER' && (
+                  <Link
+                    href="/orders"
+                    className="text-gray-600 hover:text-orange-500 text-sm font-medium"
+                  >
+                    주문내역
+                  </Link>
+                )}
+
+                {/* OWNER 메뉴 */}
+                {user.role === 'OWNER' && (
+                  <Link
+                    href="/mypage/store"
+                    className="text-gray-600 hover:text-orange-500 text-sm font-medium"
+                  >
+                    내 가게
+                  </Link>
+                )}
+
+                {/* CHEF 메뉴 */}
+                {user.role === 'CHEF' && (
+                  <Link
+                    href="/mypage/chef"
+                    className="text-gray-600 hover:text-orange-500 text-sm font-medium"
+                  >
+                    소속 가게
+                  </Link>
+                )}
+
                 <Link
                   href="/mypage"
                   className="text-gray-600 hover:text-orange-500 text-sm font-medium"

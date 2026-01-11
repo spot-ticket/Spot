@@ -10,6 +10,7 @@ import type { Role } from '@/types';
 
 export default function JoinPage() {
   const router = useRouter();
+  const [selectedRole, setSelectedRole] = useState<Role | null>(null);
   const [formData, setFormData] = useState({
     username: '',
     password: '',
@@ -66,6 +67,11 @@ export default function JoinPage() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const handleRoleSelect = (role: Role) => {
+    setSelectedRole(role);
+    setFormData((prev) => ({ ...prev, role }));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -102,135 +108,226 @@ export default function JoinPage() {
         <div className="bg-white rounded-2xl shadow-lg p-8">
           <div className="text-center mb-8">
             <h1 className="text-3xl font-bold text-gray-900">회원가입</h1>
-            <p className="mt-2 text-gray-600">HERE와 함께 맛있는 음식을 주문하세요</p>
+            <p className="mt-2 text-gray-600">SPOT과 함께 맛있는 음식을 주문하세요</p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <Input
-              label="아이디"
-              name="username"
-              type="text"
-              placeholder="아이디를 입력하세요"
-              value={formData.username}
-              onChange={handleChange}
-              error={errors.username}
-              required
-            />
+          {!selectedRole ? (
+            <div className="space-y-6">
+              <h2 className="text-xl font-semibold text-gray-900 text-center">
+                가입 유형을 선택하세요
+              </h2>
 
-            <Input
-              label="비밀번호"
-              name="password"
-              type="password"
-              placeholder="비밀번호를 입력하세요"
-              value={formData.password}
-              onChange={handleChange}
-              error={errors.password}
-              required
-            />
-
-            <Input
-              label="비밀번호 확인"
-              name="passwordConfirm"
-              type="password"
-              placeholder="비밀번호를 다시 입력하세요"
-              value={formData.passwordConfirm}
-              onChange={handleChange}
-              error={errors.passwordConfirm}
-              required
-            />
-
-            <Input
-              label="닉네임"
-              name="nickname"
-              type="text"
-              placeholder="닉네임을 입력하세요"
-              value={formData.nickname}
-              onChange={handleChange}
-              error={errors.nickname}
-              required
-            />
-
-            <Input
-              label="이메일"
-              name="email"
-              type="email"
-              placeholder="이메일을 입력하세요"
-              value={formData.email}
-              onChange={handleChange}
-              error={errors.email}
-              required
-            />
-
-            <div className="grid grid-cols-2 gap-4">
-              <Input
-                label="나이"
-                name="age"
-                type="number"
-                placeholder="나이"
-                value={formData.age}
-                onChange={handleChange}
-                error={errors.age}
-                required
-              />
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">
-                  성별
-                </label>
-                <select
-                  name="male"
-                  value={formData.male ? 'true' : 'false'}
-                  onChange={(e) =>
-                    setFormData((prev) => ({
-                      ...prev,
-                      male: e.target.value === 'true',
-                    }))
-                  }
-                  className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+              <div className="grid grid-cols-1 gap-4">
+                <button
+                  type="button"
+                  onClick={() => handleRoleSelect('CUSTOMER')}
+                  className="p-6 border-2 border-gray-200 rounded-xl hover:border-orange-500 hover:bg-orange-50 transition-all group"
                 >
-                  <option value="true">남성</option>
-                  <option value="false">여성</option>
-                </select>
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-orange-100 rounded-full flex items-center justify-center group-hover:bg-orange-200">
+                      <svg className="w-6 h-6 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-semibold text-lg text-gray-900">고객</h3>
+                      <p className="text-sm text-gray-600">음식을 주문하고 픽업합니다</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleRoleSelect('OWNER')}
+                  className="p-6 border-2 border-gray-200 rounded-xl hover:border-orange-500 hover:bg-orange-50 transition-all group"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center group-hover:bg-blue-200">
+                      <svg className="w-6 h-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                      </svg>
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-semibold text-lg text-gray-900">점주</h3>
+                      <p className="text-sm text-gray-600">가게를 등록하고 주문을 관리합니다</p>
+                    </div>
+                  </div>
+                </button>
+
+                <button
+                  type="button"
+                  onClick={() => handleRoleSelect('CHEF')}
+                  className="p-6 border-2 border-gray-200 rounded-xl hover:border-orange-500 hover:bg-orange-50 transition-all group"
+                >
+                  <div className="flex items-center space-x-4">
+                    <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center group-hover:bg-green-200">
+                      <svg className="w-6 h-6 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                      </svg>
+                    </div>
+                    <div className="text-left">
+                      <h3 className="font-semibold text-lg text-gray-900">셰프</h3>
+                      <p className="text-sm text-gray-600">주방에서 조리를 담당합니다</p>
+                    </div>
+                  </div>
+                </button>
+              </div>
+
+              <div className="mt-6 text-center">
+                <p className="text-gray-600">
+                  이미 계정이 있으신가요?{' '}
+                  <Link href="/login" className="text-orange-500 font-medium hover:underline">
+                    로그인
+                  </Link>
+                </p>
               </div>
             </div>
-
-            <Input
-              label="도로명 주소"
-              name="roadAddress"
-              type="text"
-              placeholder="도로명 주소를 입력하세요"
-              value={formData.roadAddress}
-              onChange={handleChange}
-            />
-
-            <Input
-              label="상세 주소"
-              name="addressDetail"
-              type="text"
-              placeholder="상세 주소를 입력하세요"
-              value={formData.addressDetail}
-              onChange={handleChange}
-            />
-
-            {errors.submit && (
-              <div className="bg-red-50 text-red-500 text-sm p-3 rounded-lg">
-                {errors.submit}
+          ) : (
+            <>
+              <div className="mb-6 flex items-center justify-between">
+                <button
+                  type="button"
+                  onClick={() => setSelectedRole(null)}
+                  className="text-gray-600 hover:text-gray-900 flex items-center"
+                >
+                  <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                  </svg>
+                  뒤로
+                </button>
+                <span className="text-sm font-medium text-orange-600">
+                  {selectedRole === 'CUSTOMER' ? '고객' : selectedRole === 'OWNER' ? '점주' : '셰프'} 가입
+                </span>
               </div>
-            )}
 
-            <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>
-              회원가입
-            </Button>
-          </form>
+              <form onSubmit={handleSubmit} className="space-y-5">
+                <Input
+                  label="아이디"
+                  name="username"
+                  type="text"
+                  placeholder="아이디를 입력하세요"
+                  value={formData.username}
+                  onChange={handleChange}
+                  error={errors.username}
+                  required
+                />
 
-          <div className="mt-6 text-center">
-            <p className="text-gray-600">
-              이미 계정이 있으신가요?{' '}
-              <Link href="/login" className="text-orange-500 font-medium hover:underline">
-                로그인
-              </Link>
-            </p>
-          </div>
+                <Input
+                  label="비밀번호"
+                  name="password"
+                  type="password"
+                  placeholder="비밀번호를 입력하세요"
+                  value={formData.password}
+                  onChange={handleChange}
+                  error={errors.password}
+                  required
+                />
+
+                <Input
+                  label="비밀번호 확인"
+                  name="passwordConfirm"
+                  type="password"
+                  placeholder="비밀번호를 다시 입력하세요"
+                  value={formData.passwordConfirm}
+                  onChange={handleChange}
+                  error={errors.passwordConfirm}
+                  required
+                />
+
+                <Input
+                  label="닉네임"
+                  name="nickname"
+                  type="text"
+                  placeholder="닉네임을 입력하세요"
+                  value={formData.nickname}
+                  onChange={handleChange}
+                  error={errors.nickname}
+                  required
+                />
+
+                <Input
+                  label="이메일"
+                  name="email"
+                  type="email"
+                  placeholder="이메일을 입력하세요"
+                  value={formData.email}
+                  onChange={handleChange}
+                  error={errors.email}
+                  required
+                />
+
+                <div className="grid grid-cols-2 gap-4">
+                  <Input
+                    label="나이"
+                    name="age"
+                    type="number"
+                    placeholder="나이"
+                    value={formData.age}
+                    onChange={handleChange}
+                    error={errors.age}
+                    required
+                  />
+
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      성별
+                    </label>
+                    <select
+                      name="male"
+                      value={formData.male ? 'true' : 'false'}
+                      onChange={(e) =>
+                        setFormData((prev) => ({
+                          ...prev,
+                          male: e.target.value === 'true',
+                        }))
+                      }
+                      className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                    >
+                      <option value="true">남성</option>
+                      <option value="false">여성</option>
+                    </select>
+                  </div>
+                </div>
+
+                <Input
+                  label="도로명 주소"
+                  name="roadAddress"
+                  type="text"
+                  placeholder="도로명 주소를 입력하세요"
+                  value={formData.roadAddress}
+                  onChange={handleChange}
+                />
+
+                <Input
+                  label="상세 주소"
+                  name="addressDetail"
+                  type="text"
+                  placeholder="상세 주소를 입력하세요"
+                  value={formData.addressDetail}
+                  onChange={handleChange}
+                />
+
+                {errors.submit && (
+                  <div className="bg-red-50 text-red-500 text-sm p-3 rounded-lg">
+                    {errors.submit}
+                  </div>
+                )}
+
+                <Button type="submit" className="w-full" size="lg" isLoading={isLoading}>
+                  회원가입
+                </Button>
+              </form>
+
+              <div className="mt-6 text-center">
+                <p className="text-gray-600">
+                  이미 계정이 있으신가요?{' '}
+                  <Link href="/login" className="text-orange-500 font-medium hover:underline">
+                    로그인
+                  </Link>
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>

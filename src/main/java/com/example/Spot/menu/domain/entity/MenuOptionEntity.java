@@ -46,18 +46,24 @@ public class MenuOptionEntity extends UpdateBaseEntity {
 
     // 품절 여부 체크
     @Column(name = "is_available")
-    private Boolean isAvailable = true;
+    private boolean isAvailable;
 
     // 숨김 여부 체크
     @Column(name = "is_hidden")
-    private Boolean isHidden = false;
+    private boolean isHidden;
 
     @Builder
-    public MenuOptionEntity(MenuEntity menu, String name, String detail, Integer price) {
+    public MenuOptionEntity(MenuEntity menu, String name, String detail, Integer price, Boolean isAvailable, Boolean isHidden) {
         this.menu = menu;
         this.name = name;
         this.detail = detail;
         this.price = price;
+
+        // 빌더에서 넘겨받은 값이 null이면(값이 세팅되지 않았으면) true를 기본값으로 사용
+        this.isAvailable = (isAvailable != null) ? isAvailable : true;
+        
+        // isHidden도 마찬가지로 처리 가능 (기본값 false)
+        this.isHidden = (isHidden != null) ? isHidden : false;
     }
 
     public void updateOption(String name, Integer price, String detail) {
@@ -78,11 +84,11 @@ public class MenuOptionEntity extends UpdateBaseEntity {
         }
     }
 
-    public void changeAvailable(Boolean isAvailable) {
+    public void changeAvailable(boolean isAvailable) {
         this.isAvailable = isAvailable;
     }
 
-    public void changeHidden(Boolean isHidden) {
+    public void changeHidden(boolean isHidden) {
         this.isHidden = isHidden;
     }
 }
