@@ -41,5 +41,4 @@ public class ResetTokenEntity extends UpdateBaseEntity {
     @Column(name = "used_at")
     private LocalDateTime usedAt;
 
-
 }

@@ -65,8 +65,6 @@ public class MenuEntity extends UpdateBaseEntity {
     @Column(name = "is_hidden")
     private Boolean isHidden = false;
 
-    // DTO 변환을 위한 양방향 매핑 (DB에는 영향 없음)
-    // mappedBy = "menu"는 MenuOptionEntity의 'menu' 변수명을 가리킴
     @OneToMany(mappedBy = "menu", fetch = FetchType.LAZY)
     private List<MenuOptionEntity> options = new ArrayList<>();
 

@@ -3,45 +3,50 @@ package com.example.Spot.menu.presentation.dto.response;
 import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+public record MenuPublicResponseDto(
+        @JsonProperty("menu_id")
+        UUID id,
 
-@Getter
-@NoArgsConstructor
-public class MenuPublicResponseDto implements MenuResponseDto {
+        @JsonProperty("store_id")
+        UUID storeId,
 
-    private UUID id;
-    private UUID storeId;
-    private String name;
-    private String category;
-    private Integer price;
-    private String description;
-    private String imageUrl;
-    private Boolean isAvailable;
-    private List<MenuOptionResponseDto> options;
+        String name,
+        String category,
+        Integer price,
+        String description,
 
+        @JsonProperty("image_url")
+        String imageUrl,
+
+        @JsonProperty("is_available")
+        Boolean isAvailable,
+
+        List<MenuOptionPublicResponseDto> options
+) implements MenuResponseDto {
+
+    // 정적 팩토리 메서드
     public static MenuPublicResponseDto of(MenuEntity menu, List<MenuOptionEntity> options) {
-        MenuPublicResponseDto dto = new MenuPublicResponseDto();
-
-        dto.id = menu.getId();
-        dto.storeId = menu.getStore().getId();
-        dto.name = menu.getName();
-        dto.category = menu.getCategory();
-        dto.price = menu.getPrice();
-        dto.description = menu.getDescription();
-        dto.imageUrl = menu.getImageUrl();
-        dto.isAvailable = menu.getIsAvailable();
-
-        // [수정 포인트] options가 null이면 에러 대신 빈 리스트([]) 반환
-        dto.options = (options != null)
-                ? options.stream().map(MenuOptionResponseDto::new).collect(Collectors.toList())
+        // 옵션 변환 로직 (Null Safe)
+        List<MenuOptionPublicResponseDto> optionDtos = (options != null)
+                ? options.stream()
+                .map(MenuOptionPublicResponseDto::from).toList()
                 : Collections.emptyList();
 
-        return dto;
+        return new MenuPublicResponseDto(
+                menu.getId(),
+                menu.getStore().getId(),
+                menu.getName(),
+                menu.getCategory(),
+                menu.getPrice(),
+                menu.getDescription(),
+                menu.getImageUrl(),
+                menu.getIsAvailable(),
+                optionDtos
+        );
     }
 }

@@ -8,7 +8,6 @@ import com.example.Spot.user.application.service.JoinService;
 import com.example.Spot.user.presentation.dto.request.JoinDTO;
 import com.example.Spot.user.presentation.swagger.JoinApi;
 
-
 @RestController
 public class JoinController implements JoinApi {
 

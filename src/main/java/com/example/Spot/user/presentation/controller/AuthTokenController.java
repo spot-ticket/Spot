@@ -13,7 +13,6 @@ import com.example.Spot.user.presentation.swagger.AuthTokenApi;
 
 import lombok.RequiredArgsConstructor;
 
-
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/api/auth")

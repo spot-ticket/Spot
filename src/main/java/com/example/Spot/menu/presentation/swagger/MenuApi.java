@@ -3,6 +3,7 @@ package com.example.Spot.menu.presentation.swagger;
 import java.util.List;
 import java.util.UUID;
 
+import com.example.Spot.menu.presentation.dto.response.MenuAdminResponseDto;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -15,7 +16,6 @@ import com.example.Spot.menu.presentation.dto.request.UpdateMenuRequestDto;
 import com.example.Spot.menu.presentation.dto.response.CreateMenuResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuPublicResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuResponseDto;
-import com.example.Spot.menu.presentation.dto.response.UpdateMenuResponseDto;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -59,7 +59,7 @@ public interface MenuApi {
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "403", description = "권한 없음"),
             @io.swagger.v3.oas.annotations.responses.ApiResponse(responseCode = "404", description = "메뉴를 찾을 수 없음")
     })
-    ApiResponse<UpdateMenuResponseDto> updateMenu(
+    ApiResponse<MenuAdminResponseDto> updateMenu(
             @Parameter(description = "메뉴 ID") @PathVariable UUID menuId,
             @RequestBody UpdateMenuRequestDto request,
             @AuthenticationPrincipal CustomUserDetails user);
