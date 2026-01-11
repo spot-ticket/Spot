@@ -28,7 +28,7 @@ public record MenuOptionPublicResponseDto(
                 entity.getName(),
                 entity.getDetail(),
                 entity.getPrice(),
-                entity.getIsAvailable()
+                entity.isAvailable()
         );
     }
 }

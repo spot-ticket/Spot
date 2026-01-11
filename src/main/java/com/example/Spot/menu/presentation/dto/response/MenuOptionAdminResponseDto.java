@@ -77,8 +77,8 @@ public record MenuOptionAdminResponseDto(
                 option.getName(),
                 option.getPrice(),
                 option.getDetail(),
-                option.getIsAvailable(),
-                option.getIsHidden(),
+                option.isAvailable(),
+                option.isHidden(),
                 option.getIsDeleted(),
 
                 createdAt, // 위에서 선언한 지역 변수 사용
