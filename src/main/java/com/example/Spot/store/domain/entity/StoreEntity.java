@@ -8,6 +8,7 @@ import java.util.Set;
 import java.util.UUID;
 
 import com.example.Spot.global.common.UpdateBaseEntity;
+import com.example.Spot.review.domain.entity.ReviewEntity;
 import com.example.Spot.store.domain.StoreStatus;
 import com.example.Spot.user.domain.entity.UserEntity;
 
@@ -75,6 +76,14 @@ public class StoreEntity extends UpdateBaseEntity {
             fetch = FetchType.LAZY
     )
     private Set<StoreCategoryEntity> storeCategoryMaps = new HashSet<>();
+
+    @OneToMany(
+            mappedBy = "store",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private List<ReviewEntity> reviews = new ArrayList<>();
 
     @Builder
     public StoreEntity(

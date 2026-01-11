@@ -69,7 +69,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests(auth -> auth
                         // 누구나 접근 가능 (로그인, 회원가입, 토큰 갱신, 가게 조회, 카테고리 조회)
-                        .requestMatchers("/api/login", "/", "/api/join", "/auth/refresh", "/swagger-ui/*", "v3/api-docs", "/v3/api-docs/*",
+                        .requestMatchers("/api/login", "/", "/api/join", "/api/auth/refresh", "/swagger-ui/*", "v3/api-docs", "/v3/api-docs/*",
                                 "/api/stores", "/api/stores/*", "/api/stores/search", "/api/categories", "/api/categories/**").permitAll()
 
                         // 관리자 전용 API (MASTER, MANAGER만 접근 가능)

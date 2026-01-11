@@ -180,11 +180,32 @@ public class StoreService {
     // 6. 매장 삭제
     @Transactional
     public void deleteStore(UUID storeId, Integer userId) {
-        // 6.1 [공통 로직] 조회 및 권한 체크
+        // 6.1 사용자 조회
         UserEntity currentUser = getValidatedUser(userId);
-        StoreEntity store = findStoreWithAuthority(storeId, currentUser);
-        
-        // 6.2 공통 메서드 호출
+        boolean isAdmin = checkIsAdmin(currentUser);
+
+        // 6.2 가게 조회 (OWNER는 자신의 모든 상태 가게 삭제 가능)
+        StoreEntity store;
+        if (isAdmin) {
+            // 관리자는 모든 가게 조회 가능
+            store = storeRepository.findByIdWithDetails(storeId, true)
+                    .orElseThrow(() -> new EntityNotFoundException("매장을 찾을 수 없습니다."));
+        } else {
+            // OWNER는 모든 상태(PENDING, APPROVED, REJECTED)의 자신의 가게 조회 가능
+            store = storeRepository.findByIdWithDetailsForOwner(storeId)
+                    .orElseThrow(() -> new EntityNotFoundException("매장을 찾을 수 없습니다."));
+
+            // OWNER 본인 확인
+            boolean isRealOwner = store.getUsers().stream()
+                    .anyMatch(su -> su.getUser().getId().equals(currentUser.getId())
+                            && su.getUser().getRole() == Role.OWNER);
+
+            if (!isRealOwner) {
+                throw new AccessDeniedException("해당 매장에 대한 관리 권한이 없습니다.");
+            }
+        }
+
+        // 6.3 소프트 삭제
         store.softDelete(userId);
     }
     

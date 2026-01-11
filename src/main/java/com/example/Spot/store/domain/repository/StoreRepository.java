@@ -67,4 +67,14 @@ public interface StoreRepository extends JpaRepository<StoreEntity, UUID> {
 
     // ID로 삭제되지 않은 가게 조회
     Optional<StoreEntity> findByIdAndIsDeletedFalse(UUID id);
+
+    // OWNER가 자신의 가게를 삭제/관리하기 위한 조회 (모든 상태 포함)
+    @Query("SELECT s FROM StoreEntity s " +
+            "LEFT JOIN FETCH s.storeCategoryMaps sc " +
+            "LEFT JOIN FETCH sc.category " +
+            "LEFT JOIN FETCH s.users su " +
+            "LEFT JOIN FETCH su.user u " +
+            "WHERE s.id = :id " +
+            "AND s.isDeleted = false")
+    Optional<StoreEntity> findByIdWithDetailsForOwner(@Param("id") UUID id);
 }

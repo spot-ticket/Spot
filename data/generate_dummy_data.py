@@ -11,8 +11,11 @@ NUM_STORES = 1000
 NUM_CATEGORIES = 20
 NUM_MENUS_PER_STORE = (5, 15)  # 가게당 메뉴 수 범위
 NUM_OPTIONS_PER_MENU = (0, 5)  # 메뉴당 옵션 수 범위
+NUM_ORIGINS_PER_MENU = (0, 3)  # 메뉴당 원산지 정보 수
 NUM_ORDERS = 10000
 ITEMS_PER_ORDER = (1, 5)  # 주문당 아이템 수
+NUM_REVIEWS_PER_STORE = (0, 20)  # 가게당 리뷰 수 범위
+OWNER_RATIO = 0.1  # 전체 사용자 중 OWNER 비율
 
 # 한국 음식 카테고리
 CATEGORIES = [
@@ -55,8 +58,21 @@ def generate_jongno_address():
     return f"서울특별시 종로구 {road} {building_num}"
 
 # 주문 상태
-ORDER_STATUSES = ['PENDING', 'ACCEPTED', 'COOKING', 'READY', 'COMPLETED', 'CANCELLED']
-PAYMENT_STATUSES = ['READY', 'IN_PROGRESS', 'DONE', 'CANCELLED', 'ABORTED']
+ORDER_STATUSES = ['PAYMENT_PENDING', 'PENDING', 'ACCEPTED', 'COOKING', 'READY', 'COMPLETED', 'CANCELLED', 'REJECTED']
+PAYMENT_STATUSES = ['READY', 'IN_PROGRESS', 'WAITING_FOR_DEPOSIT', 'DONE', 'CANCELLED', 'PARTIAL_CANCELLED', 'ABORTED', 'EXPIRED']
+PAYMENT_METHODS = ['CREDIT_CARD', 'BANK_TRANSFER']
+STORE_STATUSES = ['PENDING', 'APPROVED', 'REJECTED']
+CANCELLED_BY = ['USER', 'OWNER']
+
+# 원산지 정보
+ORIGIN_TEMPLATES = [
+    ('쇠고기', ['한우', '미국산', '호주산']),
+    ('돼지고기', ['국내산', '미국산', '스페인산']),
+    ('닭고기', ['국내산', '브라질산']),
+    ('쌀', ['국내산', '캘리포니아산']),
+    ('김치', ['국내산 배추', '국내산 고춧가루']),
+    ('해산물', ['국내산', '노르웨이산', '칠레산']),
+]
 
 def generate_timestamp(days_ago=0, hours_ago=0):
     """과거 타임스탬프 생성"""
@@ -85,11 +101,14 @@ def sql_format(value):
 class DataGenerator:
     def __init__(self):
         self.users = []
+        self.owner_users = []  # OWNER 역할 사용자들
         self.categories = []
         self.stores = []
         self.menus = []
         self.menu_options = []
+        self.menu_origins = []
         self.orders = []
+        self.reviews = []
 
     def random_updated_at(self, created_at):
         """created_at 이후의 랜덤한 updated_at 생성"""
@@ -124,6 +143,8 @@ class DataGenerator:
     def generate_users(self):
         """사용자 생성"""
         print("-- Users")
+        num_owners = int(NUM_USERS * OWNER_RATIO)
+
         for i in range(NUM_USERS):
             user_id = i + 1
             name = fake.name()
@@ -133,10 +154,15 @@ class DataGenerator:
             # user 생성 시에는 이전에 생성된 user 중에서 선택 (첫 번째는 자기 자신)
             updated_by = random.randint(1, user_id)
 
+            # 일부 사용자를 OWNER로 설정
+            role = 'OWNER' if i < num_owners else 'CUSTOMER'
+            if role == 'OWNER':
+                self.owner_users.append(user_id)
+
             self.users.append(user_id)
 
             print(f"INSERT INTO p_user (id, name, nickname, email, male, age, road_address, address_detail, role, created_at, created_by, updated_at, updated_by, is_deleted, deleted_at, deleted_by) VALUES")
-            print(f"({user_id}, {sql_format(name)}, {sql_format(f'user{user_id}')}, {sql_format(email)}, {random.choice([True, False])}, {random.randint(18, 65)}, {sql_format(fake.address())}, {sql_format(fake.building_name() or f'{random.randint(101, 999)}호')}, 'CUSTOMER', {sql_format(created_at)}, {user_id}, {sql_format(updated_at)}, {updated_by}, false, NULL, NULL);")
+            print(f"({user_id}, {sql_format(name)}, {sql_format(f'user{user_id}')}, {sql_format(email)}, {random.choice([True, False])}, {random.randint(18, 65)}, {sql_format(fake.address())}, {sql_format(fake.building_name() or f'{random.randint(101, 999)}호')}, {sql_format(role)}, {sql_format(created_at)}, {user_id}, {sql_format(updated_at)}, {updated_by}, false, NULL, NULL);")
 
             # User Auth
             auth_id = str(uuid.uuid4())
