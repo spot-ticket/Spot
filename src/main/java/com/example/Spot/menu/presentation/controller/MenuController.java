@@ -3,6 +3,8 @@ package com.example.Spot.menu.presentation.controller;
 import java.util.List;
 import java.util.UUID;
 
+import com.example.Spot.menu.presentation.dto.response.MenuAdminResponseDto;
+import com.example.Spot.user.domain.Role;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -23,7 +25,6 @@ import com.example.Spot.menu.presentation.dto.request.UpdateMenuHiddenRequestDto
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuRequestDto;
 import com.example.Spot.menu.presentation.dto.response.CreateMenuResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuResponseDto;
-import com.example.Spot.menu.presentation.dto.response.UpdateMenuResponseDto;
 import com.example.Spot.user.application.service.UserService;
 import com.example.Spot.user.domain.entity.UserEntity;
 
@@ -47,7 +48,9 @@ public class MenuController {
     ) {
 
         Integer userId = principal.getUserId();
-        List<? extends MenuResponseDto> data = menuService.getMenus(storeId, userId);
+        Role userRole = principal.getUserRole();
+
+        List<? extends MenuResponseDto> data = menuService.getMenus(storeId, userId, userRole);
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
     }
 
@@ -60,7 +63,9 @@ public class MenuController {
     ) {
 
         Integer userId = principal.getUserId();
-        MenuResponseDto response = menuService.getMenuDetail(storeId, menuId, userId);
+        Role userRole = principal.getUserRole();
+
+        MenuResponseDto response = menuService.getMenuDetail(storeId, menuId, userId, userRole);
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
     }
 
@@ -74,7 +79,9 @@ public class MenuController {
     ) {
 
         Integer userId = principal.getUserId();
-        CreateMenuResponseDto data = menuService.createMenu(storeId, request, userId);
+        Role userRole = principal.getUserRole();
+
+        CreateMenuResponseDto data = menuService.createMenu(storeId, request, userId, userRole);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
     }
@@ -82,7 +89,7 @@ public class MenuController {
     // 메뉴 변경
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
     @PatchMapping("/{menuId}")
-    public ApiResponse<UpdateMenuResponseDto> updateMenu(
+    public ApiResponse<MenuAdminResponseDto> updateMenu(
             @PathVariable UUID storeId,
             @PathVariable UUID menuId,
             @Valid @RequestBody UpdateMenuRequestDto request,
@@ -90,7 +97,9 @@ public class MenuController {
     ) {
 
         Integer userId = principal.getUserId();
-        UpdateMenuResponseDto data = menuService.updateMenu(storeId, menuId, request, userId);
+        Role userRole = principal.getUserRole();
+
+        MenuAdminResponseDto data = menuService.updateMenu(storeId, menuId, request, userId, userRole);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
 
@@ -103,8 +112,10 @@ public class MenuController {
             @PathVariable UUID menuId,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        UserEntity userEntity = principal.getUserEntity();
-        menuService.deleteMenu(menuId, userEntity);
+        Integer userId = principal.getUserId();
+        Role userRole = principal.getUserRole();
+
+        menuService.deleteMenu(menuId, userId, userRole);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, "메뉴가 삭제되었습니다.");
     }
@@ -117,8 +128,10 @@ public class MenuController {
             @RequestBody UpdateMenuHiddenRequestDto request,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        UserEntity userEntity = principal.getUserEntity();
-        menuService.hiddenMenu(menuId, request, userEntity);
+        Integer userId = principal.getUserId();
+        Role userRole = principal.getUserRole();
+
+        menuService.hiddenMenu(menuId, request, userId, userRole);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, "해당 메뉴를 숨김 처리하였습니다.");
     }

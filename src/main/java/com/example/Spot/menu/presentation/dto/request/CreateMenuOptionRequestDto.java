@@ -6,31 +6,23 @@ import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
 
-@Getter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
-public class CreateMenuOptionRequestDto {
+public record CreateMenuOptionRequestDto(
+        @NotBlank(message = "옵션명은 필수입니다.")
+        String name,
 
-    @NotBlank(message = "옵션명은 필수입니다.")
-    private String optionName;
-    private String optionDetail;
+        String detail,
 
-    @NotNull(message = "메뉴 옵션 가격은 필수입니다.")
-    @Min(value =  0, message = "메뉴 옵션 추가 가격은 0원 이상이어야 합니다.")
-    private Integer optionPrice;
-
+        @NotNull(message = "가격은 필수입니다.")
+        @Min(value = 0, message = "가격은 0원 이상이어야 합니다.")
+        Integer price
+) {
     public MenuOptionEntity toEntity(MenuEntity menu) {
         return MenuOptionEntity.builder()
                 .menu(menu)
-                .name(optionName)
-                .detail(optionDetail)
-                .price(optionPrice)
+                .name(this.name)
+                .detail(this.detail)
+                .price(this.price)
                 .build();
     }
 }

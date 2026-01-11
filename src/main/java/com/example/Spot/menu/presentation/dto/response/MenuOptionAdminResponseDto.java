@@ -1,56 +1,94 @@
 package com.example.Spot.menu.presentation.dto.response;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
+import com.example.Spot.user.domain.Role;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
-@Getter
-@NoArgsConstructor
-public class MenuOptionAdminResponseDto {
-
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public record MenuOptionAdminResponseDto(
     @JsonProperty("option_id")
-    private UUID id;
+    UUID id,
 
     @JsonProperty("menu_id")
-    private UUID menuId;
+    UUID menuId,
 
-    private String name;
-    private String detail;
-    private Integer price;
+    String name,
+    Integer price,
+    String detail,
 
     @JsonProperty("is_available")
-    private Boolean isAvailable;
+    Boolean isAvailable,
 
     @JsonProperty("is_hidden")
-    private Boolean isHidden;
+    Boolean isHidden,
 
     @JsonProperty("is_deleted")
-    private Boolean isDeleted;
+    Boolean isDeleted,
+
+    @JsonProperty("created_at")
+    LocalDateTime createdAt,
 
     @JsonProperty("created_by")
-    private Integer createdBy;
+    Integer createdBy,
+
+    @JsonProperty("updated_at")
+    LocalDateTime updatedAt,
 
     @JsonProperty("updated_by")
-    private Integer updatedBy;
+    Integer updatedBy,
+
+    @JsonProperty("deleted_at")
+    LocalDateTime deletedAt,
 
     @JsonProperty("deleted_by")
-    private Integer deletedBy;
+    Integer deletedBy
+) {
+    public static MenuOptionAdminResponseDto of(MenuOptionEntity option, Role userRole) {
 
-    public MenuOptionAdminResponseDto(MenuOptionEntity menuOption) {
-        this.id = menuOption.getId();
-        this.menuId = menuOption.getMenu().getId();
-        this.name = menuOption.getName();
-        this.detail = menuOption.getDetail();
-        this.price = menuOption.getPrice();
-        this.isAvailable = menuOption.getIsAvailable();
-        this.isHidden = menuOption.getIsHidden();
-        this.isDeleted = menuOption.getIsDeleted();
-        this.createdBy = menuOption.getCreatedBy();
-        this.updatedBy = menuOption.getUpdatedBy();
-        this.deletedBy = menuOption.getDeletedBy();
+        LocalDateTime createdAt = null;
+        Integer createdBy = null;
+
+        LocalDateTime updatedAt = null;
+        Integer updatedBy = null;
+
+        LocalDateTime deletedAt = null;
+        Integer deletedBy = null;
+
+        // 권한 체크: 관리자(MASTER, MANAGER)인 경우에만 실제 값을 엔티티에서 꺼내옴
+        if (userRole == Role.MASTER || userRole == Role.MANAGER) {
+            createdAt = option.getCreatedAt();
+            createdBy = option.getCreatedBy();
+
+            updatedAt = option.getUpdatedAt();
+            updatedBy = option.getUpdatedBy();
+
+            deletedAt = option.getDeletedAt();
+            deletedBy = option.getDeletedBy();
+        }
+
+        // Return 할 때 위에서 만든 '지역 변수'를 넣어줍니다.
+        return new MenuOptionAdminResponseDto(
+                option.getId(),
+                option.getMenu().getId(),
+                option.getName(),
+                option.getPrice(),
+                option.getDetail(),
+                option.getIsAvailable(),
+                option.getIsHidden(),
+                option.getIsDeleted(),
+
+                createdAt, // 위에서 선언한 지역 변수 사용
+                createdBy,
+
+                updatedAt,
+                updatedBy,
+
+                deletedAt,
+                deletedBy
+        );
     }
 }
