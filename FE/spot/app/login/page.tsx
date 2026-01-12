@@ -95,7 +95,8 @@ export default function LoginPage() {
       
     } catch (err: any) {
       console.error('Login Error:', err);
-      setError('아이디 또는 비밀번호가 올바르지 않습니다.');
+      // authApi.login에서 던진 에러 메시지를 그대로 사용
+      setError(err.message || '로그인 중 오류가 발생했습니다.');
     } finally {
       setIsLoading(false);
     }
