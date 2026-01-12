@@ -97,8 +97,8 @@ export interface Menu {
 
 export interface MenuOption {
   id: string;
-  optionName: string;
-  optionPrice: number;
+  name: string;
+  price: number;
 }
 
 // 주문 관련 타입

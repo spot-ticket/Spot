@@ -4,18 +4,12 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record CreateMenuOptionResponseDto(
-        @JsonProperty("option_id")
+
         UUID optionId,
-
-        @JsonProperty("menu_id")
         UUID menuId,
-
         String name,
-
-        @JsonProperty("created_at")
         LocalDateTime createdAt
 ) {
 

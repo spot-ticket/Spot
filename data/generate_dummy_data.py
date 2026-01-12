@@ -342,6 +342,10 @@ class DataGenerator:
                     opt_updated_at = self.random_updated_at(created_at)
                     opt_updated_by = self.random_updated_by()
 
+                    # is_available과 is_hidden 필드 생성 (nullable=false)
+                    opt_is_available = random.random() > 0.05  # 95% 판매 가능
+                    opt_is_hidden = random.random() < 0.02  # 2% 숨김
+
                     self.menu_options.append({
                         'id': option_id,
                         'menu_id': menu_id,
@@ -350,8 +354,8 @@ class DataGenerator:
                         'price': option_price
                     })
 
-                    print(f"INSERT INTO p_menu_option (option_id, menu_id, name, detail, price, is_available, is_deleted, deleted_at, deleted_by, created_at, created_by, updated_at, updated_by) VALUES")
-                    print(f"({sql_format(option_id)}, {sql_format(menu_id)}, {sql_format(option_name)}, {sql_format(option_detail)}, {option_price}, true, false, NULL, NULL, {sql_format(created_at)}, {created_by}, {sql_format(opt_updated_at)}, {opt_updated_by});")
+                    print(f"INSERT INTO p_menu_option (option_id, menu_id, name, detail, price, is_available, is_hidden, is_deleted, deleted_at, deleted_by, created_at, created_by, updated_at, updated_by) VALUES")
+                    print(f"({sql_format(option_id)}, {sql_format(menu_id)}, {sql_format(option_name)}, {sql_format(option_detail)}, {option_price}, {opt_is_available}, {opt_is_hidden}, false, NULL, NULL, {sql_format(created_at)}, {created_by}, {sql_format(opt_updated_at)}, {opt_updated_by});")
 
                 # Menu Origins (원산지 정보)
                 num_origins = random.randint(*NUM_ORIGINS_PER_MENU)

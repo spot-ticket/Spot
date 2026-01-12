@@ -287,10 +287,10 @@ export default function StoreDetailPage() {
                             onChange={() => handleOptionToggle(option)}
                             className="w-5 h-5 text-orange-500 rounded focus:ring-orange-500"
                           />
-                          <span className="ml-3 text-gray-700">{option.optionName}</span>
+                          <span className="ml-3 text-gray-700">{option.name}</span>
                         </div>
                         <span className="text-gray-500">
-                          +{(option.optionPrice || 0).toLocaleString()}원
+                          +{(option.price || 0).toLocaleString()}원
                         </span>
                       </label>
                     ))}

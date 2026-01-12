@@ -68,6 +68,7 @@ public class SecurityConfig {
         // 경로별 인가 작업
         http
                 .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("OPTIONS", "/**").permitAll()
                         // 누구나 접근 가능 (로그인, 회원가입, 토큰 갱신, 가게 조회, 카테고리 조회)
                         .requestMatchers("/api/login", "/", "/api/join", "/api/auth/refresh", "/swagger-ui/*", "v3/api-docs", "/v3/api-docs/*",
                                 "/api/stores", "/api/stores/*", "/api/stores/search", "/api/categories", "/api/categories/**").permitAll()
@@ -79,7 +80,10 @@ public class SecurityConfig {
                         .requestMatchers("/admin").hasAnyRole("MASTER", "MANAGER")
 
                         // 모든 요청: 로그인 필수
-                        .anyRequest().authenticated());
+                        .anyRequest().authenticated()
+                        );
+
+                        
 
         // 인증/권한 실패 시 JSON 응답 반환 (302 리다이렉트 방지)
         http

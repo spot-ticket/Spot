@@ -12,6 +12,7 @@ interface PageResponse<T> {
 export const orderApi = {
   // 주문 생성
   createOrder: async (data: OrderCreateRequest): Promise<OrderResponse> => {
+    console.log(data);
     const response = await api.post<ApiResponse<OrderResponse>>('/api/orders', data);
     return response.data.result;
   },

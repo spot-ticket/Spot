@@ -6,45 +6,23 @@ import java.util.UUID;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.example.Spot.user.domain.Role;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record MenuOptionAdminResponseDto(
-    @JsonProperty("option_id")
+
     UUID id,
-
-    @JsonProperty("menu_id")
     UUID menuId,
-
     String name,
     Integer price,
     String detail,
-
-    @JsonProperty("is_available")
     Boolean isAvailable,
-
-    @JsonProperty("is_hidden")
     Boolean isHidden,
-
-    @JsonProperty("is_deleted")
     Boolean isDeleted,
-
-    @JsonProperty("created_at")
     LocalDateTime createdAt,
-
-    @JsonProperty("created_by")
     Integer createdBy,
-
-    @JsonProperty("updated_at")
     LocalDateTime updatedAt,
-
-    @JsonProperty("updated_by")
     Integer updatedBy,
-
-    @JsonProperty("deleted_at")
     LocalDateTime deletedAt,
-
-    @JsonProperty("deleted_by")
     Integer deletedBy
 ) {
     public static MenuOptionAdminResponseDto of(MenuOptionEntity option, Role userRole) {
