@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public record MenuPublicResponseDto(
 

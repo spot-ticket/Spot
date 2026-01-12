@@ -4,7 +4,6 @@ import java.util.UUID;
 
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record MenuOptionPublicResponseDto(
