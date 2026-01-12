@@ -9,7 +9,7 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @Configuration
-@ConfigurationProperties(prefix = "mvc.cors") // application.yml 참조할 것.
+@ConfigurationProperties(prefix = "spring.mvc.cors")
 public class CorsMvcConfig implements WebMvcConfigurer {
 
     private Map<String, CorsPathConfig> mappings;
