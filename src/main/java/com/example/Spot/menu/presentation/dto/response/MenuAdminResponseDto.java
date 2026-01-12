@@ -13,47 +13,25 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public record MenuAdminResponseDto(
-        @JsonProperty("menu_id")
+
         UUID id,
-
-        @JsonProperty("store_id")
         UUID storeId,
-
         String name,
         String category,
         Integer price,
         String description,
-
-        @JsonProperty("image_url")
         String imageUrl,
 
         List<MenuOptionAdminResponseDto> options,
 
-        @JsonProperty("is_available")
         Boolean isAvailable,
-
-        @JsonProperty("is_deleted")
         Boolean isDeleted,
-
-        @JsonProperty("is_hidden")
         Boolean isHidden,
-
-        @JsonProperty("created_at")
         LocalDateTime createdAt,
-
-        @JsonProperty("created_by")
         Integer createdBy,
-
-        @JsonProperty("updated_at")
         LocalDateTime updatedAt,
-
-        @JsonProperty("updated_by")
         Integer updatedBy,
-
-        @JsonProperty("deleted_at")
         LocalDateTime deletedAt,
-
-        @JsonProperty("deleted_by")
         Integer deletedBy
 
 ) implements MenuResponseDto {

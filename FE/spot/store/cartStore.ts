@@ -151,7 +151,7 @@ export const useCartStore = create<CartState>()(
           // 복원된 데이터 검증
           if (state?.cart?.items) {
             const invalidItems = state.cart.items.filter(
-              (item: any) => !item.menu || !item.menu.id
+              (item: any) => !item[0].menu || !item.menu[0].id
             );
 
             if (invalidItems.length > 0) {

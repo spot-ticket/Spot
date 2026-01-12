@@ -32,14 +32,15 @@ public class JoinService {
         }
 
         // User Entity 저장
-        UserEntity user = new UserEntity(
-                joinDTO.getUsername(),
-                joinDTO.getNickname(),
-                joinDTO.getRoadAddress(),
-                joinDTO.getAddressDetail(),
-                joinDTO.getEmail(),
-                joinDTO.getRole()
-        );
+        UserEntity user = UserEntity.builder()
+                                    .username(joinDTO.getUsername())
+                                    .nickname(joinDTO.getNickname())
+                                    .roadAddress(joinDTO.getRoadAddress())
+                                    .addressDetail(joinDTO.getAddressDetail())
+                                    .email(joinDTO.getEmail())
+                                    .role(joinDTO.getRole())
+                                    .build();
+
         user.setMale(joinDTO.isMale());
         user.setAge(joinDTO.getAge());
 
@@ -50,7 +51,6 @@ public class JoinService {
         UserAuthEntity auth = new UserAuthEntity(user, hashedPassword);
 
         userAuthRepository.save(auth);
-
     }
 
 }

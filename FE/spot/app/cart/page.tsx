@@ -41,19 +41,6 @@ export default function CartPage() {
           selectedOptions: item.selectedOptions
         });
       });
-      
-      // const invalidItems = cart.items.filter(item => !item.menu || !item.menu.id);
-      // if (invalidItems.length > 0) {
-      //   console.error('❌ 손상된 장바구니 아이템 발견:', invalidItems);
-      //   console.error('전체 장바구니:', cart);
-
-      //   alert('장바구니 데이터가 손상되었습니다. 장바구니를 초기화합니다.');
-      //   clearCart();
-      //   localStorage.removeItem('cart-storage');
-      //   window.location.reload();
-      // } else {
-      //   console.log('✅ 장바구니 검증 완료 - 모든 데이터 정상');
-      // }
     }
   }, [cart]);
 
@@ -148,9 +135,9 @@ export default function CartPage() {
             menuId: item.menu.id,
             quantity: item.quantity,
             ...(item.selectedOptions.length > 0 && {
-              orderItemOptions: item.selectedOptions.map((opt) => ({
-                optionId: opt.id,
-                value: opt.optionName,
+              options: item.selectedOptions.map((opt) => ({
+                menuOptionId: opt.id
+                // value: opt.optionName,
               })),
             }),
           };
@@ -161,10 +148,12 @@ export default function CartPage() {
       };
 
       console.log('주문 데이터:', JSON.stringify(orderData, null, 2));
-      const order = await orderApi.createOrder(orderData);
 
+      const order = await orderApi.createOrder(orderData);
+      console.log("@@");
       // 2. 결제 진행
       if (hasBillingKey) {
+
         // 2-A. 빌링키가 있으면 자동 결제
         const paymentData = {
           title: `${cart.storeName} 주문`,
@@ -184,6 +173,7 @@ export default function CartPage() {
         alert('주문이 완료되었습니다!');
         router.push('/orders');
       } else {
+
         // 2-B. 빌링키가 없으면 토스 결제창 띄우기
         const clientKey = process.env.NEXT_PUBLIC_TOSS_CLIENT_KEY;
 
