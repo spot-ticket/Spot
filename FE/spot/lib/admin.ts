@@ -56,18 +56,18 @@ export const adminOrderApi = {
   },
 
   // 특정 주문 상세 조회
-  getOrder: async (orderId: number): Promise<OrderResponse> => {
+  getOrder: async (orderId: string): Promise<OrderResponse> => {
     const response = await api.get<ApiResponse<OrderResponse>>(`/api/orders/${orderId}`);
     return response.data.result;
   },
 
   // 주문 상태 변경
-  updateOrderStatus: async (orderId: number, status: string): Promise<void> => {
+  updateOrderStatus: async (orderId: string, status: string): Promise<void> => {
     await api.patch(`/api/orders/${orderId}/status`, { status });
   },
 
   // 주문 취소
-  cancelOrder: async (orderId: number): Promise<void> => {
+  cancelOrder: async (orderId: string): Promise<void> => {
     await api.delete(`/api/orders/${orderId}`);
   },
 };

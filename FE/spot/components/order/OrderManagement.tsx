@@ -135,14 +135,7 @@ export function OrderManagement({ storeId }: OrderManagementProps) {
   };
 
   const calculateOrderTotal = (order: OrderResponse): number => {
-    return order.orderItems.reduce((total, item) => {
-      const itemPrice = item.menuPrice * item.quantity;
-      const optionsPrice = item.orderItemOptions.reduce(
-        (sum, opt) => sum + opt.optionPrice * item.quantity,
-        0
-      );
-      return total + itemPrice + optionsPrice;
-    }, 0);
+    return order.totalAmount;
   };
 
   if (isLoading) {
@@ -232,26 +225,18 @@ export function OrderManagement({ storeId }: OrderManagementProps) {
                       <div className="font-medium text-gray-900">
                         {item.menuName} x {item.quantity}
                       </div>
-                      {item.orderItemOptions.length > 0 && (
+                      {item.orderItemOptions && item.orderItemOptions.length > 0 && (
                         <div className="text-sm text-gray-600 ml-2">
                           {item.orderItemOptions.map((opt, idx) => (
                             <div key={idx}>
-                              + {opt.optionName} (+
-                              {opt.optionPrice.toLocaleString()}원)
+                              + {opt.optionName}: {opt.optionValue}
                             </div>
                           ))}
                         </div>
                       )}
                     </div>
                     <div className="text-gray-700">
-                      {(
-                        item.menuPrice * item.quantity +
-                        item.orderItemOptions.reduce(
-                          (sum, opt) => sum + opt.optionPrice * item.quantity,
-                          0
-                        )
-                      ).toLocaleString()}
-                      원
+                      {item.subtotal.toLocaleString()}원
                     </div>
                   </div>
                 ))}
