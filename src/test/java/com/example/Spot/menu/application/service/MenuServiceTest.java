@@ -25,6 +25,7 @@ import com.example.Spot.menu.domain.repository.MenuRepository;
 import com.example.Spot.menu.presentation.dto.response.MenuAdminResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
+import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.domain.entity.UserEntity;
 
 @ExtendWith(MockitoExtension.class)
@@ -63,21 +64,21 @@ class MenuServiceTest {
 
         // 2. When (실행)
         // Service 로직에 맞춰 Role.MASTER 혹은 MANAGER 사용
-        List<MenuAdminResponseDto> result = menuService.getMenusForAdmin(storeId, user);
+        List<MenuAdminResponseDto> result = menuService.getMenusForAdmin(storeId, user.getId(), Role.MASTER);
 
         // 3. Then (검증)
         assertThat(result).hasSize(2);
 
         // 이름 검증
-        assertThat(result.get(0).getName()).isEqualTo("육전물막국수");
-        assertThat(result.get(1).getName()).isEqualTo("가라아게덮밥");
+        assertThat(result.get(0).name()).isEqualTo("육전물막국수");
+        assertThat(result.get(1).name()).isEqualTo("가라아게덮밥");
 
         // ID 검증 (테스트에서 선언한 ID와 일치하는지 확인 가능!)
-        assertThat(result.get(0).getId()).isEqualTo(menuId1);
-        assertThat(result.get(1).getId()).isEqualTo(menuId2);
+        assertThat(result.get(0).id()).isEqualTo(menuId1);
+        assertThat(result.get(1).id()).isEqualTo(menuId2);
 
         // StoreId 검증
-        assertThat(result.get(0).getStoreId()).isEqualTo(storeId);
+        assertThat(result.get(0).storeId()).isEqualTo(storeId);
 
         verify(menuRepository, times(1)).findAllByStoreId(storeId);
     }
@@ -103,12 +104,12 @@ class MenuServiceTest {
                 .willReturn(List.of(menu));
 
         // 2. When (실행)
-        List<MenuAdminResponseDto> result = menuService.getMenusForAdmin(storeId, user);
+        List<MenuAdminResponseDto> result = menuService.getMenusForAdmin(storeId, user.getId(), Role.OWNER);
 
         // 3. Then (검증)
         assertThat(result).hasSize(1);
-        assertThat(result.getFirst().getName()).isEqualTo("가라아게덮밥");
-        assertThat(result.getFirst().getId()).isEqualTo(menuId);
+        assertThat(result.getFirst().name()).isEqualTo("가라아게덮밥");
+        assertThat(result.getFirst().id()).isEqualTo(menuId);
 
         verify(menuRepository, times(1)).findAllByStoreIdAndIsDeletedFalse(storeId);
     }
@@ -133,10 +134,10 @@ class MenuServiceTest {
         given(menuOptionRepository.findAllByMenuIdAndIsDeletedFalse(menuId))
                 .willReturn(Collections.emptyList());
 
-        MenuResponseDto result = menuService.getMenuDetail(storeId, menuId, 0);
+        MenuResponseDto result = menuService.getMenuDetail(storeId, menuId, 0, Role.CUSTOMER);
 
-        assertThat(result.getName()).isEqualTo("육전물막국수");
-        assertThat(result.getPrice()).isEqualTo(13000);
+        assertThat(result.name()).isEqualTo("육전물막국수");
+        assertThat(result.price()).isEqualTo(13000);
 
         verify(menuRepository, times(1)).findActiveMenuById(menuId);
         verify(menuOptionRepository, times(1)).findAllByMenuIdAndIsDeletedFalse(menuId);

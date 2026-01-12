@@ -1,19 +1,25 @@
 package com.example.Spot.menu.application.service;
 
-import java.util.List;
 import java.util.UUID;
 
 import com.example.Spot.menu.presentation.dto.request.CreateMenuOptionRequestDto;
+import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionHiddenRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionRequestDto;
 import com.example.Spot.menu.presentation.dto.response.CreateMenuOptionResponseDto;
-import com.example.Spot.menu.presentation.dto.response.MenuOptionResponseDto;
-import com.example.Spot.menu.presentation.dto.response.UpdateMenuOptionResponseDto;
+import com.example.Spot.menu.presentation.dto.response.MenuOptionAdminResponseDto;
 import com.example.Spot.user.domain.Role;
-import com.example.Spot.user.domain.entity.UserEntity;
 
 public interface MenuOptionService {
-    List<MenuOptionResponseDto> getOptions(Role userRole, UUID storeId, UUID menuId);
-    CreateMenuOptionResponseDto createMenuOption(UserEntity user, UUID storeId, UUID menuId, CreateMenuOptionRequestDto request);
-    UpdateMenuOptionResponseDto updateMenuOption(UserEntity user, UUID storeId, UUID menuId, UUID optionId, UpdateMenuOptionRequestDto request);
-    void deleteMenuOption(UserEntity user, UUID storeId, UUID menuId, UUID optionId);
+
+    // 메뉴 옵션 생성
+    CreateMenuOptionResponseDto createMenuOption(UUID storeId, UUID menuId, Integer userId, Role userRole, CreateMenuOptionRequestDto request);
+
+    // 메뉴 옵션 업데이트
+    MenuOptionAdminResponseDto updateMenuOption(UUID storeId, UUID menuId, UUID optionId, Integer userId, Role userRole, UpdateMenuOptionRequestDto request);
+
+    // 메뉴 옵션 삭제
+    void deleteMenuOption(UUID storeId, UUID menuId, UUID optionID, Integer userId, Role userRole);
+
+    // 메뉴 옵션 숨김
+    void hiddenMenuOption(UUID storeId, UUID menuId, UUID optionId, Integer userId, Role userRole, UpdateMenuOptionHiddenRequestDto request);
 }

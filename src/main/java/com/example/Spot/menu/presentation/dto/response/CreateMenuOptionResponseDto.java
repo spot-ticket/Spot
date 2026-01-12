@@ -4,23 +4,27 @@ import java.time.LocalDateTime;
 import java.util.UUID;
 
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+public record CreateMenuOptionResponseDto(
+        @JsonProperty("option_id")
+        UUID optionId,
 
-@Getter
-@NoArgsConstructor
-public class CreateMenuOptionResponseDto {
+        @JsonProperty("menu_id")
+        UUID menuId,
 
-    private UUID optionId;
-    private UUID menuId;
-    private String name;
-    private LocalDateTime createdAt;
+        String name,
 
-    public CreateMenuOptionResponseDto(MenuOptionEntity option) {
-        this.optionId = option.getId();
-        this.menuId = option.getMenu().getId();
-        this.name = option.getName();
-        this.createdAt = option.getCreatedAt();
+        @JsonProperty("created_at")
+        LocalDateTime createdAt
+) {
+
+    public static CreateMenuOptionResponseDto from(MenuOptionEntity option) {
+        return new CreateMenuOptionResponseDto(
+                option.getId(),
+                option.getMenu().getId(),
+                option.getName(),
+                option.getCreatedAt()
+        );
     }
 }

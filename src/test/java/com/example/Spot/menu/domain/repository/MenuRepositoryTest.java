@@ -16,7 +16,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
-import com.example.Spot.store.domain.repository.StoreRepository; // StoreRepository 필요
+import com.example.Spot.store.domain.repository.StoreRepository; // StoreRepository 필요import org.springframework.test.util.ReflectionTestUtils;
 
 @DataJpaTest
 class MenuRepositoryTest {

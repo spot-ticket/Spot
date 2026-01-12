@@ -16,6 +16,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import java.time.LocalTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 import org.junit.jupiter.api.DisplayName;
@@ -42,8 +43,8 @@ import com.example.Spot.menu.presentation.dto.request.CreateMenuRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuHiddenRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuRequestDto;
 import com.example.Spot.menu.presentation.dto.response.CreateMenuResponseDto;
+import com.example.Spot.menu.presentation.dto.response.MenuAdminResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuPublicResponseDto;
-import com.example.Spot.menu.presentation.dto.response.UpdateMenuResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.domain.entity.UserEntity;
@@ -77,7 +78,7 @@ class MenuControllerTest {
         MenuPublicResponseDto responseDto = MenuPublicResponseDto.of(menu, new ArrayList<>());
 
         // 가짜 서비스 설정
-        given(menuService.getMenuDetail(storeId, menuId, 0)).willReturn(responseDto);
+        given(menuService.getMenuDetail(storeId, menuId, 0, Role.OWNER)).willReturn(responseDto);
 
         // when & then (실행 및 검증)
         mockMvc.perform(get("/api/stores/{storeId}/menus/{menuId}", storeId, menuId)
@@ -93,17 +94,15 @@ class MenuControllerTest {
         UUID storeId = UUID.randomUUID();
         UUID menuId = UUID.randomUUID();
 
-        CreateMenuRequestDto request = new CreateMenuRequestDto();
-        ReflectionTestUtils.setField(request, "storeId", storeId);
-        ReflectionTestUtils.setField(request, "name", "육전물막국수");
+        CreateMenuRequestDto request = new CreateMenuRequestDto("육전물막국수", "한식", 123, null, null);
 
         // 인증된 유저
         CustomUserDetails customUser = createMockUser(Role.MASTER);
 
         StoreEntity store = createStoreEntity(storeId);
-        MenuEntity menu = createMenuEntity(store, request.getName(), menuId);
+        MenuEntity menu = createMenuEntity(store, request.name(), menuId);
 
-        given(menuService.createMenu(eq(storeId), any(CreateMenuRequestDto.class), any()))
+        given(menuService.createMenu(eq(storeId), any(CreateMenuRequestDto.class), any(), Role.OWNER))
                 .willReturn(new CreateMenuResponseDto(menu));
 
         // 2. When & Then
@@ -123,17 +122,19 @@ class MenuControllerTest {
         UUID storeId = UUID.randomUUID();
         UUID menuId = UUID.randomUUID();
 
-        UpdateMenuRequestDto request = UpdateMenuRequestDto.builder()
-                .name("가라아게덮밥")
-                .build();
+        UpdateMenuRequestDto request = new UpdateMenuRequestDto("육전비빔막국수", "한식", 123, "테스트", null, null);
 
         // ustomUserDetails 객체 생성
         CustomUserDetails customUser = createMockUser(Role.OWNER);
 
-        MenuEntity menu = createMenuEntity(createStoreEntity(storeId), request.getName(), menuId);
+        MenuEntity menu = createMenuEntity(createStoreEntity(storeId), request.name(), menuId);
 
-        given(menuService.updateMenu(eq(storeId), eq(menuId), any(UpdateMenuRequestDto.class), any()))
-                .willReturn(new UpdateMenuResponseDto(menu));
+        given(menuService.updateMenu(eq(storeId), eq(menuId), any(UpdateMenuRequestDto.class), any(), Role.OWNER))
+                .willReturn(MenuAdminResponseDto.of(
+                        menu,           // 1. MenuEntity
+                        List.of(),      // 2. List<MenuOptionEntity> (테스트용 빈 리스트)
+                        Role.OWNER      // 3. Role (UserRole)
+                ));
 
         // When & Then
         mockMvc.perform(patch("/api/stores/{storeId}/menus/{menuId}", storeId, menuId)
@@ -153,16 +154,14 @@ class MenuControllerTest {
         UUID storeId = UUID.randomUUID();
         UUID menuId = UUID.randomUUID();
 
-        UpdateMenuHiddenRequestDto request = UpdateMenuHiddenRequestDto.builder()
-                .isHidden(true)
-                .build();
+        UpdateMenuHiddenRequestDto request = new UpdateMenuHiddenRequestDto(true);
 
         CustomUserDetails userRole = createMockUser(Role.MANAGER);
         //MenuEntity menu = createMenuEntity(createStoreEntity(storeId), "육전물막국수", menuId);
 
         // void 메서드
         willDoNothing().given(menuService)
-                .hiddenMenu(eq(menuId), any(UpdateMenuHiddenRequestDto.class), any());
+                .hiddenMenu(eq(menuId), any(UpdateMenuHiddenRequestDto.class), any(), Role.MANAGER);
 
         mockMvc.perform(patch("/api/stores/{storeId}/menus/{menuId}/hide", storeId, menuId)
                         .with(csrf())
