@@ -5,6 +5,8 @@ import { useParams, useRouter } from 'next/navigation';
 import { storeApi } from '@/lib/stores';
 import { useCartStore } from '@/store/cartStore';
 import { Button } from '@/components/ui/Button';
+import { ReviewList } from '@/components/review/ReviewList';
+import { ReviewWriteForm } from '@/components/review/ReviewWriteForm';
 import type { Store, Menu, MenuOption } from '@/types';
 
 export default function StoreDetailPage() {
@@ -18,6 +20,8 @@ export default function StoreDetailPage() {
   const [selectedMenu, setSelectedMenu] = useState<Menu | null>(null);
   const [quantity, setQuantity] = useState(1);
   const [selectedOptions, setSelectedOptions] = useState<MenuOption[]>([]);
+  const [activeTab, setActiveTab] = useState<'menu' | 'review'>('menu');
+  const [reviewKey, setReviewKey] = useState(0);
 
   const { addItem, cart, getTotal, getItemCount } = useCartStore();
 
@@ -144,9 +148,36 @@ export default function StoreDetailPage() {
         </div>
       </div>
 
-      {/* 메뉴 목록 */}
-      <div className="bg-white rounded-xl shadow-md p-6">
-        <h2 className="text-xl font-bold text-gray-900 mb-6">메뉴</h2>
+      {/* 탭 네비게이션 */}
+      <div className="mb-6 border-b border-gray-200">
+        <nav className="-mb-px flex gap-8">
+          <button
+            onClick={() => setActiveTab('menu')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              activeTab === 'menu'
+                ? 'border-orange-500 text-orange-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            메뉴
+          </button>
+          <button
+            onClick={() => setActiveTab('review')}
+            className={`py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+              activeTab === 'review'
+                ? 'border-orange-500 text-orange-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+            }`}
+          >
+            리뷰
+          </button>
+        </nav>
+      </div>
+
+      {/* 메뉴 탭 */}
+      {activeTab === 'menu' && (
+        <div className="bg-white rounded-xl shadow-md p-6">
+          <h2 className="text-xl font-bold text-gray-900 mb-6">메뉴</h2>
 
         {Object.entries(menusByCategory).map(([category, categoryMenus]) => (
           <div key={category} className="mb-8 last:mb-0">
@@ -187,7 +218,19 @@ export default function StoreDetailPage() {
             </div>
           </div>
         ))}
-      </div>
+        </div>
+      )}
+
+      {/* 리뷰 탭 */}
+      {activeTab === 'review' && (
+        <div className="space-y-6">
+          <ReviewWriteForm
+            storeId={storeId}
+            onSuccess={() => setReviewKey((prev) => prev + 1)}
+          />
+          <ReviewList key={reviewKey} storeId={storeId} />
+        </div>
+      )}
 
       {/* 장바구니 플로팅 버튼 */}
       {cart && cart.storeId === storeId && getItemCount() > 0 && (

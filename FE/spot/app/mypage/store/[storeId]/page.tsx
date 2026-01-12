@@ -7,6 +7,8 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { storeApi } from '@/lib/stores';
 import { menuApi, CreateMenuRequest, CreateMenuOptionRequest } from '@/lib/menus';
+import { SalesDashboard } from '@/components/sales/SalesDashboard';
+import { OrderManagement } from '@/components/order/OrderManagement';
 import type { Store, Menu, MenuOption } from '@/types';
 
 export default function StoreManagementPage() {
@@ -18,7 +20,7 @@ export default function StoreManagementPage() {
   const [store, setStore] = useState<Store | null>(null);
   const [menus, setMenus] = useState<Menu[]>([]);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState<'info' | 'menus'>('menus');
+  const [activeTab, setActiveTab] = useState<'info' | 'menus' | 'sales' | 'orders'>('menus');
 
   // 메뉴 추가 모달
   const [showMenuForm, setShowMenuForm] = useState(false);
@@ -272,6 +274,26 @@ export default function StoreManagementPage() {
             }`}
           >
             메뉴 관리
+          </button>
+          <button
+            onClick={() => setActiveTab('orders')}
+            className={`pb-3 px-2 font-medium ${
+              activeTab === 'orders'
+                ? 'text-orange-500 border-b-2 border-orange-500'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            주문 관리
+          </button>
+          <button
+            onClick={() => setActiveTab('sales')}
+            className={`pb-3 px-2 font-medium ${
+              activeTab === 'sales'
+                ? 'text-orange-500 border-b-2 border-orange-500'
+                : 'text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            매출 현황
           </button>
           <button
             onClick={() => setActiveTab('info')}
@@ -635,6 +657,16 @@ export default function StoreManagementPage() {
             </form>
           </div>
         </div>
+      )}
+
+      {/* 주문 관리 탭 */}
+      {activeTab === 'orders' && (
+        <OrderManagement storeId={storeId} />
+      )}
+
+      {/* 매출 현황 탭 */}
+      {activeTab === 'sales' && (
+        <SalesDashboard storeId={storeId} />
       )}
     </div>
   );

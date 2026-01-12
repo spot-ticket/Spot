@@ -563,18 +563,22 @@ export default function AdminPage() {
                         상태
                       </th>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
+                        삭제 여부
+                      </th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">
                         작업
                       </th>
                     </tr>
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {stores.content.map((store: any) => (
-                      <tr key={store.id}>
+                      <tr key={store.id} className={store.isDeleted ? 'bg-gray-100 opacity-60' : ''}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {store.id}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {store.name}
+                          {store.isDeleted && <span className="ml-2 text-red-600">(삭제됨)</span>}
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-500">
                           {store.roadAddress}
@@ -599,50 +603,68 @@ export default function AdminPage() {
                               : '승인 대기'}
                           </span>
                         </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              store.isDeleted
+                                ? 'bg-gray-100 text-gray-800'
+                                : 'bg-blue-100 text-blue-800'
+                            }`}
+                          >
+                            {store.isDeleted ? '삭제됨' : '활성'}
+                          </span>
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium space-x-2">
-                          {store.status === 'PENDING' && (
+                          {!store.isDeleted && (
                             <>
-                              <Button
-                                variant="primary"
-                                size="sm"
-                                onClick={() => handleApproveStore(store.id)}
-                              >
-                                승인
-                              </Button>
+                              {store.status === 'PENDING' && (
+                                <>
+                                  <Button
+                                    variant="primary"
+                                    size="sm"
+                                    onClick={() => handleApproveStore(store.id)}
+                                  >
+                                    승인
+                                  </Button>
+                                  <Button
+                                    variant="danger"
+                                    size="sm"
+                                    onClick={() => handleRejectStore(store.id)}
+                                  >
+                                    거절
+                                  </Button>
+                                </>
+                              )}
+                              {store.status === 'APPROVED' && (
+                                <Button
+                                  variant="danger"
+                                  size="sm"
+                                  onClick={() => handleRejectStore(store.id)}
+                                >
+                                  승인 취소
+                                </Button>
+                              )}
+                              {store.status === 'REJECTED' && (
+                                <Button
+                                  variant="primary"
+                                  size="sm"
+                                  onClick={() => handleApproveStore(store.id)}
+                                >
+                                  승인
+                                </Button>
+                              )}
                               <Button
                                 variant="danger"
                                 size="sm"
-                                onClick={() => handleRejectStore(store.id)}
+                                onClick={() => handleDeleteStore(store.id)}
                               >
-                                거절
+                                삭제
                               </Button>
                             </>
                           )}
-                          {store.status === 'APPROVED' && (
-                            <Button
-                              variant="danger"
-                              size="sm"
-                              onClick={() => handleRejectStore(store.id)}
-                            >
-                              승인 취소
-                            </Button>
+                          {store.isDeleted && (
+                            <span className="text-sm text-gray-500">작업 불가</span>
                           )}
-                          {store.status === 'REJECTED' && (
-                            <Button
-                              variant="primary"
-                              size="sm"
-                              onClick={() => handleApproveStore(store.id)}
-                            >
-                              승인
-                            </Button>
-                          )}
-                          <Button
-                            variant="danger"
-                            size="sm"
-                            onClick={() => handleDeleteStore(store.id)}
-                          >
-                            삭제
-                          </Button>
                         </td>
                       </tr>
                     ))}

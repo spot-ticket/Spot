@@ -86,6 +86,44 @@ export default function OwnerStorePage() {
     }
   };
 
+  const handleCancelStore = async (storeId: string, storeName: string) => {
+    if (!confirm(`"${storeName}" 가게 등록을 취소하시겠습니까?`)) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      await axios.delete(`/api/stores/${storeId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert('가게 등록이 취소되었습니다.');
+      loadStores();
+    } catch (error: any) {
+      console.error('가게 취소 실패:', error);
+      const errorMsg = error.response?.data?.message || '가게 취소에 실패했습니다.';
+      alert(`가게 취소 실패: ${errorMsg}`);
+    }
+  };
+
+  const handleDeleteStore = async (storeId: string, storeName: string) => {
+    if (!confirm(`"${storeName}" 가게를 삭제하시겠습니까?\n삭제된 가게는 복구할 수 없습니다.`)) {
+      return;
+    }
+
+    try {
+      const token = localStorage.getItem('accessToken');
+      await axios.delete(`/api/stores/${storeId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert('가게가 삭제되었습니다.');
+      loadStores();
+    } catch (error: any) {
+      console.error('가게 삭제 실패:', error);
+      const errorMsg = error.response?.data?.message || '가게 삭제에 실패했습니다.';
+      alert(`가게 삭제 실패: ${errorMsg}`);
+    }
+  };
+
   const handleAddCategory = () => {
     if (newCategory.trim() && !categories.includes(newCategory.trim())) {
       setCategories([...categories, newCategory.trim()]);
@@ -394,16 +432,46 @@ export default function OwnerStorePage() {
                 </div>
               </div>
 
-              {store.status === 'APPROVED' && (
-                <div className="mt-4 pt-4 border-t flex gap-2">
+              <div className="mt-4 pt-4 border-t flex gap-2">
+                {store.status === 'APPROVED' && (
+                  <>
+                    <Button
+                      size="sm"
+                      onClick={() => router.push(`/mypage/store/${store.id}`)}
+                    >
+                      관리하기
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDeleteStore(store.id, store.name)}
+                      className="text-red-600 border-red-600 hover:bg-red-50"
+                    >
+                      삭제
+                    </Button>
+                  </>
+                )}
+                {store.status === 'PENDING' && (
                   <Button
                     size="sm"
-                    onClick={() => router.push(`/mypage/store/${store.id}`)}
+                    variant="outline"
+                    onClick={() => handleCancelStore(store.id, store.name)}
+                    className="text-gray-600 hover:bg-gray-50"
                   >
-                    관리하기
+                    등록 취소
                   </Button>
-                </div>
-              )}
+                )}
+                {store.status === 'REJECTED' && (
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleDeleteStore(store.id, store.name)}
+                    className="text-red-600 border-red-600 hover:bg-red-50"
+                  >
+                    삭제
+                  </Button>
+                )}
+              </div>
             </div>
           ))
         )}
