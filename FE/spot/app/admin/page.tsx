@@ -140,7 +140,7 @@ export default function AdminPage() {
   };
 
   // 주문 상태 변경
-  const handleUpdateOrderStatus = async (orderId: number, newStatus: string) => {
+  const handleUpdateOrderStatus = async (orderId: string, newStatus: string) => {
     if (!confirm('주문 상태를 변경하시겠습니까?')) return;
 
     try {
