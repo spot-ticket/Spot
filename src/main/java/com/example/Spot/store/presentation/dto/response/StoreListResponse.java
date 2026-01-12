@@ -14,7 +14,8 @@ public record StoreListResponse (
     String addressDetail,
     String phoneNumber,
     List<String> categoryNames,
-    StoreStatus status
+    StoreStatus status,
+    boolean isDeleted
 ) {
     // Entity -> DTO 변환 메서드
     public static StoreListResponse fromEntity(StoreEntity store) {
@@ -27,7 +28,8 @@ public record StoreListResponse (
                 store.getStoreCategoryMaps().stream()
                         .map(map -> map.getCategory().getName())
                         .toList(),
-                store.getStatus()
+                store.getStatus(),
+                store.getIsDeleted()
         );
     }
 }
