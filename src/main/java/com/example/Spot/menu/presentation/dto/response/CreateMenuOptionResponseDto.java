@@ -6,28 +6,25 @@ import java.util.UUID;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+public record CreateMenuOptionResponseDto(
+        @JsonProperty("option_id")
+        UUID optionId,
 
-@Getter
-@NoArgsConstructor
-public class CreateMenuOptionResponseDto {
+        @JsonProperty("menu_id")
+        UUID menuId,
 
-    @JsonProperty("option_id")
-    private UUID optionId;
+        String name,
 
-    @JsonProperty("menu_id")
-    private UUID menuId;
+        @JsonProperty("created_at")
+        LocalDateTime createdAt
+) {
 
-    private String name;
-
-    @JsonProperty("created_at")
-    private LocalDateTime createdAt;
-
-    public CreateMenuOptionResponseDto(MenuOptionEntity option) {
-        this.optionId = option.getId();
-        this.menuId = option.getMenu().getId();
-        this.name = option.getName();
-        this.createdAt = option.getCreatedAt();
+    public static CreateMenuOptionResponseDto from(MenuOptionEntity option) {
+        return new CreateMenuOptionResponseDto(
+                option.getId(),
+                option.getMenu().getId(),
+                option.getName(),
+                option.getCreatedAt()
+        );
     }
 }

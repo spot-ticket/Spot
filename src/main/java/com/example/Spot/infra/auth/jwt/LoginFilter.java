@@ -50,7 +50,11 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
 
             return authenticationManager.authenticate(authToken);
 
+        } catch (AuthenticationException e) {
+            // 인증 실패는 정상적인 흐름이므로 그대로 던짐
+            throw e;
         } catch (Exception e) {
+            // JSON 파싱 등 기타 예외만 RuntimeException으로 감싸서 던짐
             throw new RuntimeException(e);
         }
     }
@@ -95,5 +99,17 @@ public class LoginFilter extends UsernamePasswordAuthenticationFilter {
                                               HttpServletResponse response,
                                               AuthenticationException failed) {
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+        response.setContentType("application/json;charset=UTF-8");
+
+        String errorMessage = "아이디 또는 비밀번호가 올바르지 않습니다.";
+        String body = """
+        {"error":"UNAUTHORIZED","message":"%s"}
+        """.formatted(errorMessage);
+
+        try {
+            response.getWriter().write(body);
+        } catch (Exception e) {
+            // 응답 쓰기 실패는 로그만 남기고 무시
+        }
     }
 }

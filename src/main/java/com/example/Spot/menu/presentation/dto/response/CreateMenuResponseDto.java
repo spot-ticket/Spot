@@ -21,6 +21,7 @@ public record CreateMenuResponseDto(
         @JsonProperty("image_url")
         String imageUrl,
 
+        @JsonProperty("created_at")
         LocalDateTime createdAt
 ) {
     // Entity를 DTO로 변환하는 생성자

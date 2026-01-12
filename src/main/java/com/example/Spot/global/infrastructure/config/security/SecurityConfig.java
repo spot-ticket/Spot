@@ -68,14 +68,33 @@ public class SecurityConfig {
         // 경로별 인가 작업
         http
                 .authorizeHttpRequests(auth -> auth
-                        // 누구나 접근 가능 (로그인, 회원가입, 토큰 갱신)
-                        .requestMatchers("/api/login", "/", "/api/join", "/auth/refresh", "/swagger-ui/*", "v3/api-docs", "/v3/api-docs/*").permitAll()
-                        
-                        // 관리자 전용
-                        .requestMatchers("/admin").hasRole("ADMIN")
-                        
+                        // 누구나 접근 가능 (로그인, 회원가입, 토큰 갱신, 가게 조회, 카테고리 조회)
+                        .requestMatchers("/api/login", "/", "/api/join", "/api/auth/refresh", "/swagger-ui/*", "v3/api-docs", "/v3/api-docs/*",
+                                "/api/stores", "/api/stores/*", "/api/stores/search", "/api/categories", "/api/categories/**").permitAll()
+
+                        // 관리자 전용 API (MASTER, MANAGER만 접근 가능)
+                        .requestMatchers("/api/admin/**").hasAnyRole("MASTER", "MANAGER")
+
+                        // 기존 관리자 경로
+                        .requestMatchers("/admin").hasAnyRole("MASTER", "MANAGER")
+
                         // 모든 요청: 로그인 필수
                         .anyRequest().authenticated());
+
+        // 인증/권한 실패 시 JSON 응답 반환 (302 리다이렉트 방지)
+        http
+                .exceptionHandling(exceptions -> exceptions
+                        .authenticationEntryPoint((request, response, authException) -> {
+                            response.setStatus(401);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"" + authException.getMessage() + "\"}");
+                        })
+                        .accessDeniedHandler((request, response, accessDeniedException) -> {
+                            response.setStatus(403);
+                            response.setContentType("application/json;charset=UTF-8");
+                            response.getWriter().write("{\"error\":\"Forbidden\",\"message\":\"Access Denied\"}");
+                        })
+                );
 
         http.addFilterBefore(
                 new JWTFilter(jwtUtil),
@@ -95,5 +114,4 @@ public class SecurityConfig {
         return http.build();
     }
 }
-
 

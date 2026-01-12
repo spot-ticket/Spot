@@ -73,12 +73,10 @@ class UserServiceTest {
         assertThat(user.getNickname()).isEqualTo("spot");
         assertThat(user.getIsDeleted()).isFalse();
 
-
         // 2. UserAuthEntity 저장 확인
         UserAuthEntity auth = userAuthRepository
                 .findByUser_Username(user.getUsername())
                 .orElseThrow();
-
 
         // 평문 != 암호문
         assertThat(auth.getHashedPassword()).isNotEqualTo("1234");
@@ -113,7 +111,6 @@ class UserServiceTest {
                 .andExpect(status().isOk())
                 .andReturn();
 
-
         // then: JW//T authorization: bearer로 보내면 인증 붙는지 확인
         // 1. authorization 헤더에서 jwt 확인
         String authHeader = loginResult.getResponse().getHeader("Authorization");
@@ -130,7 +127,6 @@ class UserServiceTest {
                 .andExpect(status().isOk());
 
     }
-
 
     @Test
     void 회원조회_성공_jwt사용() throws Exception {
@@ -241,7 +237,6 @@ class UserServiceTest {
         assertThat(updated.getNickname()).isEqualTo("newNick");
     }
 
-
     @Test
     void 로그아웃_refreshtoken_사용() throws Exception {
         // given: 회원가입
@@ -272,7 +267,6 @@ class UserServiceTest {
         assertThat(authHeader).startsWith("Bearer ");
         String token = authHeader.substring("Bearer ".length());
 
-
         // when: 로그아웃
         mockMvc.perform(
                 org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post("/api/logout")
@@ -286,10 +280,6 @@ class UserServiceTest {
         ).andExpect(status().is4xxClientError());
 
     }
-
-
-
-
 
     // 회원탈퇴 test 1
     @Test
@@ -350,7 +340,6 @@ class UserServiceTest {
 
     }
 
-
     // 회원탈퇴 test 2
     @Test
     void 회원탈퇴_실패_JWT없음() throws Exception {
@@ -360,8 +349,6 @@ class UserServiceTest {
                 )
                 .andExpect(status().is4xxClientError()); // 401 / 403
     }
-
-
 
     // 회원탈퇴 test 3
     @Test
