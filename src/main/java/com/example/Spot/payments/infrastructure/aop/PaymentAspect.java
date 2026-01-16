@@ -2,22 +2,20 @@ package com.example.Spot.payments.infrastructure.aop;
 
 import java.util.UUID;
 
-import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.JoinPoint;
+import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
+import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.annotation.Before;
 import org.aspectj.lang.annotation.Pointcut;
-import org.aspectj.lang.ProceedingJoinPoint;
 import org.springframework.stereotype.Component;
-import org.aspectj.lang.JoinPoint;
 
 import com.example.Spot.global.presentation.advice.ResourceNotFoundException;
+import com.example.Spot.payments.application.service.PaymentHistoryService;
+import com.example.Spot.payments.domain.entity.PaymentEntity;
+import com.example.Spot.payments.domain.repository.PaymentRepository;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
-import com.example.Spot.payments.domain.repository.PaymentRepository;
-import com.example.Spot.payments.application.service.PaymentHistoryService;
-import com.example.Spot.payments.domain.entity.PaymentHistoryEntity;
-import com.example.Spot.payments.domain.entity.PaymentKeyEntity;
-import com.example.Spot.payments.domain.entity.PaymentEntity;
 
 import lombok.RequiredArgsConstructor;
 
@@ -103,7 +101,6 @@ public class PaymentAspect {
     public Object handleCancelStatus(ProceedingJoinPoint jointPoint, Cancel cancel) throws Throwable {
 
         PaymentRequestDto.Cancel request = (PaymentRequestDto.Cancel) jointPoint.getArgs()[0];
-        PaymentEntity payment = findPayment(request.paymentId());
 
         paymentHistoryService.recordCancelProgress(request.paymentId());
 
@@ -111,7 +108,7 @@ public class PaymentAspect {
 
             Object result = jointPoint.proceed();
 
-            PaymentHistoryEntity cancelledHistory = paymentHistoryService.recordCancelSuccess(request.paymentId());
+            paymentHistoryService.recordCancelSuccess(request.paymentId());
 
             return result;
 

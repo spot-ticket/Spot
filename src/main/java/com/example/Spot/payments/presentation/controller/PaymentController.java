@@ -17,7 +17,6 @@ import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.payments.application.service.PaymentService;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
-import com.example.Spot.user.domain.Role;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -6,11 +6,11 @@ import java.util.UUID;
 
 import com.example.Spot.order.domain.entity.OrderItemOptionEntity;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.AccessLevel;
 
 @Getter
 @Builder

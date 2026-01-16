@@ -8,11 +8,11 @@ import java.util.stream.Collectors;
 
 import com.example.Spot.order.domain.entity.OrderItemEntity;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.NoArgsConstructor;
-import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder

@@ -1,21 +1,18 @@
 package com.example.Spot.payments.application.service;
 
-import java.util.UUID;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.Spot.global.presentation.advice.ResourceNotFoundException;
-import com.example.Spot.payments.domain.repository.PaymentHistoryRepository;
-import com.example.Spot.payments.domain.repository.PaymentRetryRepository;
-import com.example.Spot.payments.domain.repository.PaymentKeyRepository;
-import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.domain.entity.PaymentHistoryEntity;
-import com.example.Spot.payments.domain.entity.PaymentRetryEntity;
-import com.example.Spot.payments.domain.entity.PaymentEntity;
 import com.example.Spot.payments.domain.entity.PaymentKeyEntity;
+import com.example.Spot.payments.domain.entity.PaymentRetryEntity;
+import com.example.Spot.payments.domain.repository.PaymentHistoryRepository;
+import com.example.Spot.payments.domain.repository.PaymentKeyRepository;
+import com.example.Spot.payments.domain.repository.PaymentRetryRepository;
 
 import lombok.RequiredArgsConstructor;
 

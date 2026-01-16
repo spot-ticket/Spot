@@ -15,23 +15,22 @@ import com.example.Spot.order.domain.repository.OrderRepository;
 import com.example.Spot.payments.domain.entity.PaymentEntity;
 import com.example.Spot.payments.domain.entity.PaymentHistoryEntity;
 import com.example.Spot.payments.domain.entity.PaymentKeyEntity;
-import com.example.Spot.payments.domain.entity.PaymentRetryEntity;
 import com.example.Spot.payments.domain.entity.UserBillingAuthEntity;
+import com.example.Spot.payments.domain.gateway.PaymentGateway;
 import com.example.Spot.payments.domain.repository.PaymentHistoryRepository;
 import com.example.Spot.payments.domain.repository.PaymentKeyRepository;
 import com.example.Spot.payments.domain.repository.PaymentRepository;
 import com.example.Spot.payments.domain.repository.PaymentRetryRepository;
 import com.example.Spot.payments.domain.repository.UserBillingAuthRepository;
-import com.example.Spot.payments.domain.gateway.PaymentGateway;
+import com.example.Spot.payments.infrastructure.aop.Cancel;
+import com.example.Spot.payments.infrastructure.aop.PaymentBillingApproveTrace;
+import com.example.Spot.payments.infrastructure.aop.Ready;
 import com.example.Spot.payments.infrastructure.dto.TossPaymentResponse;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
 import com.example.Spot.store.domain.repository.StoreUserRepository;
 import com.example.Spot.user.domain.entity.UserEntity;
 import com.example.Spot.user.domain.repository.UserRepository;
-import com.example.Spot.payments.infrastructure.aop.Ready;
-import com.example.Spot.payments.infrastructure.aop.PaymentBillingApproveTrace;
-import com.example.Spot.payments.infrastructure.aop.Cancel;
 
 import lombok.RequiredArgsConstructor;
 
