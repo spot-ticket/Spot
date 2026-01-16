@@ -19,6 +19,10 @@ import com.example.Spot.store.domain.entity.CategoryEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.CategoryRepository;
 import com.example.Spot.store.domain.repository.StoreRepository;
+import com.example.Spot.store.infrastructure.aop.AdminOnly;
+import com.example.Spot.store.infrastructure.aop.StoreValidationContext;
+import com.example.Spot.store.infrastructure.aop.ValidateStoreAuthority;
+import com.example.Spot.store.infrastructure.aop.ValidateUser;
 import com.example.Spot.store.presentation.dto.request.StoreCreateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUserUpdateRequest;
@@ -44,11 +48,9 @@ public class StoreService {
     private final CategoryRepository categoryRepository;
     private final MenuRepository menuRepository;
     
-    // 1. 매장 생성
     @Transactional
     public UUID createStore(StoreCreateRequest dto, Integer userId) {
         
-        // 1.0 중복 체크: 도로명주소 + 상세주소 + 매장명( soft delete 제외)
         if (storeRepository.existsByRoadAddressAndAddressDetailAndNameAndIsDeletedFalse(
                 dto.roadAddress(), dto.addressDetail(), dto.name())) {
             throw new DuplicateResourceException(
@@ -126,10 +128,10 @@ public class StoreService {
 
     // 4. 매장 기본 정보 수정
     @Transactional
+    @ValidateStoreAuthority
     public void updateStore(UUID storeId, StoreUpdateRequest request, Integer userId) {
-        // 4.1 [공통 로직] 조회 + 관리자 스위치 + 소유권 검증
-        UserEntity currentUser = getValidatedUser(userId);
-        StoreEntity store = findStoreWithAuthority(storeId, currentUser);
+        // AOP에서 검증한 엔티티를 Context에서 가져옴 (DB 재조회 없음)
+        StoreEntity store = StoreValidationContext.getCurrentStore();
         
         // 4.2 카테고리 이름 리스트를 엔티티 리스트로 변환
         List<CategoryEntity> categories = null;
@@ -154,9 +156,9 @@ public class StoreService {
     
     // 5. 매장 직원 정보 수정
     @Transactional
+    @ValidateStoreAuthority
     public void updateStoreStaff(UUID storeId, StoreUserUpdateRequest request, Integer userId) {
-        UserEntity currentUser = getValidatedUser(userId);
-        StoreEntity store = findStoreWithAuthority(storeId, currentUser);
+        StoreEntity store = StoreValidationContext.getCurrentStore();
         
         for (StoreUserUpdateRequest.UserChange change : request.changes()) {
             UserEntity targetUser = userRepository.findById(change.userId())
@@ -226,8 +228,9 @@ public class StoreService {
     }
 
     // 8. 내 가게 목록 조회 (OWNER, CHEF)
+    @ValidateUser
     public List<StoreListResponse> getMyStores(Integer userId) {
-        UserEntity currentUser = getValidatedUser(userId);
+        UserEntity currentUser = StoreValidationContext.getCurrentUser();
 
         // OWNER나 CHEF만 자신의 가게를 조회할 수 있음
         if (currentUser.getRole() != Role.OWNER && currentUser.getRole() != Role.CHEF) {
@@ -243,14 +246,9 @@ public class StoreService {
 
     // 9. 가게 승인 상태 변경 (MANAGER, MASTER만 가능)
     @Transactional
+    @AdminOnly
     public void updateStoreStatus(UUID storeId, com.example.Spot.store.domain.StoreStatus status, Integer userId) {
-        UserEntity currentUser = getValidatedUser(userId);
-
-        // 관리자 권한 체크
-        if (!checkIsAdmin(currentUser)) {
-            throw new AccessDeniedException("관리자만 가게 승인 상태를 변경할 수 있습니다.");
-        }
-
+        // AOP에서 관리자 권한 검증 완료
         // 가게 조회 (관리자는 삭제된 가게도 조회 가능)
         StoreEntity store = storeRepository.findByIdWithDetails(storeId, true)
                 .orElseThrow(() -> new EntityNotFoundException("매장을 찾을 수 없습니다."));
