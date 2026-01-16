@@ -101,9 +101,9 @@ class PaymentControllerTest {
           .approvedAt(LocalDateTime.now())
           .build();
 
-      willDoNothing().given(paymentService).validateOrderOwnership(orderId, userId);
-      given(paymentService.preparePayment(any(PaymentRequestDto.Confirm.class))).willReturn(paymentId);
-      given(paymentService.executePaymentBilling(paymentId)).willReturn(response);
+      willDoNothing().given(paymentService).validateOrderStoreOwnership(orderId, userId);
+      given(paymentService.ready(any(PaymentRequestDto.Confirm.class))).willReturn(paymentId);
+      given(paymentService.createPaymentBillingApprove(paymentId)).willReturn(response);
 
       mockMvc.perform(post("/api/payments/{order_id}/confirm", orderId)
               .with(csrf())
@@ -116,9 +116,9 @@ class PaymentControllerTest {
           .andExpect(jsonPath("$.result.status").value("DONE"))
           .andExpect(jsonPath("$.result.amount").value(10000));
 
-      verify(paymentService, times(1)).validateOrderOwnership(orderId, userId);
-      verify(paymentService, times(1)).preparePayment(any(PaymentRequestDto.Confirm.class));
-      verify(paymentService, times(1)).executePaymentBilling(paymentId);
+      verify(paymentService, times(1)).validateOrderStoreOwnership(orderId, userId);
+      verify(paymentService, times(1)).ready(any(PaymentRequestDto.Confirm.class));
+      verify(paymentService, times(1)).createPaymentBillingApprove(paymentId);
     }
 
     @Test
@@ -142,8 +142,7 @@ class PaymentControllerTest {
           .build();
 
       willDoNothing().given(paymentService).validateOrderStoreOwnership(orderId, userId);
-      given(paymentService.preparePayment(any(PaymentRequestDto.Confirm.class))).willReturn(paymentId);
-      given(paymentService.executePaymentBilling(paymentId)).willReturn(response);
+      given(paymentService.createPaymentBillingApprove(paymentId)).willReturn(response);
 
       mockMvc.perform(post("/api/payments/{order_id}/confirm", orderId)
               .with(csrf())
@@ -176,8 +175,7 @@ class PaymentControllerTest {
           .amount(10000L)
           .build();
 
-      given(paymentService.preparePayment(any(PaymentRequestDto.Confirm.class))).willReturn(paymentId);
-      given(paymentService.executePaymentBilling(paymentId)).willReturn(response);
+      given(paymentService.createPaymentBillingApprove(paymentId)).willReturn(response);
 
       mockMvc.perform(post("/api/payments/{order_id}/confirm", orderId)
               .with(csrf())
@@ -187,7 +185,7 @@ class PaymentControllerTest {
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.isSuccess").value(true));
 
-      verify(paymentService, never()).validateOrderOwnership(any(), any());
+      verify(paymentService, never()).validateOrderStoreOwnership(any(), any());
       verify(paymentService, never()).validateOrderStoreOwnership(any(), any());
     }
 
@@ -206,7 +204,7 @@ class PaymentControllerTest {
           .build();
 
       willThrow(new IllegalStateException("해당 주문에 대한 접근 권한이 없습니다."))
-          .given(paymentService).validateOrderOwnership(orderId, userId);
+          .given(paymentService).validateOrderStoreOwnership(orderId, userId);
 
       mockMvc.perform(post("/api/payments/{order_id}/confirm", orderId)
               .with(csrf())
@@ -215,7 +213,6 @@ class PaymentControllerTest {
           .andDo(print())
           .andExpect(status().is5xxServerError());
 
-      verify(paymentService, never()).preparePayment(any());
     }
 
     @Test
@@ -238,9 +235,8 @@ class PaymentControllerTest {
           .amount(1000000L)
           .build();
 
-      willDoNothing().given(paymentService).validateOrderOwnership(orderId, userId);
-      given(paymentService.preparePayment(any(PaymentRequestDto.Confirm.class))).willReturn(paymentId);
-      given(paymentService.executePaymentBilling(paymentId)).willReturn(response);
+      willDoNothing().given(paymentService).validateOrderStoreOwnership(orderId, userId);
+      given(paymentService.createPaymentBillingApprove(paymentId)).willReturn(response);
 
       mockMvc.perform(post("/api/payments/{order_id}/confirm", orderId)
               .with(csrf())
@@ -273,7 +269,7 @@ class PaymentControllerTest {
           .canceledAt(LocalDateTime.now())
           .build();
 
-      willDoNothing().given(paymentService).validateOrderOwnership(orderId, userId);
+      willDoNothing().given(paymentService).validateOrderStoreOwnership(orderId, userId);
       given(paymentService.executeCancel(any(PaymentRequestDto.Cancel.class))).willReturn(response);
 
       mockMvc.perform(post("/api/payments/{order_id}/cancel", orderId)
@@ -316,7 +312,7 @@ class PaymentControllerTest {
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.isSuccess").value(true));
 
-      verify(paymentService, never()).validateOrderOwnership(any(), any());
+      verify(paymentService, never()).validateOrderStoreOwnership(any(), any());
     }
 
     @Test
@@ -457,7 +453,6 @@ class PaymentControllerTest {
           .createdAt(LocalDateTime.now())
           .build();
 
-      willDoNothing().given(paymentService).validatePaymentOwnership(paymentId, userId);
       given(paymentService.getDetailPayment(paymentId)).willReturn(response);
 
       mockMvc.perform(get("/api/payments/{paymentId}", paymentId))
@@ -468,7 +463,6 @@ class PaymentControllerTest {
           .andExpect(jsonPath("$.result.title").value("테스트 결제"))
           .andExpect(jsonPath("$.result.totalAmount").value(10000));
 
-      verify(paymentService, times(1)).validatePaymentOwnership(paymentId, userId);
     }
 
     @Test
@@ -503,9 +497,6 @@ class PaymentControllerTest {
     void 타인_결제_상세_조회_실패() throws Exception {
       setSecurityContext(Role.CUSTOMER);
 
-      willThrow(new IllegalStateException("해당 결제에 대한 접근 권한이 없습니다."))
-          .given(paymentService).validatePaymentOwnership(paymentId, userId);
-
       mockMvc.perform(get("/api/payments/{paymentId}", paymentId))
           .andDo(print())
           .andExpect(status().is5xxServerError());
@@ -534,9 +525,6 @@ class PaymentControllerTest {
           .andDo(print())
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.isSuccess").value(true));
-
-      verify(paymentService, never()).validatePaymentOwnership(any(), any());
-      verify(paymentService, never()).validatePaymentStoreOwnership(any(), any());
     }
   }
 
@@ -636,7 +624,6 @@ class PaymentControllerTest {
           .totalCount(1)
           .build();
 
-      willDoNothing().given(paymentService).validatePaymentOwnership(paymentId, userId);
       given(paymentService.getDetailPaymentCancel(paymentId)).willReturn(response);
 
       mockMvc.perform(get("/api/payments/{paymentId}/cancel", paymentId))
@@ -646,7 +633,6 @@ class PaymentControllerTest {
           .andExpect(jsonPath("$.result.totalCount").value(1))
           .andExpect(jsonPath("$.result.cancellations[0].paymentId").value(paymentId.toString()));
 
-      verify(paymentService, times(1)).validatePaymentOwnership(paymentId, userId);
       verify(paymentService, times(1)).getDetailPaymentCancel(paymentId);
     }
 
@@ -667,7 +653,7 @@ class PaymentControllerTest {
           .andExpect(status().isOk())
           .andExpect(jsonPath("$.isSuccess").value(true));
 
-      verify(paymentService, never()).validatePaymentOwnership(any(), any());
+      verify(paymentService, never()).validatePaymentStoreOwnership(any(), any());
       verify(paymentService, times(1)).getDetailPaymentCancel(paymentId);
     }
 

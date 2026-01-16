@@ -22,7 +22,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(GeneralErrorCode.BAD_REQUEST.getStatus())
-                .body(ApiResponse.onFailure(GeneralErrorCode.BAD_REQUEST, null));
+                .body(ApiResponse.onFailure(GeneralErrorCode.BAD_REQUEST, e.getMessage()));
     }
 
     @ExceptionHandler(ConstraintViolationException.class)
@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(GeneralErrorCode.INVALID_PAGE.getStatus())
-                .body(ApiResponse.onFailure(GeneralErrorCode.INVALID_PAGE, null));
+                .body(ApiResponse.onFailure(GeneralErrorCode.INVALID_PAGE, e.getMessage()));
     }
 
     @ExceptionHandler(HandlerMethodValidationException.class)
@@ -42,7 +42,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(GeneralErrorCode.INVALID_PAGE.getStatus())
-                .body(ApiResponse.onFailure(GeneralErrorCode.INVALID_PAGE, null));
+                .body(ApiResponse.onFailure(GeneralErrorCode.INVALID_PAGE, e.getMessage()));
     }
 
     @ExceptionHandler(SecurityException.class)
@@ -52,7 +52,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(GeneralErrorCode.UNAUTHORIZED.getStatus())
-                .body(ApiResponse.onFailure(GeneralErrorCode.UNAUTHORIZED, null));
+                .body(ApiResponse.onFailure(GeneralErrorCode.UNAUTHORIZED, e.getMessage()));
     }
 
     @ExceptionHandler(ResourceNotFoundException.class)
@@ -62,7 +62,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(GeneralErrorCode.NOT_FOUND.getStatus())
-                .body(ApiResponse.onFailure(GeneralErrorCode.NOT_FOUND, null));
+                .body(ApiResponse.onFailure(GeneralErrorCode.NOT_FOUND, e.getMessage()));
     }
 
     @ExceptionHandler(ForbiddenException.class)
@@ -72,7 +72,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(GeneralErrorCode.FORBIDDEN.getStatus())
-                .body(ApiResponse.onFailure(GeneralErrorCode.FORBIDDEN, null));
+                .body(ApiResponse.onFailure(GeneralErrorCode.FORBIDDEN, e.getMessage()));
     }
     
     @ExceptionHandler(DuplicateResourceException.class)
@@ -82,7 +82,7 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(GeneralErrorCode.CONFLICT.getStatus())
-                .body(ApiResponse.onFailure(GeneralErrorCode.CONFLICT, null));
+                .body(ApiResponse.onFailure(GeneralErrorCode.CONFLICT, e.getMessage()));
     }
     
     @ExceptionHandler(Exception.class)
@@ -92,6 +92,6 @@ public class GlobalExceptionHandler {
 
         return ResponseEntity
                 .status(GeneralErrorCode.INTERNAL_SERVER_ERROR.getStatus())
-                .body(ApiResponse.onFailure(GeneralErrorCode.INTERNAL_SERVER_ERROR, null));
+                .body(ApiResponse.onFailure(GeneralErrorCode.INTERNAL_SERVER_ERROR, e.getMessage()));
     }
 }
