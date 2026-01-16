@@ -14,6 +14,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.cache.annotation.Cacheable;
 import com.example.Spot.admin.presentation.dto.response.AdminStatsResponseDto;
 import com.example.Spot.order.domain.entity.OrderEntity;
 import com.example.Spot.order.domain.repository.OrderRepository;
@@ -32,34 +33,32 @@ public class AdminStatsService {
     private final OrderRepository orderRepository;
     private final StoreRepository storeRepository;
 
+    // private final RedissonClient redissonClient;
+
+    @Cacheable(value = "admin_dashboard", key = "'stats'", cacheManager = "redisCacheManager")
     public AdminStatsResponseDto getStats() {
-        // 전체 사용자 수
-        Long totalUsers = userRepository.count();
 
-        // 전체 주문 수
+        // RLock lock = redissonClient.getLock("admin_status_lock:" + orderId);
+
+        Long totalUsers  = userRepository.count();
         Long totalOrders = orderRepository.count();
-
-        // 전체 가게 수
         Long totalStores = storeRepository.count();
 
-        // 총 매출 (모든 완료된 주문의 총합)
         List<OrderEntity> completedOrders = orderRepository.findAll();
+
         BigDecimal totalRevenue = completedOrders.stream()
                 .flatMap(order -> order.getOrderItems().stream())
                 .map(item -> item.getMenuPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        // 최근 주문 10개
         Pageable recentPageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
         List<OrderResponseDto> recentOrders = orderRepository.findAll(recentPageable)
                 .stream()
                 .map(OrderResponseDto::from)
                 .collect(Collectors.toList());
 
-        // 사용자 증가 통계 (최근 7일)
         List<AdminStatsResponseDto.UserGrowthDto> userGrowth = calculateUserGrowth(7);
 
-        // 주문 상태별 통계
         List<AdminStatsResponseDto.OrderStatusStatsDto> orderStats = calculateOrderStatusStats();
 
         return AdminStatsResponseDto.builder()

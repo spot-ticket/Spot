@@ -10,11 +10,14 @@ import com.example.Spot.order.domain.entity.OrderItemEntity;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
+import lombok.NoArgsConstructor;
+import lombok.AccessLevel;
 import lombok.Getter;
 
 @Getter
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderItemResponseDto {
 
     private UUID id;
