@@ -23,9 +23,9 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PaymentHistoryService {
 
-    private PaymentHistoryRepository paymentHistoryRepository;
-    private PaymentRetryRepository paymentRetryRepository;
-    private PaymentKeyRepository paymentKeyRepository;
+    private final PaymentHistoryRepository paymentHistoryRepository;
+    private final PaymentRetryRepository paymentRetryRepository;
+    private final PaymentKeyRepository paymentKeyRepository;
 
     @Transactional
     public PaymentHistoryEntity recordPaymentReady(UUID paymentId) {

@@ -22,7 +22,7 @@ import com.example.Spot.payments.domain.repository.PaymentKeyRepository;
 import com.example.Spot.payments.domain.repository.PaymentRepository;
 import com.example.Spot.payments.domain.repository.PaymentRetryRepository;
 import com.example.Spot.payments.domain.repository.UserBillingAuthRepository;
-import com.example.Spot.payments.infrastructure.client.TossPaymentClient;
+import com.example.Spot.payments.domain.gateway.PaymentGateway;
 import com.example.Spot.payments.infrastructure.dto.TossPaymentResponse;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
@@ -39,7 +39,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PaymentService {
 
-  private final TossPaymentClient tossPaymentClient;
+  private final PaymentGateway paymentGateway;
 
   @Value("${toss.payments.timeout}")
   private Integer timeout;
@@ -94,9 +94,8 @@ public class PaymentService {
             .build();
   }
 
-  // To-Do: [Toss] -> DIP를 이용해서 쉽게 교체 가능한 패턴으로 교체할 것.
   private TossPaymentResponse confirmBillingPayment(PaymentEntity payment, UserBillingAuthEntity billingAuth, UUID uniqueOrderId) {
-    
+
     String billingKey = billingAuth.getBillingKey();
 
     if (billingKey == null || billingKey.isEmpty()) {
@@ -104,7 +103,7 @@ public class PaymentService {
             "[PaymentService] 등록된 Billing Key가 없습니다. 먼저 Billing Key를 입력해주세요.");
     }
 
-    return tossPaymentClient.requestBillingPayment(
+    return paymentGateway.requestBillingPayment(
         billingKey,
         payment.getTotalAmount(),
         uniqueOrderId,
@@ -116,7 +115,6 @@ public class PaymentService {
   // ******* //
   // 결제 취소 //
   // ******* //
-
   // 결제했을 때 발급받은 paymentKey를 이용함
   @Cancel
   public PaymentResponseDto.Cancel executeCancel(PaymentRequestDto.Cancel request) {
@@ -138,7 +136,7 @@ public class PaymentService {
   }
 
   private TossPaymentResponse tossPaymentCancel( UUID paymentId, String paymentKey, String cancelReason) {
-      return tossPaymentClient.cancelPayment(paymentKey, cancelReason, this.timeout);
+      return paymentGateway.cancelPayment(paymentKey, cancelReason, this.timeout);
   }
 
   // ******* //
@@ -302,7 +300,7 @@ public class PaymentService {
         });
 
           // 빌링키 발행
-    TossPaymentResponse billingKeyResponse = tossPaymentClient.issueBillingKey(
+    TossPaymentResponse billingKeyResponse = paymentGateway.issueBillingKey(
           request.authKey(),
           request.customerKey()
     );

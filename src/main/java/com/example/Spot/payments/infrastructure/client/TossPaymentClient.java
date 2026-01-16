@@ -12,13 +12,14 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
+import com.example.Spot.payments.domain.gateway.PaymentGateway;
 import com.example.Spot.payments.infrastructure.dto.TossPaymentResponse;
 
 import lombok.RequiredArgsConstructor;
 
 @Component
 @RequiredArgsConstructor
-public class TossPaymentClient {
+public class TossPaymentClient implements PaymentGateway {
 
   private final RestTemplate restTemplate;
 
@@ -28,9 +29,10 @@ public class TossPaymentClient {
   @Value("${toss.payments.base-url:https://api.tosspayments.com}")
   private String baseUrl;
 
-  // *** // 
+  // *** //
   // 결제 //
   // *** //
+  @Override
   public TossPaymentResponse requestBillingPayment(
       String billingKey,
       Long amount,
@@ -63,9 +65,10 @@ public class TossPaymentClient {
     }
   }
 
-  // *** // 
+  // *** //
   // 취소 //
   // *** //
+  @Override
   public TossPaymentResponse cancelPayment(
       String paymentKey, String cancelReason, Integer timeout) {
     String url = baseUrl + "/v1/payments/" + paymentKey + "/cancel";
@@ -84,6 +87,7 @@ public class TossPaymentClient {
     }
   }
 
+  @Override
   public TossPaymentResponse cancelPaymentPartial(
       String paymentKey, Long cancelAmount, String cancelReason) {
     String url = baseUrl + "/v1/payments/" + paymentKey + "/cancel";
@@ -105,9 +109,10 @@ public class TossPaymentClient {
     }
   }
 
-  // ************** // 
+  // ************** //
   // BillingKey 발급 //
   // ************** //
+  @Override
   public TossPaymentResponse issueBillingKey(String authKey, String customerKey) {
     String url = baseUrl + "/v1/billing/authorizations/issue";
 

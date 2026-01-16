@@ -26,7 +26,7 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class PaymentAspect {
 
-    private PaymentRepository paymentRepository;
+    private final PaymentRepository paymentRepository;
     private final PaymentHistoryService paymentHistoryService;
 
     @Pointcut("execution(* com.example.Spot.payments.application.service.PaymentService.*(..))")
@@ -48,11 +48,11 @@ public class PaymentAspect {
         // 멱등성 체크: 동일 주문에 대해 진행 중이거나 완료된 결제가 있는지 확인
         paymentRepository
             .findActivePaymentByOrderId(request.orderId())
-            .ifPresent(
-                existingPayment -> {
+            .ifPresent(existingPayment -> {
                 throw new IllegalStateException(
-                    "[PaymentService] 이미 해당 주문에 대한 결제가 진행 중이거나 완료되었습니다. paymentId: " + existingPayment.getId());
-                });
+                    "[PaymentService] 이미 해당 주문에 대한 결제가 진행 중이거나 완료되었습니다. paymentId: " + existingPayment.getId()
+                );
+            });
 
         try {
             Object result = joinPoint.proceed();
