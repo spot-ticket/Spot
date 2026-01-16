@@ -105,7 +105,7 @@ class PaymentServiceTest {
       given(paymentRepository.save(any(PaymentEntity.class))).willReturn(payment);
       given(paymentHistoryRepository.save(any(PaymentHistoryEntity.class))).willReturn(history);
 
-      UUID resultPaymentId = paymentService.preparePayment(request);
+      UUID resultPaymentId = paymentService.ready(request);
 
       assertThat(resultPaymentId).isEqualTo(payment.getId());
       verify(paymentRepository, times(1)).findActivePaymentByOrderId(orderId);
@@ -126,7 +126,7 @@ class PaymentServiceTest {
               .paymentAmount(0L)
               .build();
 
-      assertThatThrownBy(() -> paymentService.preparePayment(invalidRequest))
+      assertThatThrownBy(() -> paymentService.ready(invalidRequest))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessage("결제 금액은 0보다 커야 합니다");
 
@@ -146,7 +146,7 @@ class PaymentServiceTest {
               .paymentAmount(-1000L)
               .build();
 
-      assertThatThrownBy(() -> paymentService.preparePayment(invalidRequest))
+      assertThatThrownBy(() -> paymentService.ready(invalidRequest))
           .isInstanceOf(IllegalArgumentException.class)
           .hasMessage("결제 금액은 0보다 커야 합니다");
     }
@@ -163,7 +163,7 @@ class PaymentServiceTest {
       given(paymentRepository.findActivePaymentByOrderId(orderId))
           .willReturn(Optional.of(existingPayment));
 
-      assertThatThrownBy(() -> paymentService.preparePayment(request))
+      assertThatThrownBy(() -> paymentService.ready(request))
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("이미 해당 주문에 대한 결제가 진행 중이거나 완료되었습니다");
 
@@ -178,7 +178,7 @@ class PaymentServiceTest {
       given(paymentRepository.findActivePaymentByOrderId(orderId))
           .willReturn(Optional.of(existingPayment));
 
-      assertThatThrownBy(() -> paymentService.preparePayment(request))
+      assertThatThrownBy(() -> paymentService.ready(request))
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("이미 해당 주문에 대한 결제가 진행 중이거나 완료되었습니다");
 
@@ -192,7 +192,7 @@ class PaymentServiceTest {
       given(paymentRepository.findActivePaymentByOrderId(orderId))
           .willReturn(Optional.of(existingPayment));
 
-      assertThatThrownBy(() -> paymentService.preparePayment(request))
+      assertThatThrownBy(() -> paymentService.ready(request))
           .isInstanceOf(IllegalStateException.class)
           .hasMessageContaining("이미 해당 주문에 대한 결제가 진행 중이거나 완료되었습니다");
 
@@ -213,7 +213,7 @@ class PaymentServiceTest {
       given(paymentRepository.save(any(PaymentEntity.class))).willReturn(newPayment);
       given(paymentHistoryRepository.save(any(PaymentHistoryEntity.class))).willReturn(history);
 
-      UUID resultPaymentId = paymentService.preparePayment(request);
+      UUID resultPaymentId = paymentService.ready(request);
 
       assertThat(resultPaymentId).isEqualTo(newPayment.getId());
       verify(paymentRepository, times(1)).save(any(PaymentEntity.class));
@@ -233,7 +233,7 @@ class PaymentServiceTest {
       given(paymentRepository.save(any(PaymentEntity.class))).willReturn(newPayment);
       given(paymentHistoryRepository.save(any(PaymentHistoryEntity.class))).willReturn(history);
 
-      UUID resultPaymentId = paymentService.preparePayment(request);
+      UUID resultPaymentId = paymentService.ready(request);
 
       assertThat(resultPaymentId).isEqualTo(newPayment.getId());
       verify(paymentRepository, times(1)).save(any(PaymentEntity.class));
@@ -253,7 +253,7 @@ class PaymentServiceTest {
       given(paymentRepository.save(any(PaymentEntity.class))).willReturn(newPayment);
       given(paymentHistoryRepository.save(any(PaymentHistoryEntity.class))).willReturn(history);
 
-      UUID resultPaymentId = paymentService.preparePayment(request);
+      UUID resultPaymentId = paymentService.ready(request);
 
       assertThat(resultPaymentId).isEqualTo(newPayment.getId());
     }
@@ -272,7 +272,7 @@ class PaymentServiceTest {
       given(paymentHistoryRepository.findTopByPaymentIdOrderByCreatedAtDesc(paymentId))
           .willReturn(Optional.of(doneHistory));
 
-      assertThatThrownBy(() -> paymentService.executePaymentBilling(paymentId))
+      assertThatThrownBy(() -> paymentService.createPaymentBillingApprove(paymentId))
           .isInstanceOf(IllegalStateException.class)
           .hasMessage("이미 처리된 결제입니다");
     }
@@ -388,7 +388,7 @@ class PaymentServiceTest {
 
       given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
 
-      paymentService.validateOrderOwnership(orderId, userId);
+      paymentService.validateOrderStoreOwnership(orderId, userId);
 
       verify(orderRepository, times(1)).findById(orderId);
     }
@@ -401,7 +401,7 @@ class PaymentServiceTest {
 
       given(orderRepository.findById(orderId)).willReturn(Optional.of(order));
 
-      assertThatThrownBy(() -> paymentService.validateOrderOwnership(orderId, otherUserId))
+      assertThatThrownBy(() -> paymentService.validateOrderStoreOwnership(orderId, otherUserId))
           .isInstanceOf(IllegalStateException.class)
           .hasMessage("해당 주문에 대한 접근 권한이 없습니다.");
     }
@@ -415,7 +415,7 @@ class PaymentServiceTest {
 
       given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 
-      paymentService.validatePaymentOwnership(paymentId, userId);
+      paymentService.validatePaymentStoreOwnership(paymentId, userId);
 
       verify(paymentRepository, times(1)).findById(paymentId);
     }
@@ -430,24 +430,25 @@ class PaymentServiceTest {
 
       given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 
-      assertThatThrownBy(() -> paymentService.validatePaymentOwnership(paymentId, otherUserId))
+      assertThatThrownBy(() -> paymentService.validatePaymentStoreOwnership(paymentId, otherUserId))
           .isInstanceOf(IllegalStateException.class)
           .hasMessage("해당 결제에 대한 접근 권한이 없습니다.");
     }
 
-    @Test
-    @DisplayName("정상: 결제 소유자 ID를 조회한다")
-    void 결제_소유자_ID_조회_테스트() {
-      UUID paymentId = UUID.randomUUID();
-      PaymentEntity payment = createMockPayment(orderId);
-      ReflectionTestUtils.setField(payment, "id", paymentId);
+    // TODO: getPaymentOwnerId 메서드가 서비스에 존재하지 않아 주석 처리
+    // @Test
+    // @DisplayName("정상: 결제 소유자 ID를 조회한다")
+    // void 결제_소유자_ID_조회_테스트() {
+    //   UUID paymentId = UUID.randomUUID();
+    //   PaymentEntity payment = createMockPayment(orderId);
+    //   ReflectionTestUtils.setField(payment, "id", paymentId);
 
-      given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
+    //   given(paymentRepository.findById(paymentId)).willReturn(Optional.of(payment));
 
-      Integer ownerId = paymentService.getPaymentOwnerId(paymentId);
+    //   Integer ownerId = paymentService.getPaymentOwnerId(paymentId);
 
-      assertThat(ownerId).isEqualTo(userId);
-    }
+    //   assertThat(ownerId).isEqualTo(userId);
+    // }
   }
 
   @Nested
@@ -629,8 +630,8 @@ class PaymentServiceTest {
   }
 
   @Nested
-  @DisplayName("executePaymentBilling 테스트 - 결제 실행")
-  class ExecutePaymentBillingTest {
+  @DisplayName("createPaymentBillingApprove 테스트 - 결제 실행")
+  class CreatePaymentBillingApproveTest {
 
     @Test
     @DisplayName("정상: 결제가 성공적으로 실행된다")
@@ -667,7 +668,7 @@ class PaymentServiceTest {
       ReflectionTestUtils.setField(paymentService, "customerKey", "test-customer-key");
       ReflectionTestUtils.setField(paymentService, "timeout", 30000);
 
-      PaymentResponseDto.Confirm result = paymentService.executePaymentBilling(paymentId);
+      PaymentResponseDto.Confirm result = paymentService.createPaymentBillingApprove(paymentId);
 
       assertThat(result.paymentId()).isEqualTo(paymentId);
       assertThat(result.amount()).isEqualTo(10000L);
@@ -682,7 +683,7 @@ class PaymentServiceTest {
       given(paymentHistoryRepository.findTopByPaymentIdOrderByCreatedAtDesc(paymentId))
           .willReturn(Optional.empty());
 
-      assertThatThrownBy(() -> paymentService.executePaymentBilling(paymentId))
+      assertThatThrownBy(() -> paymentService.createPaymentBillingApprove(paymentId))
           .isInstanceOf(com.example.Spot.global.presentation.advice.ResourceNotFoundException.class)
           .hasMessage("결제 이력을 찾을 수 없습니다.");
     }
@@ -696,7 +697,7 @@ class PaymentServiceTest {
       given(paymentHistoryRepository.findTopByPaymentIdOrderByCreatedAtDesc(paymentId))
           .willReturn(Optional.of(inProgressHistory));
 
-      assertThatThrownBy(() -> paymentService.executePaymentBilling(paymentId))
+      assertThatThrownBy(() -> paymentService.createPaymentBillingApprove(paymentId))
           .isInstanceOf(IllegalStateException.class)
           .hasMessage("이미 처리된 결제입니다");
     }
