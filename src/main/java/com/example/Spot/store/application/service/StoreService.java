@@ -19,6 +19,7 @@ import com.example.Spot.store.domain.entity.CategoryEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.CategoryRepository;
 import com.example.Spot.store.domain.repository.StoreRepository;
+import com.example.Spot.store.domain.repository.StoreUserRepository;
 import com.example.Spot.store.presentation.dto.request.StoreCreateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUserUpdateRequest;
@@ -43,6 +44,7 @@ public class StoreService {
     private final UserRepository userRepository;
     private final CategoryRepository categoryRepository;
     private final MenuRepository menuRepository;
+    private final StoreUserRepository storeUserRepository;
     
     // 1. 매장 생성
     @Transactional
@@ -72,8 +74,8 @@ public class StoreService {
         UserEntity chef = userRepository.findById(dto.chefId())
                 .orElseThrow(() -> new EntityNotFoundException("셰프를 찾을 수 없습니다: " + dto.chefId()));
 
-        store.addStoreUser(owner);
-        store.addStoreUser(chef);
+        store.addStoreUser(owner.getId());
+        store.addStoreUser(chef.getId());
 
         return storeRepository.save(store).getId();
     }
@@ -164,15 +166,14 @@ public class StoreService {
             
             if (change.action() == StoreUserUpdateRequest.Action.ADD) {
                 // 중복 체크
-                boolean alreadyStaff = store.getUsers().stream()
-                        .anyMatch(su -> su.getUser().getId().equals(change.userId()));
-                
+                boolean alreadyStaff = storeUserRepository.existsByStoreIdAndUserId(storeId, change.userId());
+
                 if (!alreadyStaff) {
-                    // targetUser가 이미 내부에 자신의 Role을 가지고 있으므로 그대로 등록
-                    store.addStoreUser(targetUser);
+                    // targetUser ID로 등록
+                    store.addStoreUser(change.userId());
                 }
             } else if (change.action() == StoreUserUpdateRequest.Action.REMOVE) {
-                store.getUsers().removeIf(su -> su.getUser().getId().equals(change.userId()));
+                storeUserRepository.deleteByStoreIdAndUserId(storeId, change.userId());
             }
         }
     }
@@ -196,9 +197,8 @@ public class StoreService {
                     .orElseThrow(() -> new EntityNotFoundException("매장을 찾을 수 없습니다."));
 
             // OWNER 본인 확인
-            boolean isRealOwner = store.getUsers().stream()
-                    .anyMatch(su -> su.getUser().getId().equals(currentUser.getId())
-                            && su.getUser().getRole() == Role.OWNER);
+            boolean isRealOwner = storeUserRepository.existsByStoreIdAndUserId(storeId, userId)
+                    && currentUser.getRole() == Role.OWNER;
 
             if (!isRealOwner) {
                 throw new AccessDeniedException("해당 매장에 대한 관리 권한이 없습니다.");
@@ -274,9 +274,8 @@ public class StoreService {
 
         // 관리자가 아닐 경우에만 '진짜 주인'인지 추가 확인
         if (!isAdmin) {
-            boolean isRealOwner = store.getUsers().stream()
-                    .anyMatch(su -> su.getUser().getId().equals(currentUser.getId())
-                            && su.getUser().getRole() == Role.OWNER);
+            boolean isRealOwner = storeUserRepository.existsByStoreIdAndUserId(storeId, currentUser.getId())
+                    && currentUser.getRole() == Role.OWNER;
 
             if (!isRealOwner) {
                 throw new AccessDeniedException("해당 매장에 대한 관리 권한이 없습니다.");

@@ -104,10 +104,10 @@ public class StoreEntity extends UpdateBaseEntity {
         this.status = StoreStatus.PENDING;
     }
 
-    public void addStoreUser(UserEntity user) {
+    public void addStoreUser(Integer userId) {
         StoreUserEntity storeUser = StoreUserEntity.builder()
                 .store(this) // 현재 매장
-                .user(user) // 전달받은 유저
+                .userId(userId) // 전달받은 유저 ID
                 .build();
         this.users.add(storeUser);
     }

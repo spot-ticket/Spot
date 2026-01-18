@@ -28,23 +28,9 @@ public record StoreDetailResponse(
     public record StaffInfo(Integer userId, String name, Role role) {}
 
     public static StoreDetailResponse fromEntity(StoreEntity store, List<MenuPublicResponseDto> menus) {
-        StaffInfo ownerInfo = store.getUsers().stream()
-                .filter(su -> su.getUser().getRole() == Role.OWNER)
-                .map(su -> new StaffInfo(
-                        su.getUser().getId(),
-                        su.getUser().getNickname(),
-                        su.getUser().getRole()
-                ))
-                .findFirst().orElse(null);
-
-        List<StaffInfo> chefInfos = store.getUsers().stream()
-                .filter(su -> su.getUser().getRole() == Role.CHEF)
-                .map(su -> new StaffInfo(
-                        su.getUser().getId(),
-                        su.getUser().getNickname(),
-                        su.getUser().getRole()
-                ))
-                .toList();
+        // MSA: User 정보는 User 서비스에서 별도 조회 필요
+        StaffInfo ownerInfo = null;
+        List<StaffInfo> chefInfos = List.of();
 
         return new StoreDetailResponse(
                 store.getId(),
