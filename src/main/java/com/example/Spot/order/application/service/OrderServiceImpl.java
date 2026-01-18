@@ -22,6 +22,11 @@ import com.example.Spot.order.domain.entity.OrderItemOptionEntity;
 import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.domain.repository.OrderRepository;
+import com.example.Spot.order.infrastructure.aop.OrderStatusChange;
+import com.example.Spot.order.infrastructure.aop.OrderValidationContext;
+import com.example.Spot.order.infrastructure.aop.PaymentCancelTrace;
+import com.example.Spot.order.infrastructure.aop.StoreOwnershipRequired;
+import com.example.Spot.order.infrastructure.aop.ValidateStoreAndMenu;
 import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemOptionRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemRequestDto;
@@ -62,16 +67,11 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @ValidateStoreAndMenu
     public OrderResponseDto createOrder(OrderCreateRequestDto requestDto, Integer userId) {
-        StoreEntity store = storeRepository.findById(requestDto.getStoreId())
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 가게입니다."));
-
-        // 영업시간 체크
-        // if (!store.isOpenNow()) {
-        //     throw new IllegalArgumentException(
-        //             String.format("현재 영업시간이 아닙니다. 영업시간: %s ~ %s",
-        //                     store.getOpenTime(), store.getCloseTime()));
-        // }
+        
+        // AOP에서 검증한 엔티티를 ThreadLocal Context에서 가져옴 (DB 재조회 없음)
+        StoreEntity store = OrderValidationContext.getStore();
 
         String orderNumber = generateOrderNumber();
 
@@ -84,13 +84,9 @@ public class OrderServiceImpl implements OrderService {
                 .request(requestDto.getRequest())
                 .build();
 
+        // Menu 및 MenuOption도 Context에서 가져옴 (DB 재조회 없음) --> 기존 로직에서 성능 개선을 함. DB 조회 횟수가 줄어들음
         for (OrderItemRequestDto itemDto : requestDto.getOrderItems()) {
-            MenuEntity menu = menuRepository.findById(itemDto.getMenuId())
-                    .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 메뉴입니다: " + itemDto.getMenuId()));
-
-            if (!menu.getIsAvailable()) {
-                throw new IllegalArgumentException("판매 중지된 메뉴입니다: " + menu.getName());
-            }
+            MenuEntity menu = OrderValidationContext.getMenu(itemDto.getMenuId());
 
             OrderItemEntity orderItem = OrderItemEntity.builder()
                     .menuId(menu.getId())
@@ -100,12 +96,7 @@ public class OrderServiceImpl implements OrderService {
                     .build();
 
             for (OrderItemOptionRequestDto optionDto : itemDto.getOptions()) {
-                MenuOptionEntity menuOption = menuOptionRepository.findById(optionDto.getMenuOptionId())
-                        .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 옵션입니다: " + optionDto.getMenuOptionId()));
-
-                if (!menuOption.isAvailable()) {
-                    throw new IllegalArgumentException("선택할 수 없는 옵션입니다: " + menuOption.getName());
-                }
+                MenuOptionEntity menuOption = OrderValidationContext.getMenuOption(optionDto.getMenuOptionId());
 
                 OrderItemOptionEntity orderItemOption = OrderItemOptionEntity.builder()
                         .menuOptionId(menuOption.getId())
@@ -165,8 +156,9 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @StoreOwnershipRequired
     public List<OrderResponseDto> getChefTodayOrders(Integer userId) {
-        UUID storeId = getStoreIdByUserId(userId);
+        UUID storeId = OrderValidationContext.getCurrentStoreId();
         LocalDateTime[] range = getDateRange(LocalDateTime.now());
         return orderRepository.findTodayActiveOrdersByStoreId(storeId, range[0], range[1]).stream()
                 .map(OrderResponseDto::from)
@@ -174,14 +166,16 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @StoreOwnershipRequired
     public List<OrderResponseDto> getMyStoreOrders(Integer userId, Integer customerId, LocalDateTime date, OrderStatus status) {
-        UUID storeId = getStoreIdByUserId(userId);
+        UUID storeId = OrderValidationContext.getCurrentStoreId();
         return getStoreOrdersByFilters(storeId, customerId, date, status);
     }
 
     @Override
+    @StoreOwnershipRequired
     public List<OrderResponseDto> getMyStoreActiveOrders(Integer userId) {
-        UUID storeId = getStoreIdByUserId(userId);
+        UUID storeId = OrderValidationContext.getCurrentStoreId();
         return orderRepository.findActiveOrdersByStoreId(storeId).stream()
                 .map(OrderResponseDto::from)
                 .collect(Collectors.toList());
@@ -217,6 +211,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @StoreOwnershipRequired
     public Page<OrderResponseDto> getMyStoreOrdersWithPagination(
             Integer userId,
             Integer customerId,
@@ -224,7 +219,7 @@ public class OrderServiceImpl implements OrderService {
             OrderStatus status,
             Pageable pageable) {
 
-        UUID storeId = getStoreIdByUserId(userId);
+        UUID storeId = OrderValidationContext.getCurrentStoreId();
         LocalDateTime[] range = date != null ? getDateRange(date) : new LocalDateTime[]{null, null};
 
         Page<OrderEntity> orderPage = orderRepository.findStoreOrdersWithFilters(
@@ -259,50 +254,50 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @OrderStatusChange("ACCEPT")
     public OrderResponseDto acceptOrder(UUID orderId, Integer estimatedTime) {
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
-        
+        OrderEntity order = OrderValidationContext.getCurrentOrder();
+
         order.acceptOrder(estimatedTime);
         return OrderResponseDto.from(order);
     }
 
     @Override
     @Transactional
+    @OrderStatusChange("REJECT")
     public OrderResponseDto rejectOrder(UUID orderId, String reason) {
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
-        
+        OrderEntity order = OrderValidationContext.getCurrentOrder();
+
         order.rejectOrder(reason);
         return OrderResponseDto.from(order);
     }
 
     @Override
     @Transactional
+    @OrderStatusChange("COOKING")
     public OrderResponseDto startCooking(UUID orderId) {
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
-        
+        OrderEntity order = OrderValidationContext.getCurrentOrder();
+
         order.startCooking();
         return OrderResponseDto.from(order);
     }
 
     @Override
     @Transactional
+    @OrderStatusChange("READY")
     public OrderResponseDto readyForPickup(UUID orderId) {
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
-        
+        OrderEntity order = OrderValidationContext.getCurrentOrder();
+
         order.readyForPickup();
         return OrderResponseDto.from(order);
     }
 
     @Override
     @Transactional
+    @OrderStatusChange("COMPLETE")
     public OrderResponseDto completeOrder(UUID orderId) {
-        OrderEntity order = orderRepository.findById(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
-        
+        OrderEntity order = OrderValidationContext.getCurrentOrder();
+
         order.completeOrder();
         return OrderResponseDto.from(order);
     }
@@ -337,6 +332,7 @@ public class OrderServiceImpl implements OrderService {
         return OrderResponseDto.from(order);
     }
 
+    @PaymentCancelTrace
     private void cancelPaymentIfExists(UUID orderId, String cancelReason) {
         // 해당 주문의 완료된 결제가 있는지 확인
         Optional<PaymentEntity> paymentOpt = paymentRepository.findActivePaymentByOrderId(orderId);
