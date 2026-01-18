@@ -17,6 +17,7 @@ public class PaymentResponseDto {
       @Schema(description = "결제 항목 ID", example = "123e4567-e89b-12d3-a456-426614174000")
           UUID paymentId,
       @Schema(description = "결제 상태", example = "DONE") String status,
+      @Schema(description = "Payment Key", example = "123e4567-e89b-12d3-a456-426614174000") String paymentKey,
       @Schema(description = "결제 금액", example = "18000") Long amount,
       @Schema(description = "승인 시간", example = "2024-01-05T15:30:00") LocalDateTime approvedAt) {}
 

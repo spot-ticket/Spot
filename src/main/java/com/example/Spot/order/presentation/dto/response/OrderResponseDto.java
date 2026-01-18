@@ -10,13 +10,16 @@ import com.example.Spot.order.domain.entity.OrderEntity;
 import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
 
+import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder
 @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderResponseDto {
 
     private UUID id;
@@ -45,7 +48,7 @@ public class OrderResponseDto {
     private List<OrderItemResponseDto> orderItems;
     
     private BigDecimal totalAmount;
-
+        
     public static OrderResponseDto from(OrderEntity entity) {
         List<OrderItemResponseDto> orderItemDtos = entity.getOrderItems().stream()
                 .map(OrderItemResponseDto::from)
