@@ -407,7 +407,7 @@ public class PaymentService {
 
   public void validateOrderStoreOwnership(UUID orderId, Integer userId) {
     OrderEntity order = findOrder(orderId);
-    UUID storeId = order.getStore().getId();
+    UUID storeId = order.getStoreId();
     if (!storeUserRepository.existsByStoreIdAndUserId(storeId, userId)) {
       throw new IllegalStateException("[PaymentService] 해당 주문의 가게에 대한 접근 권한이 없습니다.");
     }
@@ -416,7 +416,7 @@ public class PaymentService {
   public void validatePaymentStoreOwnership(UUID paymentId, Integer userId) {
     PaymentEntity payment = findPayment(paymentId);
     OrderEntity order = findOrder(payment.getOrderId());
-    UUID storeId = order.getStore().getId();
+    UUID storeId = order.getStoreId();
     if (!storeUserRepository.existsByStoreIdAndUserId(storeId, userId)) {
       throw new IllegalStateException("[PaymentService] 해당 결제의 가게에 대한 접근 권한이 없습니다.");
     }

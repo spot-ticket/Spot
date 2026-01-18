@@ -184,8 +184,8 @@ public class SalesService {
                 .filter(order -> order.getOrderStatus() == OrderStatus.COMPLETED)
                 .flatMap(order -> order.getOrderItems().stream())
                 .forEach(item -> {
-                    UUID menuId = item.getMenu().getId();
-                    String menuName = item.getMenu().getName();
+                    UUID menuId = item.getMenuId();
+                    String menuName = item.getMenuName();
                     Long itemRevenue = item.getMenuPrice().longValue() * item.getQuantity();
 
                     menuSalesMap.computeIfAbsent(menuId, k -> new MenuSalesData(menuId, menuName))

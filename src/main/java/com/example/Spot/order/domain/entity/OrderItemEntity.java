@@ -8,7 +8,6 @@ import java.util.UUID;
 import org.hibernate.annotations.UuidGenerator;
 
 import com.example.Spot.global.common.BaseEntity;
-import com.example.Spot.menu.domain.entity.MenuEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -41,9 +40,8 @@ public class OrderItemEntity extends BaseEntity {
     @JoinColumn(name = "order_id", nullable = false)
     private OrderEntity order;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "menu_id", nullable = false)
-    private MenuEntity menu;
+    @Column(name = "menu_id", nullable = false, columnDefinition = "UUID")
+    private UUID menuId;
 
     @Column(name = "menu_name", nullable = false)
     private String menuName;
@@ -58,17 +56,23 @@ public class OrderItemEntity extends BaseEntity {
     private List<OrderItemOptionEntity> orderItemOptions = new ArrayList<>();
 
     @Builder
-    public OrderItemEntity(MenuEntity menu, Integer quantity) {
-        if (menu == null) {
-            throw new IllegalArgumentException("메뉴는 필수입니다.");
+    public OrderItemEntity(UUID menuId, String menuName, BigDecimal menuPrice, Integer quantity) {
+        if (menuId == null) {
+            throw new IllegalArgumentException("메뉴 ID는 필수입니다.");
+        }
+        if (menuName == null || menuName.trim().isEmpty()) {
+            throw new IllegalArgumentException("메뉴 이름은 필수입니다.");
+        }
+        if (menuPrice == null || menuPrice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("메뉴 가격은 0 이상이어야 합니다.");
         }
         if (quantity == null || quantity <= 0) {
             throw new IllegalArgumentException("수량은 1 이상이어야 합니다.");
         }
-        
-        this.menu = menu;
-        this.menuName = menu.getName();
-        this.menuPrice = BigDecimal.valueOf(menu.getPrice());
+
+        this.menuId = menuId;
+        this.menuName = menuName;
+        this.menuPrice = menuPrice;
         this.quantity = quantity;
     }
 

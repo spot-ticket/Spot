@@ -6,7 +6,6 @@ import java.util.UUID;
 import org.hibernate.annotations.UuidGenerator;
 
 import com.example.Spot.global.common.BaseEntity;
-import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -37,9 +36,8 @@ public class OrderItemOptionEntity extends BaseEntity {
     @JoinColumn(name = "order_item_id", nullable = false)
     private OrderItemEntity orderItem;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "menu_option_id", nullable = false)
-    private MenuOptionEntity menuOption;
+    @Column(name = "menu_option_id", nullable = false, columnDefinition = "UUID")
+    private UUID menuOptionId;
 
     @Column(name = "option_name", nullable = false, length = 50)
     private String optionName;
@@ -51,15 +49,21 @@ public class OrderItemOptionEntity extends BaseEntity {
     private BigDecimal optionPrice;
 
     @Builder
-    public OrderItemOptionEntity(MenuOptionEntity menuOption) {
-        if (menuOption == null) {
-            throw new IllegalArgumentException("메뉴 옵션은 필수입니다.");
+    public OrderItemOptionEntity(UUID menuOptionId, String optionName, String optionDetail, BigDecimal optionPrice) {
+        if (menuOptionId == null) {
+            throw new IllegalArgumentException("메뉴 옵션 ID는 필수입니다.");
         }
-        
-        this.menuOption = menuOption;
-        this.optionName = menuOption.getName();
-        this.optionDetail = menuOption.getDetail();
-        this.optionPrice = BigDecimal.valueOf(menuOption.getPrice());
+        if (optionName == null || optionName.trim().isEmpty()) {
+            throw new IllegalArgumentException("옵션 이름은 필수입니다.");
+        }
+        if (optionPrice == null || optionPrice.compareTo(BigDecimal.ZERO) < 0) {
+            throw new IllegalArgumentException("옵션 가격은 0 이상이어야 합니다.");
+        }
+
+        this.menuOptionId = menuOptionId;
+        this.optionName = optionName;
+        this.optionDetail = optionDetail;
+        this.optionPrice = optionPrice;
     }
 
     protected void setOrderItem(OrderItemEntity orderItem) {
