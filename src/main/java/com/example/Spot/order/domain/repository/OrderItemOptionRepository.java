@@ -18,7 +18,7 @@ public interface OrderItemOptionRepository extends JpaRepository<OrderItemOption
     List<OrderItemOptionEntity> findByOrderItemId(@Param("orderItemId") UUID orderItemId);
 
     @Query("SELECT oio FROM OrderItemOptionEntity oio " +
-            "WHERE oio.menuOption.id = :menuOptionId " +
+            "WHERE oio.menuOptionId = :menuOptionId " +
             "ORDER BY oio.createdAt DESC")
     List<OrderItemOptionEntity> findByMenuOptionId(@Param("menuOptionId") UUID menuOptionId);
 }

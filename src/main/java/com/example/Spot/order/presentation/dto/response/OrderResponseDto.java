@@ -53,16 +53,16 @@ public class OrderResponseDto {
         List<OrderItemResponseDto> orderItemDtos = entity.getOrderItems().stream()
                 .map(OrderItemResponseDto::from)
                 .collect(Collectors.toList());
-        
+
         BigDecimal totalAmount = orderItemDtos.stream()
                 .map(OrderItemResponseDto::getSubtotal)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-        
+
         return OrderResponseDto.builder()
                 .id(entity.getId())
                 .userId(entity.getUserId())
-                .storeId(entity.getStore().getId())
-                .storeName(entity.getStore().getName())
+                .storeId(entity.getStoreId())
+                .storeName(null) // MSA: Store 서비스에서 별도 조회 필요
                 .orderNumber(entity.getOrderNumber())
                 .needDisposables(entity.getNeedDisposables())
                 .request(entity.getRequest())
@@ -82,6 +82,35 @@ public class OrderResponseDto {
                 .createdAt(entity.getCreatedAt())
                 .orderItems(orderItemDtos)
                 .totalAmount(totalAmount)
+                .build();
+    }
+
+    public static OrderResponseDto from(OrderEntity entity, String storeName) {
+        OrderResponseDto dto = from(entity);
+        return OrderResponseDto.builder()
+                .id(dto.getId())
+                .userId(dto.getUserId())
+                .storeId(dto.getStoreId())
+                .storeName(storeName)
+                .orderNumber(dto.getOrderNumber())
+                .needDisposables(dto.getNeedDisposables())
+                .request(dto.getRequest())
+                .pickupTime(dto.getPickupTime())
+                .orderStatus(dto.getOrderStatus())
+                .estimatedTime(dto.getEstimatedTime())
+                .reason(dto.getReason())
+                .cancelledBy(dto.getCancelledBy())
+                .paymentCompletedAt(dto.getPaymentCompletedAt())
+                .paymentFailedAt(dto.getPaymentFailedAt())
+                .acceptedAt(dto.getAcceptedAt())
+                .rejectedAt(dto.getRejectedAt())
+                .cookingStartedAt(dto.getCookingStartedAt())
+                .cookingCompletedAt(dto.getCookingCompletedAt())
+                .pickedUpAt(dto.getPickedUpAt())
+                .cancelledAt(dto.getCancelledAt())
+                .createdAt(dto.getCreatedAt())
+                .orderItems(dto.getOrderItems())
+                .totalAmount(dto.getTotalAmount())
                 .build();
     }
 }

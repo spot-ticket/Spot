@@ -44,7 +44,7 @@ public class OrderItemResponseDto {
         
         return OrderItemResponseDto.builder()
                 .id(entity.getId())
-                .menuId(entity.getMenu().getId())
+                .menuId(entity.getMenuId())
                 .menuName(entity.getMenuName())
                 .menuPrice(entity.getMenuPrice())
                 .quantity(entity.getQuantity())
