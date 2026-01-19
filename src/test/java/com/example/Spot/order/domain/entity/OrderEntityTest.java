@@ -9,19 +9,15 @@ import org.junit.jupiter.api.Test;
 
 import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
-import com.example.Spot.store.domain.entity.StoreEntity;
 
 public class OrderEntityTest {
 
     @Test
     void 주문이_정상적인_흐름으로_진행되면_각_단계별_상태와_시간이_기록된다() {
-        StoreEntity store = StoreEntity.builder()
-                .name("S")
-                .roadAddress("R")
-                .build();
+        java.util.UUID storeId = java.util.UUID.randomUUID();
 
         OrderEntity order = OrderEntity.builder()
-                .store(store)
+                .storeId(storeId)
                 .userId(1)
                 .orderNumber("ON-1")
                 .request("no")
@@ -55,9 +51,9 @@ public class OrderEntityTest {
 
     @Test
     void 잘못된_상태에서_완료_처리를_하면_예외가_발생한다() {
-        StoreEntity store = StoreEntity.builder().name("S").roadAddress("R").build();
+        java.util.UUID storeId = java.util.UUID.randomUUID();
         OrderEntity order = OrderEntity.builder()
-                .store(store)
+                .storeId(storeId)
                 .userId(2)
                 .orderNumber("ON-2")
                 .request(null)
@@ -71,9 +67,9 @@ public class OrderEntityTest {
 
     @Test
     void 주문을_취소하면_취소_상태로_변경되고_취소_시간이_기록된다() {
-        StoreEntity store = StoreEntity.builder().name("S").roadAddress("R").build();
+        java.util.UUID storeId = java.util.UUID.randomUUID();
         OrderEntity order = OrderEntity.builder()
-                .store(store)
+                .storeId(storeId)
                 .userId(2)
                 .orderNumber("ON-2")
                 .request(null)
