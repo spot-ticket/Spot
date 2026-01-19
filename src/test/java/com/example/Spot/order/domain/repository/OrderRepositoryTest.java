@@ -68,7 +68,7 @@ public class OrderRepositoryTest {
         em.persist(menuOption);
 
         OrderEntity order = OrderEntity.builder()
-                .store(store)
+                .storeId(store.getId())
                 .userId(10)
                 .orderNumber("ORD-001")
                 .request("test")
@@ -76,8 +76,18 @@ public class OrderRepositoryTest {
                 .pickupTime(LocalDateTime.now().plusHours(2))
                 .build();
 
-        OrderItemEntity item = OrderItemEntity.builder().menu(menu).quantity(1).build();
-        OrderItemOptionEntity option = OrderItemOptionEntity.builder().menuOption(menuOption).build();
+        OrderItemEntity item = OrderItemEntity.builder()
+                .menuId(menu.getId())
+                .menuName(menu.getName())
+                .menuPrice(java.math.BigDecimal.valueOf(menu.getPrice()))
+                .quantity(1)
+                .build();
+        OrderItemOptionEntity option = OrderItemOptionEntity.builder()
+                .menuOptionId(menuOption.getId())
+                .optionName(menuOption.getName())
+                .optionDetail(null)
+                .optionPrice(java.math.BigDecimal.valueOf(menuOption.getPrice()))
+                .build();
         item.addOrderItemOption(option);
         order.addOrderItem(item);
 
@@ -89,13 +99,13 @@ public class OrderRepositoryTest {
         
         assertThat(fetched.getOrderItems()).hasSize(1);
         assertThat(fetched.getOrderItems().get(0).getOrderItemOptions()).hasSize(1);
-        assertThat(fetched.getStore()).isNotNull();
+        assertThat(fetched.getStoreId()).isNotNull();
     }
 
     @Test
     void 주문번호로_조회하면_주문이_반환된다() {
         OrderEntity order = OrderEntity.builder()
-                .store(store)
+                .storeId(store.getId())
                 .userId(1)
                 .orderNumber("ORD-NUM-001")
                 .request(null)
@@ -267,7 +277,7 @@ public class OrderRepositoryTest {
 
     private OrderEntity createOrder(Integer userId, String orderNumber) {
         return OrderEntity.builder()
-                .store(store)
+                .storeId(store.getId())
                 .userId(userId)
                 .orderNumber(orderNumber)
                 .request(null)
