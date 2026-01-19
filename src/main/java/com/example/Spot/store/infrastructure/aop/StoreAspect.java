@@ -101,11 +101,10 @@ public class StoreAspect {
         StoreEntity store = storeRepository.findByIdWithDetails(storeId, isAdmin)
                 .orElseThrow(() -> new EntityNotFoundException("매장을 찾을 수 없거나 접근 권한이 없습니다."));
 
-        // 관리자가 아닌 경우 소유권 검증
+        // 관리자가 아닌 경우 소유권 검증 (MSA 전환으로 userId로 직접 비교)
         if (!isAdmin) {
             boolean isRealOwner = store.getUsers().stream()
-                    .anyMatch(su -> su.getUser().getId().equals(user.getId())
-                            && su.getUser().getRole() == Role.OWNER);
+                    .anyMatch(su -> su.getUserId().equals(user.getId()));
 
             if (!isRealOwner) {
                 throw new AccessDeniedException("해당 매장에 대한 관리 권한이 없습니다.");

@@ -28,7 +28,6 @@ public interface StoreRepository extends JpaRepository<StoreEntity, UUID> {
             "LEFT JOIN FETCH s.storeCategoryMaps sc " +
             "LEFT JOIN FETCH sc.category " +
             "LEFT JOIN FETCH s.users su " +
-            "LEFT JOIN FETCH su.user u " +
             "WHERE s.id = :id " +
             "AND (:isAdmin = true OR (s.isDeleted = false AND s.status = 'APPROVED'))")
     Optional<StoreEntity> findByIdWithDetails(@Param("id") UUID id, @Param("isAdmin") boolean isAdmin);
@@ -47,9 +46,7 @@ public interface StoreRepository extends JpaRepository<StoreEntity, UUID> {
             "LEFT JOIN FETCH s.storeCategoryMaps sc " +
             "LEFT JOIN FETCH sc.category " +
             "JOIN s.users su " +
-            "JOIN su.user u " +
-            "WHERE u.id = :userId " +
-            "AND u.role IN ('OWNER', 'CHEF') " +
+            "WHERE su.userId = :userId " +
             "AND s.isDeleted = false")
     List<StoreEntity> findAllByOwnerId(@Param("userId") Integer userId);
 
@@ -73,7 +70,6 @@ public interface StoreRepository extends JpaRepository<StoreEntity, UUID> {
             "LEFT JOIN FETCH s.storeCategoryMaps sc " +
             "LEFT JOIN FETCH sc.category " +
             "LEFT JOIN FETCH s.users su " +
-            "LEFT JOIN FETCH su.user u " +
             "WHERE s.id = :id " +
             "AND s.isDeleted = false")
     Optional<StoreEntity> findByIdWithDetailsForOwner(@Param("id") UUID id);

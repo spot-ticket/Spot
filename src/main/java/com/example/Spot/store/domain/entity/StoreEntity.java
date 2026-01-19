@@ -10,7 +10,6 @@ import java.util.UUID;
 import com.example.Spot.global.common.UpdateBaseEntity;
 import com.example.Spot.review.domain.entity.ReviewEntity;
 import com.example.Spot.store.domain.StoreStatus;
-import com.example.Spot.user.domain.entity.UserEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;

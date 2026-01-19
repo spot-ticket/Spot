@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import com.example.Spot.menu.presentation.dto.response.MenuPublicResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
-import com.example.Spot.user.domain.Role;
 
 public record StoreDetailResponse(
         UUID id,
@@ -18,19 +17,17 @@ public record StoreDetailResponse(
         LocalTime openTime,
         LocalTime closeTime,
         List<String> categoryNames,
-        StaffInfo owner,
-        List<StaffInfo> chefs,
+        List<Integer> staffUserIds,
         List<MenuPublicResponseDto> menus,
         boolean isDeleted,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-    public record StaffInfo(Integer userId, String name, Role role) {}
-
     public static StoreDetailResponse fromEntity(StoreEntity store, List<MenuPublicResponseDto> menus) {
-        // MSA: User 정보는 User 서비스에서 별도 조회 필요
-        StaffInfo ownerInfo = null;
-        List<StaffInfo> chefInfos = List.of();
+        // MSA 전환으로 userId만 반환 (User 정보는 별도 서비스에서 조회)
+        List<Integer> staffUserIds = store.getUsers().stream()
+                .map(su -> su.getUserId())
+                .toList();
 
         return new StoreDetailResponse(
                 store.getId(),
@@ -43,8 +40,7 @@ public record StoreDetailResponse(
                 store.getStoreCategoryMaps().stream()
                         .map(map -> map.getCategory().getName())
                         .toList(),
-                ownerInfo,
-                chefInfos,
+                staffUserIds,
                 menus,
                 store.getIsDeleted(),
                 store.getCreatedAt(),

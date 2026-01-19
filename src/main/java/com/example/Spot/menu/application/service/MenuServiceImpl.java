@@ -24,14 +24,12 @@ import com.example.Spot.menu.presentation.dto.response.MenuResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.StoreRepository;
 import com.example.Spot.user.domain.Role;
-import com.example.Spot.user.domain.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
 public class MenuServiceImpl implements MenuService {
-    private final UserRepository userRepository;
     private final MenuRepository menuRepository;
     private final StoreRepository storeRepository;
     private final MenuOptionRepository menuOptionRepository;
@@ -293,10 +291,9 @@ public class MenuServiceImpl implements MenuService {
         menu.changeHidden(request.isHidden());
     }
 
-    // Helper - 유저의 소속 가게 검증
+    // Helper - 유저의 소속 가게 검증 (MSA 전환으로 userId로 직접 비교)
     private void validateOwner(StoreEntity store, Integer userId, Role userRole, String errorMessage) {
         if (userRole == Role.OWNER) {
-
             // StoreEntity가 가지고 있는 User 목록(store.getUsers())을 순회하며
             // 현재 로그인한 userId와 일치하는지 확인
             boolean isMyStore = store.getUsers().stream()
