@@ -23,6 +23,7 @@ import com.example.Spot.store.domain.repository.StoreUserRepository;
 import com.example.Spot.store.infrastructure.aop.AdminOnly;
 import com.example.Spot.store.infrastructure.aop.StoreValidationContext;
 import com.example.Spot.store.infrastructure.aop.ValidateStoreAuthority;
+import com.example.Spot.store.infrastructure.aop.ValidateUser;
 import com.example.Spot.store.presentation.dto.request.StoreCreateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUserUpdateRequest;
