@@ -189,6 +189,7 @@ public class StoreService {
     }
 
     // 8. 내 가게 목록 조회 (OWNER, CHEF)
+    @ValidateUser
     public List<StoreListResponse> getMyStores(Integer userId) {
         // 권한 검증은 Controller 또는 Gateway에서 수행 (MSA 전환)
         List<StoreEntity> stores = storeRepository.findAllByOwnerId(userId);
