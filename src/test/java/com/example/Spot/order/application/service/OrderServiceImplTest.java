@@ -25,7 +25,6 @@ import com.example.Spot.payments.domain.repository.PaymentHistoryRepository;
 import com.example.Spot.payments.domain.repository.PaymentKeyRepository;
 import com.example.Spot.payments.domain.repository.PaymentRepository;
 import com.example.Spot.payments.infrastructure.client.TossPaymentClient;
-import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.StoreRepository;
 import com.example.Spot.store.domain.repository.StoreUserRepository;
 
@@ -84,8 +83,8 @@ public class OrderServiceImplTest {
     
     @Test
     void 결제를_완료하면_주문상태가_대기중으로_변경된다() {
-        StoreEntity store = StoreEntity.builder().name("S").roadAddress("R").build();
-        OrderEntity order = OrderEntity.builder().store(store).userId(1).orderNumber("X").request(null).needDisposables(false).pickupTime(LocalDateTime.now().plusHours(1)).build();
+        UUID storeId = UUID.randomUUID();
+        OrderEntity order = OrderEntity.builder().storeId(storeId).userId(1).orderNumber("X").request(null).needDisposables(false).pickupTime(LocalDateTime.now().plusHours(1)).build();
         UUID id = UUID.randomUUID();
 
         when(orderRepository.findById(id)).thenReturn(Optional.of(order));
@@ -102,9 +101,9 @@ public class OrderServiceImplTest {
     
     @Test
     void 주문을_수락하면_예상시간과_함께_수락상태로_변경된다() {
-        StoreEntity store = StoreEntity.builder().name("Store").roadAddress("Addr").build();
+        UUID storeId = UUID.randomUUID();
         OrderEntity order = OrderEntity.builder()
-                .store(store).userId(1).orderNumber("ACC-001")
+                .storeId(storeId).userId(1).orderNumber("ACC-001")
                 .request(null).needDisposables(false).pickupTime(LocalDateTime.now().plusHours(1))
                 .build();
         order.completePayment();
@@ -124,9 +123,9 @@ public class OrderServiceImplTest {
 
     @Test
     void 주문을_거절하면_사유와_함께_거절상태로_변경된다() {
-        StoreEntity store = StoreEntity.builder().name("Store").roadAddress("Addr").build();
+        UUID storeId = UUID.randomUUID();
         OrderEntity order = OrderEntity.builder()
-                .store(store).userId(1).orderNumber("REJ-001")
+                .storeId(storeId).userId(1).orderNumber("REJ-001")
                 .request(null).needDisposables(false).pickupTime(LocalDateTime.now().plusHours(1))
                 .build();
 
@@ -147,9 +146,9 @@ public class OrderServiceImplTest {
 
     @Test
     void 조리를_시작하면_조리중_상태로_변경되고_시작시간이_기록된다() {
-        StoreEntity store = StoreEntity.builder().name("Store").roadAddress("Addr").build();
+        UUID storeId = UUID.randomUUID();
         OrderEntity order = OrderEntity.builder()
-                .store(store).userId(1).orderNumber("COOK-001")
+                .storeId(storeId).userId(1).orderNumber("COOK-001")
                 .request(null).needDisposables(false).pickupTime(LocalDateTime.now().plusHours(1))
                 .build();
         order.completePayment();
@@ -169,9 +168,9 @@ public class OrderServiceImplTest {
 
     @Test
     void 픽업준비를_완료하면_준비완료_상태로_변경되고_완료시간이_기록된다() {
-        StoreEntity store = StoreEntity.builder().name("Store").roadAddress("Addr").build();
+        UUID storeId = UUID.randomUUID();
         OrderEntity order = OrderEntity.builder()
-                .store(store).userId(1).orderNumber("READY-001")
+                .storeId(storeId).userId(1).orderNumber("READY-001")
                 .request(null).needDisposables(false).pickupTime(LocalDateTime.now().plusHours(1))
                 .build();
         order.completePayment();
@@ -192,9 +191,9 @@ public class OrderServiceImplTest {
 
     @Test
     void 픽업을_완료하면_완료_상태로_변경되고_픽업시간이_기록된다() {
-        StoreEntity store = StoreEntity.builder().name("Store").roadAddress("Addr").build();
+        UUID storeId = UUID.randomUUID();
         OrderEntity order = OrderEntity.builder()
-                .store(store).userId(1).orderNumber("COMPLETE-001")
+                .storeId(storeId).userId(1).orderNumber("COMPLETE-001")
                 .request(null).needDisposables(false).pickupTime(LocalDateTime.now().plusHours(1))
                 .build();
         order.completePayment();
@@ -218,9 +217,9 @@ public class OrderServiceImplTest {
     
     @Test
     void 고객이_주문을_취소하면_취소상태로_변경되고_사유와_시간이_기록된다() {
-        StoreEntity store = StoreEntity.builder().name("Store").roadAddress("Addr").build();
+        UUID storeId = UUID.randomUUID();
         OrderEntity order = OrderEntity.builder()
-                .store(store).userId(1).orderNumber("CANCEL-CUST-001")
+                .storeId(storeId).userId(1).orderNumber("CANCEL-CUST-001")
                 .request(null).needDisposables(false).pickupTime(LocalDateTime.now().plusHours(1))
                 .build();
         UUID id = UUID.randomUUID();
@@ -241,9 +240,9 @@ public class OrderServiceImplTest {
     
     @Test
     void ID로_주문을_조회하면_주문정보가_반환된다() {
-        StoreEntity store = StoreEntity.builder().name("Store").roadAddress("Addr").build();
+        UUID storeId = UUID.randomUUID();
         OrderEntity order = OrderEntity.builder()
-                .store(store).userId(1).orderNumber("GET-001")
+                .storeId(storeId).userId(1).orderNumber("GET-001")
                 .request(null).needDisposables(false).pickupTime(LocalDateTime.now().plusHours(1))
                 .build();
         UUID id = UUID.randomUUID();
@@ -259,9 +258,9 @@ public class OrderServiceImplTest {
 
     @Test
     void 주문번호로_주문을_조회하면_주문정보가_반환된다() {
-        StoreEntity store = StoreEntity.builder().name("Store").roadAddress("Addr").build();
+        UUID storeId = UUID.randomUUID();
         OrderEntity order = OrderEntity.builder()
-                .store(store).userId(1).orderNumber("NUM-001")
+                .storeId(storeId).userId(1).orderNumber("NUM-001")
                 .request(null).needDisposables(false).pickupTime(LocalDateTime.now().plusHours(1))
                 .build();
 
@@ -277,13 +276,13 @@ public class OrderServiceImplTest {
     @Test
     void 사용자ID로_주문을_조회하면_모든_주문이_반환된다() {
         Integer userId = 1;
-        StoreEntity store = StoreEntity.builder().name("Store").roadAddress("Addr").build();
+        UUID storeId = UUID.randomUUID();
         OrderEntity order1 = OrderEntity.builder()
-                .store(store).userId(userId).orderNumber("USER-001")
+                .storeId(storeId).userId(userId).orderNumber("USER-001")
                 .request(null).needDisposables(false).pickupTime(LocalDateTime.now().plusHours(1))
                 .build();
         OrderEntity order2 = OrderEntity.builder()
-                .store(store).userId(userId).orderNumber("USER-002")
+                .storeId(storeId).userId(userId).orderNumber("USER-002")
                 .request(null).needDisposables(false).pickupTime(LocalDateTime.now().plusHours(2))
                 .build();
 
@@ -298,9 +297,9 @@ public class OrderServiceImplTest {
     @Test
     void 사용자의_활성_주문을_조회하면_진행중인_주문만_반환된다() {
         Integer userId = 1;
-        StoreEntity store = StoreEntity.builder().name("Store").roadAddress("Addr").build();
+        UUID storeId = UUID.randomUUID();
         OrderEntity activeOrder = OrderEntity.builder()
-                .store(store).userId(userId).orderNumber("ACTIVE-001")
+                .storeId(storeId).userId(userId).orderNumber("ACTIVE-001")
                 .request(null).needDisposables(false).pickupTime(LocalDateTime.now().plusHours(1))
                 .build();
         activeOrder.completePayment();

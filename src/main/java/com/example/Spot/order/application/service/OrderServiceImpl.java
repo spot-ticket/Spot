@@ -76,7 +76,7 @@ public class OrderServiceImpl implements OrderService {
         String orderNumber = generateOrderNumber();
 
         OrderEntity order = OrderEntity.builder()
-                .store(store)
+                .storeId(store.getId())
                 .userId(userId)
                 .orderNumber(orderNumber)
                 .pickupTime(requestDto.getPickupTime())
@@ -89,7 +89,9 @@ public class OrderServiceImpl implements OrderService {
             MenuEntity menu = OrderValidationContext.getMenu(itemDto.getMenuId());
 
             OrderItemEntity orderItem = OrderItemEntity.builder()
-                    .menu(menu)
+                    .menuId(menu.getId())
+                    .menuName(menu.getName())
+                    .menuPrice(java.math.BigDecimal.valueOf(menu.getPrice()))
                     .quantity(itemDto.getQuantity())
                     .build();
 
@@ -97,7 +99,10 @@ public class OrderServiceImpl implements OrderService {
                 MenuOptionEntity menuOption = OrderValidationContext.getMenuOption(optionDto.getMenuOptionId());
 
                 OrderItemOptionEntity orderItemOption = OrderItemOptionEntity.builder()
-                        .menuOption(menuOption)
+                        .menuOptionId(menuOption.getId())
+                        .optionName(menuOption.getName())
+                        .optionDetail(menuOption.getDetail())
+                        .optionPrice(java.math.BigDecimal.valueOf(menuOption.getPrice()))
                         .build();
 
                 orderItem.addOrderItemOption(orderItemOption);
