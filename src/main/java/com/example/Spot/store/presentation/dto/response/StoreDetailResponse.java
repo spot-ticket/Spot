@@ -7,7 +7,6 @@ import java.util.UUID;
 
 import com.example.Spot.menu.presentation.dto.response.MenuPublicResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
-import com.example.Spot.user.domain.Role;
 
 public record StoreDetailResponse(
         UUID id,
@@ -18,32 +17,16 @@ public record StoreDetailResponse(
         LocalTime openTime,
         LocalTime closeTime,
         List<String> categoryNames,
-        StaffInfo owner,
-        List<StaffInfo> chefs,
+        List<Integer> staffUserIds,
         List<MenuPublicResponseDto> menus,
         boolean isDeleted,
         LocalDateTime createdAt,
         LocalDateTime updatedAt
 ) {
-    public record StaffInfo(Integer userId, String name, Role role) {}
-
     public static StoreDetailResponse fromEntity(StoreEntity store, List<MenuPublicResponseDto> menus) {
-        StaffInfo ownerInfo = store.getUsers().stream()
-                .filter(su -> su.getUser().getRole() == Role.OWNER)
-                .map(su -> new StaffInfo(
-                        su.getUser().getId(),
-                        su.getUser().getNickname(),
-                        su.getUser().getRole()
-                ))
-                .findFirst().orElse(null);
-
-        List<StaffInfo> chefInfos = store.getUsers().stream()
-                .filter(su -> su.getUser().getRole() == Role.CHEF)
-                .map(su -> new StaffInfo(
-                        su.getUser().getId(),
-                        su.getUser().getNickname(),
-                        su.getUser().getRole()
-                ))
+        // MSA 전환으로 userId만 반환 (User 정보는 별도 서비스에서 조회)
+        List<Integer> staffUserIds = store.getUsers().stream()
+                .map(su -> su.getUserId())
                 .toList();
 
         return new StoreDetailResponse(
@@ -57,8 +40,7 @@ public record StoreDetailResponse(
                 store.getStoreCategoryMaps().stream()
                         .map(map -> map.getCategory().getName())
                         .toList(),
-                ownerInfo,
-                chefInfos,
+                staffUserIds,
                 menus,
                 store.getIsDeleted(),
                 store.getCreatedAt(),

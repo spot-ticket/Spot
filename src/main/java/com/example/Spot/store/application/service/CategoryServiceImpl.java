@@ -14,8 +14,6 @@ import com.example.Spot.store.domain.repository.CategoryRepository;
 import com.example.Spot.store.domain.repository.StoreCategoryRepository;
 import com.example.Spot.store.presentation.dto.request.CategoryRequestDTO;
 import com.example.Spot.store.presentation.dto.response.CategoryResponseDTO;
-import com.example.Spot.user.domain.entity.UserEntity;
-
 
 import lombok.RequiredArgsConstructor;
 
@@ -109,15 +107,15 @@ public class CategoryServiceImpl implements CategoryService {
     }
 
 
-    // delete
+    // delete (MSA 전환으로 userId 직접 사용)
     @Override
     @Transactional
-    public void delete(UUID categoryId, UserEntity user) {
+    public void delete(UUID categoryId, Integer userId) {
         CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalse(categoryId)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found: " + categoryId));
 
         // soft delete
-        category.softDelete(user.getId());
+        category.softDelete(userId);
     }
 
 
