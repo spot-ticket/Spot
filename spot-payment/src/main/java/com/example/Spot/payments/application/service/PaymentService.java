@@ -62,9 +62,7 @@ public class PaymentService {
   @Ready
   public UUID ready(PaymentRequestDto.Confirm request) {
 
-    // User 서비스에서 사용자 존재 확인
     validateUserExists(request.userId());
-    // Order 서비스에서 주문 존재 확인
     validateOrderExists(request.orderId());
 
     PaymentEntity payment = createPayment(request.userId(), request.orderId(), request);
@@ -165,7 +163,7 @@ public class PaymentService {
         return paymentRepository.save(payment);
     }
 
-  // Order 서비스 호출 - 주문 조회
+  // Order MSA -> Here
   private OrderResponse findOrder(UUID orderId) {
     OrderResponse order = orderClient.getOrderById(orderId);
     if (order == null) {
