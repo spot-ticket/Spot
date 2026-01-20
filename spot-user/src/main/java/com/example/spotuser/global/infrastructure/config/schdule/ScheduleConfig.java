@@ -1,9 +1,0 @@
-package com.example.spotuser.global.infrastructure.config.schdule;
-
-import org.springframework.context.annotation.Configuration;
-import org.springframework.scheduling.annotation.EnableScheduling;
-
-@Configuration
-@EnableScheduling
-public class ScheduleConfig {
-}

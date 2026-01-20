@@ -1,4 +1,4 @@
-import axios, { AxiosError, InternalAxiosRequestConfig } from 'axios';
+import axios, {AxiosError, InternalAxiosRequestConfig} from 'axios';
 import Cookies from 'js-cookie';
 
 // Next.js rewrite 프록시를 사용하므로 baseURL 없이 상대 경로 사용

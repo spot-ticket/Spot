@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/authStore';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { storeApi } from '@/lib/stores';
-import { menuApi, CreateMenuRequest, CreateMenuOptionRequest } from '@/lib/menus';
-import { SalesDashboard } from '@/components/sales/SalesDashboard';
-import { OrderManagement } from '@/components/order/OrderManagement';
-import type { Store, Menu, MenuOption } from '@/types';
+import React, {useEffect, useState} from 'react';
+import {useParams, useRouter} from 'next/navigation';
+import {useAuthStore} from '@/store/authStore';
+import {Button} from '@/components/ui/Button';
+import {Input} from '@/components/ui/Input';
+import {storeApi} from '@/lib/stores';
+import {CreateMenuOptionRequest, CreateMenuRequest, menuApi} from '@/lib/menus';
+import {SalesDashboard} from '@/components/sales/SalesDashboard';
+import {OrderManagement} from '@/components/order/OrderManagement';
+import type {Menu, Store} from '@/types';
 
 export default function StoreManagementPage() {
   const params = useParams();

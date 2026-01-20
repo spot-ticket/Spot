@@ -1,5 +1,5 @@
 import api from './api';
-import type { Store, Category } from '@/types';
+import type {Category, Store} from '@/types';
 
 interface PageResponse<T> {
   content: T[];

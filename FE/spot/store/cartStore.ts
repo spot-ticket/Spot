@@ -1,6 +1,6 @@
-import { create } from 'zustand';
-import { persist, createJSONStorage } from 'zustand/middleware';
-import type { Menu, MenuOption, CartItem, Cart } from '@/types';
+import {create} from 'zustand';
+import {createJSONStorage, persist} from 'zustand/middleware';
+import type {Cart, CartItem, Menu, MenuOption} from '@/types';
 
 // SSR 환경에서 안전한 스토리지 생성
 const getStorage = () => {

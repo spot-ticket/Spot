@@ -1,7 +1,7 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { salesApi, type SalesSummary, type DailySales, type PopularMenu } from '@/lib/sales';
+import {useEffect, useState} from 'react';
+import {type DailySales, type PopularMenu, salesApi, type SalesSummary} from '@/lib/sales';
 import Button from '@/components/ui/Button';
 
 interface SalesDashboardProps {

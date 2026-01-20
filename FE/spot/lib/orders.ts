@@ -1,5 +1,5 @@
 import api from './api';
-import type { ApiResponse, OrderCreateRequest, OrderResponse } from '@/types';
+import type {ApiResponse, OrderCreateRequest, OrderResponse} from '@/types';
 
 interface PageResponse<T> {
   content: T[];
