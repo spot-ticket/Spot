@@ -1,4 +1,4 @@
-package com.example.spotorder.order.domain.enums;
+package com.example.Spot.order.domain.enums;
 
 public enum CancelledBy {
     CUSTOMER("고객 취소"),

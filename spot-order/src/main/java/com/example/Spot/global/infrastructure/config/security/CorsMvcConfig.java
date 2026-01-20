@@ -1,4 +1,4 @@
-package com.example.spotorder.global.infrastructure.config.security;
+package com.example.Spot.global.infrastructure.config.security;
 
 import java.util.List;
 import java.util.Map;

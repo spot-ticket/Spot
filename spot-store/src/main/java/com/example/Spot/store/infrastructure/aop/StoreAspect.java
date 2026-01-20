@@ -1,4 +1,4 @@
-package com.example.spotstore.store.infrastructure.aop;
+package com.example.Spot.store.infrastructure.aop;
 
 import java.util.UUID;
 

@@ -1,4 +1,4 @@
-package com.example.spotstore.sales.application.service;
+package com.example.Spot.sales.application.service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

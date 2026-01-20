@@ -1,4 +1,4 @@
-package com.example.spotorder.global.common;
+package com.example.Spot.global.common;
 
 import java.time.LocalDateTime;
 

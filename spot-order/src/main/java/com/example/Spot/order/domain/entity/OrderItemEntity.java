@@ -1,4 +1,4 @@
-package com.example.spotorder.order.domain.entity;
+package com.example.Spot.order.domain.entity;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -10,7 +10,13 @@ import org.hibernate.annotations.UuidGenerator;
 import com.example.Spot.global.common.BaseEntity;
 import com.example.Spot.order.domain.entity.OrderItemOptionEntity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Id;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

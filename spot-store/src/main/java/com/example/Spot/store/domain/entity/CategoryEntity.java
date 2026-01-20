@@ -1,4 +1,4 @@
-package com.example.spotstore.store.domain.entity;
+package com.example.Spot.store.domain.entity;
 
 import java.util.HashSet;
 import java.util.Set;

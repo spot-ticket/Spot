@@ -1,4 +1,4 @@
-package com.example.spotorder.order.presentation.dto.request;
+package com.example.Spot.order.presentation.dto.request;
 
 import java.util.ArrayList;
 import java.util.List;

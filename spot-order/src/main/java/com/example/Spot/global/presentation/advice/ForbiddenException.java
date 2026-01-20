@@ -1,4 +1,4 @@
-package com.example.spotorder.global.presentation.advice;
+package com.example.Spot.global.presentation.advice;
 
 public class ForbiddenException extends RuntimeException {
 

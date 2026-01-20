@@ -1,4 +1,4 @@
-package com.example.spotstore.store.domain;
+package com.example.Spot.store.domain;
 
 public enum StoreStatus {
     PENDING,    // 승인 대기

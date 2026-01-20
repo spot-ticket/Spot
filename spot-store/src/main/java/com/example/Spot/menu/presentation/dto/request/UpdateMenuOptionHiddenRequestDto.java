@@ -1,4 +1,4 @@
-package com.example.spotstore.menu.presentation.dto.request;
+package com.example.Spot.menu.presentation.dto.request;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

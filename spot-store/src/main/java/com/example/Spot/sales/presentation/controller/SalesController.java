@@ -1,4 +1,4 @@
-package com.example.spotstore.sales.presentation.controller;
+package com.example.Spot.sales.presentation.controller;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

@@ -1,4 +1,4 @@
-package com.example.spotorder.order.presentation.dto.request;
+package com.example.Spot.order.presentation.dto.request;
 
 import java.time.LocalDateTime;
 import java.util.List;

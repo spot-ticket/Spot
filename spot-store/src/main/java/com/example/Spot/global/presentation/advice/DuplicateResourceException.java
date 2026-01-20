@@ -1,4 +1,4 @@
-package com.example.spotstore.global.presentation.advice;
+package com.example.Spot.global.presentation.advice;
 
 public class DuplicateResourceException extends RuntimeException {
 

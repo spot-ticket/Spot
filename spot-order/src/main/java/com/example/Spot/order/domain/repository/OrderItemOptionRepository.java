@@ -1,4 +1,4 @@
-package com.example.spotorder.order.domain.repository;
+package com.example.Spot.order.domain.repository;
 
 import java.util.List;
 import java.util.UUID;

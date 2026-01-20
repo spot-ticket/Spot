@@ -3,7 +3,7 @@ package com.example.Spot.admin.presentation.dto.response;
 import java.math.BigDecimal;
 import java.util.List;
 
-import com.example.Spot.order.presentation.dto.response.OrderResponseDto;
+import com.example.Spot.global.feign.dto.OrderResponse;
 
 import lombok.*;
 
@@ -17,7 +17,7 @@ public class AdminStatsResponseDto {
     private Long totalOrders;
     private Long totalStores;
     private BigDecimal totalRevenue;
-    private List<OrderResponseDto> recentOrders;
+    private List<OrderResponse> recentOrders;
     private List<UserGrowthDto> userGrowth;
     private List<OrderStatusStatsDto> orderStats;
 

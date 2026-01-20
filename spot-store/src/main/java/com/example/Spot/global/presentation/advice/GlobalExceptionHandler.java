@@ -1,4 +1,4 @@
-package com.example.spotstore.global.presentation.advice;
+package com.example.Spot.global.presentation.advice;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;

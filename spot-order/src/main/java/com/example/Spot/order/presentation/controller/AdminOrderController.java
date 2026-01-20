@@ -1,4 +1,4 @@
-package com.example.spotorder.order.presentation.controller;
+package com.example.Spot.order.presentation.controller;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -21,6 +21,7 @@ import com.example.Spot.order.application.service.OrderService;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.presentation.code.OrderSuccessCode;
 import com.example.Spot.order.presentation.dto.response.OrderResponseDto;
+import com.example.Spot.order.presentation.dto.response.OrderStatsResponseDto;
 
 import lombok.RequiredArgsConstructor;
 
@@ -51,5 +52,11 @@ public class AdminOrderController {
         return ResponseEntity
                 .status(OrderSuccessCode.ORDER_LIST_FOUND.getStatus())
                 .body(ApiResponse.onSuccess(OrderSuccessCode.ORDER_LIST_FOUND, response));
+    }
+
+    @GetMapping("/stats")
+    public ResponseEntity<OrderStatsResponseDto> getOrderStats() {
+        OrderStatsResponseDto stats = orderService.getOrderStats();
+        return ResponseEntity.ok(stats);
     }
 }

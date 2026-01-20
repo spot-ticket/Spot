@@ -1,13 +1,13 @@
-package com.example.spotorder.order.infrastructure.aop;
+package com.example.Spot.order.infrastructure.aop;
 
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import com.example.Spot.menu.domain.entity.MenuEntity;
-import com.example.Spot.menu.domain.entity.MenuOptionEntity;
+import com.example.Spot.global.feign.dto.MenuOptionResponse;
+import com.example.Spot.global.feign.dto.MenuResponse;
+import com.example.Spot.global.feign.dto.StoreResponse;
 import com.example.Spot.order.domain.entity.OrderEntity;
-import com.example.Spot.store.domain.entity.StoreEntity;
 
 public class OrderValidationContext {
 
@@ -16,32 +16,32 @@ public class OrderValidationContext {
     private static final ThreadLocal<UUID> CURRENT_STORE_ID = new ThreadLocal<>();
 
     public static class ContextData {
-        private StoreEntity store;
-        private Map<UUID, MenuEntity> menuMap = new HashMap<>();
-        private Map<UUID, MenuOptionEntity> menuOptionMap = new HashMap<>();
+        private StoreResponse storeResponse;
+        private Map<UUID, MenuResponse> menuResponseMap = new HashMap<>();
+        private Map<UUID, MenuOptionResponse> menuOptionResponseMap = new HashMap<>();
 
-        public StoreEntity getStore() {
-            return store;
+        public StoreResponse getStoreResponse() {
+            return storeResponse;
         }
 
-        public void setStore(StoreEntity store) {
-            this.store = store;
+        public void setStoreResponse(StoreResponse storeResponse) {
+            this.storeResponse = storeResponse;
         }
 
-        public void addMenu(UUID menuId, MenuEntity menu) {
-            menuMap.put(menuId, menu);
+        public void addMenuResponse(UUID menuId, MenuResponse menu) {
+            menuResponseMap.put(menuId, menu);
         }
 
-        public MenuEntity getMenu(UUID menuId) {
-            return menuMap.get(menuId);
+        public MenuResponse getMenuResponse(UUID menuId) {
+            return menuResponseMap.get(menuId);
         }
 
-        public void addMenuOption(UUID optionId, MenuOptionEntity option) {
-            menuOptionMap.put(optionId, option);
+        public void addMenuOptionResponse(UUID optionId, MenuOptionResponse option) {
+            menuOptionResponseMap.put(optionId, option);
         }
 
-        public MenuOptionEntity getMenuOption(UUID optionId) {
-            return menuOptionMap.get(optionId);
+        public MenuOptionResponse getMenuOptionResponse(UUID optionId) {
+            return menuOptionResponseMap.get(optionId);
         }
     }
 
@@ -57,19 +57,19 @@ public class OrderValidationContext {
         CONTEXT.remove();
     }
 
-    public static StoreEntity getStore() {
+    public static StoreResponse getStoreResponse() {
         ContextData data = get();
-        return data != null ? data.getStore() : null;
+        return data != null ? data.getStoreResponse() : null;
     }
 
-    public static MenuEntity getMenu(UUID menuId) {
+    public static MenuResponse getMenuResponse(UUID menuId) {
         ContextData data = get();
-        return data != null ? data.getMenu(menuId) : null;
+        return data != null ? data.getMenuResponse(menuId) : null;
     }
 
-    public static MenuOptionEntity getMenuOption(UUID optionId) {
+    public static MenuOptionResponse getMenuOptionResponse(UUID optionId) {
         ContextData data = get();
-        return data != null ? data.getMenuOption(optionId) : null;
+        return data != null ? data.getMenuOptionResponse(optionId) : null;
     }
 
     // 주문 상태 변경용 메서드

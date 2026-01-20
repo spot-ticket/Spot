@@ -1,4 +1,4 @@
-package com.example.spotorder.order.domain.enums;
+package com.example.Spot.order.domain.enums;
 
 public enum OrderStatus {
     PAYMENT_PENDING("결제 대기"),      // 주문 생성 후 결제 진행 중

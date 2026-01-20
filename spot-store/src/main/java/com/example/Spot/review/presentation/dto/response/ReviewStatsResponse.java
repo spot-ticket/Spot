@@ -1,4 +1,4 @@
-package com.example.spotstore.review.presentation.dto.response;
+package com.example.Spot.review.presentation.dto.response;
 
 public record ReviewStatsResponse(
         Double averageRating,

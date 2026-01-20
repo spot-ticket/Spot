@@ -1,4 +1,4 @@
-package com.example.spotorder.order.presentation.code;
+package com.example.Spot.order.presentation.code;
 
 import org.springframework.http.HttpStatus;
 

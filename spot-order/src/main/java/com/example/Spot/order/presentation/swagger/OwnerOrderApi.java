@@ -1,4 +1,4 @@
-package com.example.spotorder.order.presentation.swagger;
+package com.example.Spot.order.presentation.swagger;
 
 import java.time.LocalDate;
 import java.util.List;

@@ -5,7 +5,6 @@ import java.util.UUID;
 import org.hibernate.annotations.UuidGenerator;
 
 import com.example.Spot.global.common.UpdateBaseEntity;
-import com.example.Spot.user.domain.entity.UserEntity;
 
 import lombok.AccessLevel;
 import lombok.Builder;

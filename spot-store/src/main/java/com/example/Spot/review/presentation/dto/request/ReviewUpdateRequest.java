@@ -1,4 +1,4 @@
-package com.example.spotstore.review.presentation.dto.request;
+package com.example.Spot.review.presentation.dto.request;
 
 import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;

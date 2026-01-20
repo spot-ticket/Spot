@@ -1,4 +1,4 @@
-package com.example.spotorder.order.domain.exception;
+package com.example.Spot.order.domain.exception;
 
 import com.example.Spot.order.domain.enums.OrderStatus;
 

@@ -1,4 +1,4 @@
-package com.example.spotstore.global.infrastructure.config;
+package com.example.Spot.global.infrastructure.config;
 
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.context.annotation.Bean;

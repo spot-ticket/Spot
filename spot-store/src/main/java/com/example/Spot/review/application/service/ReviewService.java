@@ -1,4 +1,4 @@
-package com.example.spotstore.review.application.service;
+package com.example.Spot.review.application.service;
 
 import java.util.UUID;
 

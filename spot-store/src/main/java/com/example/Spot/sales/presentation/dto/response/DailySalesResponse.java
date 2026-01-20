@@ -1,4 +1,4 @@
-package com.example.spotstore.sales.presentation.dto.response;
+package com.example.Spot.sales.presentation.dto.response;
 
 import java.time.LocalDate;
 

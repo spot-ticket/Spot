@@ -1,4 +1,4 @@
-package com.example.spotorder.order.domain.entity;
+package com.example.Spot.order.domain.entity;
 
 import java.math.BigDecimal;
 import java.util.UUID;

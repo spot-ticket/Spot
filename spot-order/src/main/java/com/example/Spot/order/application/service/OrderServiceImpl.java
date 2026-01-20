@@ -1,8 +1,10 @@
-package com.example.spotorder.order.application.service;
+package com.example.Spot.order.application.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -12,34 +14,29 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.Spot.menu.domain.entity.MenuEntity;
-import com.example.Spot.menu.domain.entity.MenuOptionEntity;
-import com.example.Spot.menu.domain.repository.MenuOptionRepository;
-import com.example.Spot.menu.domain.repository.MenuRepository;
+import com.example.Spot.global.feign.PaymentClient;
+import com.example.Spot.global.feign.StoreClient;
+import com.example.Spot.global.feign.dto.MenuOptionResponse;
+import com.example.Spot.global.feign.dto.MenuResponse;
+import com.example.Spot.global.feign.dto.PaymentCancelRequest;
+import com.example.Spot.global.feign.dto.PaymentResponse;
+import com.example.Spot.global.feign.dto.StoreResponse;
+import com.example.Spot.global.feign.dto.StoreUserResponse;
 import com.example.Spot.order.domain.entity.OrderEntity;
 import com.example.Spot.order.domain.entity.OrderItemEntity;
 import com.example.Spot.order.domain.entity.OrderItemOptionEntity;
 import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.domain.repository.OrderRepository;
-import com.example.Spot.order.infrastructure.aop.*;
+import com.example.Spot.order.infrastructure.aop.OrderStatusChange;
+import com.example.Spot.order.infrastructure.aop.OrderValidationContext;
+import com.example.Spot.order.infrastructure.aop.StoreOwnershipRequired;
+import com.example.Spot.order.infrastructure.aop.ValidateStoreAndMenu;
 import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemOptionRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemRequestDto;
 import com.example.Spot.order.presentation.dto.response.OrderResponseDto;
-import com.example.Spot.payments.domain.entity.PaymentCancelEntity;
-import com.example.Spot.payments.domain.entity.PaymentEntity;
-import com.example.Spot.payments.domain.entity.PaymentHistoryEntity;
-import com.example.Spot.payments.domain.entity.PaymentKeyEntity;
-import com.example.Spot.payments.domain.repository.PaymentCancelRepository;
-import com.example.Spot.payments.domain.repository.PaymentHistoryRepository;
-import com.example.Spot.payments.domain.repository.PaymentKeyRepository;
-import com.example.Spot.payments.domain.repository.PaymentRepository;
-import com.example.Spot.payments.infrastructure.client.TossPaymentClient;
-import com.example.Spot.store.domain.entity.StoreEntity;
-import com.example.Spot.store.domain.entity.StoreUserEntity;
-import com.example.Spot.store.domain.repository.StoreRepository;
-import com.example.Spot.store.domain.repository.StoreUserRepository;
+import com.example.Spot.order.presentation.dto.response.OrderStatsResponseDto;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -51,23 +48,16 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
-    private final StoreRepository storeRepository;
-    private final StoreUserRepository storeUserRepository;
-    private final MenuRepository menuRepository;
-    private final MenuOptionRepository menuOptionRepository;
-    private final PaymentRepository paymentRepository;
-    private final PaymentKeyRepository paymentKeyRepository;
-    private final PaymentHistoryRepository paymentHistoryRepository;
-    private final PaymentCancelRepository paymentCancelRepository;
-    private final TossPaymentClient tossPaymentClient;
+    private final PaymentClient paymentClient;
+    private final StoreClient storeClient;
 
     @Override
     @Transactional
     @ValidateStoreAndMenu
     public OrderResponseDto createOrder(OrderCreateRequestDto requestDto, Integer userId) {
-        
-        // AOP에서 검증한 엔티티를 ThreadLocal Context에서 가져옴 (DB 재조회 없음)
-        StoreEntity store = OrderValidationContext.getStore();
+
+        // AOP에서 검증한 데이터를 ThreadLocal Context에서 가져옴 (Feign 재호출 없음)
+        StoreResponse store = OrderValidationContext.getStoreResponse();
 
         String orderNumber = generateOrderNumber();
 
@@ -80,25 +70,25 @@ public class OrderServiceImpl implements OrderService {
                 .request(requestDto.getRequest())
                 .build();
 
-        // Menu 및 MenuOption도 Context에서 가져옴 (DB 재조회 없음) --> 기존 로직에서 성능 개선을 함. DB 조회 횟수가 줄어들음
+        // Menu도 Context에서 가져옴 (Feign 재호출 없음)
         for (OrderItemRequestDto itemDto : requestDto.getOrderItems()) {
-            MenuEntity menu = OrderValidationContext.getMenu(itemDto.getMenuId());
+            MenuResponse menu = OrderValidationContext.getMenuResponse(itemDto.getMenuId());
 
             OrderItemEntity orderItem = OrderItemEntity.builder()
                     .menuId(menu.getId())
                     .menuName(menu.getName())
-                    .menuPrice(java.math.BigDecimal.valueOf(menu.getPrice()))
+                    .menuPrice(BigDecimal.valueOf(menu.getPrice()))
                     .quantity(itemDto.getQuantity())
                     .build();
 
             for (OrderItemOptionRequestDto optionDto : itemDto.getOptions()) {
-                MenuOptionEntity menuOption = OrderValidationContext.getMenuOption(optionDto.getMenuOptionId());
+                MenuOptionResponse menuOption = OrderValidationContext.getMenuOptionResponse(optionDto.getMenuOptionId());
 
                 OrderItemOptionEntity orderItemOption = OrderItemOptionEntity.builder()
                         .menuOptionId(menuOption.getId())
                         .optionName(menuOption.getName())
                         .optionDetail(menuOption.getDetail())
-                        .optionPrice(java.math.BigDecimal.valueOf(menuOption.getPrice()))
+                        .optionPrice(BigDecimal.valueOf(menuOption.getPrice()))
                         .build();
 
                 orderItem.addOrderItemOption(orderItemOption);
@@ -307,7 +297,7 @@ public class OrderServiceImpl implements OrderService {
         // 주문 취소 처리
         order.cancelOrder(reason, CancelledBy.CUSTOMER);
 
-        // 결제 취소 처리
+        // 결제 취소 처리 (Payment 서비스 호출)
         cancelPaymentIfExists(orderId, "고객 주문 취소: " + reason);
 
         return OrderResponseDto.from(order);
@@ -322,59 +312,34 @@ public class OrderServiceImpl implements OrderService {
         // 주문 취소 처리
         order.cancelOrder(reason, CancelledBy.STORE);
 
-        // 결제 취소 처리
+        // 결제 취소 처리 (Payment 서비스 호출)
         cancelPaymentIfExists(orderId, "가게 주문 취소: " + reason);
 
         return OrderResponseDto.from(order);
     }
 
-    @PaymentCancelTrace
     private void cancelPaymentIfExists(UUID orderId, String cancelReason) {
-        // 해당 주문의 완료된 결제가 있는지 확인
-        Optional<PaymentEntity> paymentOpt = paymentRepository.findActivePaymentByOrderId(orderId);
-
-        if (paymentOpt.isEmpty()) {
-            log.info("주문 ID {}에 대한 결제 정보가 없습니다. 결제 취소를 건너뜁니다.", orderId);
-            return;
-        }
-
-        PaymentEntity payment = paymentOpt.get();
-
-        // 결제 키 조회
-        Optional<PaymentKeyEntity> paymentKeyOpt = paymentKeyRepository.findByPaymentId(payment.getId());
-
-        if (paymentKeyOpt.isEmpty()) {
-            log.warn("결제 ID {}에 대한 결제 키가 없습니다. 결제 취소를 건너뜁니다.", payment.getId());
-            return;
-        }
-
-        PaymentKeyEntity paymentKey = paymentKeyOpt.get();
-
         try {
-            // Toss 결제 취소 API 호출
+            // Payment 서비스에서 결제 정보 조회
+            if (!paymentClient.existsActivePaymentByOrderId(orderId)) {
+                log.info("주문 ID {}에 대한 결제 정보가 없습니다. 결제 취소를 건너뜁니다.", orderId);
+                return;
+            }
+
+            PaymentResponse payment = paymentClient.getPaymentByOrderId(orderId);
+
             log.info("결제 취소 요청 - 결제 ID: {}, 주문 ID: {}, 사유: {}", payment.getId(), orderId, cancelReason);
-            tossPaymentClient.cancelPayment(paymentKey.getPaymentKey(), cancelReason, 10);
+
+            // Payment 서비스에 결제 취소 요청
+            PaymentCancelRequest cancelRequest = PaymentCancelRequest.builder()
+                    .cancelReason(cancelReason)
+                    .build();
+            paymentClient.cancelPayment(payment.getId(), cancelRequest);
+
             log.info("결제 취소 완료 - 결제 ID: {}", payment.getId());
 
-            // PaymentHistory에 취소 기록 추가
-            PaymentHistoryEntity cancelHistory = PaymentHistoryEntity.builder()
-                    .paymentId(payment.getId())
-                    .status(PaymentHistoryEntity.PaymentStatus.CANCELLED)
-                    .build();
-            paymentHistoryRepository.save(cancelHistory);
-
-            // PaymentCancel 테이블에 취소 정보 저장
-            PaymentCancelEntity paymentCancel = PaymentCancelEntity.builder()
-                    .paymentHistoryId(cancelHistory.getId())
-                    .reason(cancelReason)
-                    .build();
-            paymentCancelRepository.save(paymentCancel);
-
-            log.info("결제 취소 정보 저장 완료 - PaymentHistory ID: {}, PaymentCancel ID: {}",
-                    cancelHistory.getId(), paymentCancel.getId());
-
         } catch (Exception e) {
-            log.error("결제 취소 실패 - 결제 ID: {}, 오류: {}", payment.getId(), e.getMessage(), e);
+            log.error("결제 취소 실패 - 주문 ID: {}, 오류: {}", orderId, e.getMessage(), e);
             throw new RuntimeException("결제 취소 중 오류가 발생했습니다: " + e.getMessage(), e);
         }
     }
@@ -384,7 +349,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponseDto completePayment(UUID orderId) {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
-        
+
         order.completePayment();
         return OrderResponseDto.from(order);
     }
@@ -394,7 +359,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponseDto failPayment(UUID orderId) {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
-        
+
         order.failPayment();
         return OrderResponseDto.from(order);
     }
@@ -417,13 +382,13 @@ public class OrderServiceImpl implements OrderService {
         return String.format("ORDER-%s-%04d", date, sequence);
     }
 
-    // userId로 storeId 조회 (OWNER, CHEF)
+    // userId로 storeId 조회 (OWNER, CHEF) - Store 서비스 호출
     private UUID getStoreIdByUserId(Integer userId) {
-        StoreUserEntity storeUser = storeUserRepository.findFirstByUserId(userId);
+        StoreUserResponse storeUser = storeClient.getStoreUserByUserId(userId);
         if (storeUser == null) {
             throw new IllegalArgumentException("소속된 매장이 없습니다.");
         }
-        return storeUser.getStore().getId();
+        return storeUser.getStoreId();
     }
 
     private List<OrderEntity> getBaseUserOrders(Integer userId, UUID storeId, LocalDateTime date) {
@@ -487,5 +452,36 @@ public class OrderServiceImpl implements OrderService {
 
     private boolean isInDateRange(OrderEntity order, LocalDateTime start, LocalDateTime end) {
         return order.getCreatedAt().isAfter(start) && order.getCreatedAt().isBefore(end);
+    }
+
+    @Override
+    public OrderStatsResponseDto getOrderStats() {
+        List<OrderEntity> allOrders = orderRepository.findAll();
+
+        long totalOrders = allOrders.size();
+
+        BigDecimal totalRevenue = allOrders.stream()
+                .flatMap(order -> order.getOrderItems().stream())
+                .map(item -> item.getMenuPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        Map<String, Long> statusCounts = allOrders.stream()
+                .collect(Collectors.groupingBy(
+                        order -> order.getOrderStatus().name(),
+                        Collectors.counting()
+                ));
+
+        List<OrderStatsResponseDto.OrderStatusStats> orderStatusStats = statusCounts.entrySet().stream()
+                .map(entry -> OrderStatsResponseDto.OrderStatusStats.builder()
+                        .status(entry.getKey())
+                        .count(entry.getValue())
+                        .build())
+                .collect(Collectors.toList());
+
+        return OrderStatsResponseDto.builder()
+                .totalOrders(totalOrders)
+                .totalRevenue(totalRevenue)
+                .orderStatusStats(orderStatusStats)
+                .build();
     }
 }

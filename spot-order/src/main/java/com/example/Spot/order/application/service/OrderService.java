@@ -1,4 +1,4 @@
-package com.example.spotorder.order.application.service;
+package com.example.Spot.order.application.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,6 +10,7 @@ import org.springframework.data.domain.Pageable;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 import com.example.Spot.order.presentation.dto.response.OrderResponseDto;
+import com.example.Spot.order.presentation.dto.response.OrderStatsResponseDto;
 
 public interface OrderService {
 
@@ -75,4 +76,7 @@ public interface OrderService {
     // 결제 관련 (Payment Service에서 호출)
     OrderResponseDto completePayment(UUID orderId);
     OrderResponseDto failPayment(UUID orderId);
+
+    // 통계 조회 (Admin용 - Feign Client에서 호출)
+    OrderStatsResponseDto getOrderStats();
 }

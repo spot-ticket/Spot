@@ -1,4 +1,4 @@
-package com.example.spotstore.store.infrastructure.aop;
+package com.example.Spot.store.infrastructure.aop;
 
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.user.domain.entity.UserEntity;

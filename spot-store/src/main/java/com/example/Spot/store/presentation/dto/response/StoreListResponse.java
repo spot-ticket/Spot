@@ -1,4 +1,4 @@
-package com.example.spotstore.store.presentation.dto.response;
+package com.example.Spot.store.presentation.dto.response;
 
 import java.util.List;
 import java.util.UUID;

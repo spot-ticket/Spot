@@ -1,4 +1,4 @@
-package com.example.spotstore.review.domain.entity;
+package com.example.Spot.review.domain.entity;
 
 import java.util.UUID;
 

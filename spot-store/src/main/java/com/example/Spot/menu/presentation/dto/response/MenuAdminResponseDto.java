@@ -1,4 +1,4 @@
-package com.example.spotstore.menu.presentation.dto.response;
+package com.example.Spot.menu.presentation.dto.response;
 
 import java.time.LocalDateTime;
 import java.util.Collections;

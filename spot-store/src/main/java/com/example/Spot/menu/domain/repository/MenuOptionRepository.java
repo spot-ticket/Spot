@@ -1,4 +1,4 @@
-package com.example.spotstore.menu.domain.repository;
+package com.example.Spot.menu.domain.repository;
 
 import java.util.List;
 import java.util.UUID;

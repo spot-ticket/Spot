@@ -1,4 +1,4 @@
-package com.example.spotstore.menu.application.service;
+package com.example.Spot.menu.application.service;
 
 import java.util.List;
 import java.util.UUID;

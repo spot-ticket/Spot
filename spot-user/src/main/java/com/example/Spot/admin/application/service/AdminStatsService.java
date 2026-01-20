@@ -1,74 +1,63 @@
 package com.example.Spot.admin.application.service;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.springframework.cache.annotation.Cacheable;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import com.example.Spot.admin.presentation.dto.response.AdminStatsResponseDto;
-import com.example.Spot.order.domain.entity.OrderEntity;
-import com.example.Spot.order.domain.repository.OrderRepository;
-import com.example.Spot.order.presentation.dto.response.OrderResponseDto;
-import com.example.Spot.store.domain.repository.StoreRepository;
+import com.example.Spot.global.feign.OrderClient;
+import com.example.Spot.global.feign.StoreClient;
+import com.example.Spot.global.feign.dto.OrderPageResponse;
+import com.example.Spot.global.feign.dto.OrderStatsResponse;
+import com.example.Spot.global.feign.dto.StorePageResponse;
 import com.example.Spot.user.domain.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
 public class AdminStatsService {
 
     private final UserRepository userRepository;
-    private final OrderRepository orderRepository;
-    private final StoreRepository storeRepository;
-
-    // private final RedissonClient redissonClient;
+    private final OrderClient orderClient;
+    private final StoreClient storeClient;
 
     @Cacheable(value = "admin_dashboard", key = "'stats'", cacheManager = "redisCacheManager")
     public AdminStatsResponseDto getStats() {
 
-        // RLock lock = redissonClient.getLock("admin_status_lock:" + orderId);
+        // User 서비스 내부 조회 (직접 접근 가능)
+        Long totalUsers = userRepository.count();
 
-        Long totalUsers  = userRepository.count();
-        Long totalOrders = orderRepository.count();
-        Long totalStores = storeRepository.count();
+        // Order 서비스 호출 (Feign)
+        OrderStatsResponse orderStats = orderClient.getOrderStats();
+        OrderPageResponse recentOrders = orderClient.getAllOrders(0, 10, "createdAt", "DESC");
 
-        List<OrderEntity> completedOrders = orderRepository.findAll();
-
-        BigDecimal totalRevenue = completedOrders.stream()
-                .flatMap(order -> order.getOrderItems().stream())
-                .map(item -> item.getMenuPrice().multiply(BigDecimal.valueOf(item.getQuantity())))
-                .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-        Pageable recentPageable = PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "createdAt"));
-        List<OrderResponseDto> recentOrders = orderRepository.findAll(recentPageable)
-                .stream()
-                .map(OrderResponseDto::from)
-                .collect(Collectors.toList());
+        // Store 서비스 호출 (Feign)
+        StorePageResponse storeResponse = storeClient.getAllStores(0, 1);
 
         List<AdminStatsResponseDto.UserGrowthDto> userGrowth = calculateUserGrowth(7);
 
-        List<AdminStatsResponseDto.OrderStatusStatsDto> orderStats = calculateOrderStatusStats();
+        List<AdminStatsResponseDto.OrderStatusStatsDto> orderStatusStats = orderStats.getOrderStatusStats()
+                .stream()
+                .map(stat -> AdminStatsResponseDto.OrderStatusStatsDto.builder()
+                        .status(stat.getStatus())
+                        .count(stat.getCount())
+                        .build())
+                .collect(Collectors.toList());
 
         return AdminStatsResponseDto.builder()
                 .totalUsers(totalUsers)
-                .totalOrders(totalOrders)
-                .totalStores(totalStores)
-                .totalRevenue(totalRevenue)
-                .recentOrders(recentOrders)
+                .totalOrders(orderStats.getTotalOrders())
+                .totalStores(storeResponse.getTotalElements())
+                .totalRevenue(orderStats.getTotalRevenue())
+                .recentOrders(recentOrders.getContent())
                 .userGrowth(userGrowth)
-                .orderStats(orderStats)
+                .orderStats(orderStatusStats)
                 .build();
     }
 
@@ -78,8 +67,6 @@ public class AdminStatsService {
 
         for (int i = days - 1; i >= 0; i--) {
             LocalDate date = now.minusDays(i).toLocalDate();
-
-            // 간단히 날짜별 사용자 수를 0으로 설정 (실제 구현 시 적절한 쿼리 필요)
             Long count = 0L;
             growth.add(AdminStatsResponseDto.UserGrowthDto.builder()
                     .date(date.toString())
@@ -88,21 +75,5 @@ public class AdminStatsService {
         }
 
         return growth;
-    }
-
-    private List<AdminStatsResponseDto.OrderStatusStatsDto> calculateOrderStatusStats() {
-        List<OrderEntity> orders = orderRepository.findAll();
-        Map<String, Long> statusCounts = orders.stream()
-                .collect(Collectors.groupingBy(
-                        order -> order.getOrderStatus().name(),
-                        Collectors.counting()
-                ));
-
-        return statusCounts.entrySet().stream()
-                .map(entry -> AdminStatsResponseDto.OrderStatusStatsDto.builder()
-                        .status(entry.getKey())
-                        .count(entry.getValue())
-                        .build())
-                .collect(Collectors.toList());
     }
 }

@@ -1,4 +1,4 @@
-package com.example.Spot.auth.security;
+package com.example.Spot.infra.auth.security;
 
 import java.io.IOException;
 import java.util.List;

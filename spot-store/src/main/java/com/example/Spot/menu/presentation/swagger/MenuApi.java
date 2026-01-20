@@ -1,4 +1,4 @@
-package com.example.spotstore.menu.presentation.swagger;
+package com.example.Spot.menu.presentation.swagger;
 
 import java.util.List;
 import java.util.UUID;

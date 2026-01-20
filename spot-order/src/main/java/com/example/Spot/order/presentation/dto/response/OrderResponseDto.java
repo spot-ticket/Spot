@@ -1,4 +1,4 @@
-package com.example.spotorder.order.presentation.dto.response;
+package com.example.Spot.order.presentation.dto.response;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;

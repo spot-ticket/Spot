@@ -1,4 +1,4 @@
-package com.example.spotstore.store.domain.repository;
+package com.example.Spot.store.domain.repository;
 
 import java.util.List;
 import java.util.Optional;

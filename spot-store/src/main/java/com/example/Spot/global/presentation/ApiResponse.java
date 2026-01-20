@@ -1,4 +1,4 @@
-package com.example.spotstore.global.presentation;
+package com.example.Spot.global.presentation;
 
 import com.example.Spot.global.presentation.code.BaseErrorCode;
 import com.example.Spot.global.presentation.code.BaseSuccessCode;

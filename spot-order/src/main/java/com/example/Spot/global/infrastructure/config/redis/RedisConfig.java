@@ -1,4 +1,4 @@
-package com.example.spotorder.global.infrastructure.config.redis;
+package com.example.Spot.global.infrastructure.config.redis;
 
 import java.time.Duration;
 

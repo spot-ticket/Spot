@@ -1,4 +1,4 @@
-package com.example.spotstore.menu.presentation.dto.request;
+package com.example.Spot.menu.presentation.dto.request;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;

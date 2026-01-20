@@ -1,4 +1,4 @@
-package com.example.spotstore.store.presentation.dto.request;
+package com.example.Spot.store.presentation.dto.request;
 
 import java.util.List;
 

@@ -1,4 +1,4 @@
-package com.example.spotorder.order.presentation.controller;
+package com.example.Spot.order.presentation.controller;
 
 import java.util.List;
 import java.util.UUID;

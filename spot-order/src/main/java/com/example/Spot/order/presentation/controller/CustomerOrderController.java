@@ -1,4 +1,4 @@
-package com.example.spotorder.order.presentation.controller;
+package com.example.Spot.order.presentation.controller;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;

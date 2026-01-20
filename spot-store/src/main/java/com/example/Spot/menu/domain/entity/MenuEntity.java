@@ -1,4 +1,4 @@
-package com.example.spotstore.menu.domain.entity;
+package com.example.Spot.menu.domain.entity;
 
 import java.util.ArrayList;
 import java.util.List;

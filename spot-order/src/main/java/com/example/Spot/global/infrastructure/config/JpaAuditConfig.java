@@ -1,4 +1,4 @@
-package com.example.spotorder.global.infrastructure.config;
+package com.example.Spot.global.infrastructure.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
