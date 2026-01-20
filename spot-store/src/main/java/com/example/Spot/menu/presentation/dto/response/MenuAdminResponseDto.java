@@ -5,10 +5,9 @@ import java.util.Collections;
 import java.util.List;
 import java.util.UUID;
 
+import com.example.Spot.global.common.Role;
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
-import com.example.Spot.menu.presentation.dto.response.MenuOptionAdminResponseDto;
-import com.example.Spot.global.common.Role;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)

@@ -2,12 +2,12 @@ package com.example.Spot.menu.application.service;
 
 import java.util.UUID;
 
+import com.example.Spot.global.common.Role;
 import com.example.Spot.menu.presentation.dto.request.CreateMenuOptionRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionHiddenRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionRequestDto;
 import com.example.Spot.menu.presentation.dto.response.CreateMenuOptionResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuOptionAdminResponseDto;
-import com.example.Spot.global.common.Role;
 
 public interface MenuOptionService {
 

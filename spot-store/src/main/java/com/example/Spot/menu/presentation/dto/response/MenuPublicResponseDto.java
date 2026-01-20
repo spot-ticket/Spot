@@ -6,7 +6,6 @@ import java.util.UUID;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
-import com.example.Spot.menu.presentation.dto.response.MenuOptionPublicResponseDto;
 
 public record MenuPublicResponseDto(
 

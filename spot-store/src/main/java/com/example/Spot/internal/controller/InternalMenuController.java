@@ -8,12 +8,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.Spot.internal.dto.InternalMenuResponse;
 import com.example.Spot.internal.dto.InternalMenuOptionResponse;
+import com.example.Spot.internal.dto.InternalMenuResponse;
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.entity.MenuOptionEntity;
-import com.example.Spot.menu.domain.repository.MenuRepository;
 import com.example.Spot.menu.domain.repository.MenuOptionRepository;
+import com.example.Spot.menu.domain.repository.MenuRepository;
 
 import lombok.RequiredArgsConstructor;
 

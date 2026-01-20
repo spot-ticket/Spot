@@ -1,16 +1,27 @@
 package com.example.Spot.store.domain.entity;
 
 import java.time.LocalTime;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 
 import com.example.Spot.global.common.UpdateBaseEntity;
 import com.example.Spot.review.domain.entity.ReviewEntity;
 import com.example.Spot.store.domain.StoreStatus;
-import com.example.Spot.store.domain.entity.CategoryEntity;
-import com.example.Spot.store.domain.entity.StoreCategoryEntity;
-import com.example.Spot.store.domain.entity.StoreUserEntity;
 
-import jakarta.persistence.*;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;

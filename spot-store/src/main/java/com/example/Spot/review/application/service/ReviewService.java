@@ -8,13 +8,13 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.Spot.global.feign.UserClient;
 import com.example.Spot.review.domain.entity.ReviewEntity;
 import com.example.Spot.review.domain.repository.ReviewRepository;
 import com.example.Spot.review.presentation.dto.request.ReviewCreateRequest;
 import com.example.Spot.review.presentation.dto.request.ReviewUpdateRequest;
 import com.example.Spot.review.presentation.dto.response.ReviewResponse;
 import com.example.Spot.review.presentation.dto.response.ReviewStatsResponse;
-import com.example.Spot.global.feign.UserClient;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.StoreRepository;
 

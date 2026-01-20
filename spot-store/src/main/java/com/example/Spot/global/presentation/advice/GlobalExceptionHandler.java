@@ -6,8 +6,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.HandlerMethodValidationException;
 
 import com.example.Spot.global.presentation.ApiResponse;
-import com.example.Spot.global.presentation.advice.DuplicateResourceException;
-import com.example.Spot.global.presentation.advice.ResourceNotFoundException;
 import com.example.Spot.global.presentation.code.GeneralErrorCode;
 
 import jakarta.validation.ConstraintViolationException;

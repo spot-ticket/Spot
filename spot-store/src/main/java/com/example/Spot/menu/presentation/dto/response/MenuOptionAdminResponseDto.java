@@ -3,8 +3,8 @@ package com.example.Spot.menu.presentation.dto.response;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
-import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.example.Spot.global.common.Role;
+import com.example.Spot.menu.domain.entity.MenuOptionEntity;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 @JsonInclude(JsonInclude.Include.NON_NULL)
