@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState, useEffect, Suspense } from 'react';
-import { useSearchParams } from 'next/navigation';
+import React, {Suspense, useEffect, useState} from 'react';
+import {useSearchParams} from 'next/navigation';
 import Link from 'next/link';
-import { storeApi } from '@/lib/stores';
-import { Input } from '@/components/ui/Input';
-import type { Store } from '@/types';
+import {storeApi} from '@/lib/stores';
+import {Input} from '@/components/ui/Input';
+import type {Store} from '@/types';
 
 function SearchContent() {
   const searchParams = useSearchParams();

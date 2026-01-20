@@ -1,11 +1,5 @@
-import { api } from './api';
-import type {
-  ApiResponse,
-  User,
-  OrderResponse,
-  Store,
-  PageResponse
-} from '@/types';
+import {api} from './api';
+import type {ApiResponse, OrderResponse, PageResponse, Store, User} from '@/types';
 
 // 관리자용 통계 타입
 export interface AdminStats {

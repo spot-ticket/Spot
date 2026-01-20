@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { ownerOrderApi } from '@/lib/orders';
-import type { OrderResponse } from '@/types';
+import {useEffect, useState} from 'react';
+import {ownerOrderApi} from '@/lib/orders';
+import type {OrderResponse} from '@/types';
 import Button from '@/components/ui/Button';
 
 interface OrderManagementProps {

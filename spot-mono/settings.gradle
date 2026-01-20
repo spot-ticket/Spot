@@ -1,0 +1,3 @@
+rootProject.name = 'Spot'
+
+include 'spt-user'

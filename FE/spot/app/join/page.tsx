@@ -1,12 +1,12 @@
 'use client';
 
-import React, { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import React, {useState} from 'react';
+import {useRouter} from 'next/navigation';
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { authApi } from '@/lib/auth';
-import type { Role } from '@/types';
+import {Button} from '@/components/ui/Button';
+import {Input} from '@/components/ui/Input';
+import {authApi} from '@/lib/auth';
+import type {Role} from '@/types';
 
 export default function JoinPage() {
   const router = useRouter();

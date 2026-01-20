@@ -2,9 +2,9 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/authStore';
-import { useCartStore } from '@/store/cartStore';
+import {useRouter} from 'next/navigation';
+import {useAuthStore} from '@/store/authStore';
+import {useCartStore} from '@/store/cartStore';
 
 export function Header() {
   const router = useRouter();

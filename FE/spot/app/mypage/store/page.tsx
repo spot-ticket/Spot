@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/store/authStore';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
+import React, {useEffect, useState} from 'react';
+import {useRouter} from 'next/navigation';
+import {useAuthStore} from '@/store/authStore';
+import {Button} from '@/components/ui/Button';
+import {Input} from '@/components/ui/Input';
 import axios from 'axios';
 
 interface Store {
