@@ -9,7 +9,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Spot.internal.dto.InternalOrderResponse;
-import com.example.Spot.order.domain.entity.OrderEntity;
 import com.example.Spot.order.domain.repository.OrderRepository;
 
 import lombok.RequiredArgsConstructor;
