@@ -195,7 +195,7 @@ class MenuOptionServiceTest {
             com.example.Spot.store.domain.entity.StoreUserEntity storeUser =
                     com.example.Spot.store.domain.entity.StoreUserEntity.builder()
                             .store(store)
-                            .user(owner)
+                            .userId(owner.getId())
                             .build();
             store.getUsers().add(storeUser);
         }

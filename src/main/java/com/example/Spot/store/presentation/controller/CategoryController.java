@@ -22,7 +22,6 @@ import com.example.Spot.store.application.service.CategoryService;
 import com.example.Spot.store.presentation.dto.request.CategoryRequestDTO;
 import com.example.Spot.store.presentation.dto.response.CategoryResponseDTO;
 import com.example.Spot.store.presentation.swagger.CategoryApi;
-import com.example.Spot.user.domain.entity.UserEntity;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -76,7 +75,7 @@ public class CategoryController implements CategoryApi {
     @DeleteMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
     public void delete(@PathVariable UUID categoryId, @AuthenticationPrincipal CustomUserDetails principal) {
-        UserEntity user = principal.getUserEntity();
-        categoryService.delete(categoryId, user);
+        Integer userId = principal.getUserId();
+        categoryService.delete(categoryId, userId);
     }
 }

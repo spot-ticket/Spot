@@ -150,7 +150,7 @@ public class OrderAspect {
 
         log.debug("[가게 소유권 검증] UserId: {}", userId);
 
-        StoreUserEntity storeUser = storeUserRepository.findFirstByUser_Id(userId);
+        StoreUserEntity storeUser = storeUserRepository.findFirstByUserId(userId);
         if (storeUser == null) {
             throw new IllegalArgumentException("소속된 매장이 없습니다.");
         }

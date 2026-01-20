@@ -1,22 +1,15 @@
 package com.example.Spot.user.domain.entity;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.example.Spot.global.common.UpdateBaseEntity;
-import com.example.Spot.store.domain.entity.StoreUserEntity;
 import com.example.Spot.user.domain.Role;
 
-import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -29,8 +22,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity extends UpdateBaseEntity {
 
-    @OneToMany(mappedBy = "user", cascade = CascadeType.PERSIST, fetch = FetchType.LAZY)
-    private final List<StoreUserEntity> staffs = new ArrayList<>();
+    // MSA 전환으로 StoreUserEntity와의 관계 제거 (userId로 참조)
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

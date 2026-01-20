@@ -423,7 +423,7 @@ public class OrderServiceImpl implements OrderService {
 
     // userId로 storeId 조회 (OWNER, CHEF)
     private UUID getStoreIdByUserId(Integer userId) {
-        StoreUserEntity storeUser = storeUserRepository.findFirstByUser_Id(userId);
+        StoreUserEntity storeUser = storeUserRepository.findFirstByUserId(userId);
         if (storeUser == null) {
             throw new IllegalArgumentException("소속된 매장이 없습니다.");
         }
