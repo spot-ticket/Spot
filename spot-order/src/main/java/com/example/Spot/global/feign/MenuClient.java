@@ -6,8 +6,8 @@ import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 
-import com.example.Spot.global.feign.dto.MenuResponse;
 import com.example.Spot.global.feign.dto.MenuOptionResponse;
+import com.example.Spot.global.feign.dto.MenuResponse;
 
 @FeignClient(name = "menu-service", url = "${feign.store.url}")
 public interface MenuClient {

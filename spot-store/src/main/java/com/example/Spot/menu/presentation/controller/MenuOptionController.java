@@ -37,7 +37,6 @@ public class MenuOptionController {
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
         Integer userId = principal.getUserId();
-        Role role = principal.getUserRole();
         CreateMenuOptionResponseDto data = menuOptionService.createMenuOption(storeId, menuId, userId, role, request);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);

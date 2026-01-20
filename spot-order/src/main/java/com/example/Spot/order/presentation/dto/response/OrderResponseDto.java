@@ -9,9 +9,12 @@ import java.util.stream.Collectors;
 import com.example.Spot.order.domain.entity.OrderEntity;
 import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
-import com.example.Spot.order.presentation.dto.response.OrderItemResponseDto;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder

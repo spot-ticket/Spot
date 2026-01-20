@@ -2,8 +2,6 @@ package com.example.Spot.global.presentation.code;
 
 import org.springframework.http.HttpStatus;
 
-import com.example.Spot.global.presentation.code.BaseErrorCode;
-
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 

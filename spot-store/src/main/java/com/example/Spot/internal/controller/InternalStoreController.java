@@ -47,4 +47,11 @@ public class InternalStoreController {
         }
         return ResponseEntity.ok(InternalStoreUserResponse.from(storeUser));
     }
+
+    @GetMapping("/store-users/exists")
+    public ResponseEntity<Boolean> existsByStoreIdAndUserId(
+            @RequestParam UUID storeId,
+            @RequestParam Integer userId) {
+        return ResponseEntity.ok(storeUserRepository.existsByStoreIdAndUserId(storeId, userId));
+    }
 }

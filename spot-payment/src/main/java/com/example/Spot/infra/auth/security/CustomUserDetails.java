@@ -1,4 +1,4 @@
-package com.example.Spot.auth.security;
+package com.example.Spot.infra.auth.security;
 
 public class CustomUserDetails {
 

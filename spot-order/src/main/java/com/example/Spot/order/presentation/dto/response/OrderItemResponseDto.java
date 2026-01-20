@@ -7,9 +7,12 @@ import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.example.Spot.order.domain.entity.OrderItemEntity;
-import com.example.Spot.order.presentation.dto.response.OrderItemOptionResponseDto;
 
-import lombok.*;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Builder

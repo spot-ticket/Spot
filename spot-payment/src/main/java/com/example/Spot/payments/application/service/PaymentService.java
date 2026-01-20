@@ -9,9 +9,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.Spot.global.feign.OrderClient;
+import com.example.Spot.global.feign.StoreClient;
+import com.example.Spot.global.feign.UserClient;
+import com.example.Spot.global.feign.dto.OrderResponse;
+import com.example.Spot.global.feign.dto.UserResponse;
 import com.example.Spot.global.presentation.advice.ResourceNotFoundException;
-import com.example.Spot.order.domain.entity.OrderEntity;
-import com.example.Spot.order.domain.repository.OrderRepository;
 import com.example.Spot.payments.domain.entity.PaymentEntity;
 import com.example.Spot.payments.domain.entity.PaymentHistoryEntity;
 import com.example.Spot.payments.domain.entity.PaymentKeyEntity;
@@ -28,9 +31,6 @@ import com.example.Spot.payments.infrastructure.aop.Ready;
 import com.example.Spot.payments.infrastructure.dto.TossPaymentResponse;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
-import com.example.Spot.store.domain.repository.StoreUserRepository;
-import com.example.Spot.user.domain.entity.UserEntity;
-import com.example.Spot.user.domain.repository.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -47,10 +47,12 @@ public class PaymentService {
   private final PaymentHistoryRepository paymentHistoryRepository;
   private final PaymentRetryRepository paymentRetryRepository;
   private final PaymentKeyRepository paymentKeyRepository;
-  private final UserRepository userRepository;
-  private final OrderRepository orderRepository;
-  private final StoreUserRepository storeUserRepository;
   private final UserBillingAuthRepository userBillingAuthRepository;
+
+  // Feign Clients
+  private final OrderClient orderClient;
+  private final UserClient userClient;
+  private final StoreClient storeClient;
 
 
   // 주문 수락 이후에 동작되어야 함
@@ -60,10 +62,12 @@ public class PaymentService {
   @Ready
   public UUID ready(PaymentRequestDto.Confirm request) {
 
-    UserEntity  user  = findUser(request.userId());
-    OrderEntity order = findOrder(request.orderId());
+    // User 서비스에서 사용자 존재 확인
+    validateUserExists(request.userId());
+    // Order 서비스에서 주문 존재 확인
+    validateOrderExists(request.orderId());
 
-    PaymentEntity payment = createPayment(user.getId(), order.getId(), request);
+    PaymentEntity payment = createPayment(request.userId(), request.orderId(), request);
 
     return payment.getId();
   }
@@ -161,16 +165,36 @@ public class PaymentService {
         return paymentRepository.save(payment);
     }
 
-  private OrderEntity findOrder(UUID orderId) {
-    return orderRepository
-        .findById(orderId)
-        .orElseThrow(() -> new ResourceNotFoundException("[PaymentService] 주문을 찾을 수 없습니다."));
+  // Order 서비스 호출 - 주문 조회
+  private OrderResponse findOrder(UUID orderId) {
+    OrderResponse order = orderClient.getOrderById(orderId);
+    if (order == null) {
+      throw new ResourceNotFoundException("[PaymentService] 주문을 찾을 수 없습니다.");
+    }
+    return order;
   }
 
-  private UserEntity findUser(Integer userId) {
-    return userRepository
-        .findById(userId)
-        .orElseThrow(() -> new ResourceNotFoundException("[PaymentService] 사용자를 찾을 수 없습니다."));
+  // Order 서비스 호출 - 주문 존재 확인
+  private void validateOrderExists(UUID orderId) {
+    if (!orderClient.existsById(orderId)) {
+      throw new ResourceNotFoundException("[PaymentService] 주문을 찾을 수 없습니다.");
+    }
+  }
+
+  // User 서비스 호출 - 사용자 조회
+  private UserResponse findUser(Integer userId) {
+    UserResponse user = userClient.getUserById(userId);
+    if (user == null) {
+      throw new ResourceNotFoundException("[PaymentService] 사용자를 찾을 수 없습니다.");
+    }
+    return user;
+  }
+
+  // User 서비스 호출 - 사용자 존재 확인
+  private void validateUserExists(Integer userId) {
+    if (!userClient.existsById(userId)) {
+      throw new ResourceNotFoundException("[PaymentService] 사용자를 찾을 수 없습니다.");
+    }
   }
 
   private PaymentEntity findPayment(UUID paymentId) {
@@ -267,18 +291,22 @@ public class PaymentService {
   // ************************ //
 
   public void validateOrderStoreOwnership(UUID orderId, Integer userId) {
-    OrderEntity order = findOrder(orderId);
+    // Order 서비스에서 주문 조회
+    OrderResponse order = findOrder(orderId);
     UUID storeId = order.getStoreId();
-    if (!storeUserRepository.existsByStoreIdAndUserId(storeId, userId)) {
+    // Store 서비스에서 소유권 검증
+    if (!storeClient.existsByStoreIdAndUserId(storeId, userId)) {
       throw new IllegalStateException("[PaymentService] 해당 주문의 가게에 대한 접근 권한이 없습니다.");
     }
   }
 
   public void validatePaymentStoreOwnership(UUID paymentId, Integer userId) {
     PaymentEntity payment = findPayment(paymentId);
-    OrderEntity order = findOrder(payment.getOrderId());
+    // Order 서비스에서 주문 조회
+    OrderResponse order = findOrder(payment.getOrderId());
     UUID storeId = order.getStoreId();
-    if (!storeUserRepository.existsByStoreIdAndUserId(storeId, userId)) {
+    // Store 서비스에서 소유권 검증
+    if (!storeClient.existsByStoreIdAndUserId(storeId, userId)) {
       throw new IllegalStateException("[PaymentService] 해당 결제의 가게에 대한 접근 권한이 없습니다.");
     }
   }
@@ -288,8 +316,8 @@ public class PaymentService {
   // *************** //
   @Transactional
   public PaymentResponseDto.SavedBillingKey saveBillingKey(PaymentRequestDto.SaveBillingKey request) {
-    // 사용자 존재 확인
-    findUser(request.userId());
+    // User 서비스에서 사용자 존재 확인
+    validateUserExists(request.userId());
 
     // 기존 빌링 인증 정보가 있다면 비활성화 (사용자당 하나의 활성 인증 정보만 유지)
     userBillingAuthRepository.findActiveByUserId(request.userId())

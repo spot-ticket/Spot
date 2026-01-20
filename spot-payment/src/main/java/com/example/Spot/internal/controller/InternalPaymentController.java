@@ -56,8 +56,9 @@ public class InternalPaymentController {
             @PathVariable UUID paymentId,
             @RequestBody InternalPaymentCancelRequest request) {
 
-        PaymentEntity payment = paymentRepository.findById(paymentId)
-                .orElseThrow(() -> new IllegalArgumentException("결제를 찾을 수 없습니다."));
+        if (!paymentRepository.existsById(paymentId)) {
+            throw new IllegalArgumentException("결제를 찾을 수 없습니다.");
+        }
 
         Optional<PaymentKeyEntity> paymentKeyOpt = paymentKeyRepository.findByPaymentId(paymentId);
 

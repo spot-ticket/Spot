@@ -1,6 +1,5 @@
 package com.example.Spot.global.infrastructure.config.security;
 
-import com.example.Spot.infra.auth.security.DevAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -11,10 +10,12 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
+import com.example.Spot.infra.auth.security.DevAuthFilter;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@Profile({"local","ci"})// CI도 local로 돌리면 됨
+@Profile({"local", "ci"}) // CI도 local로 돌리면 됨
 public class SecurityConfig {
 
     @Bean
