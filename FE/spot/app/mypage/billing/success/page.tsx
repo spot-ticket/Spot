@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState, Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { useAuthStore } from '@/store/authStore';
-import { paymentApi } from '@/lib/payments';
+import {Suspense, useEffect, useState} from 'react';
+import {useRouter, useSearchParams} from 'next/navigation';
+import {useAuthStore} from '@/store/authStore';
+import {paymentApi} from '@/lib/payments';
 
 function BillingSuccessContent() {
   const router = useRouter();

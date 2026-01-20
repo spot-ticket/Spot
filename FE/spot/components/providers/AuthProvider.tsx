@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect } from 'react';
-import { useTokenRefresh } from '@/lib/hooks/useTokenRefresh';
-import { useAuthStore } from '@/store/authStore';
-import { authApi } from '@/lib/auth';
+import {useEffect} from 'react';
+import {useTokenRefresh} from '@/lib/hooks/useTokenRefresh';
+import {useAuthStore} from '@/store/authStore';
+import {authApi} from '@/lib/auth';
 import Cookies from 'js-cookie';
 
 /**

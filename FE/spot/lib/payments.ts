@@ -1,5 +1,5 @@
 import api from './api';
-import type { ApiResponse, PaymentConfirmRequest, PaymentConfirmResponse } from '@/types';
+import type {ApiResponse, PaymentConfirmRequest, PaymentConfirmResponse} from '@/types';
 
 export const paymentApi = {
   // 결제 승인

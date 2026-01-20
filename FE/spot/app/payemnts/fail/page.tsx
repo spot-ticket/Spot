@@ -1,8 +1,8 @@
 'use client';
 
-import { Suspense } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { Button } from '@/components/ui/Button';
+import {Suspense} from 'react';
+import {useRouter, useSearchParams} from 'next/navigation';
+import {Button} from '@/components/ui/Button';
 
 function PaymentFailContent() {
   const router = useRouter();

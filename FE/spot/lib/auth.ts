@@ -1,7 +1,7 @@
 import axios from 'axios';
 import Cookies from 'js-cookie';
 import api from './api';
-import type { ApiResponse, LoginRequest, LoginResponse, JoinRequest, User } from '@/types';
+import type {ApiResponse, JoinRequest, LoginRequest, LoginResponse, User} from '@/types';
 
 export type Role = 'CUSTOMER' | 'OWNER' | 'CHEF' | 'MANAGER' | 'MASTER';
 

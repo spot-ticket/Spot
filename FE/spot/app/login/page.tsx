@@ -1,11 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, {useState} from 'react';
 import Link from 'next/link';
-import { Button } from '@/components/ui/Button';
-import { Input } from '@/components/ui/Input';
-import { authApi } from '@/lib/auth';
-import { useAuthStore } from '@/store/authStore';
+import {Button} from '@/components/ui/Button';
+import {Input} from '@/components/ui/Input';
+import {authApi} from '@/lib/auth';
+import {useAuthStore} from '@/store/authStore';
 
 export type Role = 'CUSTOMER' | 'OWNER' | 'CHEF' | 'MANAGER' | 'MASTER';
 

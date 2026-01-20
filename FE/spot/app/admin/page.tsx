@@ -1,15 +1,9 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { useAuth } from '@/store/authStore';
-import {
-  adminUserApi,
-  adminOrderApi,
-  adminStoreApi,
-  adminStatsApi,
-  type AdminStats,
-} from '@/lib/admin';
-import type { User, OrderResponse, Store, PageResponse } from '@/types';
+import {useEffect, useState} from 'react';
+import {useAuth} from '@/store/authStore';
+import {adminOrderApi, type AdminStats, adminStatsApi, adminStoreApi, adminUserApi,} from '@/lib/admin';
+import type {OrderResponse, PageResponse, Store, User} from '@/types';
 import Button from '@/components/ui/Button';
 
 type TabType = 'dashboard' | 'users' | 'orders' | 'stores';

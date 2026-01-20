@@ -1,5 +1,5 @@
 import api from './api';
-import type { ApiResponse, Menu, MenuOption } from '@/types';
+import type {ApiResponse, Menu, MenuOption} from '@/types';
 
 export interface CreateMenuRequest {
   name: string;

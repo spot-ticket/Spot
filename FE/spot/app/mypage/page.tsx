@@ -1,10 +1,9 @@
 'use client';
 
-import React, { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import React, {useEffect} from 'react';
+import {useRouter} from 'next/navigation';
 import Link from 'next/link';
-import { useAuthStore } from '@/store/authStore';
-import { Button } from '@/components/ui/Button';
+import {useAuthStore} from '@/store/authStore';
 
 export default function MyPage() {
   const router = useRouter();

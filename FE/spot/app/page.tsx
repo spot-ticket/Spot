@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, {useEffect, useState} from 'react';
 import Link from 'next/link';
-import { storeApi } from '@/lib/stores';
-import type { Store, Category } from '@/types';
+import {storeApi} from '@/lib/stores';
+import type {Category, Store} from '@/types';
 
 export default function HomePage() {
   const [stores, setStores] = useState<Store[]>([]);

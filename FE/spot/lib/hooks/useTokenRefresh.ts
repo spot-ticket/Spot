@@ -1,8 +1,8 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
-import { authApi } from '../auth';
-import { useAuthStore } from '@/store/authStore';
+import {useEffect, useRef} from 'react';
+import {authApi} from '../auth';
+import {useAuthStore} from '@/store/authStore';
 
 /**
  * 10분마다 토큰을 체크하고 필요하면 자동으로 갱신하는 Hook
