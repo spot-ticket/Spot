@@ -23,7 +23,7 @@ import com.example.Spot.menu.presentation.dto.response.MenuPublicResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuResponseDto;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.StoreRepository;
-import com.example.Spot.user.domain.Role;
+import com.example.Spot.global.common.Role;
 
 import lombok.RequiredArgsConstructor;
 

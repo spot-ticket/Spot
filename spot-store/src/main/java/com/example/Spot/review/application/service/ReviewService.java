@@ -14,10 +14,9 @@ import com.example.Spot.review.presentation.dto.request.ReviewCreateRequest;
 import com.example.Spot.review.presentation.dto.request.ReviewUpdateRequest;
 import com.example.Spot.review.presentation.dto.response.ReviewResponse;
 import com.example.Spot.review.presentation.dto.response.ReviewStatsResponse;
+import com.example.Spot.global.feign.UserClient;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.StoreRepository;
-import com.example.Spot.user.domain.entity.UserEntity;
-import com.example.Spot.user.domain.repository.UserRepository;
 
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -29,7 +28,7 @@ public class ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final StoreRepository storeRepository;
-    private final UserRepository userRepository;
+    private final UserClient userClient;
 
     @Transactional
     public ReviewResponse createReview(ReviewCreateRequest request, Integer userId) {
@@ -37,14 +36,13 @@ public class ReviewService {
         StoreEntity store = storeRepository.findByIdAndIsDeletedFalse(request.storeId())
                 .orElseThrow(() -> new EntityNotFoundException("가게를 찾을 수 없습니다."));
 
-        // 사용자 존재 확인
-        UserEntity user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException("사용자를 찾을 수 없습니다."));
+        // 사용자 존재 확인 (Feign Client로 검증)
+        userClient.getUser(userId);
 
         // 리뷰 생성
         ReviewEntity review = ReviewEntity.builder()
                 .store(store)
-                .user(user)
+                .userId(userId)
                 .rating(request.rating())
                 .content(request.content())
                 .createdBy(userId)
@@ -77,7 +75,7 @@ public class ReviewService {
                 .orElseThrow(() -> new EntityNotFoundException("리뷰를 찾을 수 없습니다."));
 
         // 작성자 본인만 수정 가능
-        if (!review.getUser().getId().equals(userId)) {
+        if (!review.getUserId().equals(userId)) {
             throw new AccessDeniedException("본인이 작성한 리뷰만 수정할 수 있습니다.");
         }
 
@@ -93,7 +91,7 @@ public class ReviewService {
                 .orElseThrow(() -> new EntityNotFoundException("리뷰를 찾을 수 없습니다."));
 
         // 작성자 본인 또는 관리자만 삭제 가능
-        if (!isAdmin && !review.getUser().getId().equals(userId)) {
+        if (!isAdmin && !review.getUserId().equals(userId)) {
             throw new AccessDeniedException("본인이 작성한 리뷰만 삭제할 수 있습니다.");
         }
 

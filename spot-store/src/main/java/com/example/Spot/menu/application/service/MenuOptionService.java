@@ -7,7 +7,7 @@ import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionHiddenRequ
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionRequestDto;
 import com.example.Spot.menu.presentation.dto.response.CreateMenuOptionResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuOptionAdminResponseDto;
-import com.example.Spot.user.domain.Role;
+import com.example.Spot.global.common.Role;
 
 public interface MenuOptionService {
 

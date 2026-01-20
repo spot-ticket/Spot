@@ -1,4 +1,6 @@
-package com.example.Spot.auth.security;
+package com.example.Spot.infra.auth.security;
+
+import com.example.Spot.global.common.Role;
 
 public class CustomUserDetails {
 
@@ -16,5 +18,9 @@ public class CustomUserDetails {
 
     public String getRole() {
         return role;
+    }
+
+    public Role getUserRole() {
+        return Role.valueOf(role);
     }
 }

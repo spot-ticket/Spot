@@ -21,7 +21,6 @@ public class InternalStoreResponse {
     private String addressDetail;
     private String phoneNumber;
     private String status;
-    private Integer ownerId;
     private boolean isDeleted;
 
     public static InternalStoreResponse from(StoreEntity store) {
@@ -32,7 +31,6 @@ public class InternalStoreResponse {
                 .addressDetail(store.getAddressDetail())
                 .phoneNumber(store.getPhoneNumber())
                 .status(store.getStatus().name())
-                .ownerId(store.getOwnerId())
                 .isDeleted(store.getIsDeleted())
                 .build();
     }

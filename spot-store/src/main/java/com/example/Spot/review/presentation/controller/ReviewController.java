@@ -9,6 +9,15 @@ import org.springframework.data.domain.Sort;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Spot.global.presentation.ApiResponse;
 import com.example.Spot.global.presentation.code.GeneralSuccessCode;
@@ -18,7 +27,6 @@ import com.example.Spot.review.presentation.dto.request.ReviewCreateRequest;
 import com.example.Spot.review.presentation.dto.request.ReviewUpdateRequest;
 import com.example.Spot.review.presentation.dto.response.ReviewResponse;
 import com.example.Spot.review.presentation.dto.response.ReviewStatsResponse;
-import com.example.Spot.user.domain.Role;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -93,7 +101,8 @@ public class ReviewController {
             @PathVariable UUID reviewId,
             @AuthenticationPrincipal CustomUserDetails principal) {
 
-        boolean isAdmin = principal.getUserRole() == Role.MASTER || principal.getUserRole() == Role.MANAGER;
+        String role = principal.getRole();
+        boolean isAdmin = "MASTER".equals(role) || "MANAGER".equals(role);
         reviewService.deleteReview(reviewId, principal.getUserId(), isAdmin);
 
         return ResponseEntity.ok(

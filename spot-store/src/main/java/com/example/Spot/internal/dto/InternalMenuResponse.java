@@ -32,7 +32,7 @@ public class InternalMenuResponse {
                 .description(menu.getDescription())
                 .price(menu.getPrice())
                 .imageUrl(menu.getImageUrl())
-                .isHidden(menu.isHidden())
+                .isHidden(menu.getIsHidden())
                 .isDeleted(menu.getIsDeleted())
                 .build();
     }

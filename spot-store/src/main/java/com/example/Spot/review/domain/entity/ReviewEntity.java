@@ -4,7 +4,16 @@ import java.util.UUID;
 
 import com.example.Spot.global.common.UpdateBaseEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
-import com.example.Spot.user.domain.entity.UserEntity;
+
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -25,9 +34,8 @@ public class ReviewEntity extends UpdateBaseEntity {
     @JoinColumn(name = "store_id", nullable = false)
     private StoreEntity store;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false)
-    private UserEntity user;
+    @Column(name = "user_id", nullable = false)
+    private Integer userId;
 
     @Column(nullable = false)
     private Integer rating; // 1-5 별점
@@ -38,14 +46,14 @@ public class ReviewEntity extends UpdateBaseEntity {
     @Builder
     public ReviewEntity(
             StoreEntity store,
-            UserEntity user,
+            Integer userId,
             Integer rating,
             String content,
             Integer createdBy
     ) {
         super(createdBy);
         this.store = store;
-        this.user = user;
+        this.userId = userId;
         this.rating = rating;
         this.content = content;
     }

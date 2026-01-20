@@ -1,6 +1,6 @@
 package com.example.Spot.global.infrastructure.config.security;
 
-import com.example.Spot.auth.security.DevAuthFilter;
+import com.example.Spot.infra.auth.security.DevAuthFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
@@ -30,7 +30,7 @@ public class SecurityConfig {
                         "/", "/swagger-ui/**", "/v3/api-docs/**",
                         "/api/stores/**", "/api/categories/**"
                 ).permitAll()
-                .anyRequest().authentaicated()
+                .anyRequest().authenticated()
         );
 
         // 개발/CI용: 임시 principal 주입 (예: OWNER)

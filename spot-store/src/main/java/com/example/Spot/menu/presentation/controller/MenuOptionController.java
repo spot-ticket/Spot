@@ -15,7 +15,7 @@ import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionHiddenRequ
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionRequestDto;
 import com.example.Spot.menu.presentation.dto.response.CreateMenuOptionResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuOptionAdminResponseDto;
-import com.example.Spot.user.domain.Role;
+import com.example.Spot.global.common.Role;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +37,8 @@ public class MenuOptionController {
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
         Integer userId = principal.getUserId();
-        CreateMenuOptionResponseDto data = menuOptionService.createMenuOption(storeId, menuId, userId, role, request);
+        Role userRole = principal.getUserRole();
+        CreateMenuOptionResponseDto data = menuOptionService.createMenuOption(storeId, menuId, userId, userRole, request);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
     }
@@ -53,13 +54,12 @@ public class MenuOptionController {
             @Valid @RequestBody UpdateMenuOptionRequestDto request
     ) {
         Integer userId = principal.getUserId();
-        Role role = principal.getUserRole();
-        MenuOptionAdminResponseDto data = menuOptionService.updateMenuOption(storeId, menuId, optionId, userId, role, request);
+        Role userRole = principal.getUserRole();
+        MenuOptionAdminResponseDto data = menuOptionService.updateMenuOption(storeId, menuId, optionId, userId, userRole, request);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
     }
 
-    // 메뉴 옵션 삭제
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
     @DeleteMapping("/{optionId}")
     public ApiResponse<String> deleteMenuOption(
@@ -69,13 +69,12 @@ public class MenuOptionController {
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
         Integer userId = principal.getUserId();
-        Role role = principal.getUserRole();
-        menuOptionService.deleteMenuOption(storeId, menuId, optionId, userId, role);
+        Role userRole = principal.getUserRole();
+        menuOptionService.deleteMenuOption(storeId, menuId, optionId, userId, userRole);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, "해당 옵션이 삭제되었습니다.");
     }
 
-    // 메뉴 옵션 숨김
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
     @PatchMapping("/{optionId}/hide")
     public ApiResponse<String> hiddenMenuOption(

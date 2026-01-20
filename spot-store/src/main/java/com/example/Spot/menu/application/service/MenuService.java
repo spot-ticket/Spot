@@ -5,13 +5,13 @@ import java.util.UUID;
 
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.Spot.global.common.Role;
 import com.example.Spot.menu.presentation.dto.request.CreateMenuRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuHiddenRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuRequestDto;
 import com.example.Spot.menu.presentation.dto.response.CreateMenuResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuAdminResponseDto;
 import com.example.Spot.menu.presentation.dto.response.MenuResponseDto;
-import com.example.Spot.user.domain.Role;
 
 public interface MenuService {
 

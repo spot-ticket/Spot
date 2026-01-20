@@ -18,14 +18,12 @@ public class InternalStoreUserResponse {
     private UUID id;
     private UUID storeId;
     private Integer userId;
-    private String role;
 
     public static InternalStoreUserResponse from(StoreUserEntity storeUser) {
         return InternalStoreUserResponse.builder()
                 .id(storeUser.getId())
                 .storeId(storeUser.getStore().getId())
                 .userId(storeUser.getUserId())
-                .role(storeUser.getRole().name())
                 .build();
     }
 }

@@ -29,6 +29,8 @@ import lombok.RequiredArgsConstructor;
 @RequestMapping("/api/stores")
 @RequiredArgsConstructor
 public class StoreController implements StoreApi {
+
+    // Store는 Master, Manager 인지 Owner인지 확인하는 강한 결합을 가지고 있음.
     
     private final StoreService storeService;
 
@@ -73,9 +75,7 @@ public class StoreController implements StoreApi {
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
         Integer userId = principal != null ? principal.getUserId() : null;
-        boolean isAdmin = principal != null && principal.getUserEntity() != null
-                && (principal.getUserEntity().getRole() == com.example.Spot.user.domain.Role.MASTER
-                || principal.getUserEntity().getRole() == com.example.Spot.user.domain.Role.MANAGER);
+        boolean isAdmin = principal.getRole() == "MANAGER" || principal.getRole() == "MASTER";
         return ResponseEntity.ok(storeService.getStoreDetails(storeId, userId, isAdmin));
     }
 
@@ -86,9 +86,7 @@ public class StoreController implements StoreApi {
             @RequestParam(defaultValue = "50") int size,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        boolean isAdmin = principal != null && principal.getUserEntity() != null
-                && (principal.getUserEntity().getRole() == com.example.Spot.user.domain.Role.MASTER
-                || principal.getUserEntity().getRole() == com.example.Spot.user.domain.Role.MANAGER);
+        boolean isAdmin = principal.getRole() == "MANAGER" || principal.getRole() == "MASTER";
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(storeService.getAllStores(isAdmin, pageable));
     }
@@ -127,8 +125,7 @@ public class StoreController implements StoreApi {
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
         Integer userId = principal.getUserId();
-        boolean isAdmin = principal.getUserEntity().getRole() == com.example.Spot.user.domain.Role.MASTER
-                || principal.getUserEntity().getRole() == com.example.Spot.user.domain.Role.MANAGER;
+        boolean isAdmin = principal.getRole() == "MANAGER" || principal.getRole() == "MASTER";
         storeService.deleteStore(storeId, userId, isAdmin);
         return ResponseEntity.noContent().build();
     }
@@ -153,9 +150,7 @@ public class StoreController implements StoreApi {
             @RequestParam(defaultValue = "50") int size,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        boolean isAdmin = principal != null && principal.getUserEntity() != null
-                && (principal.getUserEntity().getRole() == com.example.Spot.user.domain.Role.MASTER
-                || principal.getUserEntity().getRole() == com.example.Spot.user.domain.Role.MANAGER);
+        boolean isAdmin = principal.getRole() == "MANAGER" || principal.getRole() == "MASTER";
         Pageable pageable = PageRequest.of(page, size);
         return ResponseEntity.ok(storeService.searchStoresByName(keyword, isAdmin, pageable));
     }
