@@ -1,6 +1,5 @@
 package com.example.Spot.user.domain.entity;
 
-
 import com.example.Spot.global.common.UpdateBaseEntity;
 import com.example.Spot.user.domain.Role;
 
@@ -22,6 +21,8 @@ import lombok.NoArgsConstructor;
 @Table(name = "p_user")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity extends UpdateBaseEntity {
+
+    // MSA 전환으로 StoreUserEntity와의 관계 제거 (userId로 참조)
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

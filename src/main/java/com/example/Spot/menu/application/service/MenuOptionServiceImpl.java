@@ -153,7 +153,7 @@ public class MenuOptionServiceImpl implements MenuOptionService {
             // StoreEntity가 가지고 있는 User 목록(store.getUsers())을 순회하며
             // 현재 로그인한 userId와 일치하는지 확인
             boolean isMyStore = store.getUsers().stream()
-                    .anyMatch(storeUser -> storeUser.getUser().getId().equals(userId));
+                    .anyMatch(storeUser -> storeUser.getUserId().equals(userId));
 
             if (!isMyStore) {
                 throw new AccessDeniedException(errorMessage);

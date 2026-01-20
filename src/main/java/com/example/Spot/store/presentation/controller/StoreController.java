@@ -81,7 +81,10 @@ public class StoreController implements StoreApi {
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
         Integer userId = principal != null ? principal.getUserId() : null;
-        return ResponseEntity.ok(storeService.getStoreDetails(storeId, userId));
+        boolean isAdmin = principal != null && principal.getUserEntity() != null
+                && (principal.getUserEntity().getRole() == com.example.Spot.user.domain.Role.MASTER
+                || principal.getUserEntity().getRole() == com.example.Spot.user.domain.Role.MANAGER);
+        return ResponseEntity.ok(storeService.getStoreDetails(storeId, userId, isAdmin));
     }
 
     @Override
@@ -91,9 +94,11 @@ public class StoreController implements StoreApi {
             @RequestParam(defaultValue = "50") int size,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        Integer userId = principal != null ? principal.getUserId() : null;
+        boolean isAdmin = principal != null && principal.getUserEntity() != null
+                && (principal.getUserEntity().getRole() == com.example.Spot.user.domain.Role.MASTER
+                || principal.getUserEntity().getRole() == com.example.Spot.user.domain.Role.MANAGER);
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(storeService.getAllStores(userId, pageable));
+        return ResponseEntity.ok(storeService.getAllStores(isAdmin, pageable));
     }
     
     @Override
@@ -130,7 +135,9 @@ public class StoreController implements StoreApi {
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
         Integer userId = principal.getUserId();
-        storeService.deleteStore(storeId, userId);
+        boolean isAdmin = principal.getUserEntity().getRole() == com.example.Spot.user.domain.Role.MASTER
+                || principal.getUserEntity().getRole() == com.example.Spot.user.domain.Role.MANAGER;
+        storeService.deleteStore(storeId, userId, isAdmin);
         return ResponseEntity.noContent().build();
     }
 
@@ -154,8 +161,10 @@ public class StoreController implements StoreApi {
             @RequestParam(defaultValue = "50") int size,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        Integer userId = principal != null ? principal.getUserId() : null;
+        boolean isAdmin = principal != null && principal.getUserEntity() != null
+                && (principal.getUserEntity().getRole() == com.example.Spot.user.domain.Role.MASTER
+                || principal.getUserEntity().getRole() == com.example.Spot.user.domain.Role.MANAGER);
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(storeService.searchStoresByName(keyword, userId, pageable));
+        return ResponseEntity.ok(storeService.searchStoresByName(keyword, isAdmin, pageable));
     }
 }

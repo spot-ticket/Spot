@@ -10,7 +10,6 @@ import java.util.UUID;
 import com.example.Spot.global.common.UpdateBaseEntity;
 import com.example.Spot.review.domain.entity.ReviewEntity;
 import com.example.Spot.store.domain.StoreStatus;
-import com.example.Spot.user.domain.entity.UserEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -104,10 +103,10 @@ public class StoreEntity extends UpdateBaseEntity {
         this.status = StoreStatus.PENDING;
     }
 
-    public void addStoreUser(UserEntity user) {
+    public void addStoreUser(Integer userId) {
         StoreUserEntity storeUser = StoreUserEntity.builder()
                 .store(this) // 현재 매장
-                .user(user) // 전달받은 유저
+                .userId(userId) // 전달받은 유저 ID
                 .build();
         this.users.add(storeUser);
     }

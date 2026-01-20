@@ -63,15 +63,13 @@ public class StoreServiceTest {
     @Test
     void 관리자는_서비스_지역이_아니어도_조회가_가능하다() {
         // 1. Given
-        UserEntity master = createUser(masterId, Role.MASTER);
         StoreEntity store = createStore(testStoreId, "지방 매장", "강원도 강릉시");
 
-        given(userRepository.findById(masterId)).willReturn(Optional.of(master));
         given(storeRepository.findByIdWithDetails(testStoreId, true)).willReturn(Optional.of(store));
-        
-        // 2. When
-        StoreDetailResponse result = storeService.getStoreDetails(testStoreId, masterId);
-        
+
+        // 2. When (MSA 전환으로 isAdmin을 직접 전달)
+        StoreDetailResponse result = storeService.getStoreDetails(testStoreId, masterId, true);
+
         // 3. then
         assertThat(result.name()).isEqualTo("지방 매장");
         verify(storeRepository).findByIdWithDetails(testStoreId, true);
@@ -80,14 +78,12 @@ public class StoreServiceTest {
     @Test
     void 일반_유저가_타_지역_매장_조회_시_예외가_발생한다() {
         // 1. Given
-        UserEntity customer = createUser(3, Role.CUSTOMER);
         StoreEntity store = createStore(testStoreId, "지방 매장", "강원도 강릉시");
 
-        given(userRepository.findById(3)).willReturn(Optional.of(customer));
         given(storeRepository.findByIdWithDetails(testStoreId, false)).willReturn(Optional.of(store));
-        
-        // 2. When & Then
-        assertThatThrownBy(() -> storeService.getStoreDetails(testStoreId, 3))
+
+        // 2. When & Then (MSA 전환으로 isAdmin을 직접 전달)
+        assertThatThrownBy(() -> storeService.getStoreDetails(testStoreId, 3, false))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessageContaining("서비스가 제공되지 않는 지역");
     }
@@ -95,35 +91,29 @@ public class StoreServiceTest {
     @Test
     void 소유주가_본인_매장을_삭제하면_성공한다() {
         // 1. Given
-        UserEntity owner = createUser(ownerId, Role.OWNER);
         StoreEntity store = createStore(testStoreId, "내 가게", "서울시");
-        store.addStoreUser(owner);
+        store.addStoreUser(ownerId);
 
-        given(userRepository.findById(ownerId)).willReturn(Optional.of(owner));
-        given(storeRepository.findByIdWithDetails(testStoreId, false)).willReturn(Optional.of(store));
-        
-        // 2. When
-        storeService.deleteStore(testStoreId, ownerId);
-        
+        given(storeRepository.findByIdWithDetailsForOwner(testStoreId)).willReturn(Optional.of(store));
+
+        // 2. When (MSA 전환으로 isAdmin을 직접 전달)
+        storeService.deleteStore(testStoreId, ownerId, false);
+
         // 3. Then
         assertThat(store.getIsDeleted()).isTrue();
-        verify(storeRepository).findByIdWithDetails(testStoreId, false);
+        verify(storeRepository).findByIdWithDetailsForOwner(testStoreId);
     }
     
     @Test
     void 소유주가_아닌_유저가_삭제하면_예외가_발생한다() {
         // 1. Given
-        UserEntity otherOwner = createUser(99, Role.OWNER);
-        UserEntity realOwner = createUser(ownerId, Role.OWNER);
-
         StoreEntity store = createStore(testStoreId, "진짜 사장님 가게", "서울시");
-        store.addStoreUser(realOwner);
+        store.addStoreUser(ownerId);
 
-        given(userRepository.findById(99)).willReturn(Optional.of(otherOwner));
-        given(storeRepository.findByIdWithDetails(testStoreId, false)).willReturn(Optional.of(store));
-        
-        // 2. When & Then
-        assertThatThrownBy(() -> storeService.deleteStore(testStoreId, 99))
+        given(storeRepository.findByIdWithDetailsForOwner(testStoreId)).willReturn(Optional.of(store));
+
+        // 2. When & Then (MSA 전환으로 isAdmin을 직접 전달)
+        assertThatThrownBy(() -> storeService.deleteStore(testStoreId, 99, false))
                 .isInstanceOf(AccessDeniedException.class)
                 .hasMessageContaining("관리 권한이 없습니다.");
     }
@@ -160,21 +150,17 @@ public class StoreServiceTest {
     @Test
     void 전체조회_일반유저는_서비스지역_매장만_볼_수_있다() {
         // 1. Given
-        Integer userId = 10;
-        UserEntity customer = createUser(userId, Role.CUSTOMER);
-        
         // 서울 매장과 부산 매장 준비
         StoreEntity seoulStore = createStore(UUID.randomUUID(), "서울가게", "서울시 종로구");
         StoreEntity busanStore = createStore(UUID.randomUUID(), "부산가게", "부산시 해운대구");
 
         Page<StoreEntity> storePage = new PageImpl<>(List.of(seoulStore, busanStore));
 
-        given(userRepository.findById(userId)).willReturn(Optional.of(customer));
         given(storeRepository.findAllByRole(false, PageRequest.of(0, 10))).willReturn(storePage);
-        
-        // 2. When
-        Page<StoreListResponse> result = storeService.getAllStores(userId, PageRequest.of(0, 10));
-        
+
+        // 2. When (MSA 전환으로 isAdmin을 직접 전달)
+        Page<StoreListResponse> result = storeService.getAllStores(false, PageRequest.of(0, 10));
+
         // 3. Then
         assertThat(result.getContent().size()).isEqualTo(1);
         assertThat(result.getContent().get(0).name()).isEqualTo("서울가게");

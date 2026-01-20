@@ -19,9 +19,8 @@ import com.example.Spot.order.domain.enums.OrderStatus;
 public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
     @Query("SELECT DISTINCT o FROM OrderEntity o " +
-            "LEFT JOIN FETCH o.store s " +
             "LEFT JOIN FETCH o.orderItems oi " +
-            "LEFT JOIN FETCH oi.menu " +
+            "LEFT JOIN FETCH oi.orderItemOptions " +
             "WHERE o.id = :orderId")
     Optional<OrderEntity> findByIdWithDetails(@Param("orderId") UUID orderId);
 
@@ -33,12 +32,12 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
     List<OrderEntity> findByUserId(@Param("userId") Integer userId);
 
     @Query("SELECT o FROM OrderEntity o " +
-            "WHERE o.store.id = :storeId " +
+            "WHERE o.storeId = :storeId " +
             "ORDER BY o.createdAt DESC")
     List<OrderEntity> findByStoreId(@Param("storeId") UUID storeId);
 
     @Query("SELECT o FROM OrderEntity o " +
-            "WHERE o.store.id = :storeId " +
+            "WHERE o.storeId = :storeId " +
             "AND o.createdAt BETWEEN :startDate AND :endDate " +
             "ORDER BY o.createdAt DESC")
     List<OrderEntity> findByStoreIdAndDateRange(
@@ -56,7 +55,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
             @Param("endDate") LocalDateTime endDate);
 
     @Query("SELECT o FROM OrderEntity o " +
-            "WHERE o.store.id = :storeId " +
+            "WHERE o.storeId = :storeId " +
             "AND o.userId = :userId " +
             "ORDER BY o.createdAt DESC")
     List<OrderEntity> findByStoreIdAndUserId(
@@ -64,7 +63,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
             @Param("userId") Integer userId);
 
     @Query("SELECT o FROM OrderEntity o " +
-            "WHERE o.store.id = :storeId " +
+            "WHERE o.storeId = :storeId " +
             "AND o.orderStatus IN ('PENDING', 'ACCEPTED', 'COOKING', 'READY') " +
             "ORDER BY o.createdAt ASC")
     List<OrderEntity> findActiveOrdersByStoreId(@Param("storeId") UUID storeId);
@@ -76,7 +75,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
     List<OrderEntity> findActiveOrdersByUserId(@Param("userId") Integer userId);
 
     @Query("SELECT o FROM OrderEntity o " +
-            "WHERE o.store.id = :storeId " +
+            "WHERE o.storeId = :storeId " +
             "AND o.createdAt >= :startOfDay AND o.createdAt < :endOfDay " +
             "AND o.orderStatus IN ('ACCEPTED', 'COOKING', 'READY') " +
             "ORDER BY o.acceptedAt ASC")
@@ -98,12 +97,12 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
             @Param("endDate") LocalDateTime endDate);
 
     @Query("SELECT o FROM OrderEntity o " +
-            "WHERE o.store.id = :storeId " +
+            "WHERE o.storeId = :storeId " +
             "ORDER BY o.createdAt DESC")
     List<OrderEntity> findAllOrdersByStoreId(@Param("storeId") UUID storeId);
 
     @Query("SELECT o FROM OrderEntity o " +
-            "WHERE o.store.id = :storeId " +
+            "WHERE o.storeId = :storeId " +
             "AND o.createdAt BETWEEN :startDate AND :endDate " +
             "ORDER BY o.createdAt DESC")
     List<OrderEntity> findAllOrdersByStoreIdAndDateRange(
@@ -115,17 +114,16 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
     // 고객 주문 조회 (페이지네이션)
     @Query(value = "SELECT DISTINCT o FROM OrderEntity o " +
-            "LEFT JOIN FETCH o.store s " +
             "LEFT JOIN FETCH o.orderItems oi " +
-            "LEFT JOIN FETCH oi.menu m " +
+            "LEFT JOIN FETCH oi.orderItemOptions " +
             "WHERE o.userId = :userId " +
-            "AND (CAST(:storeId AS string) IS NULL OR o.store.id = :storeId) " +
+            "AND (CAST(:storeId AS string) IS NULL OR o.storeId = :storeId) " +
             "AND (CAST(:status AS string) IS NULL OR o.orderStatus = :status) " +
             "AND (CAST(:startDate AS timestamp) IS NULL OR o.createdAt >= :startDate) " +
             "AND (CAST(:endDate AS timestamp) IS NULL OR o.createdAt <= :endDate)",
             countQuery = "SELECT COUNT(DISTINCT o) FROM OrderEntity o " +
             "WHERE o.userId = :userId " +
-            "AND (CAST(:storeId AS string) IS NULL OR o.store.id = :storeId) " +
+            "AND (CAST(:storeId AS string) IS NULL OR o.storeId = :storeId) " +
             "AND (CAST(:status AS string) IS NULL OR o.orderStatus = :status) " +
             "AND (CAST(:startDate AS timestamp) IS NULL OR o.createdAt >= :startDate) " +
             "AND (CAST(:endDate AS timestamp) IS NULL OR o.createdAt <= :endDate)")
@@ -139,16 +137,15 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
     // 점주 매장 주문 조회 (페이지네이션)
     @Query(value = "SELECT DISTINCT o FROM OrderEntity o " +
-            "LEFT JOIN FETCH o.store s " +
             "LEFT JOIN FETCH o.orderItems oi " +
-            "LEFT JOIN FETCH oi.menu m " +
-            "WHERE o.store.id = :storeId " +
+            "LEFT JOIN FETCH oi.orderItemOptions " +
+            "WHERE o.storeId = :storeId " +
             "AND (CAST(:customerId AS string) IS NULL OR o.userId = :customerId) " +
             "AND (CAST(:status AS string) IS NULL OR o.orderStatus = :status) " +
             "AND (CAST(:startDate AS timestamp) IS NULL OR o.createdAt >= :startDate) " +
             "AND (CAST(:endDate AS timestamp) IS NULL OR o.createdAt <= :endDate)",
             countQuery = "SELECT COUNT(DISTINCT o) FROM OrderEntity o " +
-            "WHERE o.store.id = :storeId " +
+            "WHERE o.storeId = :storeId " +
             "AND (CAST(:customerId AS string) IS NULL OR o.userId = :customerId) " +
             "AND (CAST(:status AS string) IS NULL OR o.orderStatus = :status) " +
             "AND (CAST(:startDate AS timestamp) IS NULL OR o.createdAt >= :startDate) " +
@@ -163,15 +160,14 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
     // 관리자 전체 주문 조회 (페이지네이션)
     @Query(value = "SELECT DISTINCT o FROM OrderEntity o " +
-            "LEFT JOIN FETCH o.store s " +
             "LEFT JOIN FETCH o.orderItems oi " +
-            "LEFT JOIN FETCH oi.menu m " +
-            "WHERE (CAST(:storeId AS string) IS NULL OR o.store.id = :storeId) " +
+            "LEFT JOIN FETCH oi.orderItemOptions " +
+            "WHERE (CAST(:storeId AS string) IS NULL OR o.storeId = :storeId) " +
             "AND (CAST(:status AS string) IS NULL OR o.orderStatus = :status) " +
             "AND (CAST(:startDate AS timestamp) IS NULL OR o.createdAt >= :startDate) " +
             "AND (CAST(:endDate AS timestamp) IS NULL OR o.createdAt <= :endDate)",
             countQuery = "SELECT COUNT(DISTINCT o) FROM OrderEntity o " +
-            "WHERE (CAST(:storeId AS string) IS NULL OR o.store.id = :storeId) " +
+            "WHERE (CAST(:storeId AS string) IS NULL OR o.storeId = :storeId) " +
             "AND (CAST(:status AS string) IS NULL OR o.orderStatus = :status) " +
             "AND (CAST(:startDate AS timestamp) IS NULL OR o.createdAt >= :startDate) " +
             "AND (CAST(:endDate AS timestamp) IS NULL OR o.createdAt <= :endDate)")

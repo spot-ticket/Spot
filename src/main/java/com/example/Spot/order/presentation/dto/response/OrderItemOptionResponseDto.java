@@ -28,7 +28,7 @@ public class OrderItemOptionResponseDto {
     public static OrderItemOptionResponseDto from(OrderItemOptionEntity entity) {
         return OrderItemOptionResponseDto.builder()
                 .id(entity.getId())
-                .menuOptionId(entity.getMenuOption().getId())
+                .menuOptionId(entity.getMenuOptionId())
                 .optionName(entity.getOptionName())
                 .optionDetail(entity.getOptionDetail())
                 .optionPrice(entity.getOptionPrice())

@@ -11,18 +11,14 @@ import com.example.Spot.global.common.BaseEntity;
 import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.domain.exception.InvalidOrderStatusTransitionException;
-import com.example.Spot.store.domain.entity.StoreEntity;
 
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
@@ -45,9 +41,8 @@ public class OrderEntity extends BaseEntity {
     @Column(name = "user_id", nullable = false)
     private Integer userId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_id", nullable = false)
-    private StoreEntity store;
+    @Column(name = "store_id", nullable = false, columnDefinition = "UUID")
+    private UUID storeId;
 
     @Column(name = "order_number", nullable = false, unique = true, length = 50)
     private String orderNumber;
@@ -103,10 +98,10 @@ public class OrderEntity extends BaseEntity {
     private List<OrderItemEntity> orderItems = new ArrayList<>();
 
     @Builder
-    public OrderEntity(StoreEntity store, Integer userId, String orderNumber,
+    public OrderEntity(UUID storeId, Integer userId, String orderNumber,
                        String request, boolean needDisposables, LocalDateTime pickupTime) {
-        if (store == null) {
-            throw new IllegalArgumentException("가게 정보는 필수입니다.");
+        if (storeId == null) {
+            throw new IllegalArgumentException("가게 ID는 필수입니다.");
         }
         if (userId == null) {
             throw new IllegalArgumentException("사용자 ID는 필수입니다.");
@@ -117,8 +112,8 @@ public class OrderEntity extends BaseEntity {
         if (pickupTime == null) {
             throw new IllegalArgumentException("픽업 시간은 필수입니다.");
         }
-        
-        this.store = store;
+
+        this.storeId = storeId;
         this.userId = userId;
         this.orderNumber = orderNumber;
         this.request = request;

@@ -184,8 +184,8 @@ public class SalesService {
                 .filter(order -> order.getOrderStatus() == OrderStatus.COMPLETED)
                 .flatMap(order -> order.getOrderItems().stream())
                 .forEach(item -> {
-                    UUID menuId = item.getMenu().getId();
-                    String menuName = item.getMenu().getName();
+                    UUID menuId = item.getMenuId();
+                    String menuName = item.getMenuName();
                     Long itemRevenue = item.getMenuPrice().longValue() * item.getQuantity();
 
                     menuSalesMap.computeIfAbsent(menuId, k -> new MenuSalesData(menuId, menuName))
@@ -220,7 +220,7 @@ public class SalesService {
                     .orElseThrow(() -> new EntityNotFoundException("가게를 찾을 수 없습니다."));
 
             boolean isOwner = store.getUsers().stream()
-                    .anyMatch(su -> su.getUser().getId().equals(userId));
+                    .anyMatch(su -> su.getUserId().equals(userId));
 
             if (!isOwner) {
                 throw new AccessDeniedException("해당 가게의 매출 정보를 조회할 권한이 없습니다.");
