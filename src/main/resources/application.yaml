@@ -1,0 +1,77 @@
+spring:
+  application:
+    name: Spot
+
+  datasource:
+    url: jdbc:postgresql://139.150.81.178:5432/postgres
+    username: admin
+    password: secret
+    driver-class-name: org.postgresql.Driver
+
+  # =========== 더미 데이터 Insert ===========
+  # sql:
+  #   init:
+  #     mode: always
+  #     data-locations: classpath:dummy_data.sql
+  #     continue-on-error: true
+
+  mvc:
+    cors:
+      mappings:
+        '[/**]':
+          allowedOriginPatterns:
+            - '*'
+          allowedMethods:
+            - GET
+            - POST
+            - PATCH
+            - DELETE
+            - OPTIONS
+          allowedHeaders:
+            - '*'
+          exposedHeaders:
+            - Authorization
+          allowCredentials: true
+
+
+  jpa:
+    open-in-view: false
+
+    hibernate:
+      ddl-auto: update # 개발 단계에서는 update, 운영 단계에서는 none 또는 validate 권장
+    show-sql: false    # 실행되는 SQL을 콘솔에 출력
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+
+  jwt:
+    secret: jmXDQDnLqV+lOaPKMR06v4+RQ7aj2cj8LR+zgPOlz/GS989tptPtAmIpyaZHrsLOPqKoVtPus28YeXZTL8O8nw==
+    expire-ms: 60*60*10L
+
+  security:
+    refresh-token:
+      expire-days: 14
+
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: spotemail3@gmail.com
+    password: "dyeweirngiowjexf"
+    properties:
+      mail.debug: true
+      mail.connection timeout: 5000
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+      mail.smtp.starttls.required: true
+
+
+service:
+  active-regions: 종로구
+
+toss:
+  payments:
+    base-url: https://api.tosspayments.com
+    customerKey: customer_1
+    timeout: 10
+    secretKey: test_sk_E92LAa5PVb91Y01y1nXZ37YmpXyJ
