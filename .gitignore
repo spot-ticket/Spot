@@ -16,7 +16,6 @@ build/
 ### yml ###
 **/*.yml
 **/*.yaml
-**/*.properties
 
 !**/application-example.yml
 !**/application-example.yaml
