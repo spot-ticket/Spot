@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.*;
 import com.example.Spot.admin.application.service.AdminStoreService;
 import com.example.Spot.global.presentation.ApiResponse;
 import com.example.Spot.global.presentation.code.GeneralSuccessCode;
-import com.example.Spot.infra.auth.security.CustomUserDetails;
+import com.example.Spot.auth.security.CustomUserDetails;
 import com.example.Spot.store.presentation.dto.response.StoreListResponse;
 
 import lombok.RequiredArgsConstructor;
