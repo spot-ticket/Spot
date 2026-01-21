@@ -12,7 +12,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class QueryLoggingAspect {
 
-    private static final Logger log = LoggerFactory.getLogger(QueryLoggingAspect.class);
+    private static final Logger LOG = LoggerFactory.getLogger(QueryLoggingAspect.class);
 
     @Pointcut("execution(* com.example.Spot.global.feign.*Client.*(..))")
     public void feignClientMethods() {
@@ -23,18 +23,18 @@ public class QueryLoggingAspect {
         String methodName = joinPoint.getSignature().getName();
         String className = joinPoint.getTarget().getClass().getSimpleName();
 
-        log.info("[Feign Call Start] {}.{}", className, methodName);
+        LOG.info("[Feign Call Start] {}.{}", className, methodName);
         long startTime = System.currentTimeMillis();
 
         try {
             Object result = joinPoint.proceed();
             long endTime = System.currentTimeMillis();
-            log.info("[Feign Call End] {}.{} - {}ms", className, methodName, (endTime - startTime));
+            LOG.info("[Feign Call End] {}.{} - {}ms", className, methodName, endTime - startTime);
             return result;
         } catch (Exception e) {
             long endTime = System.currentTimeMillis();
-            log.error("[Feign Call Error] {}.{} - {}ms - Error: {}",
-                    className, methodName, (endTime - startTime), e.getMessage());
+            LOG.error("[Feign Call Error] {}.{} - {}ms - Error: {}",
+                    className, methodName, endTime - startTime, e.getMessage());
             throw e;
         }
     }

@@ -12,9 +12,9 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.example.Spot.infra.auth.jwt.JWTFilter;
-import com.example.Spot.infra.auth.jwt.JWTUtil;
-import com.example.Spot.infra.auth.jwt.LoginFilter;
+import com.example.Spot.auth.jwt.JWTFilter;
+import com.example.Spot.auth.jwt.JWTUtil;
+import com.example.Spot.auth.jwt.LoginFilter;
 
 @Configuration
 @EnableWebSecurity

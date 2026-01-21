@@ -3,7 +3,7 @@ package com.example.Spot.user.application.service;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
-import com.example.Spot.infra.auth.jwt.JWTUtil;
+import com.example.Spot.auth.jwt.JWTUtil;
 import com.example.Spot.user.domain.Role;
 import com.example.Spot.user.domain.repository.UserRepository;
 
