@@ -9,8 +9,8 @@ import feign.codec.ErrorDecoder;
 public class FeignCommonConfig {
 
     @Bean
-    public RequestIdInterceptor requestIdInterceptor() {
-        return new RequestIdInterceptor();
+    public RequestInterceptor feignHeaderRelayInterceptor() {
+        return new FeignHeaderRelayInterceptor();
     }
 
     @Bean
