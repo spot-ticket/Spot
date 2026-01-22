@@ -3,14 +3,10 @@ package com.example.Spot.infra.auth.security;
 import java.io.IOException;
 import java.util.List;
 
-import com.example.Spot.infra.auth.security.DevPrincipal;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
-
-import com.example.Spot.infra.auth.security.CustomUserDetails;
-import com.example.Spot.store.domain.Role;
 
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
