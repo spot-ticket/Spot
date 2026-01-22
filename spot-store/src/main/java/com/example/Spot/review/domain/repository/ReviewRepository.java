@@ -18,22 +18,22 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, UUID> {
 
     // 특정 가게의 리뷰 조회 (삭제되지 않은 리뷰만)
     @Query("SELECT r FROM ReviewEntity r " +
-            "LEFT JOIN FETCH r.user u " +
-            "WHERE r.store.id = :storeId " +
+            "JOIN FETCH r.store s" +
+            "WHERE s.id = :storeId " +
             "AND r.isDeleted = false " +
             "ORDER BY r.createdAt DESC")
     Page<ReviewEntity> findByStoreIdAndIsDeletedFalse(@Param("storeId") UUID storeId, Pageable pageable);
 
     // 특정 가게의 전체 리뷰 (삭제된 것 포함, 관리자용)
     @Query("SELECT r FROM ReviewEntity r " +
-            "LEFT JOIN FETCH r.user u " +
-            "WHERE r.store.id = :storeId " +
+            "JOIN FETCH r.store s " +
+            "WHERE s.id = :storeId " +
             "ORDER BY r.createdAt DESC")
     Page<ReviewEntity> findByStoreId(@Param("storeId") UUID storeId, Pageable pageable);
 
     // 특정 사용자의 리뷰 조회
     @Query("SELECT r FROM ReviewEntity r " +
-            "LEFT JOIN FETCH r.store s " +
+            "JOIN FETCH r.store s " +
             "WHERE r.user.id = :userId " +
             "AND r.isDeleted = false " +
             "ORDER BY r.createdAt DESC")
@@ -41,8 +41,7 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, UUID> {
 
     // 리뷰 상세 조회 (작성자/관리자 확인용)
     @Query("SELECT r FROM ReviewEntity r " +
-            "LEFT JOIN FETCH r.user u " +
-            "LEFT JOIN FETCH r.store s " +
+            "JOIN FETCH r.store s " +
             "WHERE r.id = :reviewId " +
             "AND r.isDeleted = false")
     Optional<ReviewEntity> findByIdWithDetails(@Param("reviewId") UUID reviewId);
