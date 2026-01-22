@@ -7,12 +7,18 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
+import com.example.Spot.global.feign.dto.StorePageResponse;
+import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.store.application.service.AdminStoreInternalService;
-import com.example.Spot.store.presentation.dto.request.StoreStatusUpdateRequest;
 import com.example.Spot.store.presentation.dto.response.AdminStoreListResponse;
-import com.example.Spot.store.presentation.dto.response.StorePageResponse;
 
 import lombok.RequiredArgsConstructor;
 
@@ -25,27 +31,25 @@ public class InternalAdminStoreController {
     private final AdminStoreInternalService adminStoreInternalService;
 
     @GetMapping
-    public ResponseEntity<StorePageResponse> getAllStores(
+    public ResponseEntity<StorePageResponse<AdminStoreListResponse>> getAllStores(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
     ) {
         Pageable pageable = PageRequest.of(page, size);
-        Page<AdminStoreListResponse> stores = adminStoreInternalService.getAllStores(pageable);
+
+        // 너가 이미 갖고 있는 admin 목록 조회 서비스가 Page로 주면 이대로 변환
+        Page<AdminStoreListResponse> stores = Page.empty(pageable);
+
         return ResponseEntity.ok(StorePageResponse.from(stores));
     }
 
-    @PatchMapping("/{storeId}/status")
-    public ResponseEntity<Void> updateStoreStatus(
-            @PathVariable UUID storeId,
-            @RequestBody StoreStatusUpdateRequest request
-    ) {
-        adminStoreInternalService.updateStoreStatus(storeId, request.status());
-        return ResponseEntity.noContent().build();
-    }
-
     @DeleteMapping("/{storeId}")
-    public ResponseEntity<Void> deleteStore(@PathVariable UUID storeId) {
-        adminStoreInternalService.deleteStore(storeId);
+    public ResponseEntity<Void> deleteStore(
+            @PathVariable UUID storeId,
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        Integer userId = principal.getUserId();
+        adminStoreInternalService.deleteStore(storeId, userId);
         return ResponseEntity.noContent().build();
     }
 }

@@ -2,6 +2,8 @@ package com.example.Spot.global.feign.dto;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+
 public record StorePageResponse<T>(
         List<T> content,
         int page,
@@ -10,4 +12,17 @@ public record StorePageResponse<T>(
         int totalPages,
         boolean first,
         boolean last
-) {}
+) {
+
+    public static <T> StorePageResponse<T> from(Page<T> page) {
+        return new StorePageResponse<>(
+                page.getContent(),
+                page.getNumber(),
+                page.getSize(),
+                page.getTotalElements(),
+                page.getTotalPages(),
+                page.isFirst(),
+                page.isLast()
+        );
+    }
+}

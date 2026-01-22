@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.Spot.global.feign.dto.StorePageResponse;
 import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.store.application.service.StoreService;
 import com.example.Spot.store.domain.StoreStatus;
@@ -96,7 +97,9 @@ public class StoreController implements StoreApi {
     ) {
         boolean isAdmin = principal.getRole() == "MANAGER" || principal.getRole() == "MASTER";
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(storeService.getAllStores(isAdmin, pageable));
+        Page<StoreListResponse> stores = storeService.getAllStores(isAdmin, pageable);
+
+        return ResponseEntity.ok(StorePageResponse.from(stores));
     }
     
     @Override
@@ -160,6 +163,9 @@ public class StoreController implements StoreApi {
     ) {
         boolean isAdmin = principal.getRole() == "MANAGER" || principal.getRole() == "MASTER";
         Pageable pageable = PageRequest.of(page, size);
-        return ResponseEntity.ok(storeService.searchStoresByName(keyword, isAdmin, pageable));
+        Page<StoreListResponse> stores =
+                storeService.searchStoresByName(keyword, isAdmin, pageable);
+
+        return ResponseEntity.ok(StorePageResponse.from(stores));
     }
 }

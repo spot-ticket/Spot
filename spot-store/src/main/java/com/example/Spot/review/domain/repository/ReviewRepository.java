@@ -18,7 +18,7 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, UUID> {
 
     // 특정 가게의 리뷰 조회 (삭제되지 않은 리뷰만)
     @Query("SELECT r FROM ReviewEntity r " +
-            "JOIN FETCH r.store s" +
+            "JOIN FETCH r.store s " +
             "WHERE s.id = :storeId " +
             "AND r.isDeleted = false " +
             "ORDER BY r.createdAt DESC")
@@ -34,7 +34,7 @@ public interface ReviewRepository extends JpaRepository<ReviewEntity, UUID> {
     // 특정 사용자의 리뷰 조회
     @Query("SELECT r FROM ReviewEntity r " +
             "JOIN FETCH r.store s " +
-            "WHERE r.user.id = :userId " +
+            "WHERE r.userId = :userId " +
             "AND r.isDeleted = false " +
             "ORDER BY r.createdAt DESC")
     List<ReviewEntity> findByUserIdAndIsDeletedFalse(@Param("userId") Integer userId);

@@ -2,13 +2,13 @@ package com.example.Spot.store.presentation.swagger;
 
 import java.util.UUID;
 
-import org.springframework.data.domain.Page;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.Spot.global.feign.dto.StorePageResponse;
 import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.store.presentation.dto.request.StoreCreateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
@@ -52,7 +52,7 @@ public interface StoreApi {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공")
     })
-    ResponseEntity<Page<StoreListResponse>> getAllStores(
+    ResponseEntity<StorePageResponse<StoreListResponse>> getAllStores(
             @Parameter(description = "페이지 번호") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "50") int size,
             @Parameter(hidden = true) @AuthenticationPrincipal CustomUserDetails principal
@@ -97,7 +97,7 @@ public interface StoreApi {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "검색 성공")
     })
-    ResponseEntity<Page<StoreListResponse>> searchStores(
+    ResponseEntity<StorePageResponse<StoreListResponse>> searchStores(
             @Parameter(description = "검색 키워드") @RequestParam String keyword,
             @Parameter(description = "페이지 번호") @RequestParam(defaultValue = "0") int page,
             @Parameter(description = "페이지 크기") @RequestParam(defaultValue = "50") int size,
