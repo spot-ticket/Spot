@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.Spot.admin.presentation.dto.AdminStoreListResponseDto;
 import com.example.Spot.global.feign.dto.StorePageResponse;
 
-@FeignClient(name = "store-service",contextId = "storeAdminClient", url = "${feign.store.url}")
+@FeignClient(name = "store-service", contextId = "storeAdminClient", url = "${feign.store.url}")
 public interface StoreAdminClient {
 
     @GetMapping("/api/internal/admin/stores")
