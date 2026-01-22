@@ -58,7 +58,7 @@ services:
       dockerfile: Dockerfile
     container_name: spot-order
     ports:
-      - "8083:8083"
+      - "8082:8082"
     environment:
       - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
     volumes:
@@ -94,7 +94,7 @@ services:
       dockerfile: Dockerfile
     container_name: spot-store
     ports:
-      - "8082:8082"
+      - "8083:8083"
     environment:
       - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
     volumes:
