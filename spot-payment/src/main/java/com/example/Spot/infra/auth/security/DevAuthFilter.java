@@ -15,32 +15,33 @@ import jakarta.servlet.http.HttpServletResponse;
 
 public class DevAuthFilter extends OncePerRequestFilter {
 
-    private final Integer fixedUserId;
-    private final String fixedRole;
-
-    public DevAuthFilter(Integer fixedUserId, String fixedRole) {
-        this.fixedUserId = fixedUserId;
-        this.fixedRole = fixedRole;
-    }
-
     @Override
-    protected void doFilterInternal(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain
-    ) throws ServletException, IOException {
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain) throws ServletException, IOException {
 
-        if (SecurityContextHolder.getContext().getAuthentication() == null) {
-            CustomUserDetails principal = new CustomUserDetails(fixedUserId, fixedRole);
-
-            var auth = new UsernamePasswordAuthenticationToken(
-                    principal,
-                    null,
-                    List.of(new SimpleGrantedAuthority("ROLE_" + fixedRole))
-            );
-
-            SecurityContextHolder.getContext().setAuthentication(auth);
+        if (SecurityContextHolder.getContext().getAuthentication() != null) {
+            filterChain.doFilter(request, response);
+            return;
         }
+
+        String userIdHeader = request.getHeader("X-User-Id");
+        String roleHeader = request.getHeader("X-Role"); // OWNER / MASTER / MANAGER
+
+        if (userIdHeader == null || roleHeader == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        Integer userId = Integer.valueOf(userIdHeader);
+        String role = roleHeader.trim();
+
+        CustomUserDetails principal = CustomUserDetails.forDev(userId, role);
+
+        var authorities = List.of(new SimpleGrantedAuthority("ROLE_" + role));
+
+        var auth = new UsernamePasswordAuthenticationToken(principal, null, authorities);
+        SecurityContextHolder.getContext().setAuthentication(auth);
 
         filterChain.doFilter(request, response);
     }

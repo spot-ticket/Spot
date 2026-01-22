@@ -11,6 +11,9 @@ public class CustomUserDetails {
         this.userId = userId;
         this.role = role;
     }
+    public static CustomUserDetails forDev(Integer userId, String role) {
+        return new CustomUserDetails(userId, role);
+    }
 
     public Integer getUserId() {
         return userId;
