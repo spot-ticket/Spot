@@ -1,4 +1,4 @@
-package com.example.Spot.store.presentation.controller.internal;
+package com.example.Spot.store.presentation.controller;
 
 import java.util.UUID;
 

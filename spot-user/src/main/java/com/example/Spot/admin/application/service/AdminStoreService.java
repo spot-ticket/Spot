@@ -5,7 +5,7 @@ import java.util.UUID;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import com.example.Spot.admin.presentation.dto.AdminStoreListResponseDto;
+import com.example.Spot.admin.presentation.dto.response.AdminStoreListResponseDto;
 import com.example.Spot.global.feign.StoreClient;
 import com.example.Spot.global.feign.dto.StorePageResponse;
 

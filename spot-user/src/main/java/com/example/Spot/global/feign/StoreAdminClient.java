@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.example.Spot.admin.presentation.dto.AdminStoreListResponseDto;
+import com.example.Spot.admin.presentation.dto.response.AdminStoreListResponseDto;
 import com.example.Spot.global.feign.dto.StorePageResponse;
 
 @FeignClient(name = "store-service", contextId = "storeAdminClient", url = "${feign.store.url}")
