@@ -10,7 +10,9 @@ import feign.RequestTemplate;
 
 public class FeignHeaderRelayInterceptor implements RequestInterceptor {
 
-    public static final String HEADER_AUTHORIZATION = "Authorization";
+    private static final String HEADER_AUTHORIZATION = "Authorization";
+    private static final String HEADER_USER_ID = "X-User-Id";
+    private static final String HEADER_ROLE = "X-Role";
 
     @Override
     public void apply(RequestTemplate template) {
@@ -22,10 +24,16 @@ public class FeignHeaderRelayInterceptor implements RequestInterceptor {
         }
 
         HttpServletRequest request = attrs.getRequest();
-        String auth = request.getHeader(HEADER_AUTHORIZATION);
 
-        if (auth != null && !auth.isBlank()) {
-            template.header(HEADER_AUTHORIZATION, auth);
+        relayHeader(request, template, HEADER_AUTHORIZATION);
+        relayHeader(request, template, HEADER_USER_ID);
+        relayHeader(request, template, HEADER_ROLE);
+    }
+
+    private void relayHeader(HttpServletRequest request, RequestTemplate template, String headerName) {
+        String value = request.getHeader(headerName);
+        if (value != null && !value.isBlank()) {
+            template.header(headerName, value);
         }
     }
 }
