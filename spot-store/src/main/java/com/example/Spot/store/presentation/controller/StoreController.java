@@ -95,7 +95,9 @@ public class StoreController implements StoreApi {
             @RequestParam(defaultValue = "50") int size,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        boolean isAdmin = principal.getRole() == "MANAGER" || principal.getRole() == "MASTER";
+        boolean isAdmin =
+                "MANAGER".equals(principal.getRole()) || "MASTER".equals(principal.getRole());
+
         Pageable pageable = PageRequest.of(page, size);
         Page<StoreListResponse> stores = storeService.getAllStores(isAdmin, pageable);
 
