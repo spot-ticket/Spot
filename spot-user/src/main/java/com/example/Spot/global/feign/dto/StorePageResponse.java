@@ -2,22 +2,12 @@ package com.example.Spot.global.feign.dto;
 
 import java.util.List;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-
-@Getter
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-public class StorePageResponse {
-
-    private List<StoreResponse> content;
-    private int totalPages;
-    private long totalElements;
-    private int size;
-    private int number;
-    private boolean first;
-    private boolean last;
-}
+public record StorePageResponse<T>(
+        List<T> content,
+        int page,
+        int size,
+        long totalElements,
+        int totalPages,
+        boolean first,
+        boolean last
+) {}

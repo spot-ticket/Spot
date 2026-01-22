@@ -53,7 +53,7 @@ public class AdminStatsService {
         return AdminStatsResponseDto.builder()
                 .totalUsers(totalUsers)
                 .totalOrders(orderStats.getTotalOrders())
-                .totalStores(storeResponse.getTotalElements())
+                .totalStores(storeResponse.totalElements())
                 .totalRevenue(orderStats.getTotalRevenue())
                 .recentOrders(recentOrders.getContent())
                 .userGrowth(userGrowth)
