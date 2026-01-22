@@ -12,9 +12,118 @@ services:
       - "5432:5432"
     volumes:
       - ./postgres_data:/var/lib/postgresql/data
+    networks:
+      - spot-network
 
   redis:
     image: redis:alpine
     container_name: redis_cache
     ports:
       - "6379:6379"
+    networks:
+      - spot-network
+
+  spot-gateway:
+    build:
+      context: ./spot-gateway
+      dockerfile: Dockerfile
+    container_name: spot-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+    volumes:
+      - ./config/common.yml:/config/common.yml:ro
+      - ./config/spot-gateway.yml:/config/application.yml:ro
+    depends_on:
+      - redis
+      - spot-user
+      - spot-store
+      - spot-order
+      - spot-payment
+    networks:
+      - spot-network
+
+  spot-mono:
+    build:
+      context: ./spot-mono
+      dockerfile: Dockerfile
+    container_name: spot-mono
+    networks:
+      - spot-network
+
+  spot-order:
+    build:
+      context: ./spot-order
+      dockerfile: Dockerfile
+    container_name: spot-order
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+    volumes:
+      - ./config/common.yml:/config/common.yml:ro
+      - ./config/spot-order.yml:/config/application.yml:ro
+    depends_on:
+      - db
+      - redis
+    networks:
+      - spot-network
+
+  spot-payment:
+    build:
+      context: ./spot-payment
+      dockerfile: Dockerfile
+    container_name: spot-payment
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+    volumes:
+      - ./config/common.yml:/config/common.yml:ro
+      - ./config/spot-payment.yml:/config/application.yml:ro
+    depends_on:
+      - db
+      - redis
+    networks:
+      - spot-network
+
+  spot-store:
+    build:
+      context: ./spot-store
+      dockerfile: Dockerfile
+    container_name: spot-store
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+    volumes:
+      - ./config/common.yml:/config/common.yml:ro
+      - ./config/spot-store.yml:/config/application.yml:ro
+    depends_on:
+      - db
+      - redis
+    networks:
+      - spot-network
+
+  spot-user:
+    build:
+      context: ./spot-user
+      dockerfile: Dockerfile
+    container_name: spot-user
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+    volumes:
+      - ./config/common.yml:/config/common.yml:ro
+      - ./config/spot-user.yml:/config/application.yml:ro
+    depends_on:
+      - db
+      - redis
+    networks:
+      - spot-network
+
+networks:
+  spot-network:
+    driver: bridge
