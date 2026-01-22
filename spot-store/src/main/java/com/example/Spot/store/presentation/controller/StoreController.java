@@ -89,7 +89,7 @@ public class StoreController implements StoreApi {
 
     @Override
     @GetMapping
-    public ResponseEntity<Page<StoreListResponse>> getAllStores(
+    public ResponseEntity<StorePageResponse<StoreListResponse>> getAllStores(
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size,
             @AuthenticationPrincipal CustomUserDetails principal
@@ -152,7 +152,7 @@ public class StoreController implements StoreApi {
 
     @Override
     @GetMapping("/search")
-    public ResponseEntity<Page<StoreListResponse>> searchStores(
+    public ResponseEntity<StorePageResponse<StoreListResponse>> searchStores(
             @RequestParam String keyword,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "50") int size,

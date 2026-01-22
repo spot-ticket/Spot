@@ -1,3 +1,5 @@
+package com.example.Spot.admin.presentation.dto.response;
+
 import java.math.BigDecimal;
 import java.util.List;
 
