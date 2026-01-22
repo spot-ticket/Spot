@@ -1,0 +1,8 @@
+spring:
+  config:
+    import: file:/config/common.yml
+  application:
+    name: spot-payment
+
+server:
+  port: 8084
