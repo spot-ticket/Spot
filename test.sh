@@ -1,7 +1,7 @@
 #!/bin/bash
 
 echo "=== 기존 컨테이너 종료 및 삭제 ==="
-docker-compose down --remove-orphans
+docker compose down --remove-orphans
 docker rm -f redis_cache local-postgres_db spot-gateway spot-user spot-store spot-order spot-payment spot-mono 2>/dev/null || true
 
 echo "=== 각 MSA 서비스 빌드 ==="
