@@ -28,3 +28,6 @@ docker-compose up --build -d
 
 echo "=== 실행 중인 컨테이너 확인 ==="
 docker-compose ps
+
+echo "=== 로그 확인 ==="
+docker compose logs -f | grep --line-buffered -v -E "redis_cache|local-posgre_db" | tee -a current_logs.txt
