@@ -81,4 +81,13 @@ public class PaymentResponseDto {
       @Schema(description = "고객 키", example = "customer_1") String customerKey,
       @Schema(description = "빌링키", example = "billing_key_xxxxx") String billingKey,
       @Schema(description = "저장 시간", example = "2024-01-05T15:30:00") LocalDateTime savedAt) {}
+
+  @Builder
+  @Schema(description = "결제 내역 저장 응답")
+  public record SavedPaymentHistory(
+      @Schema(description = "결제 ID", example = "123e4567-e89b-12d3-a456-426614174000") UUID paymentId,
+      @Schema(description = "주문 ID", example = "123e4567-e89b-12d3-a456-426614174000") UUID orderId,
+      @Schema(description = "결제 상태", example = "DONE") String status,
+      @Schema(description = "결제 금액", example = "18000") Long amount,
+      @Schema(description = "저장 시간", example = "2024-01-05T15:30:00") LocalDateTime savedAt) {}
 }

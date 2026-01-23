@@ -50,7 +50,7 @@ public class JWTFilter extends OncePerRequestFilter {
         try {
             // refresh 토큰은 SecurityContext에 올리지 않음
             if (jwtUtil.isExpired(token)) {
-                filterChain.doFilter(request, response);
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
                 return;
             }
             String type = jwtUtil.getTokenType(token);

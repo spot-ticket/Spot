@@ -30,13 +30,13 @@ public class PaymentKeyEntity extends BaseEntity {
   private UUID id;
 
   @Column(nullable = false, updatable = false, name = "payment_id")
-  private UUID paymentId; // final 제거
+  private UUID paymentId;
 
   @Column(nullable = false, updatable = false, name = "payment_key")
-  private String paymentKey; // final 제거
+  private String paymentKey;
 
   @Column(updatable = false, nullable = false, name = "confirmed_at")
-  private LocalDateTime confirmedAt; // final 제거 및 오타 수정
+  private LocalDateTime confirmedAt;
 
   @Builder
   public PaymentKeyEntity(UUID paymentId, String paymentKey, LocalDateTime confirmedAt) {

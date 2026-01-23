@@ -14,6 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.Spot.auth.security.CustomUserDetails;
 import com.example.Spot.user.application.service.UserService;
 import com.example.Spot.user.presentation.dto.request.UserUpdateRequestDTO;
 import com.example.Spot.user.presentation.dto.response.UserResponseDTO;
@@ -49,9 +50,11 @@ public class UserController implements UserApi {
     @PreAuthorize("isAuthenticated()")
     @DeleteMapping("/me")
     public void delete(Authentication authentication) {
-        Integer loginUserId = (Integer) authentication.getPrincipal();
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+        Integer loginUserId = principal.getUserId();
         userService.deleteMe(loginUserId);
     }
+
 
     @Override
     @PreAuthorize("hasAnyRole('MASTER','OWNER','MANAGER')")

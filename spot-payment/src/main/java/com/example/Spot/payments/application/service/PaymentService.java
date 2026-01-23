@@ -366,4 +366,52 @@ public class PaymentService {
 
     return exists;
   }
+
+  // ************************** //
+  // FE 결제 완료 후 결제 내역 저장 //
+  // ************************** //
+  @Transactional
+  public PaymentResponseDto.SavedPaymentHistory savePaymentHistory(PaymentRequestDto.SavePaymentHistory request) {
+    // 사용자 존재 확인
+    validateUserExists(request.userId());
+    // 주문 존재 확인
+    validateOrderExists(request.orderId());
+
+    // Payment 엔티티 생성 및 저장
+    PaymentEntity payment = PaymentEntity.builder()
+        .userId(request.userId())
+        .orderId(request.orderId())
+        .title(request.title())
+        .content(request.content())
+        .paymentMethod(request.paymentMethod())
+        .totalAmount(request.paymentAmount())
+        .build();
+
+    PaymentEntity savedPayment = paymentRepository.save(payment);
+
+    // PaymentHistory에 DONE 상태로 저장
+    PaymentHistoryEntity history = PaymentHistoryEntity.builder()
+        .paymentId(savedPayment.getId())
+        .status(PaymentHistoryEntity.PaymentStatus.DONE)
+        .build();
+
+    paymentHistoryRepository.save(history);
+
+    // PaymentKey 저장
+    PaymentKeyEntity paymentKey = PaymentKeyEntity.builder()
+        .paymentId(savedPayment.getId())
+        .paymentKey(request.paymentKey())
+        .confirmedAt(LocalDateTime.now())
+        .build();
+
+    paymentKeyRepository.save(paymentKey);
+
+    return PaymentResponseDto.SavedPaymentHistory.builder()
+        .paymentId(savedPayment.getId())
+        .orderId(savedPayment.getOrderId())
+        .status("DONE")
+        .amount(savedPayment.getTotalAmount())
+        .savedAt(LocalDateTime.now())
+        .build();
+  }
 }
