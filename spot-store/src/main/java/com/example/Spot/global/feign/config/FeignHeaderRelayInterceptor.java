@@ -1,7 +1,8 @@
 package com.example.Spot.global.feign.config;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Enumeration;
+
+import org.springframework.web.context.request.RequestAttributes;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
@@ -9,71 +10,43 @@ import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import jakarta.servlet.http.HttpServletRequest;
 
+
 public class FeignHeaderRelayInterceptor implements RequestInterceptor {
 
     private static final String HEADER_AUTHORIZATION = "Authorization";
-    private static final Logger LOGGER = LoggerFactory.getLogger(FeignHeaderRelayInterceptor.class);
 
     @Override
     public void apply(RequestTemplate template) {
-        ServletRequestAttributes attrs =
-                (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
-
-        if (attrs == null) {
-            LOGGER.debug("[FeignRelay] RequestContextHolder attrs is null (non-http thread). skip");
+        RequestAttributes ra = RequestContextHolder.getRequestAttributes();
+        if (!(ra instanceof ServletRequestAttributes attrs)) {
             return;
         }
 
         HttpServletRequest request = attrs.getRequest();
 
-        relayHeader(request, template, HEADER_AUTHORIZATION);
+        // 1) Authorization은 "있으면 반드시" 전달 (이게 없으면 store는 401이 정상)
+        relaySingle(request, template, HEADER_AUTHORIZATION);
+
     }
 
-    private void relayHeader(HttpServletRequest request, RequestTemplate template, String headerName) {
+    private void relaySingle(HttpServletRequest request, RequestTemplate template, String headerName) {
         String value = request.getHeader(headerName);
         if (value == null || value.isBlank()) {
-            if (HEADER_AUTHORIZATION.equalsIgnoreCase(headerName)) {
-                LOGGER.warn("[FeignRelay] Authorization header missing");
-            } else {
-                LOGGER.debug("[FeignRelay] {} header missing", headerName);
-            }
             return;
         }
+
+        // Feign이 같은 헤더를 누적해서 붙이는 경우를 막기 위해 먼저 제거 후 1개만 세팅
+        template.headers().remove(headerName);
         template.header(headerName, value);
-
-        if (HEADER_AUTHORIZATION.equalsIgnoreCase(headerName)) {
-            LOGGER.info("[FeignRelay] Authorization relayed: {}", maskBearer(value));
-        } else {
-            LOGGER.debug("[FeignRelay] {} relayed: {}", headerName, value);
-        }
     }
 
-    private String maskBearer(String raw) {
-        String v = raw.trim();
-        if (!v.regionMatches(true, 0, "Bearer", 0, "Bearer".length())) {
-            return maskAny(v);
+    // 필요할 때만 쓰고, 평소엔 주석 처리 추천
+    @SuppressWarnings("unused")
+    private void logHeaders(HttpServletRequest request) {
+        Enumeration<String> names = request.getHeaderNames();
+        while (names.hasMoreElements()) {
+            String n = names.nextElement();
+            System.out.println("[INCOMING HEADER] " + n + "=" + request.getHeader(n));
         }
-
-        int spaceIdx = v.indexOf(' ');
-        if (spaceIdx < 0 || spaceIdx == v.length() - 1) {
-            return "Bearer <empty>";
-        }
-
-        String token = v.substring(spaceIdx + 1).trim();
-        return "Bearer " + maskToken(token);
-    }
-
-    private String maskAny(String v) {
-        if (v.length() <= 8) {
-            return "****";
-        }
-        return v.substring(0, 4) + "..." + v.substring(v.length() - 4);
-    }
-
-    private String maskToken(String token) {
-        if (token.length() <= 12) {
-            return "****";
-        }
-        return token.substring(0, 10) + "..." + token.substring(token.length() - 6);
     }
 }

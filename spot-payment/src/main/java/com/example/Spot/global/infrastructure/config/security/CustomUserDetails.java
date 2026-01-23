@@ -1,12 +1,13 @@
 package com.example.Spot.global.infrastructure.config.security;
 
-import com.example.Spot.global.common.Role;
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
-import java.util.Collection;
-import java.util.List;
+import com.example.Spot.global.common.Role;
 
 public class CustomUserDetails implements UserDetails {
 
