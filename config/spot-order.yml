@@ -3,6 +3,8 @@ spring:
     import: file:/config/common.yml
   application:
     name: spot-order
+  kafka:
+    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:29092}
 
 server:
   port: 8082

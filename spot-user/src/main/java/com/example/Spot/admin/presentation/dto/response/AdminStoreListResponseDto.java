@@ -1,4 +1,4 @@
-package com.example.Spot.admin.presentation.dto.response;
+package com.example.Spot.admin.presentation.dto;
 
 import java.util.UUID;
 

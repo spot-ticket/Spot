@@ -16,7 +16,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Spot.global.feign.dto.StorePageResponse;
-import com.example.Spot.infra.auth.security.CustomUserDetails;
+import com.example.Spot.global.infrastructure.config.security.CustomUserDetails;
 import com.example.Spot.store.application.service.AdminStoreInternalService;
 import com.example.Spot.store.presentation.dto.response.AdminStoreListResponse;
 

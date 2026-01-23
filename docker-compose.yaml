@@ -1,137 +1,191 @@
-# version: '3.8'
+version: '3.8'
 
-# services:
-#   db:
-#     image: postgres:15-alpine
-#     container_name: local-postgres_db
-#     environment:
-#       - POSTGRES_DB=myapp_db
-#       - POSTGRES_USER=admin
-#       - POSTGRES_PASSWORD=secret
-#     ports:
-#       - "5432:5432"
-#     volumes:
-#       - ./postgres_data:/var/lib/postgresql/data
-#     networks:
-#       - spot-network
+services:
+  # --- Infrastructure: Database & Cache ---
+  db:
+    image: postgres:15-alpine
+    container_name: local-postgres_db
+    command: postgres -c max_connections=300
+    environment:
+      - POSTGRES_DB=myapp_db
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=secret
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./postgres_data:/var/lib/postgresql/data
+    networks:
+      - spot-network
 
-#   redis:
-#     image: redis:alpine
-#     container_name: redis_cache
-#     ports:
-#       - "6379:6379"
-#     networks:
-#       - spot-network
+  redis:
+    image: redis:alpine
+    container_name: redis_cache
+    ports:
+      - "6379:6379"
+    networks:
+      - spot-network
 
-#   spot-gateway:
-#     build:
-#       context: ./spot-gateway
-#       dockerfile: Dockerfile
-#     container_name: spot-gateway
-#     ports:
-#       - "8080:8080"
-#     environment:
-#       - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
-#     volumes:
-#       - ./config/common.yml:/config/common.yml:ro
-#       - ./config/spot-gateway.yml:/config/application.yml:ro
-#     depends_on:
-#       - redis
-#       - spot-user
-#       - spot-store
-#       - spot-order
-#       - spot-payment
-#     networks:
-#       - spot-network
+  # --- Infrastructure: Event Broker (Kafka) ---
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: kafka-local
+    restart: always
+    ports:
+      - "9092:9092"
+      - "19093:19093"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: 'broker,controller'
+      KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:19093'
+      KAFKA_LISTENERS: 'INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:19093'
+      KAFKA_ADVERTISED_LISTENERS: 'INTERNAL://kafka:29092,EXTERNAL://localhost:9092'
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT'
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      CLUSTER_ID: 'J9Xz7kQPRYyK8VkqH3mW5A'
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_MIN_INSYNC_REPLICAS: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: 'true'
+      KAFKA_NUM_PARTITIONS: 3
+      KAFKA_HEAP_OPTS: '-Xmx512M -Xms512M'
+    volumes:
+      - kafka-data:/var/lib/kafka/data
+    networks:
+      - spot-network
 
-#   spot-mono:
-#     build:
-#       context: ./spot-mono
-#       dockerfile: Dockerfile
-#     container_name: spot-mono
-#     networks:
-#       - spot-network
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: kafka-ui-local
+    ports:
+      - "8989:8080" # spot-order(8082)와 충돌을 피하기 위해 8989로 변경
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local-spot-cluster
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka:29092'
+    depends_on:
+      - kafka
+    networks:
+      - spot-network
 
-#   spot-order:
-#     build:
-#       context: ./spot-order
-#       dockerfile: Dockerfile
-#     container_name: spot-order
-#     ports:
-#       - "8082:8082"
-#     environment:
-#       - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
-#       - FEIGN_STORE_URL=http://spot-store:8083
-#       - FEIGN_PAYMENT_URL=http://spot-payment:8084
-#     volumes:
-#       - ./config/common.yml:/config/common.yml:ro
-#       - ./config/spot-order.yml:/config/application.yml:ro
-#     depends_on:
-#       - db
-#       - redis
-#     networks:
-#       - spot-network
+  # --- Application Services ---
+  spot-gateway:
+    build:
+      context: ./spot-gateway
+      dockerfile: Dockerfile
+    container_name: spot-gateway
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+    volumes:
+      - ./config/common.yml:/config/common.yml:ro
+      - ./config/spot-gateway.yml:/config/application.yml:ro
+    depends_on:
+      - redis
+      - spot-user
+      - spot-store
+      - spot-order
+      - spot-payment
+    networks:
+      - spot-network
 
-#   spot-payment:
-#     build:
-#       context: ./spot-payment
-#       dockerfile: Dockerfile
-#     container_name: spot-payment
-#     ports:
-#       - "8084:8084"
-#     environment:
-#       - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
-#       - FEIGN_ORDER_URL=http://spot-order:8082
-#       - FEIGN_USER_URL=http://spot-user:8081
-#       - FEIGN_STORE_URL=http://spot-store:8083
-#     volumes:
-#       - ./config/common.yml:/config/common.yml:ro
-#       - ./config/spot-payment.yml:/config/application.yml:ro
-#     depends_on:
-#       - db
-#       - redis
-#     networks:
-#       - spot-network
+  spot-mono:
+    build:
+      context: ./spot-mono
+      dockerfile: Dockerfile
+    container_name: spot-mono
+    networks:
+      - spot-network
 
-#   spot-store:
-#     build:
-#       context: ./spot-store
-#       dockerfile: Dockerfile
-#     container_name: spot-store
-#     ports:
-#       - "8083:8083"
-#     environment:
-#       - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
-#       - FEIGN_USER_URL=http://spot-user:8081
-#     volumes:
-#       - ./config/common.yml:/config/common.yml:ro
-#       - ./config/spot-store.yml:/config/application.yml:ro
-#     depends_on:
-#       - db
-#       - redis
-#     networks:
-#       - spot-network
+  spot-order:
+    build:
+      context: ./spot-order
+      dockerfile: Dockerfile
+    container_name: spot-order
+    ports:
+      - "8082:8082"
+    environment:
+      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+      - FEIGN_STORE_URL=http://spot-store:8083
+      - FEIGN_PAYMENT_URL=http://spot-payment:8084
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
+    volumes:
+      - ./config/common.yml:/config/common.yml:ro
+      - ./config/spot-order.yml:/config/application.yml:ro
+    depends_on:
+      - db
+      - redis
+      - kafka
+    networks:
+      - spot-network
 
-#   spot-user:
-#     build:
-#       context: ./spot-user
-#       dockerfile: Dockerfile
-#     container_name: spot-user
-#     ports:
-#       - "8081:8081"
-#     environment:
-#       - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
-#       - FEIGN_STORE_URL=http://spot-store:8083
-#       - FEIGN_ORDER_URL=http://spot-order:8082
-#     volumes:
-#       - ./config/common.yml:/config/common.yml:ro
-#       - ./config/spot-user.yml:/config/application.yml:ro
-#     depends_on:
-#       - db
-#       - redis
-#     networks:
-#       - spot-network
+  spot-payment:
+    build:
+      context: ./spot-payment
+      dockerfile: Dockerfile
+    container_name: spot-payment
+    ports:
+      - "8084:8084"
+    environment:
+      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+      - FEIGN_ORDER_URL=http://spot-order:8082
+      - FEIGN_USER_URL=http://spot-user:8081
+      - FEIGN_STORE_URL=http://spot-store:8083
+    volumes:
+      - ./config/common.yml:/config/common.yml:ro
+      - ./config/spot-payment.yml:/config/application.yml:ro
+    depends_on:
+      - db
+      - redis
+      - kafka
+    networks:
+      - spot-network
 
-# networks:
-#   spot-network:
-#     driver: bridge
+  spot-store:
+    build:
+      context: ./spot-store
+      dockerfile: Dockerfile
+    container_name: spot-store
+    ports:
+      - "8083:8083"
+    environment:
+      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+      - FEIGN_USER_URL=http://spot-user:8081
+    volumes:
+      - ./config/common.yml:/config/common.yml:ro
+      - ./config/spot-store.yml:/config/application.yml:ro
+    depends_on:
+      - db
+      - redis
+    networks:
+      - spot-network
+
+  spot-user:
+    build:
+      context: ./spot-user
+      dockerfile: Dockerfile
+    container_name: spot-user
+    ports:
+      - "8081:8081"
+    environment:
+      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+      - FEIGN_STORE_URL=http://spot-store:8083
+      - FEIGN_ORDER_URL=http://spot-order:8082
+    volumes:
+      - ./config/common.yml:/config/common.yml:ro
+      - ./config/spot-user.yml:/config/application.yml:ro
+    depends_on:
+      - db
+      - redis
+    networks:
+      - spot-network
+
+networks:
+  spot-network:
+    driver: bridge
+
+volumes:
+  kafka-data:
+  postgres_data:
