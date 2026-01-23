@@ -1,6 +1,15 @@
+# =============================================================================
+# Project Settings
+# =============================================================================
 variable "project" {
   description = "프로젝트 이름"
   type        = string
+}
+
+variable "environment" {
+  description = "환경 (dev, prod)"
+  type        = string
+  default     = "dev"
 }
 
 variable "name_prefix" {
@@ -19,6 +28,9 @@ variable "region" {
   type        = string
 }
 
+# =============================================================================
+# Network Settings
+# =============================================================================
 variable "vpc_id" {
   description = "VPC ID"
   type        = string
@@ -29,19 +41,23 @@ variable "subnet_ids" {
   type        = list(string)
 }
 
-variable "ecr_repository_url" {
-  description = "ECR 저장소 URL"
-  type        = string
+variable "assign_public_ip" {
+  description = "Public IP 할당 여부"
+  type        = bool
+  default     = true
 }
 
+# =============================================================================
+# ALB Integration
+# =============================================================================
 variable "alb_security_group_id" {
   description = "ALB 보안그룹 ID"
   type        = string
 }
 
-variable "target_group_arn" {
-  description = "ALB Target Group ARN"
-  type        = string
+variable "target_group_arns" {
+  description = "ALB Target Group ARN 맵"
+  type        = map(string)
 }
 
 variable "alb_listener_arn" {
@@ -49,32 +65,33 @@ variable "alb_listener_arn" {
   type        = string
 }
 
-variable "container_port" {
-  description = "컨테이너 포트"
-  type        = number
-  default     = 8080
+# =============================================================================
+# ECR Integration
+# =============================================================================
+variable "ecr_repository_urls" {
+  description = "ECR 저장소 URL 맵"
+  type        = map(string)
 }
 
-variable "cpu" {
-  description = "Task CPU"
-  type        = string
-  default     = "256"
+# =============================================================================
+# Services Configuration
+# =============================================================================
+variable "services" {
+  description = "서비스 구성 맵"
+  type = map(object({
+    container_port    = number
+    cpu               = string
+    memory            = string
+    desired_count     = number
+    health_check_path = string
+    path_patterns     = list(string)
+    priority          = number
+    environment_vars  = map(string)
+  }))
 }
 
-variable "memory" {
-  description = "Task Memory"
-  type        = string
-  default     = "512"
-}
-
-variable "desired_count" {
-  description = "희망 태스크 수"
-  type        = number
-  default     = 1
-}
-
-variable "assign_public_ip" {
-  description = "Public IP 할당 여부"
+variable "enable_service_connect" {
+  description = "ECS Service Connect 활성화 여부"
   type        = bool
   default     = true
 }
@@ -86,7 +103,7 @@ variable "log_retention_days" {
 }
 
 # =============================================================================
-# Database 설정
+# Database Settings
 # =============================================================================
 variable "db_endpoint" {
   description = "RDS 엔드포인트"
@@ -108,4 +125,13 @@ variable "db_password" {
   description = "데이터베이스 비밀번호"
   type        = string
   sensitive   = true
+}
+
+# =============================================================================
+# Redis Settings
+# =============================================================================
+variable "redis_endpoint" {
+  description = "Redis 엔드포인트"
+  type        = string
+  default     = ""
 }

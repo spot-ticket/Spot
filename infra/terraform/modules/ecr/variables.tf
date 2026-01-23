@@ -14,6 +14,12 @@ variable "common_tags" {
   default     = {}
 }
 
+variable "service_names" {
+  description = "서비스 이름 목록"
+  type        = set(string)
+  default     = ["order", "payment", "store", "user"]
+}
+
 variable "image_retention_count" {
   description = "유지할 이미지 수"
   type        = number

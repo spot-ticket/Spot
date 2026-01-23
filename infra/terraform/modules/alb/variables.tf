@@ -24,14 +24,12 @@ variable "subnet_ids" {
   type        = list(string)
 }
 
-variable "container_port" {
-  description = "컨테이너 포트"
-  type        = number
-  default     = 8080
-}
-
-variable "health_check_path" {
-  description = "헬스체크 경로"
-  type        = string
-  default     = "/health"
+variable "services" {
+  description = "서비스 구성 맵"
+  type = map(object({
+    container_port    = number
+    health_check_path = string
+    path_patterns     = list(string)
+    priority          = number
+  }))
 }

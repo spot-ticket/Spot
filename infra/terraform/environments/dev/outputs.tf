@@ -22,9 +22,9 @@ output "spring_datasource_url" {
 # =============================================================================
 # ECR
 # =============================================================================
-output "ecr_repository_url" {
-  description = "ECR 저장소 URL"
-  value       = module.ecr.repository_url
+output "ecr_repository_urls" {
+  description = "ECR 저장소 URL 맵"
+  value       = module.ecr.repository_urls
 }
 
 # =============================================================================
@@ -35,9 +35,9 @@ output "ecs_cluster_name" {
   value       = module.ecs.cluster_name
 }
 
-output "ecs_service_name" {
-  description = "ECS 서비스 이름"
-  value       = module.ecs.service_name
+output "ecs_service_names" {
+  description = "ECS 서비스 이름 맵"
+  value       = module.ecs.service_names
 }
 
 # =============================================================================

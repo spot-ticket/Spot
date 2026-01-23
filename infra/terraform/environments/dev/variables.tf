@@ -100,39 +100,80 @@ variable "db_engine_version" {
 }
 
 # =============================================================================
-# ECS 설정
+# MSA Services Configuration
 # =============================================================================
-variable "ecs_cpu" {
-  description = "ECS Task CPU"
-  type        = string
-  default     = "256"
+variable "services" {
+  description = "MSA 서비스 구성 맵"
+  type = map(object({
+    container_port    = number
+    cpu               = string
+    memory            = string
+    desired_count     = number
+    health_check_path = string
+    path_patterns     = list(string)
+    priority          = number
+    environment_vars  = map(string)
+  }))
+  default = {
+    "order" = {
+      container_port    = 8080
+      cpu               = "256"
+      memory            = "512"
+      desired_count     = 1
+      health_check_path = "/actuator/health"
+      path_patterns     = ["/api/orders/*", "/api/orders"]
+      priority          = 100
+      environment_vars = {
+        SERVICE_NAME = "spot-order"
+        DB_SCHEMA    = "orders"
+      }
+    }
+    "payment" = {
+      container_port    = 8080
+      cpu               = "256"
+      memory            = "512"
+      desired_count     = 1
+      health_check_path = "/actuator/health"
+      path_patterns     = ["/api/payments/*", "/api/payments"]
+      priority          = 200
+      environment_vars = {
+        SERVICE_NAME = "spot-payment"
+        DB_SCHEMA    = "payments"
+      }
+    }
+    "store" = {
+      container_port    = 8080
+      cpu               = "256"
+      memory            = "512"
+      desired_count     = 1
+      health_check_path = "/actuator/health"
+      path_patterns     = ["/api/stores/*", "/api/stores"]
+      priority          = 300
+      environment_vars = {
+        SERVICE_NAME = "spot-store"
+        DB_SCHEMA    = "stores"
+      }
+    }
+    "user" = {
+      container_port    = 8080
+      cpu               = "256"
+      memory            = "512"
+      desired_count     = 1
+      health_check_path = "/actuator/health"
+      path_patterns     = ["/api/users/*", "/api/users", "/api/auth/*", "/api/admin/*"]
+      priority          = 400
+      environment_vars = {
+        SERVICE_NAME = "spot-user"
+        DB_SCHEMA    = "users"
+      }
+    }
+  }
 }
 
-variable "ecs_memory" {
-  description = "ECS Task Memory"
-  type        = string
-  default     = "512"
-}
-
-variable "ecs_desired_count" {
-  description = "ECS 희망 태스크 수"
-  type        = number
-  default     = 1
-}
-
-variable "container_port" {
-  description = "컨테이너 포트"
-  type        = number
-  default     = 8080
-}
-
-# =============================================================================
-# ALB 설정
-# =============================================================================
-variable "health_check_path" {
-  description = "헬스체크 경로"
-  type        = string
-  default     = "/"
+variable "enable_service_connect" {
+  description = "ECS Service Connect 활성화 여부"
+  type        = bool
+  default     = true
 }
 
 # =============================================================================

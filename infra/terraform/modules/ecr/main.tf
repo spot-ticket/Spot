@@ -1,22 +1,28 @@
 # =============================================================================
-# ECR Repository
+# ECR Repositories (Multiple Services)
 # =============================================================================
-resource "aws_ecr_repository" "main" {
-  name                 = "${var.project}-backend"
+resource "aws_ecr_repository" "services" {
+  for_each = var.service_names
+
+  name                 = "${var.project}-${each.key}"
   image_tag_mutability = "MUTABLE"
 
   image_scanning_configuration {
     scan_on_push = true
   }
 
-  tags = merge(var.common_tags, { Name = "${var.name_prefix}-ecr-backend" })
+  tags = merge(var.common_tags, {
+    Name    = "${var.name_prefix}-ecr-${each.key}"
+    Service = each.key
+  })
 }
 
 # =============================================================================
-# ECR Lifecycle Policy
+# ECR Lifecycle Policy (per service)
 # =============================================================================
-resource "aws_ecr_lifecycle_policy" "main" {
-  repository = aws_ecr_repository.main.name
+resource "aws_ecr_lifecycle_policy" "services" {
+  for_each   = var.service_names
+  repository = aws_ecr_repository.services[each.key].name
 
   policy = jsonencode({
     rules = [{

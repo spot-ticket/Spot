@@ -38,58 +38,69 @@ module "database" {
 }
 
 # =============================================================================
-# ECR
+# ECR (Multiple Repositories)
 # =============================================================================
 module "ecr" {
   source = "../../modules/ecr"
 
-  project     = var.project
-  name_prefix = local.name_prefix
-  common_tags = local.common_tags
+  project       = var.project
+  name_prefix   = local.name_prefix
+  common_tags   = local.common_tags
+  service_names = toset(keys(var.services))
 }
 
 # =============================================================================
-# ALB
+# ALB (Path-based Routing)
 # =============================================================================
 module "alb" {
   source = "../../modules/alb"
 
-  name_prefix       = local.name_prefix
-  common_tags       = local.common_tags
-  vpc_id            = module.network.vpc_id
-  vpc_cidr          = module.network.vpc_cidr
-  subnet_ids        = module.network.private_subnet_ids
-  container_port    = var.container_port
-  health_check_path = var.health_check_path
+  name_prefix = local.name_prefix
+  common_tags = local.common_tags
+  vpc_id      = module.network.vpc_id
+  vpc_cidr    = module.network.vpc_cidr
+  subnet_ids  = module.network.private_subnet_ids
+
+  services = {
+    for k, v in var.services : k => {
+      container_port    = v.container_port
+      health_check_path = v.health_check_path
+      path_patterns     = v.path_patterns
+      priority          = v.priority
+    }
+  }
 }
 
 # =============================================================================
-# ECS
+# ECS (Multiple Services with Service Connect)
 # =============================================================================
 module "ecs" {
   source = "../../modules/ecs"
 
   project               = var.project
+  environment           = var.environment
   name_prefix           = local.name_prefix
   common_tags           = local.common_tags
   region                = var.region
   vpc_id                = module.network.vpc_id
   subnet_ids            = [module.network.public_subnet_a_id] # NAT 문제로 public 사용
-  ecr_repository_url    = module.ecr.repository_url
+  ecr_repository_urls   = module.ecr.repository_urls
   alb_security_group_id = module.alb.security_group_id
-  target_group_arn      = module.alb.target_group_arn
+  target_group_arns     = module.alb.target_group_arns
   alb_listener_arn      = module.alb.listener_arn
-  container_port        = var.container_port
-  cpu                   = var.ecs_cpu
-  memory                = var.ecs_memory
-  desired_count         = var.ecs_desired_count
   assign_public_ip      = true # NAT 문제로 public IP 사용
+
+  services               = var.services
+  enable_service_connect = var.enable_service_connect
 
   # Database 연결 정보
   db_endpoint = module.database.endpoint
   db_name     = var.db_name
   db_username = var.db_username
   db_password = var.db_password
+
+  # Redis 연결 정보
+  redis_endpoint = module.elasticache.redis_endpoint
 }
 
 # =============================================================================
@@ -161,18 +172,18 @@ module "elasticache" {
 }
 
 # =============================================================================
-# CloudWatch Monitoring (알람/대시보드)
+# CloudWatch Monitoring (Updated for MSA)
 # =============================================================================
 module "monitoring" {
   source = "../../modules/monitoring"
 
-  name_prefix      = local.name_prefix
-  common_tags      = local.common_tags
-  alert_email      = var.alert_email
+  name_prefix = local.name_prefix
+  common_tags = local.common_tags
+  alert_email = var.alert_email
 
-  # ECS 모니터링
+  # ECS 모니터링 (대표 서비스)
   ecs_cluster_name = module.ecs.cluster_name
-  ecs_service_name = module.ecs.service_name
+  ecs_service_name = module.ecs.service_names["user"]
 
   # RDS 모니터링
   rds_instance_id = module.database.instance_id

@@ -36,11 +36,13 @@ resource "aws_lb" "main" {
 }
 
 # =============================================================================
-# Target Group (Blue/Green)
+# Target Groups (Multiple Services)
 # =============================================================================
-resource "aws_lb_target_group" "blue" {
-  name        = "${var.name_prefix}-tg-blue"
-  port        = var.container_port
+resource "aws_lb_target_group" "services" {
+  for_each = var.services
+
+  name        = "${var.name_prefix}-${each.key}-tg"
+  port        = each.value.container_port
   protocol    = "HTTP"
   vpc_id      = var.vpc_id
   target_type = "ip"
@@ -48,18 +50,21 @@ resource "aws_lb_target_group" "blue" {
   health_check {
     enabled             = true
     healthy_threshold   = 2
-    unhealthy_threshold = 2
-    timeout             = 5
+    unhealthy_threshold = 3
+    timeout             = 10
     interval            = 30
-    path                = var.health_check_path
+    path                = each.value.health_check_path
     matcher             = "200"
   }
 
-  tags = merge(var.common_tags, { Name = "${var.name_prefix}-tg-blue" })
+  tags = merge(var.common_tags, {
+    Name    = "${var.name_prefix}-${each.key}-tg"
+    Service = each.key
+  })
 }
 
 # =============================================================================
-# ALB Listener
+# ALB Listener (Default action returns 404)
 # =============================================================================
 resource "aws_lb_listener" "main" {
   load_balancer_arn = aws_lb.main.arn
@@ -67,7 +72,34 @@ resource "aws_lb_listener" "main" {
   protocol          = "HTTP"
 
   default_action {
-    type             = "forward"
-    target_group_arn = aws_lb_target_group.blue.arn
+    type = "fixed-response"
+    fixed_response {
+      content_type = "application/json"
+      message_body = jsonencode({ error = "Not Found", message = "No matching route" })
+      status_code  = "404"
+    }
   }
+}
+
+# =============================================================================
+# ALB Listener Rules (Path-based Routing)
+# =============================================================================
+resource "aws_lb_listener_rule" "services" {
+  for_each = var.services
+
+  listener_arn = aws_lb_listener.main.arn
+  priority     = each.value.priority
+
+  action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.services[each.key].arn
+  }
+
+  condition {
+    path_pattern {
+      values = each.value.path_patterns
+    }
+  }
+
+  tags = merge(var.common_tags, { Service = each.key })
 }
