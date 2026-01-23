@@ -333,75 +333,158 @@ resource "aws_ecs_task_definition" "services" {
             value = var.toss_customer_key
           }
         ] : [],
-        # Gateway 전용 설정 - Spring Cloud Gateway 라우트
+        # Gateway 전용 설정 - Spring Cloud Gateway 라우트 (WebFlux 버전용 새 property 이름)
         each.key == "gateway" ? [
+          # User Service - Auth 관련
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_0_ID"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_0_ID"
+            value = "user-login"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_0_URI"
+            value = "http://user.${var.project}.local:${var.services["user"].container_port}"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_0_PREDICATES_0"
+            value = "Path=/api/login"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_1_ID"
+            value = "user-join"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_1_URI"
+            value = "http://user.${var.project}.local:${var.services["user"].container_port}"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_1_PREDICATES_0"
+            value = "Path=/api/join"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_2_ID"
             value = "user-auth"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_0_URI"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_2_URI"
             value = "http://user.${var.project}.local:${var.services["user"].container_port}"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_0_PREDICATES_0"
-            value = "Path=/api/login,/api/join,/api/auth/refresh"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_2_PREDICATES_0"
+            value = "Path=/api/auth/**"
           },
+          # User Service - Users & Admin
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_1_ID"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_3_ID"
             value = "user-service"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_1_URI"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_3_URI"
             value = "http://user.${var.project}.local:${var.services["user"].container_port}"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_3_PREDICATES_0"
             value = "Path=/api/users/**"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_2_ID"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_4_ID"
+            value = "admin-service"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_4_URI"
+            value = "http://user.${var.project}.local:${var.services["user"].container_port}"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_4_PREDICATES_0"
+            value = "Path=/api/admin/**"
+          },
+          # Store Service
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_5_ID"
             value = "store-service"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_2_URI"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_5_URI"
             value = "http://store.${var.project}.local:${var.services["store"].container_port}"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0"
-            value = "Path=/api/stores/**,/api/categories/**,/api/reviews/**"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_5_PREDICATES_0"
+            value = "Path=/api/stores/**"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_3_ID"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_6_ID"
+            value = "category-service"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_6_URI"
+            value = "http://store.${var.project}.local:${var.services["store"].container_port}"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_6_PREDICATES_0"
+            value = "Path=/api/categories/**"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_7_ID"
+            value = "review-service"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_7_URI"
+            value = "http://store.${var.project}.local:${var.services["store"].container_port}"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_7_PREDICATES_0"
+            value = "Path=/api/reviews/**"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_8_ID"
+            value = "menu-service"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_8_URI"
+            value = "http://store.${var.project}.local:${var.services["store"].container_port}"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_8_PREDICATES_0"
+            value = "Path=/api/menus/**"
+          },
+          # Order Service
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_9_ID"
             value = "order-service"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_3_URI"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_9_URI"
             value = "http://order.${var.project}.local:${var.services["order"].container_port}"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_3_PREDICATES_0"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_9_PREDICATES_0"
             value = "Path=/api/orders/**"
           },
+          # Payment Service
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_4_ID"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_10_ID"
             value = "payment-service"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_4_URI"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_10_URI"
             value = "http://payment.${var.project}.local:${var.services["payment"].container_port}"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_4_PREDICATES_0"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_10_PREDICATES_0"
             value = "Path=/api/payments/**"
           },
+          # Actuator 설정 (새 property 이름)
           {
             name  = "MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE"
-            value = "*"
+            value = "health,info,gateway"
           },
           {
-            name  = "MANAGEMENT_ENDPOINT_GATEWAY_ENABLED"
-            value = "true"
+            name  = "MANAGEMENT_ENDPOINT_GATEWAY_ACCESS"
+            value = "unrestricted"
+          },
+          # 디버깅용 로깅
+          {
+            name  = "LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD_GATEWAY"
+            value = "DEBUG"
           }
         ] : [],
         # 서비스별 커스텀 환경 변수
