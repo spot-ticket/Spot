@@ -103,4 +103,14 @@ public class PaymentController {
         System.out.println("빌링키 존재 여부: " + exists + " (UserId: " + principal.getUserId() + ")");
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, exists);
     }
+
+    @PostMapping("/history")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
+    public ApiResponse<PaymentResponseDto.SavedPaymentHistory> savePaymentHistory(
+            @Valid @RequestBody PaymentRequestDto.SavePaymentHistory request,
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        PaymentResponseDto.SavedPaymentHistory response = paymentService.savePaymentHistory(request);
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
+    }
 }
