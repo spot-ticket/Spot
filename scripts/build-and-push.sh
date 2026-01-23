@@ -10,7 +10,7 @@ ECR_REGISTRY="${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
 PROJECT="spot"
 
 # 서비스 목록
-SERVICES=("order" "payment" "store" "user")
+SERVICES=("gateway" "order" "payment" "store" "user")
 
 # =============================================================================
 # ECR 로그인
@@ -47,9 +47,9 @@ for SERVICE in "${SERVICES[@]}"; do
     cd "${SERVICE_DIR}"
     ./gradlew clean build -x test
 
-    # 2. Docker 이미지 빌드
+    # 2. Docker 이미지 빌드 (AMD64 for Fargate)
     echo "🐳 Docker 이미지 빌드 중..."
-    docker build -t ${ECR_REPO}:latest .
+    docker build --no-cache --platform linux/amd64 -t ${ECR_REPO}:latest .
 
     # 3. 태그 지정
     docker tag ${ECR_REPO}:latest ${IMAGE_TAG}

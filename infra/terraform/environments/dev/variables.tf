@@ -115,8 +115,21 @@ variable "services" {
     environment_vars  = map(string)
   }))
   default = {
-    "order" = {
+    "gateway" = {
       container_port    = 8080
+      cpu               = "256"
+      memory            = "512"
+      desired_count     = 1
+      health_check_path = "/actuator/health"
+      # 모든 트래픽을 Gateway로 몰아주기 위해 /* 패턴 사용
+      path_patterns     = ["/*"]
+      priority          = 1   # 가장 높은 우선순위
+      environment_vars = {
+        SERVICE_NAME = "spot-gateway"
+      }
+    }
+    "order" = {
+      container_port    = 8082
       cpu               = "256"
       memory            = "512"
       desired_count     = 1
@@ -129,7 +142,7 @@ variable "services" {
       }
     }
     "payment" = {
-      container_port    = 8080
+      container_port    = 8084
       cpu               = "256"
       memory            = "512"
       desired_count     = 1
@@ -142,7 +155,7 @@ variable "services" {
       }
     }
     "store" = {
-      container_port    = 8080
+      container_port    = 8083
       cpu               = "256"
       memory            = "512"
       desired_count     = 1
@@ -155,7 +168,7 @@ variable "services" {
       }
     }
     "user" = {
-      container_port    = 8080
+      container_port    = 8081
       cpu               = "256"
       memory            = "512"
       desired_count     = 1
@@ -243,4 +256,66 @@ variable "alert_email" {
   description = "알람 알림 받을 이메일 (빈 값이면 구독 안함)"
   type        = string
   default     = ""
+}
+
+# =============================================================================
+# JWT 설정
+# =============================================================================
+variable "jwt_secret" {
+  description = "JWT 시크릿 키"
+  type        = string
+  sensitive   = true
+}
+
+variable "jwt_expire_ms" {
+  description = "JWT 만료 시간 (밀리초)"
+  type        = number
+  default     = 3600000
+}
+
+variable "refresh_token_expire_days" {
+  description = "리프레시 토큰 만료 일수"
+  type        = number
+  default     = 14
+}
+
+# =============================================================================
+# Mail 설정
+# =============================================================================
+variable "mail_username" {
+  description = "SMTP 사용자 이름 (Gmail)"
+  type        = string
+  default     = ""
+}
+
+variable "mail_password" {
+  description = "SMTP 비밀번호 (Gmail 앱 비밀번호)"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+# =============================================================================
+# Toss Payments 설정
+# =============================================================================
+variable "toss_secret_key" {
+  description = "Toss Payments 시크릿 키"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "toss_customer_key" {
+  description = "Toss Payments 고객 키"
+  type        = string
+  default     = "customer_1"
+}
+
+# =============================================================================
+# Service 설정
+# =============================================================================
+variable "service_active_regions" {
+  description = "서비스 활성 지역"
+  type        = string
+  default     = "종로구"
 }

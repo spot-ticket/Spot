@@ -9,10 +9,10 @@ resource "aws_service_discovery_private_dns_namespace" "main" {
 }
 
 # =============================================================================
-# Cloud Map Services (Multiple)
+# Cloud Map Services (Multiple) - Only when Service Connect is disabled
 # =============================================================================
 resource "aws_service_discovery_service" "services" {
-  for_each = var.services
+  for_each = var.enable_service_connect ? {} : var.services
 
   name = each.key
 
@@ -75,7 +75,7 @@ resource "aws_security_group" "msa_sg" {
   description = "Security group for MSA services"
   vpc_id      = var.vpc_id
 
-  # ALB에서 들어오는 트래픽 허용
+  # ALB에서 들어오는 트래픽 허용 (Gateway: 8080)
   ingress {
     description     = "Traffic from ALB"
     from_port       = 8080
@@ -84,11 +84,11 @@ resource "aws_security_group" "msa_sg" {
     security_groups = [var.alb_security_group_id]
   }
 
-  # Service Connect를 위한 자기 참조 규칙 (서비스 간 통신)
+  # Service Connect를 위한 자기 참조 규칙 (서비스 간 통신: 8080-8084)
   ingress {
     description = "Inter-service communication"
     from_port   = 8080
-    to_port     = 8080
+    to_port     = 8084
     protocol    = "tcp"
     self        = true
   }
@@ -221,6 +221,17 @@ resource "aws_ecs_task_definition" "services" {
             value = var.environment
           },
           {
+            name  = "SPRING_DATA_REDIS_HOST"
+            value = var.redis_endpoint
+          },
+          {
+            name  = "SPRING_DATA_REDIS_PORT"
+            value = "6379"
+          }
+        ],
+        # 백엔드 서비스 전용 (gateway 제외) - DB, JPA, JWT 설정
+        each.key != "gateway" ? [
+          {
             name  = "SPRING_DATASOURCE_URL"
             value = "jdbc:postgresql://${var.db_endpoint}/${var.db_name}?currentSchema=${lookup(each.value.environment_vars, "DB_SCHEMA", each.key)}"
           },
@@ -233,31 +244,166 @@ resource "aws_ecs_task_definition" "services" {
             value = var.db_password
           },
           {
-            name  = "SPRING_DATA_REDIS_HOST"
-            value = var.redis_endpoint
+            name  = "SPRING_JPA_HIBERNATE_DDL_AUTO"
+            value = "update"
           },
           {
-            name  = "SPRING_DATA_REDIS_PORT"
-            value = "6379"
-          },
-          # Service Discovery 환경 변수 (다른 서비스 URL)
-          {
-            name  = "ORDER_SERVICE_URL"
-            value = "http://order.${var.project}.local:8080"
+            name  = "SPRING_JPA_SHOW_SQL"
+            value = "false"
           },
           {
-            name  = "PAYMENT_SERVICE_URL"
-            value = "http://payment.${var.project}.local:8080"
+            name  = "SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT"
+            value = "org.hibernate.dialect.PostgreSQLDialect"
           },
           {
-            name  = "STORE_SERVICE_URL"
-            value = "http://store.${var.project}.local:8080"
+            name  = "SPRING_JWT_SECRET"
+            value = var.jwt_secret
           },
           {
-            name  = "USER_SERVICE_URL"
-            value = "http://user.${var.project}.local:8080"
+            name  = "SPRING_JWT_EXPIRE_MS"
+            value = tostring(var.jwt_expire_ms)
+          },
+          {
+            name  = "SPRING_SECURITY_REFRESH_TOKEN_EXPIRE_DAYS"
+            value = tostring(var.refresh_token_expire_days)
+          },
+          {
+            name  = "SERVICE_ACTIVE_REGIONS"
+            value = var.service_active_regions
           }
-        ],
+        ] : [],
+        # Service Discovery 환경 변수 (Feign Client URLs)
+        each.key != "gateway" ? [
+          {
+            name  = "FEIGN_ORDER_URL"
+            value = "http://order.${var.project}.local:${var.services["order"].container_port}"
+          },
+          {
+            name  = "FEIGN_PAYMENT_URL"
+            value = "http://payment.${var.project}.local:${var.services["payment"].container_port}"
+          },
+          {
+            name  = "FEIGN_STORE_URL"
+            value = "http://store.${var.project}.local:${var.services["store"].container_port}"
+          },
+          {
+            name  = "FEIGN_USER_URL"
+            value = "http://user.${var.project}.local:${var.services["user"].container_port}"
+          }
+        ] : [],
+        # Mail 설정 (user 서비스용)
+        each.key == "user" ? [
+          {
+            name  = "SPRING_MAIL_HOST"
+            value = var.mail_host
+          },
+          {
+            name  = "SPRING_MAIL_PORT"
+            value = tostring(var.mail_port)
+          },
+          {
+            name  = "SPRING_MAIL_USERNAME"
+            value = var.mail_username
+          },
+          {
+            name  = "SPRING_MAIL_PASSWORD"
+            value = var.mail_password
+          },
+          {
+            name  = "SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH"
+            value = "true"
+          },
+          {
+            name  = "SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE"
+            value = "true"
+          }
+        ] : [],
+        # Toss 결제 설정 (payment 서비스용)
+        each.key == "payment" ? [
+          {
+            name  = "TOSS_PAYMENTS_BASE_URL"
+            value = var.toss_base_url
+          },
+          {
+            name  = "TOSS_PAYMENTS_SECRET_KEY"
+            value = var.toss_secret_key
+          },
+          {
+            name  = "TOSS_PAYMENTS_CUSTOMER_KEY"
+            value = var.toss_customer_key
+          }
+        ] : [],
+        # Gateway 전용 설정 - Spring Cloud Gateway 라우트
+        each.key == "gateway" ? [
+          {
+            name  = "SPRING_CLOUD_GATEWAY_ROUTES_0_ID"
+            value = "user-auth"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_ROUTES_0_URI"
+            value = "http://user.${var.project}.local:${var.services["user"].container_port}"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_ROUTES_0_PREDICATES_0"
+            value = "Path=/api/login,/api/join,/api/auth/refresh"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_ROUTES_1_ID"
+            value = "user-service"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_ROUTES_1_URI"
+            value = "http://user.${var.project}.local:${var.services["user"].container_port}"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0"
+            value = "Path=/api/users/**"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_ROUTES_2_ID"
+            value = "store-service"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_ROUTES_2_URI"
+            value = "http://store.${var.project}.local:${var.services["store"].container_port}"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0"
+            value = "Path=/api/stores/**,/api/categories/**,/api/reviews/**"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_ROUTES_3_ID"
+            value = "order-service"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_ROUTES_3_URI"
+            value = "http://order.${var.project}.local:${var.services["order"].container_port}"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_ROUTES_3_PREDICATES_0"
+            value = "Path=/api/orders/**"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_ROUTES_4_ID"
+            value = "payment-service"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_ROUTES_4_URI"
+            value = "http://payment.${var.project}.local:${var.services["payment"].container_port}"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_ROUTES_4_PREDICATES_0"
+            value = "Path=/api/payments/**"
+          },
+          {
+            name  = "MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE"
+            value = "*"
+          },
+          {
+            name  = "MANAGEMENT_ENDPOINT_GATEWAY_ENABLED"
+            value = "true"
+          }
+        ] : [],
         # 서비스별 커스텀 환경 변수
         [for k, v in each.value.environment_vars : {
           name  = k
@@ -299,10 +445,13 @@ resource "aws_ecs_service" "services" {
   desired_count   = each.value.desired_count
   launch_type     = "FARGATE"
 
-  load_balancer {
-    target_group_arn = var.target_group_arns[each.key]
-    container_name   = "${var.project}-${each.key}-container"
-    container_port   = each.value.container_port
+  dynamic "load_balancer" {
+    for_each = each.key == "gateway" ? [1] : []
+    content {
+      target_group_arn = var.target_group_arns[each.key]
+      container_name   = "${var.project}-${each.key}-container"
+      container_port   = each.value.container_port
+    }
   }
 
   network_configuration {
@@ -339,11 +488,14 @@ resource "aws_ecs_service" "services" {
     }
   }
 
-  # Service Discovery Registration
-  service_registries {
-    registry_arn   = aws_service_discovery_service.services[each.key].arn
-    container_name = "${var.project}-${each.key}-container"
-    container_port = each.value.container_port
+  # Service Discovery Registration (only when Service Connect is disabled)
+  dynamic "service_registries" {
+    for_each = var.enable_service_connect ? [] : [1]
+    content {
+      registry_arn   = aws_service_discovery_service.services[each.key].arn
+      container_name = "${var.project}-${each.key}-container"
+      container_port = each.value.container_port
+    }
   }
 
   depends_on = [var.alb_listener_arn]

@@ -135,3 +135,83 @@ variable "redis_endpoint" {
   type        = string
   default     = ""
 }
+
+# =============================================================================
+# JWT Settings
+# =============================================================================
+variable "jwt_secret" {
+  description = "JWT 시크릿 키"
+  type        = string
+  sensitive   = true
+}
+
+variable "jwt_expire_ms" {
+  description = "JWT 만료 시간 (밀리초)"
+  type        = number
+  default     = 3600000
+}
+
+variable "refresh_token_expire_days" {
+  description = "리프레시 토큰 만료 일수"
+  type        = number
+  default     = 14
+}
+
+# =============================================================================
+# Mail Settings
+# =============================================================================
+variable "mail_host" {
+  description = "SMTP 호스트"
+  type        = string
+  default     = "smtp.gmail.com"
+}
+
+variable "mail_port" {
+  description = "SMTP 포트"
+  type        = number
+  default     = 587
+}
+
+variable "mail_username" {
+  description = "SMTP 사용자 이름"
+  type        = string
+  default     = ""
+}
+
+variable "mail_password" {
+  description = "SMTP 비밀번호"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+# =============================================================================
+# Toss Payments Settings
+# =============================================================================
+variable "toss_base_url" {
+  description = "Toss Payments API URL"
+  type        = string
+  default     = "https://api.tosspayments.com"
+}
+
+variable "toss_secret_key" {
+  description = "Toss Payments 시크릿 키"
+  type        = string
+  sensitive   = true
+  default     = ""
+}
+
+variable "toss_customer_key" {
+  description = "Toss Payments 고객 키"
+  type        = string
+  default     = "customer_1"
+}
+
+# =============================================================================
+# Service Settings
+# =============================================================================
+variable "service_active_regions" {
+  description = "서비스 활성 지역"
+  type        = string
+  default     = "종로구"
+}

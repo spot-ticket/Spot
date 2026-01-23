@@ -25,3 +25,16 @@ provider "aws" {
     tags = local.common_tags
   }
 }
+
+provider "postgresql" {
+  host     = var.db_endpoint
+  username = var.db_username
+  password = var.db_password
+  database = var.db_name
+  sslmode  = "require"
+}
+
+resource "postgresql_schema" "users" {
+  name  = "users"  # var.services["user"].environment_vars["DB_SCHEMA"] 값과 일치해야 함
+  owner = var.db_username
+}

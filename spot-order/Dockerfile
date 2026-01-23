@@ -3,5 +3,5 @@ WORKDIR /app
 
 COPY build/libs/spot-order-0.0.1-SNAPSHOT.jar app.jar
 
-EXPOSE 8080
-ENTRYPOINT ["java", "-jar", "app.jar", "--spring.config.location=optional:classpath:/application.yml,optional:classpath:/application.properties,file:/config/application.yml"]
+EXPOSE 8082
+ENTRYPOINT ["java", "-jar", "app.jar"]

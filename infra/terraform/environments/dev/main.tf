@@ -50,7 +50,7 @@ module "ecr" {
 }
 
 # =============================================================================
-# ALB (Path-based Routing)
+# ALB (Gateway Pass-through)
 # =============================================================================
 module "alb" {
   source = "../../modules/alb"
@@ -61,12 +61,13 @@ module "alb" {
   vpc_cidr    = module.network.vpc_cidr
   subnet_ids  = module.network.private_subnet_ids
 
+  # Gateway만 ALB에 연결 - 모든 트래픽이 Spring Gateway로 전달됨
   services = {
-    for k, v in var.services : k => {
-      container_port    = v.container_port
-      health_check_path = v.health_check_path
-      path_patterns     = v.path_patterns
-      priority          = v.priority
+    "gateway" = {
+      container_port    = var.services["gateway"].container_port
+      health_check_path = var.services["gateway"].health_check_path
+      path_patterns     = ["/*"]
+      priority          = 1
     }
   }
 }
@@ -101,6 +102,22 @@ module "ecs" {
 
   # Redis 연결 정보
   redis_endpoint = module.elasticache.redis_endpoint
+
+  # JWT 설정
+  jwt_secret                = var.jwt_secret
+  jwt_expire_ms             = var.jwt_expire_ms
+  refresh_token_expire_days = var.refresh_token_expire_days
+
+  # Mail 설정
+  mail_username = var.mail_username
+  mail_password = var.mail_password
+
+  # Toss 결제 설정
+  toss_secret_key   = var.toss_secret_key
+  toss_customer_key = var.toss_customer_key
+
+  # 서비스 설정
+  service_active_regions = var.service_active_regions
 }
 
 # =============================================================================
