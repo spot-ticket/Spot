@@ -13,8 +13,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.Spot.global.infrastructure.config.security.CustomUserDetails;
 import com.example.Spot.global.presentation.ApiResponse;
-import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.presentation.dto.request.OrderCancelRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
