@@ -11,8 +11,6 @@ import feign.RequestTemplate;
 public class FeignHeaderRelayInterceptor implements RequestInterceptor {
 
     private static final String HEADER_AUTHORIZATION = "Authorization";
-    private static final String HEADER_USER_ID = "X-User-Id";
-    private static final String HEADER_ROLE = "X-Role";
 
     @Override
     public void apply(RequestTemplate template) {
@@ -26,8 +24,6 @@ public class FeignHeaderRelayInterceptor implements RequestInterceptor {
         HttpServletRequest request = attrs.getRequest();
 
         relayHeader(request, template, HEADER_AUTHORIZATION);
-        relayHeader(request, template, HEADER_USER_ID);
-        relayHeader(request, template, HEADER_ROLE);
     }
 
     private void relayHeader(HttpServletRequest request, RequestTemplate template, String headerName) {

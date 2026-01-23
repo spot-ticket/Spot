@@ -13,9 +13,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Spot.global.common.Role;
+import com.example.Spot.global.infrastructure.config.security.CustomUserDetails;
 import com.example.Spot.global.presentation.ApiResponse;
 import com.example.Spot.global.presentation.code.GeneralSuccessCode;
-import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.menu.application.service.MenuOptionService;
 import com.example.Spot.menu.presentation.dto.request.CreateMenuOptionRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuOptionHiddenRequestDto;
@@ -43,7 +43,7 @@ public class MenuOptionController {
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
         Integer userId = principal.getUserId();
-        Role userRole = principal.getUserRole();
+        Role userRole = principal.getRole();
         CreateMenuOptionResponseDto data = menuOptionService.createMenuOption(storeId, menuId, userId, userRole, request);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
@@ -60,7 +60,7 @@ public class MenuOptionController {
             @Valid @RequestBody UpdateMenuOptionRequestDto request
     ) {
         Integer userId = principal.getUserId();
-        Role userRole = principal.getUserRole();
+        Role userRole = principal.getRole();
         MenuOptionAdminResponseDto data = menuOptionService.updateMenuOption(storeId, menuId, optionId, userId, userRole, request);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
@@ -75,7 +75,7 @@ public class MenuOptionController {
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
         Integer userId = principal.getUserId();
-        Role userRole = principal.getUserRole();
+        Role userRole = principal.getRole();
         menuOptionService.deleteMenuOption(storeId, menuId, optionId, userId, userRole);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, "해당 옵션이 삭제되었습니다.");
@@ -91,7 +91,7 @@ public class MenuOptionController {
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
         Integer userId = principal.getUserId();
-        Role userRole = principal.getUserRole();
+        Role userRole = principal.getRole();
         menuOptionService.hiddenMenuOption(storeId, menuId, optionId, userId, userRole, request);
 
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, "해당 메뉴의 옵션을 숨김 처리하였습니다.");
