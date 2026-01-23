@@ -1,4 +1,4 @@
-package com.example.spot.filter;
+package com.example.Spot.filter;
 
 import java.util.UUID;
 
