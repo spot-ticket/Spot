@@ -36,8 +36,6 @@ spring:
               uri: http://spot-store:8083
               predicates:
                 - Path=/api/stores/**, /api/categories/**, /api/reviews/**
-              filters:
-                - RewritePath=/api/stores/(?<segment>.*), /stores/${segment}
 
             - id: order-service
               uri: http://spot-order:8082

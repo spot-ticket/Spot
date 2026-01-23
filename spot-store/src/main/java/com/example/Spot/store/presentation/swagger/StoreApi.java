@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.example.Spot.global.feign.dto.StorePageResponse;
-import com.example.Spot.infra.auth.security.CustomUserDetails;
+import com.example.Spot.global.infrastructure.config.security.CustomUserDetails;
 import com.example.Spot.store.presentation.dto.request.StoreCreateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUserUpdateRequest;

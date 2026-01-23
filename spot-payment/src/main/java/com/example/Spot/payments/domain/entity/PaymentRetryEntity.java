@@ -138,17 +138,17 @@ public class PaymentRetryEntity extends BaseEntity {
   }
 
   public enum RetryStatus {
-    PENDING, // 재시도 대기 중
+    PENDING,     // 재시도 대기 중
     IN_PROGRESS, // 재시도 진행 중
-    SUCCEEDED, // 재시도 성공
-    EXHAUSTED, // 최대 횟수 초과
-    ABANDONED // 수동으로 중단됨
+    SUCCEEDED,   // 재시도 성공
+    EXHAUSTED,   // 최대 횟수 초과
+    ABANDONED    // 수동으로 중단됨
   }
 
   public enum RetryStrategy {
-    FIXED_INTERVAL, // 고정 간격 (5분마다)
-    LINEAR_BACKOFF, // 선형 증가 (5, 10, 15, 20분...)
+    FIXED_INTERVAL,      // 고정 간격 (5분마다)
+    LINEAR_BACKOFF,      // 선형 증가 (5, 10, 15, 20분...)
     EXPONENTIAL_BACKOFF, // 지수 증가 (5, 10, 20, 40분...)
-    CUSTOM // 커스텀 전략
+    CUSTOM               // 커스텀 전략
   }
 }

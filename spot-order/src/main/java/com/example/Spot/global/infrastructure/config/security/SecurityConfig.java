@@ -2,6 +2,7 @@ package com.example.Spot.global.infrastructure.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -9,12 +10,16 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.example.Spot.infra.auth.security.DevAuthFilter;
-
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
+
+    private final JWTUtil jwtUtil;
+
+    public SecurityConfig(JWTUtil jwtUtil) {
+        this.jwtUtil = jwtUtil;
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -25,18 +30,30 @@ public class SecurityConfig {
 
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authorizeHttpRequests(auth -> auth
-//                .requestMatchers("OPTIONS", "/**").permitAll()
-//                .requestMatchers(
-//                        "/", "/swagger-ui/**", "/v3/api-docs/**",
-//                        "/api/stores/**", "/api/categories/**"
-//                ).permitAll()
-//                .anyRequest().authenticated()
-                        .anyRequest().permitAll()
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                .requestMatchers(
+                        "/", "/swagger-ui/**", "/v3/api-docs/**"
+                ).permitAll()
+                .anyRequest().authenticated()
         );
 
-        // 개발/CI용: 임시 principal 주입 (예: OWNER)
-        http.addFilterBefore(new DevAuthFilter(), UsernamePasswordAuthenticationFilter.class);
+        http.exceptionHandling(exceptions -> exceptions
+                .authenticationEntryPoint((request, response, authException) -> {
+                    response.setStatus(401);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"error\":\"Unauthorized\",\"message\":\"" + authException.getMessage() + "\"}");
+                })
+                .accessDeniedHandler((request, response, accessDeniedException) -> {
+                    response.setStatus(403);
+                    response.setContentType("application/json;charset=UTF-8");
+                    response.getWriter().write("{\"error\":\"Forbidden\",\"message\":\"Access Denied\"}");
+                })
+        );
 
+        http.addFilterBefore(
+                new JWTFilter(jwtUtil),
+                UsernamePasswordAuthenticationFilter.class
+        );
         return http.build();
     }
 }

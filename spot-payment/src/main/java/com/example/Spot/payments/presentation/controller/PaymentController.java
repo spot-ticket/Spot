@@ -11,9 +11,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.Spot.global.infrastructure.config.security.CustomUserDetails;
 import com.example.Spot.global.presentation.ApiResponse;
 import com.example.Spot.global.presentation.code.GeneralSuccessCode;
-import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.payments.application.service.PaymentService;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
@@ -102,5 +102,15 @@ public class PaymentController {
         boolean exists = paymentService.hasBillingAuth(principal.getUserId());
         System.out.println("빌링키 존재 여부: " + exists + " (UserId: " + principal.getUserId() + ")");
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, exists);
+    }
+
+    @PostMapping("/history")
+    @PreAuthorize("hasAnyRole('CUSTOMER', 'OWNER', 'MANAGER', 'MASTER')")
+    public ApiResponse<PaymentResponseDto.SavedPaymentHistory> savePaymentHistory(
+            @Valid @RequestBody PaymentRequestDto.SavePaymentHistory request,
+            @AuthenticationPrincipal CustomUserDetails principal
+    ) {
+        PaymentResponseDto.SavedPaymentHistory response = paymentService.savePaymentHistory(request);
+        return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
     }
 }
