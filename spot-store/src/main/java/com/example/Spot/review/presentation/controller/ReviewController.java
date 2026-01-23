@@ -19,9 +19,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.example.Spot.global.infrastructure.config.security.CustomUserDetails;
 import com.example.Spot.global.presentation.ApiResponse;
 import com.example.Spot.global.presentation.code.GeneralSuccessCode;
-import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.review.application.service.ReviewService;
 import com.example.Spot.review.presentation.dto.request.ReviewCreateRequest;
 import com.example.Spot.review.presentation.dto.request.ReviewUpdateRequest;
@@ -101,8 +101,9 @@ public class ReviewController {
             @PathVariable UUID reviewId,
             @AuthenticationPrincipal CustomUserDetails principal) {
 
-        String role = principal.getRole();
-        boolean isAdmin = "MASTER".equals(role) || "MANAGER".equals(role);
+        boolean isAdmin = principal != null &&
+                ("MANAGER".equals(principal.getRole()) || "MASTER".equals(principal.getRole()));
+
         reviewService.deleteReview(reviewId, principal.getUserId(), isAdmin);
 
         return ResponseEntity.ok(

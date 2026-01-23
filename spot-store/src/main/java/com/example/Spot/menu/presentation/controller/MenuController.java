@@ -15,9 +15,9 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Spot.global.common.Role;
+import com.example.Spot.global.infrastructure.config.security.CustomUserDetails;
 import com.example.Spot.global.presentation.ApiResponse;
 import com.example.Spot.global.presentation.code.GeneralSuccessCode;
-import com.example.Spot.infra.auth.security.CustomUserDetails;
 import com.example.Spot.menu.application.service.MenuService;
 import com.example.Spot.menu.presentation.dto.request.CreateMenuRequestDto;
 import com.example.Spot.menu.presentation.dto.request.UpdateMenuHiddenRequestDto;
@@ -44,7 +44,7 @@ public class MenuController {
     ) {
 
         Integer userId = principal.getUserId();
-        Role userRole = principal.getUserRole();
+        Role userRole = principal.getRole();
 
         List<? extends MenuResponseDto> data = menuService.getMenus(storeId, userId, userRole);
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, data);
@@ -59,7 +59,7 @@ public class MenuController {
     ) {
 
         Integer userId = principal.getUserId();
-        Role userRole = principal.getUserRole();
+        Role userRole = principal.getRole();
 
         MenuResponseDto response = menuService.getMenuDetail(storeId, menuId, userId, userRole);
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
@@ -75,7 +75,7 @@ public class MenuController {
     ) {
 
         Integer userId = principal.getUserId();
-        Role userRole = principal.getUserRole();
+        Role userRole = principal.getRole();
 
         CreateMenuResponseDto data = menuService.createMenu(storeId, request, userId, userRole);
 
@@ -93,7 +93,7 @@ public class MenuController {
     ) {
 
         Integer userId = principal.getUserId();
-        Role userRole = principal.getUserRole();
+        Role userRole = principal.getRole();
 
         MenuAdminResponseDto data = menuService.updateMenu(storeId, menuId, request, userId, userRole);
 
@@ -109,7 +109,7 @@ public class MenuController {
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
         Integer userId = principal.getUserId();
-        Role userRole = principal.getUserRole();
+        Role userRole = principal.getRole();
 
         menuService.deleteMenu(menuId, userId, userRole);
 
@@ -125,7 +125,7 @@ public class MenuController {
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
         Integer userId = principal.getUserId();
-        Role userRole = principal.getUserRole();
+        Role userRole = principal.getRole();
 
         menuService.hiddenMenu(menuId, request, userId, userRole);
 

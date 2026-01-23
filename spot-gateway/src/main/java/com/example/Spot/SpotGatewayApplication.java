@@ -1,9 +1,9 @@
-package com.example.spot;
+package com.example.Spot;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-@SpringBootApplication
+@SpringBootApplication(scanBasePackages = "com.example.Spot")
 public class SpotGatewayApplication {
 
     public static void main(String[] args) {

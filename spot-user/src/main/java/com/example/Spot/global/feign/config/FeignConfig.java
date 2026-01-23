@@ -5,6 +5,8 @@ import org.springframework.context.annotation.Configuration;
 
 import feign.RequestInterceptor;
 
+
+
 @Configuration
 public class FeignConfig {
 
