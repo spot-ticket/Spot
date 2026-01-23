@@ -1,7 +1,7 @@
 package com.example.Spot.order.event.publish;
 
-import java.math.BigDecimal;
 import java.util.UUID;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

@@ -11,6 +11,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,6 +29,7 @@ import com.example.Spot.order.domain.entity.OrderItemOptionEntity;
 import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.domain.repository.OrderRepository;
+import com.example.Spot.order.event.publish.OrderCreatedEvent;
 import com.example.Spot.order.infrastructure.aop.OrderStatusChange;
 import com.example.Spot.order.infrastructure.aop.OrderValidationContext;
 import com.example.Spot.order.infrastructure.aop.StoreOwnershipRequired;
@@ -50,6 +52,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final PaymentClient paymentClient;
     private final StoreClient storeClient;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
     @Override
     @Transactional
@@ -98,8 +101,20 @@ public class OrderServiceImpl implements OrderService {
         }
 
         OrderEntity savedOrder = orderRepository.save(order);
+        OrderResponseDto responseDto = OrderResponseDto.from(savedOrder);
+        
+        OrderCreatedEvent event = OrderCreatedEvent.builder()
+                .orderId(savedOrder.getId())
+                .userId(userId)
+                .amount(responseDto.getTotalAmount().longValue())
+                .title(savedOrder.getOrderNumber() + "결제")
+                .content("Spot 주문 결제 요청")
+                .paymentMethod("CREDIT_CARD")
+                .build();
 
-        return OrderResponseDto.from(savedOrder);
+        kafkaTemplate.send("order-create-topic", event);
+
+        return responseDto;
     }
 
     @Override
