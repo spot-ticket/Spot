@@ -1,6 +1,7 @@
 package com.example.Spot.payments.event.subscribe;
 
 import java.util.UUID;
+
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
