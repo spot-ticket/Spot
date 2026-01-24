@@ -1,4 +1,4 @@
-package com.example.Spot.infra.feign.exception;
+package com.example.Spot.global.feign.config.exception;
 
 public class RemoteServiceUnavailableException extends RuntimeException {
     public RemoteServiceUnavailableException(String methodKey) {
