@@ -23,3 +23,13 @@ variable "alb_listener_arn" {
   description = "ALB Listener ARN"
   type        = string
 }
+
+variable "cognito_issuer" {
+  description = "Cognito Issuer URL (https://cognito-idp.<region>.amazonaws.com/<userPoolId>)"
+  type        = string
+}
+
+variable "cognito_audience" {
+  description = "Cognito App Client ID (audience)"
+  type        = string
+}

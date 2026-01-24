@@ -131,6 +131,9 @@ module "api_gateway" {
   subnet_ids            = module.network.private_subnet_ids
   ecs_security_group_id = module.ecs.security_group_id
   alb_listener_arn      = module.alb.listener_arn
+
+  cognito_issuer   = module.cognito.cognito_issuer_url
+  cognito_audience = module.cognito.cognito_app_client_id
 }
 
 # =============================================================================
@@ -210,4 +213,16 @@ module "monitoring" {
 
   # Redis 모니터링 (선택)
   redis_cluster_id = "${local.name_prefix}-redis-001"
+}
+
+
+# =============================================================================
+# Cognito
+# =============================================================================
+module "cognito" {
+  source = "../../modules/cognito"
+
+  aws_region       = var.region
+  name_prefix      = local.name_prefix
+  user_service_url = var.user_service_url
 }

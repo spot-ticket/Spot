@@ -40,7 +40,38 @@ resource "aws_apigatewayv2_route" "main" {
   api_id    = aws_apigatewayv2_api.main.id
   route_key = "ANY /{proxy+}"
   target    = "integrations/${aws_apigatewayv2_integration.main.id}"
+
+  authorization_type = "JWT"
+  authorizer_id      = aws_apigatewayv2_authorizer.cognito_jwt.id
 }
+
+resource "aws_apigatewayv2_route" "options" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "OPTIONS /{proxy+}"
+  target    = "integrations/${aws_apigatewayv2_integration.main.id}"
+
+  authorization_type = "NONE"
+}
+
+# 로그인 / 회원가입을 위한 공개 라우트
+# 개발 이후 삭제할 것
+resource "aws_apigatewayv2_route" "public_api_join" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "POST /api/join"
+  target    = "integrations/${aws_apigatewayv2_integration.main.id}"
+
+  authorization_type = "NONE"
+}
+
+resource "aws_apigatewayv2_route" "public_api_login" {
+  api_id    = aws_apigatewayv2_api.main.id
+  route_key = "POST /api/login"
+  target    = "integrations/${aws_apigatewayv2_integration.main.id}"
+
+  authorization_type = "NONE"
+}
+
+
 
 # =============================================================================
 # Stage
@@ -51,4 +82,20 @@ resource "aws_apigatewayv2_stage" "main" {
   auto_deploy = true
 
   tags = merge(var.common_tags, { Name = "${var.name_prefix}-stage" })
+}
+
+# =============================================================================
+# Cognito
+# =============================================================================
+resource "aws_apigatewayv2_authorizer" "cognito_jwt" {
+  api_id          = aws_apigatewayv2_api.main.id
+  name            = "${var.name_prefix}-cognito-jwt"
+  authorizer_type = "JWT"
+
+  identity_sources = ["$request.header.Authorization"]
+
+  jwt_configuration {
+    issuer   = var.cognito_issuer
+    audience = [var.cognito_audience]
+  }
 }
