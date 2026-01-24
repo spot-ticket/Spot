@@ -39,6 +39,8 @@ import com.example.Spot.order.presentation.dto.request.OrderItemOptionRequestDto
 import com.example.Spot.order.presentation.dto.request.OrderItemRequestDto;
 import com.example.Spot.order.presentation.dto.response.OrderResponseDto;
 import com.example.Spot.order.presentation.dto.response.OrderStatsResponseDto;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +54,8 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final PaymentClient paymentClient;
     private final StoreClient storeClient;
-    private final KafkaTemplate<String, Object> kafkaTemplate;
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
 
     @Override
     @Transactional
@@ -107,12 +110,16 @@ public class OrderServiceImpl implements OrderService {
                 .orderId(savedOrder.getId())
                 .userId(userId)
                 .amount(responseDto.getTotalAmount().longValue())
-                .title(savedOrder.getOrderNumber() + "결제")
-                .content("Spot 주문 결제 요청")
-                .paymentMethod("CREDIT_CARD")
                 .build();
-
-        kafkaTemplate.send("order-create-topic", event);
+        
+        String payload;
+        try {
+            payload = objectMapper.writeValueAsString(event);
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException("OrderCreatedEvent 직렬화 실패", e);
+        }
+        
+        kafkaTemplate.send("order-created-topic", payload);
 
         return responseDto;
     }

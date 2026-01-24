@@ -16,7 +16,4 @@ public class OrderCreatedEvent {
     private UUID orderId;
     private Integer userId;
     private Long amount;
-    private String title;
-    private String content;
-    private String paymentMethod;
 }

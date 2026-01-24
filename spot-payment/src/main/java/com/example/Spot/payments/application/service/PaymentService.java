@@ -33,9 +33,7 @@ import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
 
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 
-@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
@@ -55,12 +53,10 @@ public class PaymentService {
   private final OrderClient orderClient;
   private final UserClient userClient;
   private final StoreClient storeClient;
-
-
+  
   // 주문 수락 이후에 동작되어야 함
   // https://docs.tosspayments.com/reference/using-api/webhook-events 참고
   // ready -> createPaymentBillingApprove -> confirmBillingPayment
-
   @Ready
   public UUID ready(PaymentRequestDto.Confirm request) {
 
