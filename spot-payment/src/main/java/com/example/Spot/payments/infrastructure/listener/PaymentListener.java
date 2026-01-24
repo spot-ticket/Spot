@@ -22,7 +22,7 @@ public class PaymentListener {
     private final PaymentService paymentService;
     private final ObjectMapper objectMapper;
 
-    @KafkaListener(topics = "order-created-topic", groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = "${kafka.topic.order.created}", groupId = "${spring.kafka.consumer.group-id}")
     public void handleOrderCreated(String message) {
         try {
             OrderCreatedEvent event = objectMapper.readValue(message, OrderCreatedEvent.class);

@@ -1,0 +1,8 @@
+kafka:
+  topic:
+    order:
+      created: spot.order.created
+    payment:
+      completed: spot.payment.completed
+    payment-auth:
+      required: spot.payment_auth.required

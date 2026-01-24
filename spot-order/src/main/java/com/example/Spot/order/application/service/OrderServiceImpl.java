@@ -9,6 +9,7 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.kafka.core.KafkaTemplate;
@@ -56,6 +57,8 @@ public class OrderServiceImpl implements OrderService {
     private final StoreClient storeClient;
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
+    @Value("${kafka.topic.order.created}")
+    private String orderCreatedTopic;
 
     @Override
     @Transactional
@@ -106,20 +109,21 @@ public class OrderServiceImpl implements OrderService {
         OrderEntity savedOrder = orderRepository.save(order);
         OrderResponseDto responseDto = OrderResponseDto.from(savedOrder);
         
-        OrderCreatedEvent event = OrderCreatedEvent.builder()
+        OrderCreatedEvent orderCreatedEvent = OrderCreatedEvent.builder()
                 .orderId(savedOrder.getId())
                 .userId(userId)
                 .amount(responseDto.getTotalAmount().longValue())
                 .build();
         
-        String payload;
         try {
-            payload = objectMapper.writeValueAsString(event);
+            String payload = objectMapper.writeValueAsString(orderCreatedEvent);
+            log.info("주문 생성 이벤트 발행 시작: topic={}, orderId={}", orderCreatedTopic, savedOrder.getId());
+            kafkaTemplate.send(orderCreatedTopic, payload);
+            
         } catch (JsonProcessingException e) {
-            throw new RuntimeException("OrderCreatedEvent 직렬화 실패", e);
+            log.error("OrderCreatedEvent 직렬화 실패 - orderId: {}", savedOrder.getId());
+            throw new RuntimeException("이벤트 발행 실패", e);
         }
-        
-        kafkaTemplate.send("order-created-topic", payload);
 
         return responseDto;
     }
