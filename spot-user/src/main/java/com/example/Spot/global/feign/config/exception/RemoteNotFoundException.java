@@ -1,4 +1,4 @@
-package com.example.Spot.infra.feign.exception;
+package com.example.Spot.global.feign.config.exception;
 
 public class RemoteNotFoundException extends RuntimeException {
     public RemoteNotFoundException(String methodKey) {

@@ -1,4 +1,4 @@
-package com.example.Spot.infra.feign.exception;
+package com.example.Spot.global.feign.config.exception;
 
 public class RemoteCallFailedException extends RuntimeException {
     public RemoteCallFailedException(String methodKey, int status) {

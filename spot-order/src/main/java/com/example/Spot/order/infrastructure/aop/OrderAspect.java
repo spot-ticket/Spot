@@ -20,6 +20,9 @@ import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemOptionRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemRequestDto;
 
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -34,6 +37,9 @@ public class OrderAspect {
     private final OrderRepository orderRepository;
 
     @Around("@annotation(validateStoreAndMenu)")
+    @CircuitBreaker(name = "store_menus_validation")
+    @Bulkhead(name = "store_menus_validation", type = Bulkhead.Type.SEMAPHORE)
+    @Retry(name = "store_menus_validation")
     public Object handleValidateStoreAndMenu(
             ProceedingJoinPoint joinPoint,
             ValidateStoreAndMenu validateStoreAndMenu) throws Throwable {
@@ -140,6 +146,9 @@ public class OrderAspect {
     }
 
     @Around("@annotation(storeOwnershipRequired)")
+    @CircuitBreaker(name = "store_me_ownership")
+    @Bulkhead(name = "store_me_ownership", type = Bulkhead.Type.SEMAPHORE)
+    @Retry(name = "store_me_ownership")
     public Object handleStoreOwnershipRequired(
             ProceedingJoinPoint joinPoint,
             StoreOwnershipRequired storeOwnershipRequired) throws Throwable {

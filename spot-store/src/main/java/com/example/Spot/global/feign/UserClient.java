@@ -12,4 +12,8 @@ public interface UserClient {
     @GetMapping("/api/users/{userId}")
     UserResponse getUser(@PathVariable("userId") Integer userId);
 
+    // 계정 상태/접근 가능 여부만 확인
+    @GetMapping("/api/internal/users/{userId}/validate")
+    void validate(@PathVariable("userId") Integer userId);
+
 }

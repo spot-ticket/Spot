@@ -38,6 +38,9 @@ import com.example.Spot.order.presentation.dto.request.OrderItemRequestDto;
 import com.example.Spot.order.presentation.dto.response.OrderResponseDto;
 import com.example.Spot.order.presentation.dto.response.OrderStatsResponseDto;
 
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -318,6 +321,9 @@ public class OrderServiceImpl implements OrderService {
         return OrderResponseDto.from(order);
     }
 
+    @CircuitBreaker(name = "payment_ready_create")
+    @Bulkhead(name = "payment_ready_create", type = Bulkhead.Type.SEMAPHORE)
+    @Retry(name = "payment_ready_create")
     private void cancelPaymentIfExists(UUID orderId, String cancelReason) {
         try {
             // Payment 서비스에서 결제 정보 조회

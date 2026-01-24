@@ -36,7 +36,9 @@ public class PaymentController {
             @Valid @RequestBody PaymentRequestDto.Confirm request,
             @AuthenticationPrincipal CustomUserDetails principal
     ) {
-        UUID paymentId = paymentService.ready(request);
+
+        Integer userId = principal.getUserId();
+        UUID paymentId = paymentService.ready(userId, orderId, request);
         PaymentResponseDto.Confirm response = paymentService.createPaymentBillingApprove(paymentId);
         return ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, response);
     }

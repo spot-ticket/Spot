@@ -18,6 +18,9 @@ import com.example.Spot.review.presentation.dto.response.ReviewStatsResponse;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.StoreRepository;
 
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
@@ -31,13 +34,16 @@ public class ReviewService {
     private final UserClient userClient;
 
     @Transactional
+    @CircuitBreaker(name = "user_validate_activeUser")
+    @Bulkhead(name = "user_validate_activeUser", type = Bulkhead.Type.SEMAPHORE)
+    @Retry(name = "user_validate_activeUser")
     public ReviewResponse createReview(ReviewCreateRequest request, Integer userId) {
         // 가게 존재 확인
         StoreEntity store = storeRepository.findByIdAndIsDeletedFalse(request.storeId())
                 .orElseThrow(() -> new EntityNotFoundException("가게를 찾을 수 없습니다."));
 
         // 사용자 존재 확인 (Feign Client로 검증)
-        userClient.getUser(userId);
+        userClient.validate(userId);
 
         // 리뷰 생성
         ReviewEntity review = ReviewEntity.builder()

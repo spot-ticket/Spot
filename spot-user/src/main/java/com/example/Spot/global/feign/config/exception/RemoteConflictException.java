@@ -1,4 +1,4 @@
-package com.example.Spot.infra.feign.exception;
+package com.example.Spot.global.feign.config.exception;
 
 public class RemoteConflictException extends RuntimeException {
     public RemoteConflictException(String methodKey) {
