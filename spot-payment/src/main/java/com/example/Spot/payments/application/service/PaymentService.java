@@ -14,6 +14,7 @@ import com.example.Spot.global.feign.StoreClient;
 import com.example.Spot.global.feign.UserClient;
 import com.example.Spot.global.feign.dto.OrderResponse;
 import com.example.Spot.global.feign.dto.UserResponse;
+import com.example.Spot.global.presentation.advice.BillingKeyNotFoundException;
 import com.example.Spot.global.presentation.advice.ResourceNotFoundException;
 import com.example.Spot.payments.domain.entity.PaymentEntity;
 import com.example.Spot.payments.domain.entity.PaymentHistoryEntity;
@@ -77,9 +78,8 @@ public class PaymentService {
 
     UserBillingAuthEntity billingAuth = userBillingAuthRepository
         .findActiveByUserId(payment.getUserId())
-        .orElseThrow(() -> new IllegalStateException(
+        .orElseThrow(() -> new BillingKeyNotFoundException(
             "[PaymentService] 등록된 결제 수단이 없습니다. 먼저 결제 수단을 등록해주세요. UserId: " + payment.getUserId()));
-
 
     UUID uniqueOrderId = payment.getOrderId();
 

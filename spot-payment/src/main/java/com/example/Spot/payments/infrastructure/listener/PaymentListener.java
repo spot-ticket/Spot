@@ -1,5 +1,8 @@
 package com.example.Spot.payments.infrastructure.listener;
 
+import com.example.Spot.global.presentation.advice.BillingKeyNotFoundException;
+import com.example.Spot.payments.event.publish.AuthRequiredEvent;
+import com.example.Spot.payments.infrastructure.producer.PaymentEventProducer;
 import java.util.UUID;
 
 import org.springframework.kafka.annotation.KafkaListener;
@@ -21,6 +24,7 @@ public class PaymentListener {
 
     private final PaymentService paymentService;
     private final ObjectMapper objectMapper;
+    private final PaymentEventProducer paymentEventProducer;
 
     @KafkaListener(topics = "${kafka.topic.order.created}", groupId = "${spring.kafka.consumer.group-id}")
     public void handleOrderCreated(String message) {
@@ -41,8 +45,20 @@ public class PaymentListener {
             // 2. 가공된 DTO를 서비스에 넘기기
             UUID paymentId = paymentService.ready(confirmRequest);
             
-            // 3. 결제 승인 로직까지 이어서 실행
-            paymentService.createPaymentBillingApprove(paymentId);
+            // 3. 결제 시도 및 결과에 따른 분기 처리
+            try {
+                paymentService.createPaymentBillingApprove(paymentId);
+                log.info("결제 승인 완료: paymentId={}", paymentId);
+            } catch (BillingKeyNotFoundException e) {
+
+                AuthRequiredEvent authEvent = AuthRequiredEvent.builder()
+                        .orderId(event.getOrderId())
+                        .userId(event.getUserId())
+                        .message(e.getMessage())
+                        .build();
+                
+                paymentEventProducer.sendAuthRequiredEvent(authEvent);
+            }
             
         } catch (Exception e) {
             // 에러 처리 로직
