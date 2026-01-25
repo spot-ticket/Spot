@@ -93,6 +93,7 @@ module "ecs" {
 
   services               = var.services
   enable_service_connect = var.enable_service_connect
+  standby_mode           = var.standby_mode
 
   # Database 연결 정보
   db_endpoint = module.database.endpoint

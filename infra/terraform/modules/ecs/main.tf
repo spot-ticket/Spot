@@ -525,7 +525,7 @@ resource "aws_ecs_service" "services" {
   name            = "${var.project}-${each.key}-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.services[each.key].arn
-  desired_count   = each.value.desired_count
+  desired_count   = var.standby_mode ? 0 : each.value.desired_count
   launch_type     = "FARGATE"
 
   dynamic "load_balancer" {
@@ -584,8 +584,4 @@ resource "aws_ecs_service" "services" {
   depends_on = [var.alb_listener_arn]
 
   tags = merge(var.common_tags, { Service = each.key })
-
-  lifecycle {
-    ignore_changes = [desired_count]
-  }
 }
