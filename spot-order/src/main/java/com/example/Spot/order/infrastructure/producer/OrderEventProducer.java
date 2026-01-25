@@ -1,19 +1,20 @@
 package com.example.Spot.order.infrastructure.producer;
 
-import com.example.Spot.order.event.publish.OrderPendingEvent;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
+
+import com.example.Spot.order.event.publish.OrderAcceptedEvent;
 import com.example.Spot.order.event.publish.OrderCreatedEvent;
+import com.example.Spot.order.event.publish.OrderPendingEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.stereotype.Component;
 
 @Slf4j
 @Component
@@ -26,6 +27,8 @@ public class OrderEventProducer {
     private String orderCreatedTopic;
     @Value("${kafka.topic.order.pending}")
     private String orderPendingTopic;
+    @Value("${kafka.topic.order.accepted}")
+    private String orderAcceptedTopic;
     
     public void sendOrderCreated(UUID orderId, Integer userId, Long amount) {
         OrderCreatedEvent event = OrderCreatedEvent.builder()
@@ -43,6 +46,15 @@ public class OrderEventProducer {
                 .timestamp(LocalDateTime.now())
                 .build();
         send(orderPendingTopic, storeId.toString(), event);
+    }
+    
+    public void sendOrderAccepted(Integer userId, UUID orderId, Integer estimatedTime) {
+        OrderAcceptedEvent event = OrderAcceptedEvent.builder()
+                .userId(userId)
+                .orderId(orderId)
+                .estimatedTime(estimatedTime)
+                .build();
+        send(orderAcceptedTopic, userId.toString(), event);
     }
     
     public void send(String topic, String key, Object event) {

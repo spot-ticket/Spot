@@ -252,8 +252,13 @@ public class OrderServiceImpl implements OrderService {
     @OrderStatusChange("ACCEPT")
     public OrderResponseDto acceptOrder(UUID orderId, Integer estimatedTime) {
         OrderEntity order = OrderValidationContext.getCurrentOrder();
-
+        
         order.acceptOrder(estimatedTime);
+        
+        // 주문 수락 이벤트 발행
+        orderEventProducer.sendOrderAccepted(order.getUserId(), order.getId(), estimatedTime);
+        log.info("주문 수락 및 이벤트 발행 완료: orderId={}, estimatedTime={}분", orderId, estimatedTime);
+        
         return OrderResponseDto.from(order);
     }
 
@@ -356,11 +361,11 @@ public class OrderServiceImpl implements OrderService {
     @Override
     @Transactional
     @OrderStatusChange("COMPLETE_PAYMENT")
-    public OrderResponseDto completePayment(UUID orderId, Long Amount) {
+    public OrderResponseDto completePayment(UUID orderId) {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
         
-        log.info("결제 성공 이벤트 수신 - 주문 확정 처리 시작: orderId={}, amount={}", orderId, Amount);
+        log.info("결제 성공 이벤트 수신 - 주문 확정 처리 시작: orderId={}", orderId);
         
         // 1. 상태 변경(PAYMENT_PENDING -> PENDING)
         order.completePayment();

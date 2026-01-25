@@ -1,6 +1,6 @@
 package com.example.Spot.payments.application.service;
 
-import com.example.Spot.payments.infrastructure.producer.PaymentEventProducer;
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -31,6 +31,7 @@ import com.example.Spot.payments.infrastructure.aop.Cancel;
 import com.example.Spot.payments.infrastructure.aop.PaymentBillingApproveTrace;
 import com.example.Spot.payments.infrastructure.aop.Ready;
 import com.example.Spot.payments.infrastructure.dto.TossPaymentResponse;
+import com.example.Spot.payments.infrastructure.producer.PaymentEventProducer;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
 
@@ -409,8 +410,7 @@ public class PaymentService {
     // 결제 성공 이벤트 발행(수동)
     paymentEventProducer.sendPaymentSucceededEvent(
             savedPayment.getOrderId(),
-            savedPayment.getUserId(),
-            savedPayment.getTotalAmount()
+            savedPayment.getUserId()
     );
 
     return PaymentResponseDto.SavedPaymentHistory.builder()

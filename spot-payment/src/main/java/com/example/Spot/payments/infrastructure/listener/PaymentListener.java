@@ -6,11 +6,11 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import com.example.Spot.global.presentation.advice.BillingKeyNotFoundException;
-import com.example.Spot.payments.event.publish.AuthRequiredEvent;
-import com.example.Spot.payments.infrastructure.producer.PaymentEventProducer;
 import com.example.Spot.payments.application.service.PaymentService;
 import com.example.Spot.payments.domain.entity.PaymentEntity;
+import com.example.Spot.payments.event.publish.AuthRequiredEvent;
 import com.example.Spot.payments.event.subscribe.OrderCreatedEvent;
+import com.example.Spot.payments.infrastructure.producer.PaymentEventProducer;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -51,7 +51,7 @@ public class PaymentListener {
                 log.info("결제 승인 완료: paymentId={}", paymentId);
                 
                 // 결제 성공 이벤트 발행(자동)
-                paymentEventProducer.sendPaymentSucceededEvent(event.getOrderId(), event.getUserId(), event.getAmount());
+                paymentEventProducer.sendPaymentSucceededEvent(event.getOrderId(), event.getUserId());
             } catch (BillingKeyNotFoundException e) {
 
                 AuthRequiredEvent authEvent = AuthRequiredEvent.builder()

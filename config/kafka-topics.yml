@@ -3,6 +3,7 @@ kafka:
     order:
       created: spot.order.created
       pending: spot.order.pending
+      accepted: spot.order.accepted
     payment:
       succeeded: spot.payment.succeeded
     payment-auth:

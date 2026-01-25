@@ -10,5 +10,4 @@ import lombok.NoArgsConstructor;
 public class PaymentSucceededEvent {
     private UUID orderId;
     private Integer userId;
-    private Long amount;
 }
