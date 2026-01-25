@@ -319,3 +319,12 @@ variable "service_active_regions" {
   type        = string
   default     = "종로구"
 }
+
+# =============================================================================
+# Standby Mode (비용 절감)
+# =============================================================================
+variable "standby_mode" {
+  description = "스탠바이 모드 (true면 모든 서비스 desired_count = 0)"
+  type        = bool
+  default     = false
+}

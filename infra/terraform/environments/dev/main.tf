@@ -99,26 +99,32 @@ module "ecs" {
   db_endpoint = module.database.endpoint
   db_name     = var.db_name
   db_username = var.db_username
-  db_password = var.db_password
 
   # Redis 연결 정보
   redis_endpoint = module.elasticache.redis_endpoint
 
-  # JWT 설정
-  jwt_secret                = var.jwt_secret
+  # Parameter Store ARNs (민감 정보 주입)
+  parameter_arns = {
+    db_password     = module.parameters.db_password_arn
+    jwt_secret      = module.parameters.jwt_secret_arn
+    mail_password   = module.parameters.mail_password_arn
+    toss_secret_key = module.parameters.toss_secret_key_arn
+  }
+
+  # JWT 설정 (비민감 정보)
   jwt_expire_ms             = var.jwt_expire_ms
   refresh_token_expire_days = var.refresh_token_expire_days
 
-  # Mail 설정
+  # Mail 설정 (비민감 정보)
   mail_username = var.mail_username
-  mail_password = var.mail_password
 
-  # Toss 결제 설정
-  toss_secret_key   = var.toss_secret_key
+  # Toss 결제 설정 (비민감 정보)
   toss_customer_key = var.toss_customer_key
 
   # 서비스 설정
   service_active_regions = var.service_active_regions
+
+  depends_on = [module.parameters]
 }
 
 # =============================================================================
@@ -187,6 +193,28 @@ module "elasticache" {
   node_type                  = var.redis_node_type
   num_cache_clusters         = var.redis_num_cache_clusters
   engine_version             = var.redis_engine_version
+}
+
+# =============================================================================
+# Parameter Store (Secrets & Dynamic Infrastructure Values)
+# =============================================================================
+module "parameters" {
+  source = "../../modules/parameter-store"
+
+  project     = var.project
+  environment = var.environment
+  common_tags = local.common_tags
+
+  # 민감 정보 (SecureString)
+  db_password     = var.db_password
+  jwt_secret      = var.jwt_secret
+  mail_password   = var.mail_password
+  toss_secret_key = var.toss_secret_key
+
+  # 동적 인프라 값 (RDS만 - Redis는 순환 의존성 방지를 위해 제외)
+  db_endpoint = module.database.endpoint
+
+  depends_on = [module.database]
 }
 
 # =============================================================================

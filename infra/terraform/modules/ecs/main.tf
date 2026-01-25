@@ -136,6 +136,40 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 }
 
 # =============================================================================
+# SSM Parameter Store 읽기 권한 (Secrets 주입용)
+# =============================================================================
+resource "aws_iam_role_policy" "ecs_task_execution_ssm" {
+  name = "${var.name_prefix}-ecs-ssm-policy"
+  role = aws_iam_role.ecs_task_execution_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameters",
+          "ssm:GetParameter"
+        ]
+        Resource = "arn:aws:ssm:${var.region}:*:parameter/${var.project}/${var.environment}/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:Decrypt"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "kms:ViaService" = "ssm.${var.region}.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+}
+
+# =============================================================================
 # IAM Role for ECS Task (Application level)
 # =============================================================================
 resource "aws_iam_role" "ecs_task_role" {
@@ -240,10 +274,6 @@ resource "aws_ecs_task_definition" "services" {
             value = var.db_username
           },
           {
-            name  = "SPRING_DATASOURCE_PASSWORD"
-            value = var.db_password
-          },
-          {
             name  = "SPRING_JPA_HIBERNATE_DDL_AUTO"
             value = "update"
           },
@@ -254,10 +284,6 @@ resource "aws_ecs_task_definition" "services" {
           {
             name  = "SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT"
             value = "org.hibernate.dialect.PostgreSQLDialect"
-          },
-          {
-            name  = "SPRING_JWT_SECRET"
-            value = var.jwt_secret
           },
           {
             name  = "SPRING_JWT_EXPIRE_MS"
@@ -306,10 +332,6 @@ resource "aws_ecs_task_definition" "services" {
             value = var.mail_username
           },
           {
-            name  = "SPRING_MAIL_PASSWORD"
-            value = var.mail_password
-          },
-          {
             name  = "SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH"
             value = "true"
           },
@@ -323,10 +345,6 @@ resource "aws_ecs_task_definition" "services" {
           {
             name  = "TOSS_PAYMENTS_BASE_URL"
             value = var.toss_base_url
-          },
-          {
-            name  = "TOSS_PAYMENTS_SECRET_KEY"
-            value = var.toss_secret_key
           },
           {
             name  = "TOSS_PAYMENTS_CUSTOMER_KEY"
@@ -492,6 +510,37 @@ resource "aws_ecs_task_definition" "services" {
           name  = k
           value = v
         }]
+      )
+
+      # =============================================================
+      # Secrets (Parameter Store에서 주입)
+      # =============================================================
+      secrets = concat(
+        # 백엔드 서비스 (gateway 제외) - DB 비밀번호, JWT 시크릿
+        each.key != "gateway" ? [
+          {
+            name      = "SPRING_DATASOURCE_PASSWORD"
+            valueFrom = var.parameter_arns.db_password
+          },
+          {
+            name      = "SPRING_JWT_SECRET"
+            valueFrom = var.parameter_arns.jwt_secret
+          }
+        ] : [],
+        # Mail 비밀번호 (user 서비스)
+        each.key == "user" && var.parameter_arns.mail_password != null ? [
+          {
+            name      = "SPRING_MAIL_PASSWORD"
+            valueFrom = var.parameter_arns.mail_password
+          }
+        ] : [],
+        # Toss 시크릿 키 (payment 서비스)
+        each.key == "payment" && var.parameter_arns.toss_secret_key != null ? [
+          {
+            name      = "TOSS_PAYMENTS_SECRET_KEY"
+            valueFrom = var.parameter_arns.toss_secret_key
+          }
+        ] : []
       )
 
       logConfiguration = {
