@@ -74,7 +74,7 @@ public interface OrderService {
     OrderResponseDto storeCancelOrder(UUID orderId, String reason);
     
     // 결제 관련 (Payment Service에서 호출)
-    OrderResponseDto completePayment(UUID orderId);
+    OrderResponseDto completePayment(UUID orderId, Long Amount);
     OrderResponseDto failPayment(UUID orderId);
 
     // 통계 조회 (Admin용 - Feign Client에서 호출)

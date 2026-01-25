@@ -355,11 +355,15 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
-    public OrderResponseDto completePayment(UUID orderId) {
+    @OrderStatusChange("COMPLETE_PAYMENT")
+    public OrderResponseDto completePayment(UUID orderId, Long Amount) {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
-
+        
+        log.info("결제 성공 이벤트 수신 - 주문 확정 처리 시작: orderId={}, amount={}", orderId, Amount);
+        
         order.completePayment();
+        
         return OrderResponseDto.from(order);
     }
 
