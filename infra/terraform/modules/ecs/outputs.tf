@@ -42,3 +42,16 @@ output "service_discovery_namespace_arn" {
   description = "Service Discovery Namespace ARN"
   value       = aws_service_discovery_private_dns_namespace.main.arn
 }
+
+# =============================================================================
+# CodeDeploy Outputs
+# =============================================================================
+output "codedeploy_app_name" {
+  description = "CodeDeploy Application 이름"
+  value       = var.enable_blue_green ? aws_codedeploy_app.main[0].name : null
+}
+
+output "codedeploy_deployment_group_names" {
+  description = "CodeDeploy Deployment Group 이름 맵"
+  value       = var.enable_blue_green ? { for k, v in aws_codedeploy_deployment_group.services : k => v.deployment_group_name } : {}
+}

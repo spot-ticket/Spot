@@ -1,11 +1,23 @@
 # =============================================================================
-# Kafka EC2 Module (KRaft Mode - Single Node for Dev)
+# Kafka EC2 Module (KRaft Mode - Single/Multi Broker)
 # =============================================================================
 
 locals {
-  kafka_port     = 9092
-  kraft_port     = 9093
-  instance_name  = "${var.name_prefix}-kafka"
+  kafka_port    = 9092
+  kraft_port    = 9093
+  internal_port = 9094
+
+  # 브로커 배치: AZ-a에 1개, AZ-c에 2개
+  brokers = var.broker_count > 1 ? {
+    "1" = { subnet_index = 0, az_suffix = "a" }
+    "2" = { subnet_index = 1, az_suffix = "c" }
+    "3" = { subnet_index = 1, az_suffix = "c" }
+  } : {
+    "1" = { subnet_index = 0, az_suffix = "a" }
+  }
+
+  # 사용할 서브넷 결정
+  effective_subnet_ids = length(var.subnet_ids) > 0 ? var.subnet_ids : (var.subnet_id != null ? [var.subnet_id] : [])
 }
 
 # =============================================================================
@@ -21,6 +33,30 @@ resource "aws_security_group" "kafka" {
     to_port         = local.kafka_port
     protocol        = "tcp"
     security_groups = var.allowed_security_group_ids
+  }
+
+  # 브로커 간 클라이언트 통신 (replication)
+  ingress {
+    from_port = local.kafka_port
+    to_port   = local.kafka_port
+    protocol  = "tcp"
+    self      = true
+  }
+
+  # KRaft Controller 포트 (브로커 간 controller 통신)
+  ingress {
+    from_port = local.kraft_port
+    to_port   = local.kraft_port
+    protocol  = "tcp"
+    self      = true
+  }
+
+  # Internal 리스너 (브로커 간 복제 통신)
+  ingress {
+    from_port = local.internal_port
+    to_port   = local.internal_port
+    protocol  = "tcp"
+    self      = true
   }
 
   # SSH (디버깅용 - 선택적)
@@ -80,7 +116,7 @@ resource "aws_iam_instance_profile" "kafka" {
 }
 
 # =============================================================================
-# EC2 Instance
+# EC2 Instances (Multi-Broker Support)
 # =============================================================================
 data "aws_ami" "amazon_linux_2023" {
   most_recent = true
@@ -98,38 +134,49 @@ data "aws_ami" "amazon_linux_2023" {
 }
 
 resource "aws_instance" "kafka" {
+  for_each = local.brokers
+
   ami                    = data.aws_ami.amazon_linux_2023.id
   instance_type          = var.instance_type
-  subnet_id              = var.subnet_id
+  subnet_id              = local.effective_subnet_ids[each.value.subnet_index]
   vpc_security_group_ids = [aws_security_group.kafka.id]
   iam_instance_profile   = aws_iam_instance_profile.kafka.name
 
-  # Public IP 할당 (NAT 없는 환경)
   associate_public_ip_address = var.assign_public_ip
 
   root_block_device {
     volume_type           = "gp3"
     volume_size           = var.volume_size
-    delete_on_termination = true
+    iops                  = 3000
+    throughput            = 125
+    delete_on_termination = var.broker_count == 1  # prod에서는 데이터 보존
     encrypted             = true
   }
 
-  user_data = base64encode(templatefile("${path.module}/user-data.sh", {
-    kafka_version     = var.kafka_version
-    kafka_cluster_id  = var.cluster_id
-    kafka_broker_host = local.instance_name
-    kafka_port        = local.kafka_port
-    kraft_port        = local.kraft_port
-    log_retention_hours = var.log_retention_hours
-    log_retention_gb    = var.log_retention_gb
-  }))
+  user_data = base64encode(templatefile(
+    var.broker_count > 1 ? "${path.module}/user-data-cluster.sh" : "${path.module}/user-data.sh",
+    {
+      kafka_version       = var.kafka_version
+      kafka_cluster_id    = var.cluster_id
+      kafka_broker_host   = "${var.name_prefix}-kafka-${each.key}"
+      kafka_port          = local.kafka_port
+      kraft_port          = local.kraft_port
+      internal_port       = local.internal_port
+      log_retention_hours = var.log_retention_hours
+      log_retention_gb    = var.log_retention_gb
+      node_id             = each.key
+      broker_count        = var.broker_count
+    }
+  ))
 
   tags = merge(var.common_tags, {
-    Name = local.instance_name
+    Name     = "${var.name_prefix}-kafka-${each.key}"
+    BrokerId = each.key
+    AZ       = each.value.az_suffix
   })
 
   lifecycle {
-    ignore_changes = [ami]
+    ignore_changes = [ami, user_data]
   }
 }
 
@@ -148,12 +195,24 @@ resource "aws_route53_zone" "kafka" {
   tags = merge(var.common_tags, { Name = "${var.name_prefix}-kafka-zone" })
 }
 
-resource "aws_route53_record" "kafka" {
+# 개별 브로커 DNS 레코드
+resource "aws_route53_record" "kafka_brokers" {
+  for_each = var.create_private_dns ? local.brokers : {}
+
+  zone_id = aws_route53_zone.kafka[0].zone_id
+  name    = "kafka-${each.key}"
+  type    = "A"
+  ttl     = 60
+  records = [aws_instance.kafka[each.key].private_ip]
+}
+
+# 클러스터 부트스트랩 레코드 (모든 브로커 IP)
+resource "aws_route53_record" "kafka_bootstrap" {
   count = var.create_private_dns ? 1 : 0
 
   zone_id = aws_route53_zone.kafka[0].zone_id
-  name    = "broker"
+  name    = "bootstrap"
   type    = "A"
   ttl     = 60
-  records = [aws_instance.kafka.private_ip]
+  records = [for k, v in aws_instance.kafka : v.private_ip]
 }

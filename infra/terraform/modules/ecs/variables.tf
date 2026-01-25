@@ -220,3 +220,42 @@ variable "standby_mode" {
   type        = bool
   default     = false
 }
+
+# =============================================================================
+# Blue/Green Deployment
+# =============================================================================
+variable "enable_blue_green" {
+  description = "Blue/Green 배포 활성화 (CodeDeploy)"
+  type        = bool
+  default     = false
+}
+
+variable "excluded_services" {
+  description = "배포에서 제외할 서비스 목록 (예: gateway)"
+  type        = list(string)
+  default     = []
+}
+
+variable "target_group_names" {
+  description = "ALB Target Group 이름 맵"
+  type        = map(string)
+  default     = {}
+}
+
+variable "green_target_group_arns" {
+  description = "Green Target Group ARN 맵 (Blue/Green용)"
+  type        = map(string)
+  default     = {}
+}
+
+variable "deployment_config" {
+  description = "CodeDeploy 배포 구성"
+  type        = string
+  default     = "CodeDeployDefault.ECSAllAtOnce"
+}
+
+variable "termination_wait_time" {
+  description = "이전 태스크 종료 대기 시간 (분)"
+  type        = number
+  default     = 5
+}

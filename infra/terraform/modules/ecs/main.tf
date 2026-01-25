@@ -1,4 +1,15 @@
 # =============================================================================
+# Local Variables
+# =============================================================================
+locals {
+  # Gateway 및 excluded_services에 포함된 서비스 필터링
+  active_services = {
+    for k, v in var.services : k => v
+    if !contains(var.excluded_services, k)
+  }
+}
+
+# =============================================================================
 # Cloud Map (Service Discovery Namespace)
 # =============================================================================
 resource "aws_service_discovery_private_dns_namespace" "main" {
@@ -581,10 +592,10 @@ resource "aws_ecs_task_definition" "services" {
 }
 
 # =============================================================================
-# ECS Services (per service)
+# ECS Services (per service) - Active Services Only
 # =============================================================================
 resource "aws_ecs_service" "services" {
-  for_each = var.services
+  for_each = local.active_services
 
   name            = "${var.project}-${each.key}-service"
   cluster         = aws_ecs_cluster.main.id
@@ -592,8 +603,9 @@ resource "aws_ecs_service" "services" {
   desired_count   = var.standby_mode ? 0 : each.value.desired_count
   launch_type     = "FARGATE"
 
+  # 모든 active 서비스를 ALB에 연결
   dynamic "load_balancer" {
-    for_each = each.key == "gateway" ? [1] : []
+    for_each = contains(keys(var.target_group_arns), each.key) ? [1] : []
     content {
       target_group_arn = var.target_group_arns[each.key]
       container_name   = "${var.project}-${each.key}-container"
@@ -605,6 +617,23 @@ resource "aws_ecs_service" "services" {
     subnets          = var.subnet_ids
     security_groups  = [aws_security_group.msa_sg.id]
     assign_public_ip = var.assign_public_ip
+  }
+
+  # Blue/Green 배포 컨트롤러
+  dynamic "deployment_controller" {
+    for_each = var.enable_blue_green ? [1] : []
+    content {
+      type = "CODE_DEPLOY"
+    }
+  }
+
+  # 기본 롤링 배포 설정 (Blue/Green 비활성화시)
+  dynamic "deployment_circuit_breaker" {
+    for_each = var.enable_blue_green ? [] : [1]
+    content {
+      enable   = true
+      rollback = true
+    }
   }
 
   # Service Connect Configuration
@@ -648,4 +677,8 @@ resource "aws_ecs_service" "services" {
   depends_on = [var.alb_listener_arn]
 
   tags = merge(var.common_tags, { Service = each.key })
+
+  lifecycle {
+    ignore_changes = var.enable_blue_green ? [task_definition, load_balancer] : []
+  }
 }

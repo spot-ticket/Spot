@@ -2,19 +2,19 @@
 # Kafka Module Outputs
 # =============================================================================
 
-output "instance_id" {
-  description = "Kafka EC2 인스턴스 ID"
-  value       = aws_instance.kafka.id
+output "instance_ids" {
+  description = "Kafka EC2 인스턴스 ID 맵"
+  value       = { for k, v in aws_instance.kafka : k => v.id }
 }
 
-output "private_ip" {
-  description = "Kafka 프라이빗 IP"
-  value       = aws_instance.kafka.private_ip
+output "private_ips" {
+  description = "Kafka 프라이빗 IP 맵"
+  value       = { for k, v in aws_instance.kafka : k => v.private_ip }
 }
 
 output "bootstrap_servers" {
   description = "Kafka Bootstrap Servers (ECS 환경변수용)"
-  value       = "${aws_instance.kafka.private_ip}:9092"
+  value       = join(",", [for k, v in aws_instance.kafka : "${v.private_ip}:9092"])
 }
 
 output "security_group_id" {
@@ -22,8 +22,18 @@ output "security_group_id" {
   value       = aws_security_group.kafka.id
 }
 
-# Private DNS 사용시
-output "dns_endpoint" {
-  description = "Kafka DNS 엔드포인트"
-  value       = var.create_private_dns ? "broker.kafka.internal:9092" : null
+output "broker_count" {
+  description = "Kafka 브로커 수"
+  value       = var.broker_count
+}
+
+# Private DNS endpoints
+output "dns_bootstrap_endpoint" {
+  description = "Kafka Bootstrap DNS 엔드포인트"
+  value       = var.create_private_dns ? "bootstrap.kafka.internal:9092" : null
+}
+
+output "dns_broker_endpoints" {
+  description = "개별 브로커 DNS 엔드포인트"
+  value       = var.create_private_dns ? { for k, v in local.brokers : k => "kafka-${k}.kafka.internal:9092" } : {}
 }

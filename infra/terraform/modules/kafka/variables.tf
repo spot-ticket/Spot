@@ -26,8 +26,21 @@ variable "vpc_cidr" {
 }
 
 variable "subnet_id" {
-  description = "Kafka EC2 서브넷 ID"
+  description = "Kafka EC2 서브넷 ID (단일 브로커용, deprecated)"
   type        = string
+  default     = null
+}
+
+variable "subnet_ids" {
+  description = "Kafka EC2 서브넷 ID 목록 (멀티 브로커용: [private_a, private_c])"
+  type        = list(string)
+  default     = []
+}
+
+variable "broker_count" {
+  description = "Kafka 브로커 수 (1 또는 3 권장)"
+  type        = number
+  default     = 1
 }
 
 variable "allowed_security_group_ids" {
