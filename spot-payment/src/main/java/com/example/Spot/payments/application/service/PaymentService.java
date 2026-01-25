@@ -1,5 +1,6 @@
 package com.example.Spot.payments.application.service;
 
+import com.example.Spot.payments.infrastructure.producer.PaymentEventProducer;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -40,6 +41,7 @@ import lombok.RequiredArgsConstructor;
 public class PaymentService {
 
   private final PaymentGateway paymentGateway;
+  private final PaymentEventProducer paymentEventProducer;
 
   @Value("${toss.payments.timeout}")
   private Integer timeout;
@@ -338,7 +340,7 @@ public class PaymentService {
         .build();
 
     userBillingAuthRepository.save(billingAuth);
-
+    
     return PaymentResponseDto.SavedBillingKey.builder()
         .userId(request.userId())
         .customerKey(request.customerKey())
@@ -403,6 +405,13 @@ public class PaymentService {
         .build();
 
     paymentKeyRepository.save(paymentKey);
+    
+    // 결제 성공 이벤트 발행(수동)
+    paymentEventProducer.sendPaymentSucceededEvent(
+            savedPayment.getOrderId(),
+            savedPayment.getUserId(),
+            savedPayment.getTotalAmount()
+    );
 
     return PaymentResponseDto.SavedPaymentHistory.builder()
         .paymentId(savedPayment.getId())
@@ -412,5 +421,4 @@ public class PaymentService {
         .savedAt(LocalDateTime.now())
         .build();
   }
-  
 }

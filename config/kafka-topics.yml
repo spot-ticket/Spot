@@ -3,6 +3,6 @@ kafka:
     order:
       created: spot.order.created
     payment:
-      completed: spot.payment.completed
+      succeeded: spot.payment.succeeded
     payment-auth:
       required: spot.payment_auth.required

@@ -1,13 +1,17 @@
 package com.example.Spot.payments.infrastructure.producer;
 
-import com.example.Spot.payments.event.publish.AuthRequiredEvent;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
+import com.example.Spot.payments.event.publish.PaymentSucceededEvent;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
+
+import com.example.Spot.payments.event.publish.AuthRequiredEvent;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Component
@@ -18,6 +22,8 @@ public class PaymentEventProducer {
     private final ObjectMapper objectMapper;
     @Value("${kafka.topic.payment-auth.required}")
     private String authRequiredTopic;
+    @Value("${kafka.topic.payment.succeeded}")
+    private String paymentSucceededTopic;
     
     public void sendAuthRequiredEvent(AuthRequiredEvent authRequiredEvent) {
         try {
@@ -27,6 +33,20 @@ public class PaymentEventProducer {
         } catch (JsonProcessingException e) {
             log.error("AuthRequireEvent 직렬화 실패 - orderId: {}", authRequiredEvent.getOrderId(), e);
             throw new RuntimeException("이벤트 발행 실패", e);
+        }
+    }
+    
+    public void sendPaymentSucceededEvent(UUID orderId, Integer userId, Long amount) {
+        try {
+            PaymentSucceededEvent event = new PaymentSucceededEvent(orderId, userId, amount);
+            String payload = objectMapper.writeValueAsString(event);
+            
+            log.info("주문 확정 요청 이벤트 발행: topic={}, orderId={}, amount={}",
+                    paymentSucceededTopic, orderId, amount);
+            
+            kafkaTemplate.send(paymentSucceededTopic, payload);
+        } catch (JsonProcessingException e) {
+            log.error("PaymentSucceededEvent 직렬화 실패 - orderId: {}", orderId, e);
         }
     }
 }

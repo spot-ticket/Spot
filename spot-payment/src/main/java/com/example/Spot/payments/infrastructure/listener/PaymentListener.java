@@ -49,6 +49,9 @@ public class PaymentListener {
             try {
                 paymentService.createPaymentBillingApprove(paymentId);
                 log.info("결제 승인 완료: paymentId={}", paymentId);
+                
+                // 결제 성공 이벤트 발행(자동)
+                paymentEventProducer.sendPaymentSucceededEvent(event.getOrderId(), event.getUserId(), event.getAmount());
             } catch (BillingKeyNotFoundException e) {
 
                 AuthRequiredEvent authEvent = AuthRequiredEvent.builder()
