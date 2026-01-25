@@ -362,7 +362,11 @@ public class OrderServiceImpl implements OrderService {
         
         log.info("결제 성공 이벤트 수신 - 주문 확정 처리 시작: orderId={}, amount={}", orderId, Amount);
         
+        // 1. 상태 변경(PAYMENT_PENDING -> PENDING)
         order.completePayment();
+        // 2. 가게 사장에게 수락/거절의 이벤트 발행
+        orderEventProducer.sendOrderPending(order.getStoreId(), order.getId());
+        log.info("결제 처리 및 사장님 알림 이벤트 발행 완료: orderId={}", orderId);
         
         return OrderResponseDto.from(order);
     }
