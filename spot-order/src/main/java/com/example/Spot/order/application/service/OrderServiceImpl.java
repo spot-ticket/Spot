@@ -9,10 +9,8 @@ import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,18 +28,16 @@ import com.example.Spot.order.domain.entity.OrderItemOptionEntity;
 import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.domain.repository.OrderRepository;
-import com.example.Spot.order.event.publish.OrderCreatedEvent;
 import com.example.Spot.order.infrastructure.aop.OrderStatusChange;
 import com.example.Spot.order.infrastructure.aop.OrderValidationContext;
 import com.example.Spot.order.infrastructure.aop.StoreOwnershipRequired;
 import com.example.Spot.order.infrastructure.aop.ValidateStoreAndMenu;
+import com.example.Spot.order.infrastructure.producer.OrderEventProducer;
 import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemOptionRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemRequestDto;
 import com.example.Spot.order.presentation.dto.response.OrderResponseDto;
 import com.example.Spot.order.presentation.dto.response.OrderStatsResponseDto;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -55,10 +51,7 @@ public class OrderServiceImpl implements OrderService {
     private final OrderRepository orderRepository;
     private final PaymentClient paymentClient;
     private final StoreClient storeClient;
-    private final KafkaTemplate<String, String> kafkaTemplate;
-    private final ObjectMapper objectMapper;
-    @Value("${kafka.topic.order.created}")
-    private String orderCreatedTopic;
+    private final OrderEventProducer orderEventProducer;
 
     @Override
     @Transactional
@@ -109,21 +102,11 @@ public class OrderServiceImpl implements OrderService {
         OrderEntity savedOrder = orderRepository.save(order);
         OrderResponseDto responseDto = OrderResponseDto.from(savedOrder);
         
-        OrderCreatedEvent orderCreatedEvent = OrderCreatedEvent.builder()
-                .orderId(savedOrder.getId())
-                .userId(userId)
-                .amount(responseDto.getTotalAmount().longValue())
-                .build();
-        
-        try {
-            String payload = objectMapper.writeValueAsString(orderCreatedEvent);
-            log.info("주문 생성 이벤트 발행 시작: topic={}, orderId={}", orderCreatedTopic, savedOrder.getId());
-            kafkaTemplate.send(orderCreatedTopic, payload);
-            
-        } catch (JsonProcessingException e) {
-            log.error("OrderCreatedEvent 직렬화 실패 - orderId: {}", savedOrder.getId());
-            throw new RuntimeException("이벤트 발행 실패", e);
-        }
+        orderEventProducer.sendOrderCreated(
+                savedOrder.getId(),
+                userId,
+                responseDto.getTotalAmount().longValue()
+        );
 
         return responseDto;
     }

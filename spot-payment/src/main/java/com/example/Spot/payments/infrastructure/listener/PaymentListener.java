@@ -2,14 +2,12 @@ package com.example.Spot.payments.infrastructure.listener;
 
 import java.util.UUID;
 
-import com.example.Spot.global.presentation.advice.BillingKeyNotFoundException;
-import com.example.Spot.payments.event.publish.AuthRequiredEvent;
-import com.example.Spot.payments.infrastructure.producer.PaymentEventProducer;
-
-
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
+import com.example.Spot.global.presentation.advice.BillingKeyNotFoundException;
+import com.example.Spot.payments.event.publish.AuthRequiredEvent;
+import com.example.Spot.payments.infrastructure.producer.PaymentEventProducer;
 import com.example.Spot.payments.application.service.PaymentService;
 import com.example.Spot.payments.domain.entity.PaymentEntity;
 import com.example.Spot.payments.event.subscribe.OrderCreatedEvent;
