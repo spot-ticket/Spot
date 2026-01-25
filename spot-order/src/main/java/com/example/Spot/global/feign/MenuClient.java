@@ -9,7 +9,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import com.example.Spot.global.feign.dto.MenuOptionResponse;
 import com.example.Spot.global.feign.dto.MenuResponse;
 
-@FeignClient(name = "menu-service", url = "${feign.store.url}")
+@FeignClient(name = "spot-menu", url = "${feign.store.url}")
 public interface MenuClient {
 
     @GetMapping("/api/internal/menus/{menuId}")

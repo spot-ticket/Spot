@@ -6,7 +6,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.example.Spot.global.feign.dto.UserResponse;
 
-@FeignClient(name = "user-service", url = "${feign.user.url}")
+@FeignClient(name = "spot-user", url = "${feign.user.url}")
 public interface UserClient {
 
     @GetMapping("/api/users/{userId}")

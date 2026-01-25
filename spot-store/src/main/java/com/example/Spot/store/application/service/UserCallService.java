@@ -1,7 +1,8 @@
-package com.example.Spot.store.application.service; // 너희 패키지에 맞춰
+package com.example.Spot.store.application.service;
+
+import org.springframework.stereotype.Service;
 
 import com.example.Spot.global.feign.UserClient;
-import org.springframework.stereotype.Service;
 
 import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;

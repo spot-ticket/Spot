@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.Spot.global.feign.dto.OrderPageResponse;
 import com.example.Spot.global.feign.dto.OrderStatsResponse;
 
-@FeignClient(name = "order-service", url = "${feign.order.url}")
+@FeignClient(name = "spot-order", url = "${feign.order.url}")
 public interface OrderClient {
 
     @GetMapping("/api/admin/orders")

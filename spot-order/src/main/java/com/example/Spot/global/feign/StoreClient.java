@@ -10,7 +10,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.example.Spot.global.feign.dto.StoreResponse;
 import com.example.Spot.global.feign.dto.StoreUserResponse;
 
-@FeignClient(name = "store-service", url = "${feign.store.url}")
+@FeignClient(name = "spot-store", url = "${feign.store.url}")
 public interface StoreClient {
 
     @GetMapping("/api/stores/{storeId}")
