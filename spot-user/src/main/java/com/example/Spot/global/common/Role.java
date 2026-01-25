@@ -1,4 +1,4 @@
-package com.example.Spot.user.domain;
+package com.example.Spot.global.common;
 
 public enum Role {
     ADMIN,

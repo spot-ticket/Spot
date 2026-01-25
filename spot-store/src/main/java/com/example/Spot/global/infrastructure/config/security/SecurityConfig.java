@@ -1,14 +1,20 @@
 package com.example.Spot.global.infrastructure.config.security;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpMethod;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 
 @Configuration
@@ -16,23 +22,17 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    private final JWTUtil jwtUtil;
-
-    public SecurityConfig(JWTUtil jwtUtil) {
-        this.jwtUtil = jwtUtil;
-    }
-
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http.csrf(csrf -> csrf.disable());
         http.formLogin(form -> form.disable());
         http.httpBasic(basic -> basic.disable());
-
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
+
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers(HttpMethod.OPTIONS, "/**", "/actuator/**").permitAll()
+                .requestMatchers("OPTIONS", "/**", "/actuator/**").permitAll()
                 .requestMatchers(
                         "/", "/swagger-ui/**", "/v3/api-docs/**"
                 ).permitAll()
@@ -53,12 +53,26 @@ public class SecurityConfig {
                 })
         );
 
-        http.addFilterBefore(
-                new JWTFilter(jwtUtil),
-                UsernamePasswordAuthenticationFilter.class
+        http.oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter()))
         );
-
 
         return http.build();
     }
+    @Bean
+    public Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthConverter() {
+        return jwt -> {
+            Integer userId = Integer.valueOf(String.valueOf(jwt.getClaims().get("user_id")));
+            String role = String.valueOf(jwt.getClaims().getOrDefault("role", "CUSTOMER"));
+
+            Collection<GrantedAuthority> authorities =
+                    List.of(new SimpleGrantedAuthority("ROLE_" + role));
+
+            CustomUserDetails principal = new CustomUserDetails(userId, role);
+
+            return new CognitoAuthenticationToken(jwt, principal, authorities);
+        };
+    }
+
+
 }

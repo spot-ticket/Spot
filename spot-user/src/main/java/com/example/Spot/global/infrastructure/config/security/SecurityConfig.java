@@ -1,57 +1,32 @@
 package com.example.Spot.global.infrastructure.config.security;
 
+import java.util.Collection;
+import java.util.List;
+
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
+import org.springframework.core.convert.converter.Converter;
+import org.springframework.security.authentication.AbstractAuthenticationToken;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import com.example.Spot.auth.jwt.JWTFilter;
-import com.example.Spot.auth.jwt.JWTUtil;
-import com.example.Spot.auth.jwt.LoginFilter;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
 public class SecurityConfig {
 
-    //AuthenticationManager가 인자로 받을 AuthenticationConfiguraion 객체 생성자 주입
-    private final AuthenticationConfiguration authenticationConfiguration;
-    //JWTUtil 주입
-    private final JWTUtil jwtUtil;
-//    // TokenService 주입
-//    private final TokenService tokenService;
 
-    public SecurityConfig(AuthenticationConfiguration authenticationConfiguration, JWTUtil jwtUtil) {
-        this.authenticationConfiguration = authenticationConfiguration;
-        this.jwtUtil = jwtUtil;
-    }
-
-    //AuthenticationManager Bean 등록
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration configuration) throws Exception {
-
-        return configuration.getAuthenticationManager();
-    }
-
-    @Bean
-    public BCryptPasswordEncoder bCryptPasswordEncoder() {
-
-        return new BCryptPasswordEncoder();
-    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
-        LoginFilter loginFilter =
-                new LoginFilter(authenticationManager(authenticationConfiguration), jwtUtil);
-        loginFilter.setFilterProcessesUrl("/api/login");
 
         // CSRF disable
         http
@@ -65,12 +40,15 @@ public class SecurityConfig {
         http
                 .httpBasic(auth -> auth.disable());
 
+        http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
+
+
         // 경로별 인가 작업
         http
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers("OPTIONS", "/**", "/actuator/**").permitAll()
                         // 누구나 접근 가능 (로그인, 회원가입, 토큰 갱신, 가게 조회, 카테고리 조회)
-                        .requestMatchers("/api/login", "/", "/api/join", "/api/auth/refresh", "/swagger-ui/*", "v3/api-docs", "/v3/api-docs/*",
+                        .requestMatchers("/api/login", "/", "/api/join", "api/auth/me", "/api/auth/refresh", "/swagger-ui/*", "v3/api-docs", "/v3/api-docs/*",
                                 "/api/stores", "/api/stores/*", "/api/stores/search", "/api/categories", "/api/categories/**").permitAll()
 
                         // 관리자 전용 API (MASTER, MANAGER만 접근 가능)
@@ -100,22 +78,28 @@ public class SecurityConfig {
                         })
                 );
 
-        http.addFilterBefore(
-                new JWTFilter(jwtUtil),
-                UsernamePasswordAuthenticationFilter.class
+        http.oauth2ResourceServer(oauth2 -> oauth2
+                .jwt(jwt -> jwt.jwtAuthenticationConverter(jwtAuthConverter()))
         );
 
-        //필터 추가 LoginFilter()는 인자를 받음 (AuthenticationManager() 메소드에 authenticationConfiguration 객체를 넣어야 함) 따라서 등록 필요
-        http.addFilterAt(
-                loginFilter,
-                UsernamePasswordAuthenticationFilter.class
-        );
 
-        http
-                .sessionManagement(session -> session
-                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS));
 
         return http.build();
+    }
+
+    @Bean
+    public Converter<Jwt, ? extends AbstractAuthenticationToken> jwtAuthConverter() {
+        return jwt -> {
+            Integer userId = Integer.valueOf(String.valueOf(jwt.getClaims().get("user_id")));
+            String role = String.valueOf(jwt.getClaims().getOrDefault("role", "CUSTOMER"));
+
+            Collection<GrantedAuthority> authorities =
+                    List.of(new SimpleGrantedAuthority("ROLE_" + role));
+
+            CustomUserDetails principal = new CustomUserDetails(userId, role);
+
+            return new CognitoAuthenticationToken(jwt, principal, authorities);
+        };
     }
 }
 

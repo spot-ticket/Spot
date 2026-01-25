@@ -10,8 +10,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 
 import com.example.Spot.global.common.Role;
 
-
-
 public class CustomUserDetails implements UserDetails {
 
     private final Integer userId;

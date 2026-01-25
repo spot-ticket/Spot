@@ -1,6 +1,6 @@
 package com.example.Spot.user.presentation.dto.response;
 
-import com.example.Spot.user.domain.Role;
+import com.example.Spot.global.common.Role;
 
 public record UserResponseDTO(
         int id,

@@ -62,7 +62,8 @@ dependencies {
     // postgreSQL
     implementation 'org.postgresql:postgresql'
 
-    // Resilience4J
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+
 
 
 }

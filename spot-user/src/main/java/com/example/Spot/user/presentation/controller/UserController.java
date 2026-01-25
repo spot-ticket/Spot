@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.Spot.auth.security.CustomUserDetails;
+import com.example.Spot.global.infrastructure.config.security.CustomUserDetails;
 import com.example.Spot.user.application.service.UserService;
 import com.example.Spot.user.presentation.dto.request.UserUpdateRequestDTO;
 import com.example.Spot.user.presentation.dto.response.UserResponseDTO;

@@ -2,12 +2,15 @@ package com.example.Spot.global.infrastructure.config.security;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import com.example.Spot.global.common.Role;
+
+
 
 public class CustomUserDetails implements UserDetails {
 
@@ -16,7 +19,12 @@ public class CustomUserDetails implements UserDetails {
 
     public CustomUserDetails(Integer userId, Role role) {
         this.userId = userId;
-        this.role = role;
+        this.role = Objects.requireNonNull(role, "role");
+    }
+
+    public CustomUserDetails(Integer userId, String roleName) {
+        this.userId = userId;
+        this.role = Role.valueOf(roleName);
     }
 
     public Integer getUserId() {
@@ -29,30 +37,36 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
-        // ROLE_ prefix 맞춰서 제공
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override
     public String getPassword() {
-        return "";
+        return null;
     }
 
     @Override
     public String getUsername() {
-        return String.valueOf(userId);
+        return userId == null ? null : String.valueOf(userId);
     }
 
-    @Override public boolean isAccountNonExpired() {
+    @Override
+    public boolean isAccountNonExpired() {
         return true;
     }
-    @Override public boolean isAccountNonLocked() {
+
+    @Override
+    public boolean isAccountNonLocked() {
         return true;
     }
-    @Override public boolean isCredentialsNonExpired() {
+
+    @Override
+    public boolean isCredentialsNonExpired() {
         return true;
     }
-    @Override public boolean isEnabled() {
+
+    @Override
+    public boolean isEnabled() {
         return true;
     }
 }

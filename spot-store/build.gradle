@@ -64,6 +64,9 @@ dependencies {
 
     // postgreSQL
     implementation 'org.postgresql:postgresql'
+
+    implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+
 }
 
 tasks.named('test') {

@@ -18,8 +18,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Spot.admin.application.service.AdminStoreService;
 import com.example.Spot.admin.presentation.dto.AdminStoreListResponseDto;
-import com.example.Spot.auth.security.CustomUserDetails;
 import com.example.Spot.global.feign.dto.StorePageResponse;
+import com.example.Spot.global.infrastructure.config.security.CustomUserDetails;
 import com.example.Spot.global.presentation.ApiResponse;
 import com.example.Spot.global.presentation.code.GeneralSuccessCode;
 

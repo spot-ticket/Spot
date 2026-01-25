@@ -1,6 +1,6 @@
 package com.example.Spot.user.presentation.dto.request;
 
-import com.example.Spot.user.domain.Role;
+import com.example.Spot.global.common.Role;
 
 import lombok.Getter;
 import lombok.Setter;

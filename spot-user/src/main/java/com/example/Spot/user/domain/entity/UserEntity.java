@@ -1,7 +1,7 @@
 package com.example.Spot.user.domain.entity;
 
+import com.example.Spot.global.common.Role;
 import com.example.Spot.global.common.UpdateBaseEntity;
-import com.example.Spot.user.domain.Role;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
