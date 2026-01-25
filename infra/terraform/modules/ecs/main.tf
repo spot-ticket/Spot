@@ -263,6 +263,21 @@ resource "aws_ecs_task_definition" "services" {
             value = "6379"
           }
         ],
+        # Kafka 환경 변수 (gateway 제외)
+        each.key != "gateway" && var.kafka_bootstrap_servers != "" ? [
+          {
+            name  = "SPRING_KAFKA_BOOTSTRAP_SERVERS"
+            value = var.kafka_bootstrap_servers
+          },
+          {
+            name  = "SPRING_KAFKA_CONSUMER_GROUP_ID"
+            value = "${var.project}-${each.key}"
+          },
+          {
+            name  = "SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET"
+            value = "earliest"
+          }
+        ] : [],
         # 백엔드 서비스 전용 (gateway 제외) - DB, JPA, JWT 설정
         each.key != "gateway" ? [
           {

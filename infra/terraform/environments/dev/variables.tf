@@ -328,3 +328,24 @@ variable "standby_mode" {
   type        = bool
   default     = false
 }
+
+# =============================================================================
+# Kafka 설정
+# =============================================================================
+variable "kafka_instance_type" {
+  description = "Kafka EC2 인스턴스 타입"
+  type        = string
+  default     = "t3.small"
+}
+
+variable "kafka_volume_size" {
+  description = "Kafka EBS 볼륨 크기 (GB)"
+  type        = number
+  default     = 20
+}
+
+variable "kafka_log_retention_hours" {
+  description = "Kafka 메시지 보관 시간"
+  type        = number
+  default     = 168 # 7일
+}

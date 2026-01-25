@@ -103,6 +103,9 @@ module "ecs" {
   # Redis 연결 정보
   redis_endpoint = module.elasticache.redis_endpoint
 
+  # Kafka 연결 정보
+  kafka_bootstrap_servers = module.kafka.bootstrap_servers
+
   # Parameter Store ARNs (민감 정보 주입)
   parameter_arns = {
     db_password     = module.parameters.db_password_arn
@@ -193,6 +196,25 @@ module "elasticache" {
   node_type                  = var.redis_node_type
   num_cache_clusters         = var.redis_num_cache_clusters
   engine_version             = var.redis_engine_version
+}
+
+# =============================================================================
+# Kafka (EC2 - KRaft Mode)
+# =============================================================================
+module "kafka" {
+  source = "../../modules/kafka"
+
+  name_prefix                = local.name_prefix
+  common_tags                = local.common_tags
+  vpc_id                     = module.network.vpc_id
+  vpc_cidr                   = module.network.vpc_cidr
+  subnet_id                  = module.network.public_subnet_a_id # NAT 문제로 public 사용
+  allowed_security_group_ids = [module.ecs.security_group_id]
+  assign_public_ip           = true
+
+  instance_type       = var.kafka_instance_type
+  volume_size         = var.kafka_volume_size
+  log_retention_hours = var.kafka_log_retention_hours
 }
 
 # =============================================================================
