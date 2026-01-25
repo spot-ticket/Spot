@@ -1,9 +1,11 @@
 package com.example.Spot.payments.infrastructure.listener;
 
+import java.util.UUID;
+
 import com.example.Spot.global.presentation.advice.BillingKeyNotFoundException;
 import com.example.Spot.payments.event.publish.AuthRequiredEvent;
 import com.example.Spot.payments.infrastructure.producer.PaymentEventProducer;
-import java.util.UUID;
+
 
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;

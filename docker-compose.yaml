@@ -115,6 +115,7 @@ services:
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
     volumes:
       - ./config/common.yml:/config/common.yml:ro
+      - ./config/kafka-topics.yml:/config/kafka-topics.yml:ro
       - ./config/spot-order.yml:/config/application.yml:ro
     depends_on:
       - db
@@ -137,6 +138,7 @@ services:
       - FEIGN_STORE_URL=http://spot-store:8083
     volumes:
       - ./config/common.yml:/config/common.yml:ro
+      - ./config/kafka-topics.yml:/config/kafka-topics.yml:ro
       - ./config/spot-payment.yml:/config/application.yml:ro
     depends_on:
       - db
