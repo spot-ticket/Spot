@@ -1,5 +1,8 @@
 def lambda_handler(event, context):
-    # request/userAttributes 안전 처리
+    print("PRE_TOKEN CALLED")
+    print(json.dumps(event))
+
+# request/userAttributes 안전 처리
     req = event.get("request") or {}
     attrs = req.get("userAttributes") or {}
 

@@ -164,7 +164,3 @@ resource "aws_lambda_function" "pre_token" {
   source_code_hash = filebase64sha256("${path.module}/lambda/pre_token.zip")
 }
 
-resource "aws_iam_role_policy_attachment" "post_confirm_logs" {
-  role       = aws_iam_role.lambda_post_confirm.name
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
-}

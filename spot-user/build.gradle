@@ -64,6 +64,9 @@ dependencies {
 
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
 
+    implementation platform("software.amazon.awssdk:bom:2.25.25")
+    implementation "software.amazon.awssdk:cognitoidentityprovider"
+
 
 
 }

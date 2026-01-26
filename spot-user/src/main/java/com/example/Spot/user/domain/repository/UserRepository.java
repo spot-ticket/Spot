@@ -22,5 +22,10 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
     
     // 검색한 닉네임을 포함하는 유저 정보 조회
     List<UserEntity> findByNicknameContaining(String nickname);
+
+    // Cognito
+    Optional<UserEntity> findByCognitoSub(String cognitoSub);
+
+    boolean existsByCognitoSub(String cognitoSub);
 }
 

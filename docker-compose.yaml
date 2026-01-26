@@ -17,6 +17,8 @@ services:
     networks:
       - spot-network
 
+
+
   redis:
     image: redis:alpine
     container_name: redis_cache
@@ -173,9 +175,12 @@ services:
       - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
       - FEIGN_STORE_URL=http://spot-store:8083
       - FEIGN_ORDER_URL=http://spot-order:8082
+      - AWS_PROFILE=default
+      - AWS_REGION=ap-northeast-2
     volumes:
       - ./config/common.yml:/config/common.yml:ro
       - ./config/spot-user.yml:/config/application.yml:ro
+      - ~/.aws:/root/.aws:ro
     depends_on:
       - db
       - redis

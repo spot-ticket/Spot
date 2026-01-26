@@ -54,7 +54,7 @@ variable "cognito_logout_urls" {
 variable "public_routes" {
   description = "인증이 필요없는 공개 라우트 패턴"
   type        = list(string)
-  default     = ["/api/auth/*", "/health", "/actuator/health"]
+  default     = ["/api/auth/*", "/health", "/actuator/health", "/api/join","/api/login"]
 }
 
 variable "protected_route_patterns" {

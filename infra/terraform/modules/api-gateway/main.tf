@@ -77,25 +77,6 @@ resource "aws_apigatewayv2_route" "main" {
   target    = "integrations/${aws_apigatewayv2_integration.main.id}"
 }
 
-# 로그인 / 회원가입을 위한 공개 라우트
-# 개발 이후 삭제할 것
-resource "aws_apigatewayv2_route" "public_api_join" {
-  api_id    = aws_apigatewayv2_api.main.id
-  route_key = "POST /api/join"
-  target    = "integrations/${aws_apigatewayv2_integration.main.id}"
-
-  authorization_type = "NONE"
-}
-
-resource "aws_apigatewayv2_route" "public_api_login" {
-  api_id    = aws_apigatewayv2_api.main.id
-  route_key = "POST /api/login"
-  target    = "integrations/${aws_apigatewayv2_integration.main.id}"
-
-  authorization_type = "NONE"
-}
-
-
 
 # =============================================================================
 # Stage
@@ -152,7 +133,7 @@ resource "aws_apigatewayv2_authorizer" "cognito_jwt" {
   identity_sources = ["$request.header.Authorization"]
 
   jwt_configuration {
-    issuer   = "https://cognito-idp.<region>.amazonaws.com/<userPoolId>"
-    audience = [appclientid]
+    issuer = var.cognito_issuer
+    audience = [var.cognito_audience]
   }
 }

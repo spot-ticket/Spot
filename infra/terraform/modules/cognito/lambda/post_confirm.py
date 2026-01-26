@@ -17,6 +17,8 @@ def _post_json(url: str, payload: dict) -> dict:
         return json.loads(body) if body else {}
 
 def lambda_handler(event, context):
+    print("POST_CONFIRM CALLED")
+    print(json.dumps(event))
     # user-service 연동 전이면 즉시 실패
     if not USER_SERVICE_URL:
         raise Exception("USER_SERVICE_URL is not set. Block sign-up until user-service is ready.")

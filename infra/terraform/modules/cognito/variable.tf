@@ -6,7 +6,7 @@ variable "aws_region" {
 
 variable "user_service_url" {
   type        = string
-  default = "http://user-service.internal:8080"
+  default = "http://user.spot.local/"
 }
 variable "name_prefix" {
   type = string

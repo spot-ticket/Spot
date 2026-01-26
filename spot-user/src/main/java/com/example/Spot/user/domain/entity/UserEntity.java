@@ -28,6 +28,9 @@ public class UserEntity extends UpdateBaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
+    @Column(name = "cognito_sub", nullable = false, unique = true, length = 64)
+    private String cognitoSub;
+
     @Column(name = "name", nullable = false)
     private String username;
 
@@ -46,14 +49,14 @@ public class UserEntity extends UpdateBaseEntity {
     @Column(nullable = false)
     private String addressDetail;
 
-    @Column(nullable = false)
     private String email;
 
     @Enumerated(EnumType.STRING)
     private Role role;
 
     @Builder
-    public UserEntity(String username, String nickname, String roadAddress, String addressDetail, String email, Role role) {
+    public UserEntity(String username, String cognitoSub, String nickname, String roadAddress, String addressDetail, String email, Role role) {
+        this.cognitoSub = cognitoSub;
         this.username = username;
         this.nickname = nickname;
         this.roadAddress = roadAddress;
