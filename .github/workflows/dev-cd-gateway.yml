@@ -20,9 +20,9 @@ jobs:
   deploy:
     name: Deploy to ECS DEV Cluster
     runs-on: ubuntu-latest
-#    permissions:
-#      id-token: write
-#      contents: read
+    permissions:
+      id-token: write
+      contents: read
 
     steps:
       - name: Checkout code
