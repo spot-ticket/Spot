@@ -1,0 +1,105 @@
+#name: dev-cd-user.yml
+#on:
+#  workflow_run: # 자동 트리거
+#    workflows: [DEV CI - User Service]
+#    types:
+#      - completed # 현재 워크플로우는 이전 워크플로우가 끝나면 실행하라는 의미
+#    branches: [ dev ]
+#
+#env:
+#  AWS_REGION: ap-northeast-2
+#  ECS_SERVICE: spot-user-service
+#  ECS_CLUSTER: spot-user-cluster
+#  ECS_CONTAINER: spot-user-container
+#  TASK_DEFINITION: Spot/task-definitions/user-task-def.json
+#  ECR_REPOSITORY: spot-user
+#  DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+#
+#jobs:
+#  deploy:
+#    name: Deploy to ECS DEV Cluster
+#    runs-on: ubuntu-latest
+#    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+##    permissions:
+##      id-token: write
+##      contents: read
+#
+#    steps:
+#      - name: Checkout code
+#        uses: actions/checkout@v4
+#        with:
+#          ref: ${{ github.event.workflow_run.head_sha }}
+#
+#      # AWS OIDC 인증
+#      - name: configure aws
+#        id: aws-config
+#        uses: aws-actions/configure-aws-credentials@v4
+#        with:
+#          aws-region: ${{ env.AWS_REGION }}
+#          #          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+#
+#      # ECR 로그인
+#      - name: Login to ECR
+#        id: login-ecr
+#        uses: aws-actions/amazon-ecr-login@v2
+#
+#      # Git SHA 이미지 태그
+#      - name: Get Image Tag
+#        id: image-tag
+#        run: echo "short_tag=test-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+#
+#      # Task Definition 이미지 태그 변경
+#      - name: Render ECS Task Definition
+#        id: render-task-def
+#        uses: aws-actions/amazon-ecs-render-task-definition@v1
+#        with:
+#          task-definition: ${{ env.TASK_DEFINITION }} # 베이스가 될 task definition json 파일
+#          container-name: ${{ env.ECS_CONTAINER }}  # ECS 컨테이너명
+#          image: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.image-tag.outputs.short_tag }}
+#
+#      # 변경된 Task Definition ECS Service로 업데이트
+#      - name: Deploy ECS task definition
+#        id: deploy-service
+#        uses: aws-actions/amazon-ecs-deploy-task-definition@v1.4.10
+#        with:
+#          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
+#          service: ${{ env.ECS_SERVICE }}
+#          cluster: ${{ env.ECS_CLUSTER }}
+#          wait-for-service-stability: true  # 배포가 모두 완료될 때까지 step을 마치지 않고 대기하는 설정
+#
+#      # Discord 알림 - 성공
+#      - name: Notify Discord - Dev CI SUCCESS
+#        run: |
+#          curl -X POST $DISCORD_WEBHOOK_URL \
+#          -H "Content-Type: application/json" \
+#          -d '{
+#            "embeds": [{
+#              "title": "✅ DEV CD 성공 - User",
+#              "description": "**설명**\n- 배포 성공\n\n**이미지**\n- ${{ steps.image-tag.outputs.short_tag }}",
+#              "color": 3066993
+#              }]
+#          }'
+#
+#      # Discord 알림 - 실패
+#      - name: Notify Discord - DEV CD FAIL
+#        if: failure()
+#        run: |
+#          # 1. 실패한 단계 찾기
+#          FAILED_STEP=""
+#
+#          if [ "${{ steps.aws-config.outcome }}" == "failure" ]; then FAILED_STEP="AWS 인증"; fi
+#          if [ "${{ steps.login-ecr.outcome }}" == "failure" ]; then FAILED_STEP="ECR 로그인"; fi
+#          if [ "${{ steps.render-task-def.outcome }}" == "failure" ]; then FAILED_STEP="Task Definition 랜더링"; fi
+#          if [ "${{ steps.deploy-service.outcome }}" == "failure" ]; then FAILED_STEP="ECS 배포"; fi
+#
+#          curl -X POST $DISCORD_WEBHOOK_URL \
+#          -H "Content-Type: application/json" \
+#          -d '{
+#          "embeds": [{
+#            "title": "❌ DEV CD 실패 - User",
+#            "description": "**원인**\n - '"$FAILED_STEP"' 실패\n**태그**\n - `${{ steps.image-tag.outputs.short_tag }}`",
+#            "color": 15158332
+#            }]
+#          }'

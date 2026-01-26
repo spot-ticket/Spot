@@ -1,17 +1,17 @@
-name: DEV CI - Store Service
+name: DEV CI - Payment Service
 
 on:
   pull_request:
     branches: [ dev ]
     paths:
       #      - 'infra/client/**'
-      - 'spot-store/**'
-      - '.github/workflows/dev-ci-store.yml'
+      - 'spot-payment/**'
+      - '.github/workflows/dev-ci-payment.yml'
 
 env:
   AWS_REGION: ap-northeast-2
-  REPOSITORY: spot-store
-  DIRECTORY: spot-store
+  REPOSITORY: spot-payment
+  DIRECTORY: spot-payment
   DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
 jobs:
@@ -59,7 +59,7 @@ jobs:
       - name: Make application.properties
         run: |
           mkdir -p ./src/main/resources
-          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
+          echo ${{ secrets.APPLICATION_YML }} > ./src/main/resources/application.yml
         shell: bash
 
       - name: Check code formatting
@@ -162,7 +162,7 @@ jobs:
           -H "Content-Type: application/json" \
           -d '{
             "embeds": [{
-              "title": "✅ DEV CI 성공 - Store",
+              "title": "✅ DEV CI 성공 - Payment",
               "description": "**설명**\n- ECR Push 성공\n\n**이미지**\n- ${{ steps.image-tag.outputs.short_tag }}",
               "color": 3066993
               }]
@@ -186,7 +186,7 @@ jobs:
           -H "Content-Type: application/json" \
           -d '{
           "embeds": [{
-            "title": "❌ DEV CI 실패 - Store",
+            "title": "❌ DEV CI 실패 - Payment",
             "description": "**원인**\n - '"$FAILED_STEP"' 실패\n**태그**\n - `${{ steps.image-tag.outputs.short_tag }}`",
             "color": 15158332
             }]
