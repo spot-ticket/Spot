@@ -4,7 +4,7 @@ import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
 import com.example.Spot.order.application.service.OrderService;
-import com.example.Spot.order.event.subscribe.PaymentSucceededEvent;
+import com.example.Spot.order.infrastructure.event.subscribe.PaymentSucceededEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;

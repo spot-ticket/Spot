@@ -1,4 +1,4 @@
-package com.example.Spot.payments.event.subscribe;
+package com.example.Spot.order.infrastructure.event.publish;
 
 import java.util.UUID;
 

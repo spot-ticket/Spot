@@ -325,6 +325,8 @@ public class OrderServiceImpl implements OrderService {
 
         // 주문 취소 처리
         order.cancelOrder(reason, CancelledBy.STORE);
+        // 주문 취소 이벤트 발행
+        orderEventProducer.sendOrderCancelled(order.getId(), reason);
 
         // 결제 취소 처리 (Payment 서비스 호출)
         cancelPaymentIfExists(orderId, "가게 주문 취소: " + reason);

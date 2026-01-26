@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import com.example.Spot.payments.event.publish.AuthRequiredEvent;
-import com.example.Spot.payments.event.publish.PaymentSucceededEvent;
+import com.example.Spot.payments.infrastructure.event.publish.AuthRequiredEvent;
+import com.example.Spot.payments.infrastructure.event.publish.PaymentSucceededEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 

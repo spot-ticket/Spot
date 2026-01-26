@@ -1,5 +1,6 @@
 package com.example.Spot.order.infrastructure.producer;
 
+import com.example.Spot.order.infrastructure.event.publish.OrderCancelledEvent;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -7,9 +8,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
-import com.example.Spot.order.event.publish.OrderAcceptedEvent;
-import com.example.Spot.order.event.publish.OrderCreatedEvent;
-import com.example.Spot.order.event.publish.OrderPendingEvent;
+import com.example.Spot.order.infrastructure.event.publish.OrderAcceptedEvent;
+import com.example.Spot.order.infrastructure.event.publish.OrderCreatedEvent;
+import com.example.Spot.order.infrastructure.event.publish.OrderPendingEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -29,6 +30,8 @@ public class OrderEventProducer {
     private String orderPendingTopic;
     @Value("${kafka.topic.order.accepted}")
     private String orderAcceptedTopic;
+    @Value("${kafka.topic.order.cancelled}")
+    private String orderCancelledTopic;
     
     public void sendOrderCreated(UUID orderId, Integer userId, Long amount) {
         OrderCreatedEvent event = OrderCreatedEvent.builder()
@@ -55,6 +58,15 @@ public class OrderEventProducer {
                 .estimatedTime(estimatedTime)
                 .build();
         send(orderAcceptedTopic, userId.toString(), event);
+    }
+    
+    public void sendOrderCancelled(UUID orderId, String reason) {
+        OrderCancelledEvent event = OrderCancelledEvent.builder()
+                .orderId(orderId)
+                .reason(reason)
+                .build();
+        
+        send(orderCancelledTopic, orderId.toString(), event);
     }
     
     public void send(String topic, String key, Object event) {

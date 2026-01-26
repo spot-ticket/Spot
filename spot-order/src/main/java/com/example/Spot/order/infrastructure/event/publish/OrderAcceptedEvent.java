@@ -1,4 +1,4 @@
-package com.example.Spot.order.event.publish;
+package com.example.Spot.order.infrastructure.event.publish;
 
 import java.util.UUID;
 

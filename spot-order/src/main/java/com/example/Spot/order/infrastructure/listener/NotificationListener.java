@@ -3,9 +3,9 @@ package com.example.Spot.order.infrastructure.listener;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
-import com.example.Spot.order.event.publish.OrderAcceptedEvent;
-import com.example.Spot.order.event.publish.OrderPendingEvent;
-import com.example.Spot.order.event.subscribe.AuthRequiredEvent;
+import com.example.Spot.order.infrastructure.event.publish.OrderAcceptedEvent;
+import com.example.Spot.order.infrastructure.event.publish.OrderPendingEvent;
+import com.example.Spot.order.infrastructure.event.subscribe.AuthRequiredEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import lombok.RequiredArgsConstructor;

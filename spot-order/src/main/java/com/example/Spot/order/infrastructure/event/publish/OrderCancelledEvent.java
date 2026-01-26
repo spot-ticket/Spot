@@ -1,6 +1,5 @@
-package com.example.Spot.order.event.publish;
+package com.example.Spot.order.infrastructure.event.publish;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
@@ -9,11 +8,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Getter
+@Builder
 @AllArgsConstructor
 @NoArgsConstructor
-@Builder
-public class OrderPendingEvent {
-    private UUID storeId;
+public class OrderCancelledEvent {
     private UUID orderId;
-    private LocalDateTime timestamp;
+    private String reason;
 }
