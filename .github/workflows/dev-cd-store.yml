@@ -1,7 +1,7 @@
 name: dev-cd-store.yml
 on:
   push:
-    branches: [ feat/226-ci-cd-v2 ]
+    branches: [ dev ]
     paths:
       #        - 'infra/client/**'
       - 'spot-store/**'
@@ -90,9 +90,8 @@ jobs:
           echo "Rendering Task Definition..."
 
           # 1. 프로젝트 내의 TASK_DEFINITION 사용
-          # jq 명령어로 불필요한 인자 제거
           jq --arg IMAGE "$NEW_IMAGE" \
-             '.containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' \
+             '.containerDefinitions[0].image = $IMAGE \
              ../${{ env.TASK_DEFINITION }} > new-task-def.json
 
           # 2. AWS에 등록
