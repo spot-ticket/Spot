@@ -1,7 +1,7 @@
 name: dev-cd-gateway.yml
 on:
   push:
-    branches: [ dev ]
+    branches: [ feat/226-ci-cd-v2 ]
     paths:
       #        - 'infra/client/**'
       - 'spot-gateway/**'
@@ -10,9 +10,9 @@ on:
 env:
   AWS_REGION: ap-northeast-2
   ECS_SERVICE: spot-gateway-service
-  ECS_CLUSTER: spot-gateway-cluster
+  ECS_CLUSTER: spot-dev-cluster
   ECS_CONTAINER: spot-gateway-container
-  TASK_DEFINITION: Spot/task-definitions/gateway-task-def.json
+  TASK_DEFINITION: task-definitions/dev-gateway-task-def.json
   ECR_REPOSITORY: spot-gateway
   DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
@@ -20,6 +20,9 @@ jobs:
   deploy:
     name: Deploy to ECS DEV Cluster
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: spot-gateway
     permissions:
       id-token: write
       contents: read
@@ -28,15 +31,28 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew build -x test
+
       # AWS OIDC 인증
       - name: configure aws
         id: aws-config
         uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-region: ${{ env.AWS_REGION }}
-          #          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_KEY }}
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY }}
+#          aws-access-key-id: ${{ secrets.AWS_ACCESS }}
+#          aws-secret-access-key: ${{ secrets.AWS_SECRET }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
 
       # ECR 로그인
       - name: Login to ECR
@@ -67,6 +83,44 @@ jobs:
         run: |
           docker push $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
+      - name: Deploy to ECS using AWS CLI
+        env:
+          NEW_IMAGE: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.image-tag.outputs.short_tag }}
+        run: |
+          echo "Processing Task Definition..."
+          
+          # [중요] 1. 이미지 태그 교체 및 등록 시 불필요한 메타데이터 필드 삭제
+          # del(...) 안에 있는 필드들은 describe로 받을 땐 있지만, register 할 땐 넣으면 에러나는 필드들입니다.
+          jq --arg IMAGE "$NEW_IMAGE" \
+             '.containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' \
+             ../${{ env.TASK_DEFINITION }} > new-task-def.json
+          
+          # 디버깅용: 생성된 JSON 파일 내용 확인 (필요시 주석 해제)
+          # cat new-task-def.json
+          
+          # 2. AWS에 새로운 Task Definition 등록
+          echo "Registering new Task Definition..."
+          NEW_TASK_INFO=$(aws ecs register-task-definition --cli-input-json file://new-task-def.json)
+          
+          # 3. 등록된 Task Definition의 ARN 추출
+          NEW_TASK_ARN=$(echo $NEW_TASK_INFO | jq -r '.taskDefinition.taskDefinitionArn')
+          echo "New Task Definition ARN: $NEW_TASK_ARN"
+          
+          # 4. ECS 서비스 업데이트
+          echo "Updating ECS Service..."
+          aws ecs update-service \
+            --cluster ${{ env.ECS_CLUSTER }} \
+            --service ${{ env.ECS_SERVICE }} \
+            --task-definition $NEW_TASK_ARN \
+            --force-new-deployment
+
+#        # 5. 배포 안정화 대기
+#        echo "Waiting for service stability..."
+#        aws ecs wait services-stable \
+#          --cluster ${{ env.ECS_CLUSTER }} \
+#          --services ${{ env.ECS_SERVICE }}
+
+
 #      # Task Definition 이미지 태그 변경
 #      - name: Render ECS Task Definition
 #        id: render-task-def
@@ -84,7 +138,13 @@ jobs:
 #          task-definition: ${{ steps.render-task-def.outputs.task-definition }}
 #          service: ${{ env.ECS_SERVICE }}
 #          cluster: ${{ env.ECS_CLUSTER }}
-#          wait-for-service-stability: true  # 배포가 모두 완료될 때까지 step을 마치지 않고 대기하는 설정
+#          wait-for-service-stability: false  # 배포가 모두 완료될 때까지 step을 마치지 않고 대기하는 설정
+
+
+#      # Code Deploy로 트래픽 전환
+#      - name: Trigger Code Deploy
+#        id: trigger
+#
 #
 #      # Discord 알림 - 성공
 #      - name: Notify Discord - Dev CD SUCCESS
