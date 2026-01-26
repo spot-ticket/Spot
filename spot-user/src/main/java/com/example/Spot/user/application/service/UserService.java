@@ -3,6 +3,7 @@ package com.example.Spot.user.application.service;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -61,19 +62,7 @@ public class UserService {
         user.softDelete(user.getId());
     }
     
-    private UserResponseDTO toResponse(UserEntity user) {
-        return new UserResponseDTO(
-                user.getId(),
-                user.getUsername(),
-                user.getRole(),
-                user.getNickname(),
-                user.getEmail(),
-                user.getRoadAddress(),
-                user.getAddressDetail(),
-                user.getAge(),
-                user.isMale()
-        );
-    }
+
     
     public List<UserResponseDTO> searchUsersByNickname(String nickname) {
         List<UserEntity> users = userRepository.findByNicknameContaining(nickname);
@@ -86,46 +75,92 @@ public class UserService {
     public UserResponseDTO completeSignup(Jwt jwt, SignupCompleteRequestDTO request) {
         String cognitoSub = jwt.getSubject();
 
-        String email = jwt.getClaimAsString("email");
-        if (email == null) {
-            email = "";
+        if (cognitoSub == null || cognitoSub.isBlank()) {
+            throw new IllegalArgumentException("Missing sub");
         }
 
+        Role role = resolveRole(jwt.getClaimAsString("custom:role"));
+        String cognitoUsername = resolveCognitoUsername(jwt, cognitoSub);
+
+        UserEntity user = userRepository.findByCognitoSub(cognitoSub)
+                .orElseGet(() -> createUserSafely(cognitoUsername, cognitoSub, role, request));
+
+        if (user.getRole() == null) {
+            user.setRole(role);
+        }
+
+        user.setNickname(request.getNickname());
+        user.setAddress(request.getRoadAddress(), request.getAddressDetail());
+        user.setMale(request.isMale());
+        user.setAge(request.getAge());
+
+        user.markCompleted();
+
+        UserEntity persisted = userRepository.save(user);
+
+        try {
+            cognitoAdminService.backfillUserIdAndRole(
+                    cognitoUsername,
+                    persisted.getId(),
+                    persisted.getRole().name()
+            );
+        } catch (RuntimeException ignored) {
+        }
+
+        return toResponse(persisted);
+    }
+
+    private UserEntity createUserSafely(
+            String cognitoUsername,
+            String cognitoSub,
+            Role role,
+            SignupCompleteRequestDTO request
+    ) {
+        try {
+            UserEntity user = new UserEntity(
+                    cognitoUsername,
+                    cognitoSub,
+                    request.getNickname(),
+                    request.getRoadAddress(),
+                    request.getAddressDetail(),
+                    "",
+                    role
+            );
+            user.setMale(request.isMale());
+            user.setAge(request.getAge());
+            return userRepository.save(user);
+        } catch (DataIntegrityViolationException e) {
+            return userRepository.findByCognitoSub(cognitoSub)
+                    .orElseThrow(() -> e);
+        }
+    }
+    private String resolveCognitoUsername(Jwt jwt, String fallback) {
         String cognitoUsername = jwt.getClaimAsString("cognito:username");
         if (cognitoUsername == null || cognitoUsername.isBlank()) {
             cognitoUsername = jwt.getClaimAsString("username");
         }
         if (cognitoUsername == null || cognitoUsername.isBlank()) {
-            cognitoUsername = cognitoSub;
+            cognitoUsername = fallback;
         }
-
-        UserEntity existing = userRepository.findByCognitoSub(cognitoSub).orElse(null);
-        if (existing != null) {
-            cognitoAdminService.backfillUserIdAndRole(cognitoUsername, existing.getId(), existing.getRole().name());
-            return toResponse(existing);
-        }
-
-        Role role = Role.CUSTOMER;
-
-        UserEntity saved = new UserEntity(
-                cognitoUsername,
-                cognitoSub,
-                request.getNickname(),
-                request.getRoadAddress(),
-                request.getAddressDetail(),
-                email,
-                role
-        );
-
-        saved.setMale(request.isMale());
-        saved.setAge(request.getAge());
-
-        UserEntity persisted = userRepository.save(saved);
-
-        cognitoAdminService.backfillUserIdAndRole(cognitoUsername, persisted.getId(), role.name());
-
-        return toResponse(persisted);
+        return cognitoUsername;
     }
+
+    private Role resolveRole(String roleClaim) {
+        if (roleClaim == null || roleClaim.isBlank()) {
+            return Role.CUSTOMER;
+        }
+        try {
+            return Role.valueOf(roleClaim);
+        } catch (IllegalArgumentException e) {
+            return Role.CUSTOMER;
+        }
+    }
+
+    private UserResponseDTO toResponse(UserEntity user) {
+        return UserResponseDTO.from(user);
+    }
+
+
 
 
 }

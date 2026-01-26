@@ -66,6 +66,8 @@ public class UserEntity extends UpdateBaseEntity {
         this.addressDetail = addressDetail;
         this.email = email;
         this.role = role;
+        this.signupState = SignupState.PROVISIONED;
+        this.profileCompleted = false;
     }
 
     public static UserEntity forAuthentication(Integer id, Role role) {
