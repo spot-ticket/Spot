@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +36,7 @@ import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service
@@ -45,6 +45,7 @@ public class PaymentService {
 
   private final PaymentGateway paymentGateway;
   private final PaymentEventProducer paymentEventProducer;
+  private final PaymentHistoryService paymentHistoryService;
 
   @Value("${toss.payments.timeout}")
   private Integer timeout;
@@ -89,7 +90,9 @@ public class PaymentService {
     UUID uniqueOrderId = payment.getOrderId();
 
     TossPaymentResponse response = confirmBillingPayment(payment, billingAuth, uniqueOrderId);
-
+    
+    paymentHistoryService.recordPaymentSuccess(paymentId, response.getPaymentKey());
+    
     return PaymentResponseDto.Confirm.builder()
             .paymentId(paymentId)
             .amount(response.getTotalAmount())
@@ -151,9 +154,13 @@ public class PaymentService {
         paymentKeyRepository
             .findByPaymentId(request.paymentId())
             .orElseThrow(() -> new IllegalStateException("[PaymentService] 결제 키가 없어 취소할 수 없습니다."));
+    
+    paymentHistoryService.recordCancelProgress(request.paymentId());
 
-        tossPaymentCancel(
-            request.paymentId(), paymentKeyEntity.getPaymentKey(), request.cancelReason());
+    tossPaymentCancel(
+        request.paymentId(), paymentKeyEntity.getPaymentKey(), request.cancelReason());
+
+    paymentHistoryService.recordCancelSuccess(request.paymentId());
 
     return PaymentResponseDto.Cancel.builder()
         .paymentId(request.paymentId())

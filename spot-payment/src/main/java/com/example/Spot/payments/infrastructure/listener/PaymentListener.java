@@ -1,6 +1,5 @@
 package com.example.Spot.payments.infrastructure.listener;
 
-import com.example.Spot.payments.infrastructure.event.subscribe.OrderCancelledEvent;
 import java.util.UUID;
 
 import org.springframework.kafka.annotation.KafkaListener;
@@ -10,6 +9,7 @@ import com.example.Spot.global.presentation.advice.BillingKeyNotFoundException;
 import com.example.Spot.payments.application.service.PaymentService;
 import com.example.Spot.payments.domain.entity.PaymentEntity;
 import com.example.Spot.payments.infrastructure.event.publish.AuthRequiredEvent;
+import com.example.Spot.payments.infrastructure.event.subscribe.OrderCancelledEvent;
 import com.example.Spot.payments.infrastructure.event.subscribe.OrderCreatedEvent;
 import com.example.Spot.payments.infrastructure.producer.PaymentEventProducer;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;

@@ -267,10 +267,11 @@ public class OrderServiceImpl implements OrderService {
     @OrderStatusChange("REJECT")
     public OrderResponseDto rejectOrder(UUID orderId, String reason) {
         OrderEntity order = OrderValidationContext.getCurrentOrder();
-
-        order.rejectOrder(reason);
+        
+        order.initiateCancel(reason, null);
         // 주문 취소(거절) 이벤트 발행
         orderEventProducer.sendOrderCancelled(order.getId(), reason);
+        log.info("주문 거절 처리 시작 (환불 대기): orderId={}, reason={}", orderId, reason);
         
         return OrderResponseDto.from(order);
     }
@@ -304,6 +305,21 @@ public class OrderServiceImpl implements OrderService {
         order.completeOrder();
         return OrderResponseDto.from(order);
     }
+    
+    @Override
+    @Transactional
+    public void completeOrderCancellation(UUID orderId) {
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+        
+        if (order.getOrderStatus() == OrderStatus.CANCEL_PENDING) {
+            order.finalizeCancel();
+            log.info("[보상 트랜잭션 완료] 주문 ID {} 가 최종 확정되었습니다.", orderId);
+        } else {
+            log.warn("⚠️ [무시됨] 주문 ID {} 는 현재 취소 대기 상태가 아닙니다. (현재 상태: {})",
+                    orderId, order.getOrderStatus());
+        }
+    }
 
     @Override
     @Transactional
@@ -311,10 +327,10 @@ public class OrderServiceImpl implements OrderService {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
 
-        // 주문 취소 처리
-        order.cancelOrder(reason, CancelledBy.CUSTOMER);
-        // 주문 취소 이벤트 발행
+        order.initiateCancel(reason, CancelledBy.CUSTOMER);
+        // 주문 취소(거절) 이벤트 발행
         orderEventProducer.sendOrderCancelled(order.getId(), reason);
+        log.info("고객에 의한 취소 처리 시작 (환불 대기): orderId={}, reason={}", orderId, reason);
 
         // 결제 취소 처리 (Payment 서비스 호출)
         cancelPaymentIfExists(orderId, "고객 주문 취소: " + reason);
@@ -329,10 +345,11 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
 
         // 주문 취소 처리
-        order.cancelOrder(reason, CancelledBy.STORE);
-        // 주문 취소 이벤트 발행
+        order.initiateCancel(reason, CancelledBy.STORE);
+        // 주문 취소(거절) 이벤트 발행
         orderEventProducer.sendOrderCancelled(order.getId(), reason);
-
+        log.info("가게에 의한 취소 처리 시작 (환불 대기): orderId={}, reason={}", orderId, reason);
+        
         // 결제 취소 처리 (Payment 서비스 호출)
         cancelPaymentIfExists(orderId, "가게 주문 취소: " + reason);
 

@@ -1,6 +1,7 @@
 package com.example.Spot.payments.infrastructure.event.publish;
 
 import java.util.UUID;
+
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;

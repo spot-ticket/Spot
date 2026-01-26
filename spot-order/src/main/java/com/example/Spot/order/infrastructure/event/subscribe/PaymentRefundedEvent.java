@@ -1,4 +1,4 @@
-package com.example.Spot.payments.infrastructure.event.subscribe;
+package com.example.Spot.order.infrastructure.event.subscribe;
 
 import java.util.UUID;
 
@@ -9,9 +9,8 @@ import lombok.NoArgsConstructor;
 
 @Getter
 @AllArgsConstructor
-@Builder
 @NoArgsConstructor
-public class OrderCancelledEvent {
+@Builder
+public class PaymentRefundedEvent {
     private UUID orderId;
-    private String reason;
 }
