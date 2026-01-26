@@ -269,6 +269,9 @@ public class OrderServiceImpl implements OrderService {
         OrderEntity order = OrderValidationContext.getCurrentOrder();
 
         order.rejectOrder(reason);
+        // 주문 취소(거절) 이벤트 발행
+        orderEventProducer.sendOrderCancelled(order.getId(), reason);
+        
         return OrderResponseDto.from(order);
     }
 
@@ -310,6 +313,8 @@ public class OrderServiceImpl implements OrderService {
 
         // 주문 취소 처리
         order.cancelOrder(reason, CancelledBy.CUSTOMER);
+        // 주문 취소 이벤트 발행
+        orderEventProducer.sendOrderCancelled(order.getId(), reason);
 
         // 결제 취소 처리 (Payment 서비스 호출)
         cancelPaymentIfExists(orderId, "고객 주문 취소: " + reason);

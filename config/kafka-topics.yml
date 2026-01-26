@@ -4,6 +4,7 @@ kafka:
       created: spot.order.created
       pending: spot.order.pending
       accepted: spot.order.accepted
+      cancelled: spot.order.cancelled
     payment:
       succeeded: spot.payment.succeeded
     payment-auth:
