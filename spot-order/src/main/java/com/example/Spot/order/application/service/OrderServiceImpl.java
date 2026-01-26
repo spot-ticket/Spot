@@ -27,6 +27,7 @@ import com.example.Spot.order.domain.entity.OrderItemEntity;
 import com.example.Spot.order.domain.entity.OrderItemOptionEntity;
 import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
+import com.example.Spot.order.domain.repository.OrderItemOptionRepository;
 import com.example.Spot.order.domain.repository.OrderRepository;
 import com.example.Spot.order.infrastructure.aop.OrderStatusChange;
 import com.example.Spot.order.infrastructure.aop.OrderValidationContext;
@@ -49,6 +50,7 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderItemOptionRepository orderItemOptionRepository;
     private final PaymentClient paymentClient;
     private final StoreClient storeClient;
     private final OrderEventProducer orderEventProducer;
@@ -112,9 +114,27 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OrderResponseDto getOrderById(UUID orderId) {
-        OrderEntity order = orderRepository.findByIdWithDetails(orderId)
+
+        // MultipleBagFetchException이 발생해서 변경을 진행함. 01.26에 진행.
+        OrderEntity order = orderRepository.findByIdWithOrderItems(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+
+        List<UUID> orderItemIds = order.getOrderItems().stream()
+                .map(OrderItemEntity::getId)
+                .toList();
+
+        List<OrderItemOptionEntity> options = List.of();
+        if (!orderItemIds.isEmpty()) {
+            options = orderItemOptionRepository.findByOrderItemIdIn(orderItemIds);
+        }
+
+        if (!order.getOrderItems().isEmpty() && !options.isEmpty()) {
+            System.out.println("Order의 아이템 주소: " + System.identityHashCode(order.getOrderItems().get(0)));
+            System.out.println("옵션이 참조하는 아이템 주소: " + System.identityHashCode(options.get(0).getOrderItem()));
+        }
+
         return OrderResponseDto.from(order);
     }
 
@@ -183,6 +203,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // ========== 페이지네이션 ==========
+    // MultipleBagFetchException 방지를 위해 Options는 별도 조회 후 1차 캐시 활용
 
     @Override
     public Page<OrderResponseDto> getUserOrdersWithPagination(
@@ -202,6 +223,7 @@ public class OrderServiceImpl implements OrderService {
                 range[1],
                 pageable);
 
+        fetchOrderItemOptions(orderPage.getContent());
         return orderPage.map(OrderResponseDto::from);
     }
 
@@ -225,6 +247,7 @@ public class OrderServiceImpl implements OrderService {
                 range[1],
                 pageable);
 
+        fetchOrderItemOptions(orderPage.getContent());
         return orderPage.map(OrderResponseDto::from);
     }
 
@@ -244,7 +267,23 @@ public class OrderServiceImpl implements OrderService {
                 range[1],
                 pageable);
 
+        fetchOrderItemOptions(orderPage.getContent());
         return orderPage.map(OrderResponseDto::from);
+    }
+
+    /**
+     * Order 목록의 OrderItemOptions를 별도 조회하여 1차 캐시에 로드
+     * MultipleBagFetchException 방지용
+     */
+    private void fetchOrderItemOptions(List<OrderEntity> orders) {
+        List<UUID> orderItemIds = orders.stream()
+                .flatMap(order -> order.getOrderItems().stream())
+                .map(OrderItemEntity::getId)
+                .toList();
+
+        if (!orderItemIds.isEmpty()) {
+            orderItemOptionRepository.findByOrderItemIdIn(orderItemIds);
+        }
     }
 
     @Override
