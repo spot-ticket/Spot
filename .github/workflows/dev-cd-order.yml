@@ -14,7 +14,6 @@ env:
   ECS_CONTAINER: spot-order-container
   TASK_DEFINITION: task-definitions/dev-order-task.json
   ECR_REPOSITORY: spot-order
-  DISCORD_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
 
 jobs:
   deploy:
@@ -116,7 +115,7 @@ jobs:
             --task-definition ${{ steps.render-task-def.outputs.NEW_TASK_ARN }} \
             --force-new-deployment
 
-      # [dev merge 전에 해제 예정]
+#      # [dev 브랜치 merge 시 해제 예정]
 #      # 5. 서버 부팅 확인
 #      - name: Wait Service
 #        id: wait-service
@@ -133,7 +132,7 @@ jobs:
       # Discord 알림 - 성공
       - name: Notify Discord - Dev CD SUCCESS
         run: |
-          curl -X POST $DISCORD_URL \
+          curl -X POST ${{ secrets.DISCORD_WEBHOOK_URL }} \
             -H "Content-Type: application/json" \
             -d '{
               "embeds": [{
@@ -171,6 +170,6 @@ jobs:
               }]
             }')
           
-          curl -X POST "${{ env.DISCORD_WEBHOOK_URL }}" \
+          curl -X POST ${{ secrets.DISCORD_WEBHOOK_URL }} \
             -H "Content-Type: application/json" \
             -d "$DISCORD_PAYLOAD"
