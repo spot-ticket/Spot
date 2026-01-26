@@ -1,4 +1,15 @@
 # =============================================================================
+# Local Variables
+# =============================================================================
+locals {
+  # Gateway 및 excluded_services에 포함된 서비스 필터링
+  active_services = {
+    for k, v in var.services : k => v
+    if !contains(var.excluded_services, k)
+  }
+}
+
+# =============================================================================
 # Cloud Map (Service Discovery Namespace)
 # =============================================================================
 resource "aws_service_discovery_private_dns_namespace" "main" {
@@ -136,6 +147,40 @@ resource "aws_iam_role_policy_attachment" "ecs_task_execution_role_policy" {
 }
 
 # =============================================================================
+# SSM Parameter Store 읽기 권한 (Secrets 주입용)
+# =============================================================================
+resource "aws_iam_role_policy" "ecs_task_execution_ssm" {
+  name = "${var.name_prefix}-ecs-ssm-policy"
+  role = aws_iam_role.ecs_task_execution_role.id
+
+  policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [
+      {
+        Effect = "Allow"
+        Action = [
+          "ssm:GetParameters",
+          "ssm:GetParameter"
+        ]
+        Resource = "arn:aws:ssm:${var.region}:*:parameter/${var.project}/${var.environment}/*"
+      },
+      {
+        Effect = "Allow"
+        Action = [
+          "kms:Decrypt"
+        ]
+        Resource = "*"
+        Condition = {
+          StringEquals = {
+            "kms:ViaService" = "ssm.${var.region}.amazonaws.com"
+          }
+        }
+      }
+    ]
+  })
+}
+
+# =============================================================================
 # IAM Role for ECS Task (Application level)
 # =============================================================================
 resource "aws_iam_role" "ecs_task_role" {
@@ -229,6 +274,21 @@ resource "aws_ecs_task_definition" "services" {
             value = "6379"
           }
         ],
+        # Kafka 환경 변수 (gateway 제외)
+        each.key != "gateway" && var.kafka_bootstrap_servers != "" ? [
+          {
+            name  = "SPRING_KAFKA_BOOTSTRAP_SERVERS"
+            value = var.kafka_bootstrap_servers
+          },
+          {
+            name  = "SPRING_KAFKA_CONSUMER_GROUP_ID"
+            value = "${var.project}-${each.key}"
+          },
+          {
+            name  = "SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET"
+            value = "earliest"
+          }
+        ] : [],
         # 백엔드 서비스 전용 (gateway 제외) - DB, JPA, JWT 설정
         each.key != "gateway" ? [
           {
@@ -238,10 +298,6 @@ resource "aws_ecs_task_definition" "services" {
           {
             name  = "SPRING_DATASOURCE_USERNAME"
             value = var.db_username
-          },
-          {
-            name  = "SPRING_DATASOURCE_PASSWORD"
-            value = var.db_password
           },
           {
             name  = "SPRING_JPA_HIBERNATE_DDL_AUTO"
@@ -254,10 +310,6 @@ resource "aws_ecs_task_definition" "services" {
           {
             name  = "SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT"
             value = "org.hibernate.dialect.PostgreSQLDialect"
-          },
-          {
-            name  = "SPRING_JWT_SECRET"
-            value = var.jwt_secret
           },
           {
             name  = "SPRING_JWT_EXPIRE_MS"
@@ -306,10 +358,6 @@ resource "aws_ecs_task_definition" "services" {
             value = var.mail_username
           },
           {
-            name  = "SPRING_MAIL_PASSWORD"
-            value = var.mail_password
-          },
-          {
             name  = "SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH"
             value = "true"
           },
@@ -325,83 +373,162 @@ resource "aws_ecs_task_definition" "services" {
             value = var.toss_base_url
           },
           {
-            name  = "TOSS_PAYMENTS_SECRET_KEY"
-            value = var.toss_secret_key
-          },
-          {
             name  = "TOSS_PAYMENTS_CUSTOMER_KEY"
             value = var.toss_customer_key
           }
         ] : [],
-        # Gateway 전용 설정 - Spring Cloud Gateway 라우트
+        # Gateway 전용 설정 - Spring Cloud Gateway 라우트 (WebFlux 버전용 새 property 이름)
         each.key == "gateway" ? [
+          # User Service - Auth 관련
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_0_ID"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_0_ID"
+            value = "user-login"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_0_URI"
+            value = "http://user.${var.project}.local:${var.services["user"].container_port}"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_0_PREDICATES_0"
+            value = "Path=/api/login"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_1_ID"
+            value = "user-join"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_1_URI"
+            value = "http://user.${var.project}.local:${var.services["user"].container_port}"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_1_PREDICATES_0"
+            value = "Path=/api/join"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_2_ID"
             value = "user-auth"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_0_URI"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_2_URI"
             value = "http://user.${var.project}.local:${var.services["user"].container_port}"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_0_PREDICATES_0"
-            value = "Path=/api/login,/api/join,/api/auth/refresh"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_2_PREDICATES_0"
+            value = "Path=/api/auth/**"
           },
+          # User Service - Users & Admin
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_1_ID"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_3_ID"
             value = "user-service"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_1_URI"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_3_URI"
             value = "http://user.${var.project}.local:${var.services["user"].container_port}"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_1_PREDICATES_0"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_3_PREDICATES_0"
             value = "Path=/api/users/**"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_2_ID"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_4_ID"
+            value = "admin-service"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_4_URI"
+            value = "http://user.${var.project}.local:${var.services["user"].container_port}"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_4_PREDICATES_0"
+            value = "Path=/api/admin/**"
+          },
+          # Store Service
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_5_ID"
             value = "store-service"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_2_URI"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_5_URI"
             value = "http://store.${var.project}.local:${var.services["store"].container_port}"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_2_PREDICATES_0"
-            value = "Path=/api/stores/**,/api/categories/**,/api/reviews/**"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_5_PREDICATES_0"
+            value = "Path=/api/stores/**"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_3_ID"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_6_ID"
+            value = "category-service"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_6_URI"
+            value = "http://store.${var.project}.local:${var.services["store"].container_port}"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_6_PREDICATES_0"
+            value = "Path=/api/categories/**"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_7_ID"
+            value = "review-service"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_7_URI"
+            value = "http://store.${var.project}.local:${var.services["store"].container_port}"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_7_PREDICATES_0"
+            value = "Path=/api/reviews/**"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_8_ID"
+            value = "menu-service"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_8_URI"
+            value = "http://store.${var.project}.local:${var.services["store"].container_port}"
+          },
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_8_PREDICATES_0"
+            value = "Path=/api/menus/**"
+          },
+          # Order Service
+          {
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_9_ID"
             value = "order-service"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_3_URI"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_9_URI"
             value = "http://order.${var.project}.local:${var.services["order"].container_port}"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_3_PREDICATES_0"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_9_PREDICATES_0"
             value = "Path=/api/orders/**"
           },
+          # Payment Service
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_4_ID"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_10_ID"
             value = "payment-service"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_4_URI"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_10_URI"
             value = "http://payment.${var.project}.local:${var.services["payment"].container_port}"
           },
           {
-            name  = "SPRING_CLOUD_GATEWAY_ROUTES_4_PREDICATES_0"
+            name  = "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_10_PREDICATES_0"
             value = "Path=/api/payments/**"
           },
+          # Actuator 설정 (새 property 이름)
           {
             name  = "MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE"
-            value = "*"
+            value = "health,info,gateway"
           },
           {
-            name  = "MANAGEMENT_ENDPOINT_GATEWAY_ENABLED"
-            value = "true"
+            name  = "MANAGEMENT_ENDPOINT_GATEWAY_ACCESS"
+            value = "unrestricted"
+          },
+          # 디버깅용 로깅
+          {
+            name  = "LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD_GATEWAY"
+            value = "DEBUG"
           }
         ] : [],
         # 서비스별 커스텀 환경 변수
@@ -409,6 +536,37 @@ resource "aws_ecs_task_definition" "services" {
           name  = k
           value = v
         }]
+      )
+
+      # =============================================================
+      # Secrets (Parameter Store에서 주입)
+      # =============================================================
+      secrets = concat(
+        # 백엔드 서비스 (gateway 제외) - DB 비밀번호, JWT 시크릿
+        each.key != "gateway" ? [
+          {
+            name      = "SPRING_DATASOURCE_PASSWORD"
+            valueFrom = var.parameter_arns.db_password
+          },
+          {
+            name      = "SPRING_JWT_SECRET"
+            valueFrom = var.parameter_arns.jwt_secret
+          }
+        ] : [],
+        # Mail 비밀번호 (user 서비스)
+        each.key == "user" && var.parameter_arns.mail_password != null ? [
+          {
+            name      = "SPRING_MAIL_PASSWORD"
+            valueFrom = var.parameter_arns.mail_password
+          }
+        ] : [],
+        # Toss 시크릿 키 (payment 서비스)
+        each.key == "payment" && var.parameter_arns.toss_secret_key != null ? [
+          {
+            name      = "TOSS_PAYMENTS_SECRET_KEY"
+            valueFrom = var.parameter_arns.toss_secret_key
+          }
+        ] : []
       )
 
       logConfiguration = {
@@ -434,19 +592,20 @@ resource "aws_ecs_task_definition" "services" {
 }
 
 # =============================================================================
-# ECS Services (per service)
+# ECS Services (per service) - Active Services Only
 # =============================================================================
 resource "aws_ecs_service" "services" {
-  for_each = var.services
+  for_each = local.active_services
 
   name            = "${var.project}-${each.key}-service"
   cluster         = aws_ecs_cluster.main.id
   task_definition = aws_ecs_task_definition.services[each.key].arn
-  desired_count   = each.value.desired_count
+  desired_count   = var.standby_mode ? 0 : each.value.desired_count
   launch_type     = "FARGATE"
 
+  # 모든 active 서비스를 ALB에 연결
   dynamic "load_balancer" {
-    for_each = each.key == "gateway" ? [1] : []
+    for_each = contains(keys(var.target_group_arns), each.key) ? [1] : []
     content {
       target_group_arn = var.target_group_arns[each.key]
       container_name   = "${var.project}-${each.key}-container"
@@ -458,6 +617,23 @@ resource "aws_ecs_service" "services" {
     subnets          = var.subnet_ids
     security_groups  = [aws_security_group.msa_sg.id]
     assign_public_ip = var.assign_public_ip
+  }
+
+  # Blue/Green 배포 컨트롤러
+  dynamic "deployment_controller" {
+    for_each = var.enable_blue_green ? [1] : []
+    content {
+      type = "CODE_DEPLOY"
+    }
+  }
+
+  # 기본 롤링 배포 설정 (Blue/Green 비활성화시)
+  dynamic "deployment_circuit_breaker" {
+    for_each = var.enable_blue_green ? [] : [1]
+    content {
+      enable   = true
+      rollback = true
+    }
   }
 
   # Service Connect Configuration
@@ -503,6 +679,6 @@ resource "aws_ecs_service" "services" {
   tags = merge(var.common_tags, { Service = each.key })
 
   lifecycle {
-    ignore_changes = [desired_count]
+    ignore_changes = var.enable_blue_green ? [task_definition, load_balancer] : []
   }
 }

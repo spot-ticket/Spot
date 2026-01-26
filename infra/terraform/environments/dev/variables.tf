@@ -321,9 +321,31 @@ variable "service_active_regions" {
 }
 
 # =============================================================================
-# Cognito
+# Standby Mode (비용 절감)
 # =============================================================================
+variable "standby_mode" {
+  description = "스탠바이 모드 (true면 모든 서비스 desired_count = 0)"
+  type        = bool
+  default     = false
+}
 
-variable "user_service_url" {
-  type = string
+# =============================================================================
+# Kafka 설정
+# =============================================================================
+variable "kafka_instance_type" {
+  description = "Kafka EC2 인스턴스 타입"
+  type        = string
+  default     = "t3.small"
+}
+
+variable "kafka_volume_size" {
+  description = "Kafka EBS 볼륨 크기 (GB)"
+  type        = number
+  default     = 20
+}
+
+variable "kafka_log_retention_hours" {
+  description = "Kafka 메시지 보관 시간"
+  type        = number
+  default     = 168 # 7일
 }

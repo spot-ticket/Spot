@@ -103,6 +103,19 @@ variable "log_retention_days" {
 }
 
 # =============================================================================
+# Parameter Store ARNs (Secrets 주입용)
+# =============================================================================
+variable "parameter_arns" {
+  description = "Parameter Store ARN 맵"
+  type = object({
+    db_password     = string
+    jwt_secret      = string
+    mail_password   = optional(string)
+    toss_secret_key = optional(string)
+  })
+}
+
+# =============================================================================
 # Database Settings
 # =============================================================================
 variable "db_endpoint" {
@@ -121,12 +134,6 @@ variable "db_username" {
   sensitive   = true
 }
 
-variable "db_password" {
-  description = "데이터베이스 비밀번호"
-  type        = string
-  sensitive   = true
-}
-
 # =============================================================================
 # Redis Settings
 # =============================================================================
@@ -137,14 +144,17 @@ variable "redis_endpoint" {
 }
 
 # =============================================================================
-# JWT Settings
+# Kafka Settings
 # =============================================================================
-variable "jwt_secret" {
-  description = "JWT 시크릿 키"
+variable "kafka_bootstrap_servers" {
+  description = "Kafka Bootstrap Servers"
   type        = string
-  sensitive   = true
+  default     = ""
 }
 
+# =============================================================================
+# JWT Settings
+# =============================================================================
 variable "jwt_expire_ms" {
   description = "JWT 만료 시간 (밀리초)"
   type        = number
@@ -178,13 +188,6 @@ variable "mail_username" {
   default     = ""
 }
 
-variable "mail_password" {
-  description = "SMTP 비밀번호"
-  type        = string
-  sensitive   = true
-  default     = ""
-}
-
 # =============================================================================
 # Toss Payments Settings
 # =============================================================================
@@ -192,13 +195,6 @@ variable "toss_base_url" {
   description = "Toss Payments API URL"
   type        = string
   default     = "https://api.tosspayments.com"
-}
-
-variable "toss_secret_key" {
-  description = "Toss Payments 시크릿 키"
-  type        = string
-  sensitive   = true
-  default     = ""
 }
 
 variable "toss_customer_key" {
@@ -214,4 +210,52 @@ variable "service_active_regions" {
   description = "서비스 활성 지역"
   type        = string
   default     = "종로구"
+}
+
+# =============================================================================
+# Standby Mode (비용 절감)
+# =============================================================================
+variable "standby_mode" {
+  description = "스탠바이 모드 (true면 모든 서비스 desired_count = 0)"
+  type        = bool
+  default     = false
+}
+
+# =============================================================================
+# Blue/Green Deployment
+# =============================================================================
+variable "enable_blue_green" {
+  description = "Blue/Green 배포 활성화 (CodeDeploy)"
+  type        = bool
+  default     = false
+}
+
+variable "excluded_services" {
+  description = "배포에서 제외할 서비스 목록 (예: gateway)"
+  type        = list(string)
+  default     = []
+}
+
+variable "target_group_names" {
+  description = "ALB Target Group 이름 맵"
+  type        = map(string)
+  default     = {}
+}
+
+variable "green_target_group_arns" {
+  description = "Green Target Group ARN 맵 (Blue/Green용)"
+  type        = map(string)
+  default     = {}
+}
+
+variable "deployment_config" {
+  description = "CodeDeploy 배포 구성"
+  type        = string
+  default     = "CodeDeployDefault.ECSAllAtOnce"
+}
+
+variable "termination_wait_time" {
+  description = "이전 태스크 종료 대기 시간 (분)"
+  type        = number
+  default     = 5
 }
