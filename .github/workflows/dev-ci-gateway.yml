@@ -59,7 +59,7 @@ jobs:
       - name: Make application.properties
         run: |
           mkdir -p ./src/main/resources
-          echo ${{ secrets.APPLICATION_YML }} > ./src/main/resources/application.yml
+          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
         shell: bash
 
       - name: Check code formatting
