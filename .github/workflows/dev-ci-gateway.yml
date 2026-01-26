@@ -115,76 +115,78 @@ jobs:
             build/reports/
             build/test-results/
 
-      # AWS OIDC 인증
-      - name: configure aws
-        id: aws-config
-        uses: aws-actions/configure-aws-credentials@v4
-        with:
-          aws-region: ${{ env.AWS_REGION }}
-          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+#      [추후 주석 해제] - 아래는 빠른 CI를 위해 임시적으로 주석 처리
 
-      # ECR 로그인
-      - name: Login to ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-
-      # Git SHA 이미지 태그 (SHA-1은 전체 40자리이기 때문에 가독성을 위해 7-8자리 권장)
-      - name: Get Image Tag
-        id: image-tag
-        run: echo "short_tag=test-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT  # << [태그명 수정 필요]
-
-      # Docker 이미지 빌드 및 Push
-      - name: Build Docker Image
-        id: docker-build
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ steps.image-tag.outputs.short_tag }}
-        run: |
-          docker build \
-          -t  $REGISTRY/$REPOSITORY:$IMAGE_TAG \
-          -f Dockerfile .
-
-      - name: Push Docker Image To ECR
-        id: docker-push
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_TAG: ${{ steps.image-tag.outputs.short_tag }}
-        run: |
-          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+#      # AWS OIDC 인증
+#      - name: configure aws
+#        id: aws-config
+#        uses: aws-actions/configure-aws-credentials@v4
+#        with:
+#          aws-region: ${{ env.AWS_REGION }}
+#          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+#
+#      # ECR 로그인
+#      - name: Login to ECR
+#        id: login-ecr
+#        uses: aws-actions/amazon-ecr-login@v2
+#
+#      # Git SHA 이미지 태그 (SHA-1은 전체 40자리이기 때문에 가독성을 위해 7-8자리 권장)
+#      - name: Get Image Tag
+#        id: image-tag
+#        run: echo "short_tag=test-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT  # << [태그명 수정 필요]
+#
+#      # Docker 이미지 빌드 및 Push
+#      - name: Build Docker Image
+#        id: docker-build
+#        env:
+#          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#          IMAGE_TAG: ${{ steps.image-tag.outputs.short_tag }}
+#        run: |
+#          docker build \
+#          -t  $REGISTRY/$REPOSITORY:$IMAGE_TAG \
+#          -f Dockerfile .
+#
+#      - name: Push Docker Image To ECR
+#        id: docker-push
+#        env:
+#          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#          IMAGE_TAG: ${{ steps.image-tag.outputs.short_tag }}
+#        run: |
+#          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
       # Discord 알림 - 성공
-      - name: Notify Discord - Dev CI SUCCESS
-        run: |
-          curl -X POST $DISCORD_WEBHOOK_URL \
-          -H "Content-Type: application/json" \
-          -d '{
-            "embeds": [{
-              "title": "✅ DEV CI 성공 - GateWay",
-              "description": "**설명**\n- ECR Push 성공\n\n**이미지**\n- ${{ steps.image-tag.outputs.short_tag }}",
-              "color": 3066993
-              }]
-          }'
+#      - name: Notify Discord - Dev CI SUCCESS
+#        run: |
+#          curl -X POST $DISCORD_WEBHOOK_URL \
+#          -H "Content-Type: application/json" \
+#          -d '{
+#            "embeds": [{
+#              "title": "✅ DEV CI 성공 - GateWay",
+#              "description": "**설명**\n- ECR Push 성공\n\n**이미지**\n- ${{ steps.image-tag.outputs.short_tag }}",
+#              "color": 3066993
+#              }]
+#          }'
 
       # Discord 알림 - 실패
-      - name: Notify Discord - DEV CI FAIL
-        if: failure()
-        run : |
-          # 1. 실패한 단계 찾기
-          FAILED_STEP=""
-          
-          if [ "${{ steps.gradle-build.outcome }}" == "failure" ]; then FAILED_STEP="Gradle 빌드"; fi
-          if [ "${{ steps.test-run.outcome }}" == "failure" ]; then FAILED_STEP="테스트"; fi
-          if [ "${{ steps.aws-config.outcome }}" == "failure" ]; then FAILED_STEP="AWS 인증"; fi
-          if [ "${{ steps.login-ecr.outcome }}" == "failure" ]; then FAILED_STEP="ECR 로그인"; fi
-          if [ "${{ steps.docker-build.outcome }}" == "failure" ]; then FAILED_STEP="Docker 이미지 빌드"; fi
-          if [ "${{ steps.docker-push.outcome }}" == "failure" ]; then FAILED_STEP="ECR Push"; fi
-          
-          curl -X POST $DISCORD_WEBHOOK_URL \
-          -H "Content-Type: application/json" \
-          -d '{
-          "embeds": [{
-            "title": "❌ DEV CI 실패 - GateWay",
-            "description": "**원인**\n - '"$FAILED_STEP"' 실패\n**태그**\n - `${{ steps.image-tag.outputs.short_tag }}`",
-            "color": 15158332
-            }]
-          }'
+#      - name: Notify Discord - DEV CI FAIL
+#        if: failure()
+#        run : |
+#          # 1. 실패한 단계 찾기
+#          FAILED_STEP=""
+#
+#          if [ "${{ steps.gradle-build.outcome }}" == "failure" ]; then FAILED_STEP="Gradle 빌드"; fi
+#          if [ "${{ steps.test-run.outcome }}" == "failure" ]; then FAILED_STEP="테스트"; fi
+#          if [ "${{ steps.aws-config.outcome }}" == "failure" ]; then FAILED_STEP="AWS 인증"; fi
+#          if [ "${{ steps.login-ecr.outcome }}" == "failure" ]; then FAILED_STEP="ECR 로그인"; fi
+#          if [ "${{ steps.docker-build.outcome }}" == "failure" ]; then FAILED_STEP="Docker 이미지 빌드"; fi
+#          if [ "${{ steps.docker-push.outcome }}" == "failure" ]; then FAILED_STEP="ECR Push"; fi
+#
+#          curl -X POST $DISCORD_WEBHOOK_URL \
+#          -H "Content-Type: application/json" \
+#          -d '{
+#          "embeds": [{
+#            "title": "❌ DEV CI 실패 - GateWay",
+#            "description": "**원인**\n - '"$FAILED_STEP"' 실패\n**태그**\n - `${{ steps.image-tag.outputs.short_tag }}`",
+#            "color": 15158332
+#            }]
+#          }'
