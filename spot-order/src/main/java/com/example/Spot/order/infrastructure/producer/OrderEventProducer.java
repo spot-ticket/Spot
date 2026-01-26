@@ -1,6 +1,5 @@
 package com.example.Spot.order.infrastructure.producer;
 
-import com.example.Spot.order.infrastructure.event.publish.OrderCancelledEvent;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -9,6 +8,7 @@ import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import com.example.Spot.order.infrastructure.event.publish.OrderAcceptedEvent;
+import com.example.Spot.order.infrastructure.event.publish.OrderCancelledEvent;
 import com.example.Spot.order.infrastructure.event.publish.OrderCreatedEvent;
 import com.example.Spot.order.infrastructure.event.publish.OrderPendingEvent;
 import com.fasterxml.jackson.core.JsonProcessingException;
