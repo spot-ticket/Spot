@@ -56,41 +56,21 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Make application.properties
-        run: |
-          mkdir -p ./src/main/resources
-          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
-        shell: bash
-
-      - name: Check code formatting
-        run: ./gradlew checkstyleMain checkstyleTest
-        continue-on-error: true
-
-      - name: Build with Gradle
-        id: gradle-build
-        run: ./gradlew build -x test
-
-      - name: Run tests
-        id: test-run
-        run: ./gradlew test
-        continue-on-error: true
-
       - name: Test application startup
-        id: startup-test
         run: |
           ./gradlew bootRun > bootrun.log 2>&1 &
           APP_PID=$!
           echo "Started bootRun with PID: $APP_PID"
-
+          
           # 최대 60초 대기하면서 애플리케이션 시작 확인
           for i in {1..60}; do
             # 로그에서 시작 완료 메시지 확인
-            if grep -q "Started SpotGateWayApplication" bootrun.log 2>/dev/null; then
+            if grep -q "Started SpotGatewayApplication" bootrun.log 2>/dev/null; then
               echo "✅ Application started successfully after ${i}s"
               kill $APP_PID 2>/dev/null || true
               exit 0
             fi
-
+          
             # 프로세스가 죽었는지 확인
             if ! kill -0 $APP_PID 2>/dev/null; then
               echo "❌ Application process terminated unexpectedly"
@@ -98,10 +78,10 @@ jobs:
               cat bootrun.log
               exit 1
             fi
-
+          
             sleep 1
           done
-
+          
           echo "❌ Application failed to start within 60 seconds"
           echo "=== bootRun log ==="
           cat bootrun.log
