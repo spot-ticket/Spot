@@ -8,7 +8,7 @@ import software.amazon.awssdk.regions.Region;
 import software.amazon.awssdk.services.cognitoidentityprovider.CognitoIdentityProviderClient;
 
 @Configuration
-public class CognitoIdentityProviderConfig {
+public class CognitoClientConfig {
 
     @Bean
     public CognitoIdentityProviderClient cognitoIdentityProviderClient(
