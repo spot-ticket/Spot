@@ -56,6 +56,23 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Make application.properties
+        run: |
+          mkdir -p ./src/main/resources
+          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
+        shell: bash
+
+      - name: Check code formatting
+        run: ./gradlew checkstyleMain checkstyleTest
+        continue-on-error: true
+
+      - name: Build with Gradle
+        run: ./gradlew build -x test
+
+      - name: Run tests
+        run: ./gradlew test
+        continue-on-error: true
+
       - name: Test application startup
         run: |
           ./gradlew bootRun > bootrun.log 2>&1 &
