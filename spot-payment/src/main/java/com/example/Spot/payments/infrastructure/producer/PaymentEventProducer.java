@@ -22,11 +22,11 @@ public class PaymentEventProducer {
     
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
-    @Value("${kafka.topic.payment-auth.required}")
+    @Value("${spring.kafka.topic.payment-auth.required}")
     private String authRequiredTopic;
-    @Value("${kafka.topic.payment.succeeded}")
+    @Value("${spring.kafka.topic.payment.succeeded}")
     private String paymentSucceededTopic;
-    @Value("${kafka.topic.payment.refunded}")
+    @Value("${spring.kafka.topic.payment.refunded}")
     private String paymentRefundedTopic;
     
     public void sendAuthRequiredEvent(AuthRequiredEvent authRequiredEvent) {

@@ -24,13 +24,13 @@ public class OrderEventProducer {
     
     private final KafkaTemplate<String, String> kafkaTemplate;
     private final ObjectMapper objectMapper;
-    @Value("${kafka.topic.order.created}")
+    @Value("${spring.kafka.topic.order.created}")
     private String orderCreatedTopic;
-    @Value("${kafka.topic.order.pending}")
+    @Value("${spring.kafka.topic.order.pending}")
     private String orderPendingTopic;
-    @Value("${kafka.topic.order.accepted}")
+    @Value("${spring.kafka.topic.order.accepted}")
     private String orderAcceptedTopic;
-    @Value("${kafka.topic.order.cancelled}")
+    @Value("${spring.kafka.topic.order.cancelled}")
     private String orderCancelledTopic;
     
     public void sendOrderCreated(UUID orderId, Integer userId, Long amount) {
