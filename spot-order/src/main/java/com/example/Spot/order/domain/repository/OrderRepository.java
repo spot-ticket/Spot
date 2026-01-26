@@ -18,11 +18,12 @@ import com.example.Spot.order.domain.enums.OrderStatus;
 @Repository
 public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
+    // Order와 Order Item만 조회하도록 변경. Order Item의 Option 정보는 조회하지 않음.
+    // MultipleBagFetchException 에러 발생함. 01.26 쿼리 최적화 진행함.
     @Query("SELECT DISTINCT o FROM OrderEntity o " +
-            "LEFT JOIN FETCH o.orderItems oi " +
-            "LEFT JOIN FETCH oi.orderItemOptions " +
+            "LEFT JOIN FETCH o.orderItems " +
             "WHERE o.id = :orderId")
-    Optional<OrderEntity> findByIdWithDetails(@Param("orderId") UUID orderId);
+    Optional<OrderEntity> findByIdWithOrderItems(@Param("orderId") UUID orderId);
 
     Optional<OrderEntity> findByOrderNumber(String orderNumber);
 
@@ -111,11 +112,11 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
             @Param("endDate") LocalDateTime endDate);
 
     // ========== 페이지네이션 쿼리 (JOIN FETCH + 필터링) ==========
+    // MultipleBagFetchException 방지를 위해 orderItemOptions는 별도 조회 후 매핑
 
     // 고객 주문 조회 (페이지네이션)
     @Query(value = "SELECT DISTINCT o FROM OrderEntity o " +
-            "LEFT JOIN FETCH o.orderItems oi " +
-            "LEFT JOIN FETCH oi.orderItemOptions " +
+            "LEFT JOIN FETCH o.orderItems " +
             "WHERE o.userId = :userId " +
             "AND (CAST(:storeId AS string) IS NULL OR o.storeId = :storeId) " +
             "AND (CAST(:status AS string) IS NULL OR o.orderStatus = :status) " +
@@ -137,8 +138,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
     // 점주 매장 주문 조회 (페이지네이션)
     @Query(value = "SELECT DISTINCT o FROM OrderEntity o " +
-            "LEFT JOIN FETCH o.orderItems oi " +
-            "LEFT JOIN FETCH oi.orderItemOptions " +
+            "LEFT JOIN FETCH o.orderItems " +
             "WHERE o.storeId = :storeId " +
             "AND (CAST(:customerId AS string) IS NULL OR o.userId = :customerId) " +
             "AND (CAST(:status AS string) IS NULL OR o.orderStatus = :status) " +
@@ -160,8 +160,7 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
 
     // 관리자 전체 주문 조회 (페이지네이션)
     @Query(value = "SELECT DISTINCT o FROM OrderEntity o " +
-            "LEFT JOIN FETCH o.orderItems oi " +
-            "LEFT JOIN FETCH oi.orderItemOptions " +
+            "LEFT JOIN FETCH o.orderItems " +
             "WHERE (CAST(:storeId AS string) IS NULL OR o.storeId = :storeId) " +
             "AND (CAST(:status AS string) IS NULL OR o.orderStatus = :status) " +
             "AND (CAST(:startDate AS timestamp) IS NULL OR o.createdAt >= :startDate) " +
