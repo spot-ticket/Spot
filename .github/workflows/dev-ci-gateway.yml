@@ -1,0 +1,193 @@
+name: DEV CI - GateWay Service
+
+on:
+  pull_request:
+    branches: [ dev ]
+    paths:
+      #      - 'infra/client/**'
+      - 'spot-gateway/**'
+      - '.github/workflows/dev-ci-gateway.yml'
+
+env:
+  AWS_REGION: ap-northeast-2
+  REPOSITORY: spot-gateway
+  DIRECTORY: spot-gateway
+  DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ${{ env.DIRECTORY }}
+    permissions:
+      id-token: write
+      contents: read
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: myapp_db
+          POSTGRES_GateWay: admin
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          java-version: '21'
+          distribution: 'temurin'
+          cache: gradle
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Make application.properties
+        run: |
+          mkdir -p ./src/main/resources
+          echo ${{ secrets.APPLICATION_YML }} > ./src/main/resources/application.yml
+        shell: bash
+
+      - name: Check code formatting
+        run: ./gradlew checkstyleMain checkstyleTest
+        continue-on-error: true
+
+      - name: Build with Gradle
+        id: gradle-build
+        run: ./gradlew build -x test
+
+      - name: Run tests
+        id: test-run
+        run: ./gradlew test
+        continue-on-error: true
+      
+      - name: Test application startup
+        id: startup-test
+        run: |
+          ./gradlew bootRun > bootrun.log 2>&1 &
+          APP_PID=$!
+          echo "Started bootRun with PID: $APP_PID"
+
+          # 최대 60초 대기하면서 애플리케이션 시작 확인
+          for i in {1..60}; do
+            # 로그에서 시작 완료 메시지 확인
+            if grep -q "Started SpotGateWayApplication" bootrun.log 2>/dev/null; then
+              echo "✅ Application started successfully after ${i}s"
+              kill $APP_PID 2>/dev/null || true
+              exit 0
+            fi
+
+            # 프로세스가 죽었는지 확인
+            if ! kill -0 $APP_PID 2>/dev/null; then
+              echo "❌ Application process terminated unexpectedly"
+              echo "=== bootRun log ==="
+              cat bootrun.log
+              exit 1
+            fi
+
+            sleep 1
+          done
+
+          echo "❌ Application failed to start within 60 seconds"
+          echo "=== bootRun log ==="
+          cat bootrun.log
+          kill $APP_PID 2>/dev/null || true
+          exit 1
+        timeout-minutes: 2
+
+      - name: Upload build artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-reports
+          path: |
+            build/reports/
+            build/test-results/
+      
+      # AWS OIDC 인증
+      - name: configure aws
+        id: aws-config
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+
+      # ECR 로그인
+      - name: Login to ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+      
+      # Git SHA 이미지 태그 (SHA-1은 전체 40자리이기 때문에 가독성을 위해 7-8자리 권장)
+      - name: Get Image Tag
+        id: image-tag
+        run: echo "short_tag=test-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT  # << [태그명 수정 필요]
+      
+      # Docker 이미지 빌드 및 Push
+      - name: Build Docker Image
+        id: docker-build
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ steps.image-tag.outputs.short_tag }}
+        run: |
+          docker build \
+          -t  $REGISTRY/$REPOSITORY:$IMAGE_TAG \
+          -f Dockerfile .
+
+      - name: Push Docker Image To ECR
+        id: docker-push
+        env:
+          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ steps.image-tag.outputs.short_tag }}
+        run: |
+          docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
+      
+      # Discord 알림 - 성공
+      - name: Notify Discord - Dev CI SUCCESS
+        run: |
+          curl -X POST $DISCORD_WEBHOOK_URL \
+          -H "Content-Type: application/json" \
+          -d '{
+            "embeds": [{
+              "title": "✅ DEV CI 성공 - GateWay",
+              "description": "**설명**\n- ECR Push 성공\n\n**이미지**\n- ${{ steps.image-tag.outputs.short_tag }}",
+              "color": 3066993
+              }]
+          }'
+      
+      # Discord 알림 - 실패
+      - name: Notify Discord - DEV CI FAIL
+        if: failure()
+        run : |
+          # 1. 실패한 단계 찾기
+          FAILED_STEP=""
+          
+          if [ "${{ steps.gradle-build.outcome }}" == "failure" ]; then FAILED_STEP="Gradle 빌드"; fi
+          if [ "${{ steps.test-run.outcome }}" == "failure" ]; then FAILED_STEP="테스트"; fi
+          if [ "${{ steps.aws-config.outcome }}" == "failure" ]; then FAILED_STEP="AWS 인증"; fi
+          if [ "${{ steps.login-ecr.outcome }}" == "failure" ]; then FAILED_STEP="ECR 로그인"; fi
+          if [ "${{ steps.docker-build.outcome }}" == "failure" ]; then FAILED_STEP="Docker 이미지 빌드"; fi
+          if [ "${{ steps.docker-push.outcome }}" == "failure" ]; then FAILED_STEP="ECR Push"; fi
+          
+          curl -X POST $DISCORD_WEBHOOK_URL \
+          -H "Content-Type: application/json" \
+          -d '{
+          "embeds": [{
+            "title": "❌ DEV CI 실패 - GateWay",
+            "description": "**원인**\n - '"$FAILED_STEP"' 실패\n**태그**\n - `${{ steps.image-tag.outputs.short_tag }}`",
+            "color": 15158332
+            }]
+          }'
