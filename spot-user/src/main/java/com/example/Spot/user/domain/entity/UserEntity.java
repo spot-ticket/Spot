@@ -3,14 +3,7 @@ package com.example.Spot.user.domain.entity;
 import com.example.Spot.global.common.Role;
 import com.example.Spot.global.common.UpdateBaseEntity;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,7 +11,10 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "p_user")
+@Table(name = "p_user",
+uniqueConstraints = {
+@UniqueConstraint(name = "uk_users_cognito_sub", columnNames = "cognito_sub")
+        })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity extends UpdateBaseEntity {
 
@@ -54,6 +50,13 @@ public class UserEntity extends UpdateBaseEntity {
     @Enumerated(EnumType.STRING)
     private Role role;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "signup_state", nullable = false, length = 30)
+    private SignupState signupState;
+
+    @Column(name = "profile_completed", nullable = false)
+    private boolean profileCompleted;
+
     @Builder
     public UserEntity(String username, String cognitoSub, String nickname, String roadAddress, String addressDetail, String email, Role role) {
         this.cognitoSub = cognitoSub;
@@ -74,6 +77,10 @@ public class UserEntity extends UpdateBaseEntity {
 
     public void setUsername(String username) {
         this.username = username;
+    }
+
+    public String getCognitoSub() {
+        return cognitoSub;
     }
 
     public void setRole(Role role) {
@@ -99,5 +106,9 @@ public class UserEntity extends UpdateBaseEntity {
     public void setAddress(String roadAddress, String addressDetail) {
         this.roadAddress = roadAddress;
         this.addressDetail = addressDetail;
+    }
+    public void markCompleted() {
+        this.signupState = SignupState.COMPLETED;
+        this.profileCompleted = true;
     }
 }
