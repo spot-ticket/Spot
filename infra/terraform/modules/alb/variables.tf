@@ -33,3 +33,33 @@ variable "services" {
     priority          = number
   }))
 }
+
+# =============================================================================
+# HTTPS Settings
+# =============================================================================
+variable "enable_https" {
+  description = "HTTPS 활성화"
+  type        = bool
+  default     = false
+}
+
+variable "certificate_arn" {
+  description = "ACM 인증서 ARN"
+  type        = string
+  default     = null
+}
+
+variable "ssl_policy" {
+  description = "SSL 정책"
+  type        = string
+  default     = "ELBSecurityPolicy-TLS13-1-2-2021-06"
+}
+
+# =============================================================================
+# Blue/Green Deployment Settings
+# =============================================================================
+variable "enable_blue_green" {
+  description = "Blue/Green 배포용 추가 Target Group 생성"
+  type        = bool
+  default     = false
+}

@@ -34,3 +34,18 @@ variable "nat_instance_type" {
   type        = string
   default     = "t3.nano"
 }
+
+# =============================================================================
+# NAT Gateway 설정 (Production)
+# =============================================================================
+variable "use_nat_gateway" {
+  description = "NAT Gateway 사용 여부 (false면 NAT Instance)"
+  type        = bool
+  default     = false
+}
+
+variable "single_nat_gateway" {
+  description = "단일 NAT Gateway 사용 (비용 절감 vs HA)"
+  type        = bool
+  default     = true
+}

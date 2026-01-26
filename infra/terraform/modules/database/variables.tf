@@ -58,3 +58,66 @@ variable "engine_version" {
   type        = string
   default     = "16"
 }
+
+# =============================================================================
+# Production Settings
+# =============================================================================
+variable "multi_az" {
+  description = "Multi-AZ 배포 여부"
+  type        = bool
+  default     = false
+}
+
+variable "create_read_replica" {
+  description = "Read Replica 생성 여부"
+  type        = bool
+  default     = false
+}
+
+variable "backup_retention_period" {
+  description = "백업 보관 기간 (일)"
+  type        = number
+  default     = 7
+}
+
+variable "backup_window" {
+  description = "백업 시간 (UTC)"
+  type        = string
+  default     = "03:00-04:00"
+}
+
+variable "maintenance_window" {
+  description = "유지보수 시간 (UTC)"
+  type        = string
+  default     = "Mon:04:00-Mon:05:00"
+}
+
+variable "deletion_protection" {
+  description = "삭제 보호 활성화"
+  type        = bool
+  default     = false
+}
+
+variable "performance_insights_enabled" {
+  description = "Performance Insights 활성화"
+  type        = bool
+  default     = false
+}
+
+variable "monitoring_interval" {
+  description = "Enhanced Monitoring 간격 (초, 0이면 비활성화)"
+  type        = number
+  default     = 0
+}
+
+variable "storage_encrypted" {
+  description = "스토리지 암호화"
+  type        = bool
+  default     = true
+}
+
+variable "max_allocated_storage" {
+  description = "Auto Scaling 최대 스토리지 (GB), null이면 비활성화"
+  type        = number
+  default     = null
+}
