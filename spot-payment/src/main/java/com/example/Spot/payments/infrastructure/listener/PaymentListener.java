@@ -1,5 +1,6 @@
 package com.example.Spot.payments.infrastructure.listener;
 
+import com.example.Spot.payments.infrastructure.event.subscribe.OrderCancelledEvent;
 import java.util.UUID;
 
 import org.springframework.kafka.annotation.KafkaListener;
@@ -66,6 +67,27 @@ public class PaymentListener {
         } catch (Exception e) {
             // 에러 처리 로직
             log.error("주문 이벤트 처리 실패: {}", message, e);
+        }
+    }
+    
+    // 고객취소, 가게취소, 주문거절 이벤트 수신 시 환불 처리
+    @KafkaListener(topics = "${kafka.topic.order.cancelled}", groupId = "${spring.kafka.consumer.group-id}")
+    public void handleOrderCancelled(String message) {
+        try {
+            // 1. 이벤트 파싱
+            OrderCancelledEvent event = objectMapper.readValue(message, OrderCancelledEvent.class);
+            log.info("[결제서비스] 주문 취소/거절 이벤트 수신: orderId={}, reason={}", event.getOrderId(), event.getReason());
+            
+            // 2. 환불 서비스 호출
+            boolean isRefunded = paymentService.refundByOrderId(event.getOrderId());
+            
+            if (isRefunded) {
+                // 환불 성공 시 주문 서비스에게 이벤트 발행
+                paymentEventProducer.sendPaymentRefundedEvent(event.getOrderId());
+                log.info("✅ [결제서비스] 환불 및 보상 트랜잭션 완료: orderId={}", event.getOrderId());
+            }
+        } catch (Exception e) {
+            log.error("❌ [결제서비스] 환불 처리 실패: {}", e.getMessage());
         }
     }
 }

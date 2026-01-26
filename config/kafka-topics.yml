@@ -7,5 +7,6 @@ kafka:
       cancelled: spot.order.cancelled
     payment:
       succeeded: spot.payment.succeeded
+      refunded: spot.pyament.refunded
     payment-auth:
       required: spot.payment_auth.required

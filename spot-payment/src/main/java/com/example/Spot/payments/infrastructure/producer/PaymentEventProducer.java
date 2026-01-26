@@ -1,9 +1,11 @@
 package com.example.Spot.payments.infrastructure.producer;
 
+import com.example.Spot.payments.infrastructure.event.publish.PaymentRefundedEvent;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.security.core.parameters.P;
 import org.springframework.stereotype.Component;
 
 import com.example.Spot.payments.infrastructure.event.publish.AuthRequiredEvent;
@@ -25,6 +27,8 @@ public class PaymentEventProducer {
     private String authRequiredTopic;
     @Value("${kafka.topic.payment.succeeded}")
     private String paymentSucceededTopic;
+    @Value("${kafka.topic.payment.refunded}")
+    private String paymentRefundedTopic;
     
     public void sendAuthRequiredEvent(AuthRequiredEvent authRequiredEvent) {
         try {
@@ -48,6 +52,19 @@ public class PaymentEventProducer {
             kafkaTemplate.send(paymentSucceededTopic, payload);
         } catch (JsonProcessingException e) {
             log.error("PaymentSucceededEvent 직렬화 실패 - orderId: {}", orderId, e);
+        }
+    }
+    
+    public void sendPaymentRefundedEvent(UUID orderId) {
+        try {
+            PaymentRefundedEvent event = new PaymentRefundedEvent(orderId);
+            String payload = objectMapper.writeValueAsString(event);
+            
+            log.info("결제 환불 완료 이벤트 발행: topic={}, orderId={}", paymentRefundedTopic, orderId);
+            kafkaTemplate.send(paymentRefundedTopic, payload);
+        } catch (JsonProcessingException e) {
+            log.error("PaymentRefundedEvent 직렬화 실패 - orderId: {}", orderId, e);
+            throw new RuntimeException("이벤트 발행 실패", e);
         }
     }
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,6 +38,7 @@ import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
@@ -114,6 +116,30 @@ public class PaymentService {
         this.timeout);
   }
 
+  // ******* //
+  // 결제 취소_비동기 //
+  // ******* //
+  @Transactional
+  public boolean refundByOrderId(UUID orderId) {
+    // 1. 주문 ID로 결제 엔티티 조회
+    PaymentEntity payment = paymentRepository.findActivePaymentByOrderId(orderId)
+            .orElseThrow(() -> {
+              log.warn("⚠️ [환불 스킵] 취소 가능한 결제 내역이 없거나 이미 취소되었습니다. OrderID: {}", orderId);
+              return new ResourceNotFoundException("취소 가능한 결제 내역을 찾을 수 없습니다.");
+            });
+    
+    // 2. 환불을 위한 DTO 조립
+    PaymentRequestDto.Cancel cancelRequest = PaymentRequestDto.Cancel.builder()
+            .paymentId(payment.getId())
+            .cancelReason("주문 서비스 요청에 의한 보상 트랜잭션 수행")
+            .build();
+    
+    // 3. 기존의 취소 로직 실행
+    executeCancel(cancelRequest);
+    
+    return true;
+  }
+  
   // ******* //
   // 결제 취소 //
   // ******* //
