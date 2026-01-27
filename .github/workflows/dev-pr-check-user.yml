@@ -64,6 +64,8 @@ jobs:
       continue-on-error: true
 
     - name: Test application startup
+      env:
+        COGNITO_ADMIN_ENABLED: "false"
       run: |
         ./gradlew bootRun > bootrun.log 2>&1 &
         APP_PID=$!
