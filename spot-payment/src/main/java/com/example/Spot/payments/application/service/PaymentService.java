@@ -1,5 +1,6 @@
 package com.example.Spot.payments.application.service;
 
+
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
@@ -13,7 +14,7 @@ import com.example.Spot.global.feign.OrderClient;
 import com.example.Spot.global.feign.StoreClient;
 import com.example.Spot.global.feign.UserClient;
 import com.example.Spot.global.feign.dto.OrderResponse;
-import com.example.Spot.global.feign.dto.UserResponse;
+import com.example.Spot.global.presentation.advice.BillingKeyNotFoundException;
 import com.example.Spot.global.presentation.advice.ResourceNotFoundException;
 import com.example.Spot.payments.domain.entity.PaymentEntity;
 import com.example.Spot.payments.domain.entity.PaymentHistoryEntity;
@@ -29,16 +30,24 @@ import com.example.Spot.payments.infrastructure.aop.Cancel;
 import com.example.Spot.payments.infrastructure.aop.PaymentBillingApproveTrace;
 import com.example.Spot.payments.infrastructure.aop.Ready;
 import com.example.Spot.payments.infrastructure.dto.TossPaymentResponse;
+import com.example.Spot.payments.infrastructure.producer.PaymentEventProducer;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
 
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentService {
 
   private final PaymentGateway paymentGateway;
+  private final PaymentEventProducer paymentEventProducer;
+  private final PaymentHistoryService paymentHistoryService;
 
   @Value("${toss.payments.timeout}")
   private Integer timeout;
@@ -53,22 +62,16 @@ public class PaymentService {
   private final OrderClient orderClient;
   private final UserClient userClient;
   private final StoreClient storeClient;
-
-
+  
   // 주문 수락 이후에 동작되어야 함
   // https://docs.tosspayments.com/reference/using-api/webhook-events 참고
   // ready -> createPaymentBillingApprove -> confirmBillingPayment
-
   @Ready
-  public UUID ready(PaymentRequestDto.Confirm request) {
-
-    validateUserExists(request.userId());
-    validateOrderExists(request.orderId());
-
-    PaymentEntity payment = createPayment(request.userId(), request.orderId(), request);
-
+  public UUID ready(Integer userId, UUID orderId, PaymentRequestDto.Confirm request) {
+    PaymentEntity payment = createPayment(userId, orderId, request);
     return payment.getId();
   }
+
 
   // ******* //
   // 결제 승인 //
@@ -79,14 +82,15 @@ public class PaymentService {
 
     UserBillingAuthEntity billingAuth = userBillingAuthRepository
         .findActiveByUserId(payment.getUserId())
-        .orElseThrow(() -> new IllegalStateException(
+        .orElseThrow(() -> new BillingKeyNotFoundException(
             "[PaymentService] 등록된 결제 수단이 없습니다. 먼저 결제 수단을 등록해주세요. UserId: " + payment.getUserId()));
-
 
     UUID uniqueOrderId = payment.getOrderId();
 
     TossPaymentResponse response = confirmBillingPayment(payment, billingAuth, uniqueOrderId);
-
+    
+    paymentHistoryService.recordPaymentSuccess(paymentId, response.getPaymentKey());
+    
     return PaymentResponseDto.Confirm.builder()
             .paymentId(paymentId)
             .amount(response.getTotalAmount())
@@ -114,6 +118,30 @@ public class PaymentService {
   }
 
   // ******* //
+  // 결제 취소_비동기 //
+  // ******* //
+  @Transactional
+  public boolean refundByOrderId(UUID orderId) {
+    // 1. 주문 ID로 결제 엔티티 조회
+    PaymentEntity payment = paymentRepository.findActivePaymentByOrderId(orderId)
+            .orElseThrow(() -> {
+              log.warn("⚠️ [환불 스킵] 취소 가능한 결제 내역이 없거나 이미 취소되었습니다. OrderID: {}", orderId);
+              return new ResourceNotFoundException("취소 가능한 결제 내역을 찾을 수 없습니다.");
+            });
+    
+    // 2. 환불을 위한 DTO 조립
+    PaymentRequestDto.Cancel cancelRequest = PaymentRequestDto.Cancel.builder()
+            .paymentId(payment.getId())
+            .cancelReason("주문 서비스 요청에 의한 보상 트랜잭션 수행")
+            .build();
+    
+    // 3. 기존의 취소 로직 실행
+    executeCancel(cancelRequest);
+    
+    return true;
+  }
+  
+  // ******* //
   // 결제 취소 //
   // ******* //
   // 결제했을 때 발급받은 paymentKey를 이용함
@@ -124,9 +152,13 @@ public class PaymentService {
         paymentKeyRepository
             .findByPaymentId(request.paymentId())
             .orElseThrow(() -> new IllegalStateException("[PaymentService] 결제 키가 없어 취소할 수 없습니다."));
+    
+    paymentHistoryService.recordCancelProgress(request.paymentId());
 
-        tossPaymentCancel(
-            request.paymentId(), paymentKeyEntity.getPaymentKey(), request.cancelReason());
+    tossPaymentCancel(
+        request.paymentId(), paymentKeyEntity.getPaymentKey(), request.cancelReason());
+
+    paymentHistoryService.recordCancelSuccess(request.paymentId());
 
     return PaymentResponseDto.Cancel.builder()
         .paymentId(request.paymentId())
@@ -179,16 +211,12 @@ public class PaymentService {
     }
   }
 
-  // User 서비스 호출 - 사용자 조회
-  private UserResponse findUser(Integer userId) {
-    UserResponse user = userClient.getUserById(userId);
-    if (user == null) {
-      throw new ResourceNotFoundException("[PaymentService] 사용자를 찾을 수 없습니다.");
-    }
-    return user;
-  }
+
 
   // User 서비스 호출 - 사용자 존재 확인
+  @CircuitBreaker(name = "user_validate_activeUser")
+  @Bulkhead(name = "user_validate_activeUser", type = Bulkhead.Type.SEMAPHORE)
+  @Retry(name = "user_validate_activeUser")
   private void validateUserExists(Integer userId) {
     if (!userClient.existsById(userId)) {
       throw new ResourceNotFoundException("[PaymentService] 사용자를 찾을 수 없습니다.");
@@ -340,7 +368,7 @@ public class PaymentService {
         .build();
 
     userBillingAuthRepository.save(billingAuth);
-
+    
     return PaymentResponseDto.SavedBillingKey.builder()
         .userId(request.userId())
         .customerKey(request.customerKey())
@@ -405,6 +433,12 @@ public class PaymentService {
         .build();
 
     paymentKeyRepository.save(paymentKey);
+    
+    // 결제 성공 이벤트 발행(수동)
+    paymentEventProducer.sendPaymentSucceededEvent(
+            savedPayment.getOrderId(),
+            savedPayment.getUserId()
+    );
 
     return PaymentResponseDto.SavedPaymentHistory.builder()
         .paymentId(savedPayment.getId())

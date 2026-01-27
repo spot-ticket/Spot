@@ -33,7 +33,7 @@ public class UserController implements UserApi {
     @PreAuthorize("#userId == authentication.principal.userId or hasAnyRole('MASTER','MANAGER')")
     @GetMapping("/{userId}")
     public UserResponseDTO get(@PathVariable Integer userId) {
-        return userService.getByUserId(userId);
+        return userService.getUserById(userId);
     }
 
     @Override
@@ -43,7 +43,7 @@ public class UserController implements UserApi {
             @PathVariable Integer userId,
             @RequestBody UserUpdateRequestDTO request
     ) {
-        return userService.updateById(userId, request);
+        return userService.updateUserById(userId, request);
     }
 
     @Override
@@ -52,7 +52,7 @@ public class UserController implements UserApi {
     public void delete(Authentication authentication) {
         CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
         Integer loginUserId = principal.getUserId();
-        userService.deleteMe(loginUserId);
+        userService.deleteUserById(loginUserId);
     }
 
 

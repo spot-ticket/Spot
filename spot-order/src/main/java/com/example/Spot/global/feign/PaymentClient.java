@@ -11,7 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import com.example.Spot.global.feign.dto.PaymentCancelRequest;
 import com.example.Spot.global.feign.dto.PaymentResponse;
 
-@FeignClient(name = "payment-service", url = "${feign.payment.url}")
+@FeignClient(name = "spot-payment", url = "${feign.payment.url}")
 public interface PaymentClient {
 
     @GetMapping("/api/internal/payments/order/{orderId}")

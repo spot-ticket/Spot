@@ -3,6 +3,7 @@ package com.example.Spot.store.application.service;
 import java.util.List;
 import java.util.UUID;
 
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageImpl;
@@ -20,7 +21,6 @@ import com.example.Spot.store.domain.entity.CategoryEntity;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.CategoryRepository;
 import com.example.Spot.store.domain.repository.StoreRepository;
-import com.example.Spot.store.domain.repository.StoreUserRepository;
 import com.example.Spot.store.infrastructure.aop.AdminOnly;
 import com.example.Spot.store.infrastructure.aop.StoreValidationContext;
 import com.example.Spot.store.infrastructure.aop.ValidateStoreAuthority;
@@ -44,14 +44,17 @@ public class StoreService {
     private final StoreRepository storeRepository;
     private final CategoryRepository categoryRepository;
     private final MenuRepository menuRepository;
-    private final StoreUserRepository storeUserRepository;
+    private final UserCallService userCallService;
     
     // ******* //
     // 매장 생성 //
     // ******* //
     @Transactional
     public UUID createStore(StoreCreateRequest dto, Integer userId) {
-        
+
+        // user 상태 검증
+        userCallService.validateActiveUser(userId);
+
         if (storeRepository.existsByRoadAddressAndAddressDetailAndNameAndIsDeletedFalse(
                 dto.roadAddress(), dto.addressDetail(), dto.name())) {
             throw new DuplicateResourceException(
@@ -72,6 +75,7 @@ public class StoreService {
 
         return storeRepository.save(store).getId();
     }
+
 
     // *********** //
     // 매장 상세 조회 //
@@ -233,4 +237,8 @@ public class StoreService {
 
         return new PageImpl<>(filteredContent, pageable, filteredContent.size());
     }
+
+
+
+
 }

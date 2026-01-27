@@ -27,17 +27,22 @@ import com.example.Spot.order.domain.entity.OrderItemEntity;
 import com.example.Spot.order.domain.entity.OrderItemOptionEntity;
 import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
+import com.example.Spot.order.domain.repository.OrderItemOptionRepository;
 import com.example.Spot.order.domain.repository.OrderRepository;
 import com.example.Spot.order.infrastructure.aop.OrderStatusChange;
 import com.example.Spot.order.infrastructure.aop.OrderValidationContext;
 import com.example.Spot.order.infrastructure.aop.StoreOwnershipRequired;
 import com.example.Spot.order.infrastructure.aop.ValidateStoreAndMenu;
+import com.example.Spot.order.infrastructure.producer.OrderEventProducer;
 import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemOptionRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemRequestDto;
 import com.example.Spot.order.presentation.dto.response.OrderResponseDto;
 import com.example.Spot.order.presentation.dto.response.OrderStatsResponseDto;
 
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -48,8 +53,10 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderServiceImpl implements OrderService {
 
     private final OrderRepository orderRepository;
+    private final OrderItemOptionRepository orderItemOptionRepository;
     private final PaymentClient paymentClient;
     private final StoreClient storeClient;
+    private final OrderEventProducer orderEventProducer;
 
     @Override
     @Transactional
@@ -98,14 +105,39 @@ public class OrderServiceImpl implements OrderService {
         }
 
         OrderEntity savedOrder = orderRepository.save(order);
+        OrderResponseDto responseDto = OrderResponseDto.from(savedOrder);
+        
+        orderEventProducer.sendOrderCreated(
+                savedOrder.getId(),
+                userId,
+                responseDto.getTotalAmount().longValue()
+        );
 
-        return OrderResponseDto.from(savedOrder);
+        return responseDto;
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OrderResponseDto getOrderById(UUID orderId) {
-        OrderEntity order = orderRepository.findByIdWithDetails(orderId)
+
+        // MultipleBagFetchException이 발생해서 변경을 진행함. 01.26에 진행.
+        OrderEntity order = orderRepository.findByIdWithOrderItems(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+
+        List<UUID> orderItemIds = order.getOrderItems().stream()
+                .map(OrderItemEntity::getId)
+                .toList();
+
+        List<OrderItemOptionEntity> options = List.of();
+        if (!orderItemIds.isEmpty()) {
+            options = orderItemOptionRepository.findByOrderItemIdIn(orderItemIds);
+        }
+
+        if (!order.getOrderItems().isEmpty() && !options.isEmpty()) {
+            System.out.println("Order의 아이템 주소: " + System.identityHashCode(order.getOrderItems().get(0)));
+            System.out.println("옵션이 참조하는 아이템 주소: " + System.identityHashCode(options.get(0).getOrderItem()));
+        }
+
         return OrderResponseDto.from(order);
     }
 
@@ -174,6 +206,7 @@ public class OrderServiceImpl implements OrderService {
     }
 
     // ========== 페이지네이션 ==========
+    // MultipleBagFetchException 방지를 위해 Options는 별도 조회 후 1차 캐시 활용
 
     @Override
     public Page<OrderResponseDto> getUserOrdersWithPagination(
@@ -193,6 +226,7 @@ public class OrderServiceImpl implements OrderService {
                 range[1],
                 pageable);
 
+        fetchOrderItemOptions(orderPage.getContent());
         return orderPage.map(OrderResponseDto::from);
     }
 
@@ -216,6 +250,7 @@ public class OrderServiceImpl implements OrderService {
                 range[1],
                 pageable);
 
+        fetchOrderItemOptions(orderPage.getContent());
         return orderPage.map(OrderResponseDto::from);
     }
 
@@ -235,7 +270,23 @@ public class OrderServiceImpl implements OrderService {
                 range[1],
                 pageable);
 
+        fetchOrderItemOptions(orderPage.getContent());
         return orderPage.map(OrderResponseDto::from);
+    }
+
+    /**
+     * Order 목록의 OrderItemOptions를 별도 조회하여 1차 캐시에 로드
+     * MultipleBagFetchException 방지용
+     */
+    private void fetchOrderItemOptions(List<OrderEntity> orders) {
+        List<UUID> orderItemIds = orders.stream()
+                .flatMap(order -> order.getOrderItems().stream())
+                .map(OrderItemEntity::getId)
+                .toList();
+
+        if (!orderItemIds.isEmpty()) {
+            orderItemOptionRepository.findByOrderItemIdIn(orderItemIds);
+        }
     }
 
     @Override
@@ -243,8 +294,13 @@ public class OrderServiceImpl implements OrderService {
     @OrderStatusChange("ACCEPT")
     public OrderResponseDto acceptOrder(UUID orderId, Integer estimatedTime) {
         OrderEntity order = OrderValidationContext.getCurrentOrder();
-
+        
         order.acceptOrder(estimatedTime);
+        
+        // 주문 수락 이벤트 발행
+        orderEventProducer.sendOrderAccepted(order.getUserId(), order.getId(), estimatedTime);
+        log.info("주문 수락 및 이벤트 발행 완료: orderId={}, estimatedTime={}분", orderId, estimatedTime);
+        
         return OrderResponseDto.from(order);
     }
 
@@ -253,8 +309,12 @@ public class OrderServiceImpl implements OrderService {
     @OrderStatusChange("REJECT")
     public OrderResponseDto rejectOrder(UUID orderId, String reason) {
         OrderEntity order = OrderValidationContext.getCurrentOrder();
-
-        order.rejectOrder(reason);
+        
+        order.initiateCancel(reason, null);
+        // 주문 취소(거절) 이벤트 발행
+        orderEventProducer.sendOrderCancelled(order.getId(), reason);
+        log.info("주문 거절 처리 시작 (환불 대기): orderId={}, reason={}", orderId, reason);
+        
         return OrderResponseDto.from(order);
     }
 
@@ -287,6 +347,21 @@ public class OrderServiceImpl implements OrderService {
         order.completeOrder();
         return OrderResponseDto.from(order);
     }
+    
+    @Override
+    @Transactional
+    public void completeOrderCancellation(UUID orderId) {
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+        
+        if (order.getOrderStatus() == OrderStatus.CANCEL_PENDING) {
+            order.finalizeCancel();
+            log.info("[보상 트랜잭션 완료] 주문 ID {} 가 최종 확정되었습니다.", orderId);
+        } else {
+            log.warn("⚠️ [무시됨] 주문 ID {} 는 현재 취소 대기 상태가 아닙니다. (현재 상태: {})",
+                    orderId, order.getOrderStatus());
+        }
+    }
 
     @Override
     @Transactional
@@ -294,8 +369,10 @@ public class OrderServiceImpl implements OrderService {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
 
-        // 주문 취소 처리
-        order.cancelOrder(reason, CancelledBy.CUSTOMER);
+        order.initiateCancel(reason, CancelledBy.CUSTOMER);
+        // 주문 취소(거절) 이벤트 발행
+        orderEventProducer.sendOrderCancelled(order.getId(), reason);
+        log.info("고객에 의한 취소 처리 시작 (환불 대기): orderId={}, reason={}", orderId, reason);
 
         // 결제 취소 처리 (Payment 서비스 호출)
         cancelPaymentIfExists(orderId, "고객 주문 취소: " + reason);
@@ -310,14 +387,20 @@ public class OrderServiceImpl implements OrderService {
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
 
         // 주문 취소 처리
-        order.cancelOrder(reason, CancelledBy.STORE);
-
+        order.initiateCancel(reason, CancelledBy.STORE);
+        // 주문 취소(거절) 이벤트 발행
+        orderEventProducer.sendOrderCancelled(order.getId(), reason);
+        log.info("가게에 의한 취소 처리 시작 (환불 대기): orderId={}, reason={}", orderId, reason);
+        
         // 결제 취소 처리 (Payment 서비스 호출)
         cancelPaymentIfExists(orderId, "가게 주문 취소: " + reason);
 
         return OrderResponseDto.from(order);
     }
 
+    @CircuitBreaker(name = "payment_ready_create")
+    @Bulkhead(name = "payment_ready_create", type = Bulkhead.Type.SEMAPHORE)
+    @Retry(name = "payment_ready_create")
     private void cancelPaymentIfExists(UUID orderId, String cancelReason) {
         try {
             // Payment 서비스에서 결제 정보 조회
@@ -346,11 +429,19 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     @Transactional
+    @OrderStatusChange("COMPLETE_PAYMENT")
     public OrderResponseDto completePayment(UUID orderId) {
         OrderEntity order = orderRepository.findById(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
-
+        
+        log.info("결제 성공 이벤트 수신 - 주문 확정 처리 시작: orderId={}", orderId);
+        
+        // 1. 상태 변경(PAYMENT_PENDING -> PENDING)
         order.completePayment();
+        // 2. 가게 사장에게 수락/거절의 이벤트 발행
+        orderEventProducer.sendOrderPending(order.getStoreId(), order.getId());
+        log.info("결제 처리 및 사장님 알림 이벤트 발행 완료: orderId={}", orderId);
+        
         return OrderResponseDto.from(order);
     }
 

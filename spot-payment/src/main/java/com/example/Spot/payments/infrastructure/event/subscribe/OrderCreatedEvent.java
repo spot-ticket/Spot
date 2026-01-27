@@ -1,0 +1,19 @@
+package com.example.Spot.payments.infrastructure.event.subscribe;
+
+import java.util.UUID;
+
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
+@Builder
+public class OrderCreatedEvent {
+    private UUID orderId;
+    private Integer userId;
+    private Long amount;
+}

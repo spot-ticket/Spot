@@ -25,11 +25,13 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Entity
 @Getter
 @Table(name = "p_order")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Slf4j
 public class OrderEntity extends BaseEntity {
 
     @Id
@@ -203,6 +205,29 @@ public class OrderEntity extends BaseEntity {
         this.pickedUpAt = LocalDateTime.now();
     }
 
+    // 취소/거절 프로세스 
+    public void initiateCancel(String reason, CancelledBy cancelledBy) {
+        validateStatusTransition(OrderStatus.CANCEL_PENDING);
+        this.orderStatus = OrderStatus.CANCEL_PENDING;
+        this.reason = reason;
+        this.cancelledBy = cancelledBy;
+    }
+    
+    public void finalizeCancel() {
+        OrderStatus finalStatus = (this.cancelledBy == null)
+                ? OrderStatus.REJECTED
+                : OrderStatus.CANCELLED;
+        
+        validateStatusTransition(finalStatus);
+        
+        this.orderStatus = finalStatus;
+        if (finalStatus == OrderStatus.REJECTED) {
+            this.rejectedAt = LocalDateTime.now();
+        } else {
+            this.cancelledAt = LocalDateTime.now();
+        }
+    }
+    
     // 상태 전환 검증
     private void validateStatusTransition(OrderStatus newStatus) {
         if (!this.orderStatus.canTransitionTo(newStatus)) {

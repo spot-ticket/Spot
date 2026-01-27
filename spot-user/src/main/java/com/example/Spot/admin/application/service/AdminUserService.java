@@ -19,21 +19,24 @@ public class AdminUserService {
 
     private final UserRepository userRepository;
 
+    @Transactional(readOnly = true)
     public Page<UserResponseDTO> getAllUsers(Pageable pageable) {
+        
+        // 여기서 락 걸면, 성능 저하가 크기 때문에 락을 적용하지는 않았습니다.
         Page<UserEntity> users = userRepository.findAll(pageable);
         return users.map(this::toResponse);
     }
 
     @Transactional
     public void updateUserRole(Integer userId, Role role) {
-        UserEntity user = userRepository.findById(userId)
+        UserEntity user = userRepository.findByIdWithLock(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         user.setRole(role);
     }
 
     @Transactional
     public void deleteUser(Integer userId) {
-        UserEntity user = userRepository.findById(userId)
+        UserEntity user = userRepository.findByIdWithLock(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         userRepository.delete(user);
     }

@@ -2,6 +2,7 @@ package com.example.Spot.user.application.service;
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.Spot.auth.jwt.JWTUtil;
 import com.example.Spot.user.domain.Role;
@@ -14,12 +15,15 @@ import lombok.RequiredArgsConstructor;
 public class TokenService {
 
     private final JWTUtil jwtUtil;
-    private final UserRepository userRepository; // access 발급 시 role을 DB에서 최신으로 읽어오기
+    private final UserRepository userRepository;
 
     @Value("${security.refresh-token.expire-days:30}")
     private long refreshExpireDays;
 
-    // refresh 요청 시: refresh JWT 검증 → 새 access(+선택 새 refresh)
+    // ************************ //
+    // Access, Refresh 토큰 재발급 //
+    // ************************ //
+    @Transactional(readOnly = true)
     public ReissueResult reissueByRefresh(String refreshToken) {
 
         if (jwtUtil.isExpired(refreshToken)) {
@@ -33,8 +37,8 @@ public class TokenService {
 
         Integer userId = jwtUtil.getUserId(refreshToken);
 
-        // 권한은 DB에서 최신 role 조회
-        Role role = userRepository.findRoleById(userId)
+        // 권한은 DB에서 최신 role 조회 (수정 중이면 대기)
+        Role role = userRepository.findByIdWithLock(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found")).getRole();
 
         long accessExpMs = 1000L * 60 * 30; // 30분
