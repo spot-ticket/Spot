@@ -20,15 +20,16 @@ public class UserService {
 
     private final UserRepository userRepository;
 
-    public UserResponseDTO getByUserId(Integer userid) {
-        UserEntity user = userRepository.findById(userid)
+    @Transactional(readOnly = true)
+    public UserResponseDTO getUserById(Integer userid) {
+        UserEntity user = userRepository.findByIdWithLock(userid)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
         return toResponse(user);
     }
 
     @Transactional
-    public UserResponseDTO updateById(Integer userid, UserUpdateRequestDTO req) {
-        UserEntity user = userRepository.findById(userid)
+    public UserResponseDTO updateUserById(Integer userid, UserUpdateRequestDTO req) {
+        UserEntity user = userRepository.findByIdWithLock(userid)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         if (req.nickname() != null) {
@@ -48,8 +49,8 @@ public class UserService {
     }
 
     @Transactional
-    public void deleteMe(Integer loginUserId) {
-        UserEntity user = userRepository.findById(loginUserId)
+    public void deleteUserById(Integer loginUserId) {
+        UserEntity user = userRepository.findByIdWithLock(loginUserId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
         user.softDelete(user.getId());
@@ -69,8 +70,14 @@ public class UserService {
         );
     }
     
+    @Transactional(readOnly = true)
     public List<UserResponseDTO> searchUsersByNickname(String nickname) {
-        List<UserEntity> users = userRepository.findByNicknameContaining(nickname);
+        List<UserEntity> users = userRepository.findByNicknameContainingWithLock(nickname);
+
+        if (users.isEmpty()) {
+            throw new IllegalArgumentException("사용자를 찾을 수 없습니다.");
+        }
+            
         return users.stream()
                 .map(this::toResponse)
                 .collect(Collectors.toList());

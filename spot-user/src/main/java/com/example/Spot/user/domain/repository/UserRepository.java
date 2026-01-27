@@ -4,23 +4,37 @@ import java.util.List;
 import java.util.Optional;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import com.example.Spot.user.domain.entity.UserEntity;
 
+import jakarta.persistence.LockModeType;
+
 public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
-    // 중복 체크
     boolean existsByUsername(String username);
-    //boolean existsByEmail(String email);
 
-    // 조회
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT u FROM UserEntity u WHERE u.username = :username")
+    Optional<UserEntity> findByUsernameWithLock(@Param("username") String username);
+
     Optional<UserEntity> findByUsername(String username);
     Optional<UserEntity> findRoleById(Integer id);
 
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    @Query("SELECT u FROM UserEntity u WHERE u.id = :id")
+    Optional<UserEntity> findRoleByIdWithLock(@Param("id") Integer id);
+
     Optional<UserEntity> findById(Integer id);
-    //UserEntity findByEmail(String email);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT u FROM UserEntity u WHERE u.id = :id")
+    Optional<UserEntity> findByIdWithLock(@Param("id") Integer id);
     
-    // 검색한 닉네임을 포함하는 유저 정보 조회
-    List<UserEntity> findByNicknameContaining(String nickname);
+    @Lock(LockModeType.PESSIMISTIC_READ)
+    @Query("SELECT u FROM UserEntity u WHERE u.nickname = :nickname")    
+    List<UserEntity> findByNicknameContainingWithLock(@Param("nickname") String nickname);
 }
 

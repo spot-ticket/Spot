@@ -2,6 +2,7 @@ package com.example.Spot.user.application.service;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.example.Spot.global.presentation.advice.DuplicateResourceException;
 import com.example.Spot.user.domain.entity.UserAuthEntity;
@@ -23,15 +24,12 @@ public class JoinService {
         this.userAuthRepository = userAuthRepository;
     }
 
-    // 회원가입
+    // ****** //
+    // 회원가입 //
+    // ****** //
+    @Transactional
     public void joinProcess(JoinDTO joinDTO) {
-
-        // 존재하는 ID인지 확인
-        if (userRepository.existsByUsername(joinDTO.getUsername())) {
-            throw new DuplicateResourceException("USERNAME_ALREADY_EXISTS");
-        }
-
-        // User Entity 저장
+        
         UserEntity user = UserEntity.builder()
                                     .username(joinDTO.getUsername())
                                     .nickname(joinDTO.getNickname())
@@ -44,12 +42,14 @@ public class JoinService {
         user.setMale(joinDTO.isMale());
         user.setAge(joinDTO.getAge());
 
-        userRepository.save(user);
-
-        // 3) UserAuthEntity 생성/저장 (p_user_auth)
         String hashedPassword = bCryptPasswordEncoder.encode(joinDTO.getPassword());
         UserAuthEntity auth = new UserAuthEntity(user, hashedPassword);
 
+        if (userRepository.findByUsernameWithLock(joinDTO.getUsername()).isPresent()) {
+            throw new DuplicateResourceException("USERNAME_ALREADY_EXISTS");
+        }
+
+        userRepository.save(user);
         userAuthRepository.save(auth);
     }
 
