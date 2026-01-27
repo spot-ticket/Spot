@@ -62,9 +62,7 @@ public class OrderServiceImpl implements OrderService {
 
         // AOP에서 검증한 데이터를 ThreadLocal Context에서 가져옴 (Feign 재호출 없음)
         StoreResponse store = OrderValidationContext.getStoreResponse();
-
         String orderNumber = generateOrderNumber();
-
         OrderEntity order = OrderEntity.builder()
                 .storeId(store.getId())
                 .userId(userId)
@@ -371,9 +369,9 @@ public class OrderServiceImpl implements OrderService {
         orderEventProducer.sendOrderCancelled(order.getId(), reason);
         log.info("고객에 의한 취소 처리 시작 (환불 대기): orderId={}, reason={}", orderId, reason);
 
-        // 결제 취소 처리 (Payment 서비스 호출)
-        cancelPaymentIfExists(orderId, "고객 주문 취소: " + reason);
-
+        // 결제 취소 처리 (Payment 서비스 호출) - 비동기 전환으로 인한 주석처리: 추후 삭제 afterDelete
+        // cancelPaymentIfExists(orderId, "고객 주문 취소: " + reason);
+        
         return OrderResponseDto.from(order);
     }
 
@@ -389,8 +387,8 @@ public class OrderServiceImpl implements OrderService {
         orderEventProducer.sendOrderCancelled(order.getId(), reason);
         log.info("가게에 의한 취소 처리 시작 (환불 대기): orderId={}, reason={}", orderId, reason);
         
-        // 결제 취소 처리 (Payment 서비스 호출)
-        cancelPaymentIfExists(orderId, "가게 주문 취소: " + reason);
+        // 결제 취소 처리 (Payment 서비스 호출) - 비동기 전환으로 인한 주석 처리: 추후 삭제 afterDelete
+        // cancelPaymentIfExists(orderId, "가게 주문 취소: " + reason);
 
         return OrderResponseDto.from(order);
     }
