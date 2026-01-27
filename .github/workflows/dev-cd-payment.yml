@@ -90,10 +90,18 @@ jobs:
           echo "Rendering Task Definition..."
 
           # 1. 프로젝트 내의 TASK_DEFINITION 사용
-          # jq 명령어로 불필요한 인자 제거
           jq --arg IMAGE "$NEW_IMAGE" \
-             '.containerDefinitions[0].image = $IMAGE \
-             ../${{ env.TASK_DEFINITION }} > new-task-def.json
+          '.containerDefinitions[0].image = $IMAGE | 
+            del(
+              .taskDefinitionArn, 
+              .revision, 
+              .status, 
+              .requiresAttributes, 
+              .compatibilities, 
+              .registeredAt, 
+              .registeredBy
+            )' \
+          ../${{ env.TASK_DEFINITION }} > new-task-def.json
 
           # 2. AWS에 등록
           NEW_TASK_INFO=$(aws ecs register-task-definition --cli-input-json file://new-task-def.json)
@@ -115,7 +123,7 @@ jobs:
             --task-definition ${{ steps.render-task-def.outputs.NEW_TASK_ARN }} \
             --force-new-deployment
 
-#      # [dev 브랜치 merge 시 해제 예정]
+#      # [DEV 브랜치로 merge 시 해제 예정]
 #      # 5. 서버 부팅 확인
 #      - name: Wait Service
 #        id: wait-service
