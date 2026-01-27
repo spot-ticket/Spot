@@ -5,9 +5,14 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
+import org.springframework.data.repository.query.Param;
 
 import com.example.Spot.store.domain.entity.CategoryEntity;
+
+import jakarta.persistence.LockModeType;
 
 @Repository
 public interface CategoryRepository extends JpaRepository<CategoryEntity, UUID> {
@@ -16,7 +21,10 @@ public interface CategoryRepository extends JpaRepository<CategoryEntity, UUID> 
     List<CategoryEntity> findAllByIsDeletedFalse();
 
     Optional<CategoryEntity> findByIdAndIsDeletedFalse(UUID id);
-    Optional<CategoryEntity> findByNameAndIsDeletedFalse(String name);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT c FROM CategoryEntity c WHERE c.name = :name AND c.isDeleted = false")
+    Optional<CategoryEntity> findByNameAndIsDeletedFalseWithLock(@Param("name") String name);
 
     boolean existsByNameAndIsDeletedFalse(String name);
 

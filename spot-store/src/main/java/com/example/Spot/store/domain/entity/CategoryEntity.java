@@ -22,7 +22,13 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "p_category")
+@Table(name = "p_category",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uq_category_name_is_deleted",
+            columnNames = {"name", "is_deleted"}
+        )
+    })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CategoryEntity extends UpdateBaseEntity {
     
