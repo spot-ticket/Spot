@@ -70,7 +70,7 @@ public class StoreAspect {
 
         log.debug("[매장 권한 검증] StoreId: {}, UserId: {}", storeId, userId);
 
-        StoreEntity store = storeRepository.findByIdWithDetails(storeId, isAdmin)
+        StoreEntity store = storeRepository.findByIdWithDetailsWithLock(storeId, isAdmin)
                 .orElseThrow(() -> new EntityNotFoundException("매장을 찾을 수 없거나 접근 권한이 없습니다."));
 
         if (!isAdmin) {

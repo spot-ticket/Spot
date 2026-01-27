@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -52,8 +53,11 @@ public class CategoryServiceImpl implements CategoryService {
 
     @Override
     public List<CategoryResponseDTO.StoreSummary> getStoresByCategoryName(String categoryName) {
-        CategoryEntity category = categoryRepository.findByNameAndIsDeletedFalse(categoryName)
-                .orElseThrow(() -> new IllegalArgumentException("Category not found: " + categoryName));
+        CategoryEntity category = categoryRepository.findByNameAndIsDeletedFalse(categoryName);
+
+        if (category == null) {
+            throw new IllegalArgumentException("Category not found: " + categoryName);
+        }
         
         List<StoreEntity> stores = getDistinctStoresByCategoryId(category.getId());
 
@@ -110,7 +114,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public CategoryResponseDTO.CategoryDetail updateCategory(UUID categoryId, CategoryRequestDTO.Update request) {
-        CategoryEntity category = categoryRepository.findByNameAndIsDeletedFalseWithLock(categoryId)
+        CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalseWithLock(categoryId)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found: " + categoryId));
 
         category.updateName(request.name());
@@ -124,7 +128,7 @@ public class CategoryServiceImpl implements CategoryService {
     @Override
     @Transactional
     public void deleteCategory(UUID categoryId, Integer userId) {
-        CategoryEntity category = categoryRepository.findByNameAndIsDeletedFalseWithLock(categoryId)
+        CategoryEntity category = categoryRepository.findByIdAndIsDeletedFalseWithLock(categoryId)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found: " + categoryId));
 
         category.softDelete(userId);
