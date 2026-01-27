@@ -44,7 +44,7 @@ public class PaymentListener {
                     .build();
             
             // 2. 가공된 DTO를 서비스에 넘기기
-            UUID paymentId = paymentService.ready(confirmRequest);
+            UUID paymentId = paymentService.ready(event.getUserId(), event.getOrderId(), confirmRequest);
             
             // 3. 결제 시도 및 결과에 따른 분기 처리
             try {

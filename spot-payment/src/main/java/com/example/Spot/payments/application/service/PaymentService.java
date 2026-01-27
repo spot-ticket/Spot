@@ -14,7 +14,6 @@ import com.example.Spot.global.feign.OrderClient;
 import com.example.Spot.global.feign.StoreClient;
 import com.example.Spot.global.feign.UserClient;
 import com.example.Spot.global.feign.dto.OrderResponse;
-import com.example.Spot.global.feign.dto.UserResponse;
 import com.example.Spot.global.presentation.advice.BillingKeyNotFoundException;
 import com.example.Spot.global.presentation.advice.ResourceNotFoundException;
 import com.example.Spot.payments.domain.entity.PaymentEntity;
