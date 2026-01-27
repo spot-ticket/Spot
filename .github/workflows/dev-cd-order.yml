@@ -9,11 +9,10 @@ on:
 
 env:
   AWS_REGION: ap-northeast-2
+  ECR_REPOSITORY: spot-order
+  TASK_DEFINITION: infra/task-definitions/dev-order-task.json
   ECS_SERVICE: spot-order-service
   ECS_CLUSTER: spot-dev-cluster
-  ECS_CONTAINER: spot-order-container
-  TASK_DEFINITION: task-definitions/dev-order-task.json
-  ECR_REPOSITORY: spot-order
 
 jobs:
   deploy:
@@ -81,15 +80,19 @@ jobs:
         run: |
           docker push $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 
-      # 3. Task Definition 교체 작업
+      # Task Definition 랜더링 작업
       - name: Render Task Definition
         id: render-task-def
         env:
           NEW_IMAGE: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.image-tag.outputs.short_tag }}
+          AWS_ACCOUT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
         run: |
           echo "Rendering Task Definition..."
 
-          # 1. 프로젝트 내의 TASK_DEFINITION 사용
+          # 1. <AWS_ID> 치환
+          sed "s|<AWS_ID>|$AWS_ACCOUNT_ID|g" ../${{ env.TASK_DEFINITION }} > temp-task-def.json
+
+          # TASK_DEFINITION 내의 불필요한 메타데이터 삭제 및 이미지 교체
           jq --arg IMAGE "$NEW_IMAGE" \
           '.containerDefinitions[0].image = $IMAGE | 
             del(
@@ -101,17 +104,17 @@ jobs:
               .registeredAt, 
               .registeredBy
             )' \
-          ../${{ env.TASK_DEFINITION }} > new-task-def.json
+          temp-task-def.json > new-task-def.json
 
-          # 2. AWS에 등록
+          # 3. AWS에 등록
           NEW_TASK_INFO=$(aws ecs register-task-definition --cli-input-json file://new-task-def.json)
 
-          # 3. ARN 추출
+          # 4. ARN 추출
           NEW_TASK_ARN=$(echo $NEW_TASK_INFO | jq -r '.taskDefinition.taskDefinitionArn')
           echo "NEW_TASK_ARN=$NEW_TASK_ARN" >> $GITHUB_OUTPUT
           echo "New Task Definition ARN: $NEW_TASK_ARN"
 
-      # 4. 서비스 업데이트
+      # 서비스 업데이트
       - name: Update Service
         id: update-service
         run: |
@@ -123,19 +126,14 @@ jobs:
             --task-definition ${{ steps.render-task-def.outputs.NEW_TASK_ARN }} \
             --force-new-deployment
 
-#      # [DEV 브랜치로 merge 시 해제 예정]ß
-#      # 5. 서버 부팅 확인
-#      - name: Wait Service
-#        id: wait-service
-#        run: |
-#          echo "Wait For Boot Service"
-#          aws ecs wait services-stable \
-#          --cluster ${{ env.ECS_CLUSTER }} \
-#          --service ${{ env.ECS_SERVICE }}
-
-      # Code Deploy로 트래픽 전환
-      #      - name: Trigger Code Deploy
-      #        id: trigger
+      # 서버 부팅 확인
+      - name: Wait Service
+        id: wait-service
+        run: |
+          echo "Wait For Boot Service"
+          aws ecs wait services-stable \
+          --cluster ${{ env.ECS_CLUSTER }} \
+          --service ${{ env.ECS_SERVICE }}
 
       # Discord 알림 - 성공
       - name: Notify Discord - Dev CD SUCCESS
