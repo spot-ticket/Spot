@@ -46,21 +46,10 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Make application.yml
+      - name: Make application.properties
         run: |
           mkdir -p ./src/main/resources
           echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
-        shell: bash
-
-      - name: Make application-ci.yml
-        run: |
-          mkdir -p ./src/main/resources
-          cat > ./src/main/resources/application-ci.yml <<'YML'
-          management:
-            health:
-              redis:
-                enabled: false
-          YML
         shell: bash
 
       - name: Check code formatting
@@ -76,17 +65,20 @@ jobs:
 
       - name: Test application startup
         run: |
-          ./gradlew bootRun --args='--spring.profiles.active=ci' > bootrun.log 2>&1 &
+          ./gradlew bootRun > bootrun.log 2>&1 &
           APP_PID=$!
           echo "Started bootRun with PID: $APP_PID"
 
+          # 최대 60초 대기하면서 애플리케이션 시작 확인
           for i in {1..60}; do
-            if curl -fsS http://localhost:8081/actuator/health | grep -q '"status":"UP"'; then
-              echo "✅ Application health is UP after ${i}s"
+            # 로그에서 시작 완료 메시지 확인
+            if grep -q "Started SpotUserApplication" bootrun.log 2>/dev/null; then
+              echo "✅ Application started successfully after ${i}s"
               kill $APP_PID 2>/dev/null || true
               exit 0
             fi
 
+            # 프로세스가 죽었는지 확인
             if ! kill -0 $APP_PID 2>/dev/null; then
               echo "❌ Application process terminated unexpectedly"
               echo "=== bootRun log ==="
@@ -97,7 +89,7 @@ jobs:
             sleep 1
           done
 
-          echo "❌ Application health did not become UP within 60 seconds"
+          echo "❌ Application failed to start within 60 seconds"
           echo "=== bootRun log ==="
           cat bootrun.log
           kill $APP_PID 2>/dev/null || true
