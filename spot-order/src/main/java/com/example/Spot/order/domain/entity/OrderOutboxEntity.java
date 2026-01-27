@@ -1,6 +1,5 @@
 package com.example.Spot.order.domain.entity;
 
-import jakarta.persistence.Index;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -15,6 +14,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -44,7 +44,7 @@ public class OrderOutboxEntity extends BaseEntity {
     @Column(name = "event_type", nullable = false)
     private String eventType;
     
-    @Column(columnDefinition = "TEXT", nullable= false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String payload;
     
     @Enumerated(EnumType.STRING)
