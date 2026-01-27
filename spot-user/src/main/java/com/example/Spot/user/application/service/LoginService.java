@@ -1,5 +1,8 @@
 package com.example.Spot.user.application.service;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -12,8 +15,7 @@ import software.amazon.awssdk.services.cognitoidentityprovider.model.Authenticat
 import software.amazon.awssdk.services.cognitoidentityprovider.model.InitiateAuthRequest;
 import software.amazon.awssdk.services.cognitoidentityprovider.model.InitiateAuthResponse;
 
-import java.util.HashMap;
-import java.util.Map;
+
 
 @Service
 public class LoginService {
