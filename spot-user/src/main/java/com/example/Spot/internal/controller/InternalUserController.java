@@ -29,4 +29,12 @@ public class InternalUserController {
     public ResponseEntity<Boolean> existsById(@PathVariable Integer userId) {
         return ResponseEntity.ok(userRepository.existsById(userId));
     }
+    @GetMapping("/{userId}/validate")
+    public ResponseEntity<Void> validate(@PathVariable Integer userId) {
+        if (!userRepository.existsById(userId)) {
+            return ResponseEntity.<Void>notFound().build();
+        }
+        return ResponseEntity.<Void>ok().build();
+    }
+
 }

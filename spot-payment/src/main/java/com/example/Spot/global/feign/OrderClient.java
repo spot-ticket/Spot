@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 
 import com.example.Spot.global.feign.dto.OrderResponse;
 
-@FeignClient(name = "order-service", url = "${feign.order.url}")
+@FeignClient(name = "spot-order", url = "${feign.order.url}")
 public interface OrderClient {
 
     @GetMapping("/api/internal/orders/{orderId}")

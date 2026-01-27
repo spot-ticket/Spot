@@ -15,6 +15,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -22,7 +23,13 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "p_category")
+@Table(name = "p_category",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uq_category_name_is_deleted",
+            columnNames = {"name", "is_deleted"}
+        )
+    })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class CategoryEntity extends UpdateBaseEntity {
     

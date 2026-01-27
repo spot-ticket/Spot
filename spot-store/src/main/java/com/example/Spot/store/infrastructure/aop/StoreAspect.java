@@ -8,7 +8,8 @@ import org.aspectj.lang.annotation.Aspect;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Component;
 
-import com.example.Spot.global.feign.UserClient;
+import com.example.Spot.global.common.Role;
+import com.example.Spot.global.infrastructure.config.security.CustomUserDetails;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.StoreRepository;
 
@@ -16,15 +17,13 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
+
 @Slf4j
 @Aspect
 @Component
 @RequiredArgsConstructor
 public class StoreAspect {
 
-    // User Roll을 확인하는 로직이 너무 많음
-    
-    private final UserClient userClient;
     private final StoreRepository storeRepository;
 
     @Around("@annotation(adminOnly)")
@@ -32,11 +31,12 @@ public class StoreAspect {
             ProceedingJoinPoint joinPoint,
             AdminOnly adminOnly) throws Throwable {
 
-        Integer userId = (Integer) joinPoint.getArgs()[0];
+        CustomUserDetails principal = extractPrincipal(joinPoint);
+        if (principal == null) {
+            throw new AccessDeniedException("인증이 필요합니다.");
+        }
 
-        log.debug("[관리자 권한 검증] UserId: {}", userId);
-
-        String role = userClient.getUser(userId).getRole();
+        Role role = principal.getRole();
         boolean isAdmin = "MASTER".equals(role) || "MANAGER".equals(role);
 
         if (!isAdmin) {
@@ -58,14 +58,19 @@ public class StoreAspect {
             ValidateStoreAuthority validateStoreAuthority) throws Throwable {
 
         UUID storeId = (UUID) joinPoint.getArgs()[0];
-        Integer userId = (Integer) joinPoint.getArgs()[1];
+        CustomUserDetails principal = extractPrincipal(joinPoint);
+        if (principal == null) {
+            throw new AccessDeniedException("인증이 필요합니다.");
+        }
+
+        Integer userId = (Integer) joinPoint.getArgs()[0];
+        Role role = principal.getRole();
+        boolean isAdmin = "MASTER".equals(role) || "MANAGER".equals(role);
+
 
         log.debug("[매장 권한 검증] StoreId: {}, UserId: {}", storeId, userId);
 
-        String role = userClient.getUser(userId).getRole();
-        boolean isAdmin = "MANAGER".equals(role) || "MASTER".equals(role);
-
-        StoreEntity store = storeRepository.findByIdWithDetails(storeId, isAdmin)
+        StoreEntity store = storeRepository.findByIdWithDetailsWithLock(storeId, isAdmin)
                 .orElseThrow(() -> new EntityNotFoundException("매장을 찾을 수 없거나 접근 권한이 없습니다."));
 
         if (!isAdmin) {
@@ -86,4 +91,13 @@ public class StoreAspect {
             StoreValidationContext.clearAll();
         }
     }
+    private CustomUserDetails extractPrincipal(ProceedingJoinPoint joinPoint) {
+        for (Object arg : joinPoint.getArgs()) {
+            if (arg instanceof CustomUserDetails cud) {
+                return cud;
+            }
+        }
+        return null;
+    }
+
 }

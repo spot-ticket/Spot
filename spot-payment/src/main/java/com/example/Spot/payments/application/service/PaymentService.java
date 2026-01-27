@@ -14,7 +14,6 @@ import com.example.Spot.global.feign.OrderClient;
 import com.example.Spot.global.feign.StoreClient;
 import com.example.Spot.global.feign.UserClient;
 import com.example.Spot.global.feign.dto.OrderResponse;
-import com.example.Spot.global.feign.dto.UserResponse;
 import com.example.Spot.global.presentation.advice.BillingKeyNotFoundException;
 import com.example.Spot.global.presentation.advice.ResourceNotFoundException;
 import com.example.Spot.payments.domain.entity.PaymentEntity;
@@ -35,6 +34,9 @@ import com.example.Spot.payments.infrastructure.producer.PaymentEventProducer;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
 
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -65,15 +67,11 @@ public class PaymentService {
   // https://docs.tosspayments.com/reference/using-api/webhook-events 참고
   // ready -> createPaymentBillingApprove -> confirmBillingPayment
   @Ready
-  public UUID ready(PaymentRequestDto.Confirm request) {
-
-    validateUserExists(request.userId());
-    validateOrderExists(request.orderId());
-
-    PaymentEntity payment = createPayment(request.userId(), request.orderId(), request);
-
+  public UUID ready(Integer userId, UUID orderId, PaymentRequestDto.Confirm request) {
+    PaymentEntity payment = createPayment(userId, orderId, request);
     return payment.getId();
   }
+
 
   // ******* //
   // 결제 승인 //
@@ -213,16 +211,12 @@ public class PaymentService {
     }
   }
 
-  // User 서비스 호출 - 사용자 조회
-  private UserResponse findUser(Integer userId) {
-    UserResponse user = userClient.getUserById(userId);
-    if (user == null) {
-      throw new ResourceNotFoundException("[PaymentService] 사용자를 찾을 수 없습니다.");
-    }
-    return user;
-  }
+
 
   // User 서비스 호출 - 사용자 존재 확인
+  @CircuitBreaker(name = "user_validate_activeUser")
+  @Bulkhead(name = "user_validate_activeUser", type = Bulkhead.Type.SEMAPHORE)
+  @Retry(name = "user_validate_activeUser")
   private void validateUserExists(Integer userId) {
     if (!userClient.existsById(userId)) {
       throw new ResourceNotFoundException("[PaymentService] 사용자를 찾을 수 없습니다.");
