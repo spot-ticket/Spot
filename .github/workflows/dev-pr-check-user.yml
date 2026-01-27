@@ -64,11 +64,8 @@ jobs:
       continue-on-error: true
 
     - name: Test application startup
-      env:
-        COGNITO_ADMIN_ENABLED: "false"
       run: |
-        ./gradlew bootRun > bootrun.log 2>&1 &
-        APP_PID=$!
+        ./gradlew bootRun --args='--cognito.admin.enabled=false' > bootrun.log 2>&1 & APP_PID=$!
         echo "Started bootRun with PID: $APP_PID"
 
         # 최대 60초 대기하면서 애플리케이션 시작 확인
