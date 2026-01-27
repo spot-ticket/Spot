@@ -12,7 +12,6 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.example.Spot.global.feign.UserClient;
 import com.example.Spot.global.presentation.advice.DuplicateResourceException;
 import com.example.Spot.menu.domain.entity.MenuEntity;
 import com.example.Spot.menu.domain.repository.MenuRepository;
@@ -31,9 +30,6 @@ import com.example.Spot.store.presentation.dto.request.StoreUserUpdateRequest;
 import com.example.Spot.store.presentation.dto.response.StoreDetailResponse;
 import com.example.Spot.store.presentation.dto.response.StoreListResponse;
 
-import io.github.resilience4j.bulkhead.annotation.Bulkhead;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 
