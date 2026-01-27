@@ -9,6 +9,7 @@ public enum OrderStatus {
     COOKING("조리중"),
     READY("픽업 대기"),
     COMPLETED("픽업 완료"),
+    CANCEL_PENDING("취소 처리 중"),
     CANCELLED("주문 취소");
 
     private final String description;
@@ -26,9 +27,10 @@ public enum OrderStatus {
         return switch (this) {
             case PAYMENT_PENDING -> newStatus == PENDING || newStatus == PAYMENT_FAILED || newStatus == CANCELLED;
             case PAYMENT_FAILED -> newStatus == PAYMENT_PENDING || newStatus == CANCELLED; // 재결제 시도 가능
-            case PENDING -> newStatus == ACCEPTED || newStatus == REJECTED || newStatus == CANCELLED;
-            case ACCEPTED -> newStatus == COOKING || newStatus == CANCELLED;
-            case COOKING -> newStatus == READY || newStatus == CANCELLED;
+            case PENDING -> newStatus == ACCEPTED || newStatus == CANCEL_PENDING;
+            case ACCEPTED -> newStatus == COOKING || newStatus == CANCEL_PENDING;
+            case COOKING -> newStatus == READY || newStatus == CANCEL_PENDING;
+            case CANCEL_PENDING ->  newStatus == CANCELLED || newStatus ==  REJECTED;
             case READY -> newStatus == COMPLETED;
             default -> false;
         };
