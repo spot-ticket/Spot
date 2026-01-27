@@ -1,0 +1,13 @@
+spring:
+  kafka:
+    topic:
+      order:
+        created: spot.order.created
+        pending: spot.order.pending
+        accepted: spot.order.accepted
+        cancelled: spot.order.cancelled
+      payment:
+        succeeded: spot.payment.succeeded
+        refunded: spot.payment.refunded
+      payment-auth:
+        required: spot.payment_auth.required

@@ -18,7 +18,9 @@ import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Aspect
 @Component
 @RequiredArgsConstructor
@@ -69,7 +71,8 @@ public class PaymentAspect {
     public Object handlePaymentBillingApproveStatus(ProceedingJoinPoint joinPoint, PaymentBillingApproveTrace trace) throws Throwable {
 
         UUID paymentId = (UUID) joinPoint.getArgs()[0];
-
+        log.info("📢 [AOP] 결제 승인 기록 시작 - ID: {}", paymentId); // 로그 확인용
+        
         try {
             paymentHistoryService.recordPaymentProgress(paymentId);
 
@@ -78,6 +81,7 @@ public class PaymentAspect {
             if (result instanceof PaymentResponseDto.Confirm) {
                 PaymentResponseDto.Confirm response = (PaymentResponseDto.Confirm) result;
                 String paymentKey = response.paymentKey();
+                log.info("✅ [AOP] 결제 성공 기록 완료");
                 
                 paymentHistoryService.recordPaymentSuccess(paymentId, paymentKey);
             }
@@ -85,6 +89,7 @@ public class PaymentAspect {
             return result;
 
         } catch (Exception e) {
+            log.error("❌ [AOP] 에러 발생: {}", e.getMessage());
             paymentHistoryService.recordFailure(paymentId, e);
             throw e;
         }
