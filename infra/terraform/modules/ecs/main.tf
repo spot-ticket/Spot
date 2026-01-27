@@ -236,7 +236,7 @@ resource "aws_cloudwatch_log_group" "services" {
 resource "aws_ecs_task_definition" "services" {
   for_each = var.services
 
-  family                   = "${var.project}-${each.key}-task"
+  family                   = "${var.project}-${var.environment}-${each.key}-task"
   network_mode             = "awsvpc"
   requires_compatibilities = ["FARGATE"]
   cpu                      = each.value.cpu
@@ -678,7 +678,8 @@ resource "aws_ecs_service" "services" {
 
   tags = merge(var.common_tags, { Service = each.key })
 
-  lifecycle {
-    ignore_changes = var.enable_blue_green ? [task_definition, load_balancer] : []
-  }
+  # Note: Blue/Green 배포를 사용할 경우 수동으로 ignore_changes 설정 필요
+  # lifecycle {
+  #   ignore_changes = [task_definition, load_balancer]
+  # }
 }

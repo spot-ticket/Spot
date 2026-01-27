@@ -8,14 +8,15 @@ terraform {
     }
   }
 
-  # 원격 상태 저장소 (팀 협업 시 활성화)
-  # backend "s3" {
-  #   bucket         = "spot-terraform-state"
-  #   key            = "prod/terraform.tfstate"
-  #   region         = "ap-northeast-2"
-  #   encrypt        = true
-  #   dynamodb_table = "spot-terraform-lock"
-  # }
+  # 원격 상태 저장소 (팀 협업)
+  backend "s3" {
+    bucket         = "spot-terraform-state-322546275072"
+    key            = "prod/terraform.tfstate"
+    region         = "ap-northeast-2"
+    encrypt        = true
+    use_lockfile   = true
+    dynamodb_table = "spot-terraform-lock"
+  }
 }
 
 provider "aws" {

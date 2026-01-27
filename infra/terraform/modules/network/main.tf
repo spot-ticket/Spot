@@ -69,6 +69,37 @@ resource "aws_internet_gateway" "igw" {
 # =============================================================================
 # NAT Instance (Development - Cost Optimized)
 # =============================================================================
+# IAM Role for SSM Access
+resource "aws_iam_role" "nat_instance" {
+  count = var.use_nat_gateway ? 0 : 1
+  name  = "${var.name_prefix}-nat-instance-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Action = "sts:AssumeRole"
+      Effect = "Allow"
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      }
+    }]
+  })
+
+  tags = var.common_tags
+}
+
+resource "aws_iam_role_policy_attachment" "nat_instance_ssm" {
+  count      = var.use_nat_gateway ? 0 : 1
+  role       = aws_iam_role.nat_instance[0].name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonSSMManagedInstanceCore"
+}
+
+resource "aws_iam_instance_profile" "nat_instance" {
+  count = var.use_nat_gateway ? 0 : 1
+  name  = "${var.name_prefix}-nat-instance-profile"
+  role  = aws_iam_role.nat_instance[0].name
+}
+
 resource "aws_security_group" "nat_sg" {
   count  = var.use_nat_gateway ? 0 : 1
   name   = "${var.name_prefix}-nat-sg"
@@ -113,6 +144,7 @@ resource "aws_instance" "nat_instance" {
   instance_type               = var.nat_instance_type
   subnet_id                   = aws_subnet.public_a.id
   vpc_security_group_ids      = [aws_security_group.nat_sg[0].id]
+  iam_instance_profile        = aws_iam_instance_profile.nat_instance[0].name
   associate_public_ip_address = true
   source_dest_check           = false
 
