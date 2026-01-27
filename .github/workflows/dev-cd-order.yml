@@ -85,7 +85,7 @@ jobs:
         id: render-task-def
         env:
           NEW_IMAGE: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.image-tag.outputs.short_tag }}
-          AWS_ACCOUT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
         run: |
           echo "Rendering Task Definition..."
 
@@ -161,7 +161,7 @@ jobs:
           if [ "${{ steps.login-ecr.outcome }}" == "failure" ]; then FAILED_STEP="ECR 로그인"; fi
           if [ "${{ steps.docker-build.outcome }}" == "failure" ]; then FAILED_STEP="Docker 이미지 빌드"; fi
           if [ "${{ steps.docker-push.outcome }}" == "failure" ]; then FAILED_STEP="ECR Push"; fi
-          if [ "${{ steps.render-task-def.outcome }}" == "failure" ]; then FAILED_STEP="Task Definition 생성"; fi
+          if [ "${{ steps.render-task-def.outcome }}" == "failure" ]; then FAILED_STEP="Task Definition 교체"; fi
           if [ "${{ steps.update-service.outcome }}" == "failure" ]; then FAILED_STEP="ECS 서비스 업데이트"; fi
           if [ "${{ steps.wait-service.outcome }}" == "failure" ]; then FAILED_STEP="서비스 부팅"; fi
           
