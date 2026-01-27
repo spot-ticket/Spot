@@ -25,7 +25,7 @@ public interface CategoryApi {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "조회 성공")
     })
-    List<CategoryResponseDTO.CategoryItem> getAll();
+    List<CategoryResponseDTO.CategoryItem> getAllCategory();
 
     @Operation(summary = "카테고리별 매장 조회", description = "특정 카테고리에 속한 매장 목록을 조회합니다.")
     @ApiResponses({
@@ -41,7 +41,7 @@ public interface CategoryApi {
             @ApiResponse(responseCode = "400", description = "잘못된 요청"),
             @ApiResponse(responseCode = "403", description = "권한 없음")
     })
-    CategoryResponseDTO.CategoryDetail create(
+    CategoryResponseDTO.CategoryDetail createCategory(
             @Valid @RequestBody CategoryRequestDTO.Create request);
 
     @Operation(summary = "카테고리 수정", description = "카테고리 정보를 수정합니다.")
@@ -50,7 +50,7 @@ public interface CategoryApi {
             @ApiResponse(responseCode = "403", description = "권한 없음"),
             @ApiResponse(responseCode = "404", description = "카테고리를 찾을 수 없음")
     })
-    CategoryResponseDTO.CategoryDetail update(
+    CategoryResponseDTO.CategoryDetail updateCategory(
             @Parameter(description = "카테고리 ID") @PathVariable UUID categoryId,
             @Valid @RequestBody CategoryRequestDTO.Update request);
 
@@ -60,7 +60,7 @@ public interface CategoryApi {
             @ApiResponse(responseCode = "403", description = "권한 없음"),
             @ApiResponse(responseCode = "404", description = "카테고리를 찾을 수 없음")
     })
-    void delete(
+    void deleteCategory(
             @Parameter(description = "카테고리 ID") @PathVariable UUID categoryId,
             @AuthenticationPrincipal CustomUserDetails principal);
 }

@@ -7,11 +7,14 @@ import java.util.UUID;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import com.example.Spot.store.domain.entity.StoreEntity;
+
+import jakarta.persistence.LockModeType;
 
 @Repository
 public interface StoreRepository extends JpaRepository<StoreEntity, UUID> {
@@ -31,6 +34,16 @@ public interface StoreRepository extends JpaRepository<StoreEntity, UUID> {
             "WHERE s.id = :id " +
             "AND (:isAdmin = true OR (s.isDeleted = false AND s.status = 'APPROVED'))")
     Optional<StoreEntity> findByIdWithDetails(@Param("id") UUID id, @Param("isAdmin") boolean isAdmin);
+
+    // MultipleBagFetchException이 날 확률이 매우 높은데..... 
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM StoreEntity s " +
+            "LEFT JOIN FETCH s.storeCategoryMaps sc " +
+            "LEFT JOIN FETCH sc.category " +
+            "LEFT JOIN FETCH s.users su " +
+            "WHERE s.id = :id " +
+            "AND (:isAdmin = true OR (s.isDeleted = false AND s.status = 'APPROVED'))")
+    Optional<StoreEntity> findByIdWithDetailsWithLock(@Param("id") UUID id, @Param("isAdmin") boolean isAdmin);
 
     // 검색 기능
     @Query("SELECT DISTINCT s FROM StoreEntity s " +
@@ -73,4 +86,13 @@ public interface StoreRepository extends JpaRepository<StoreEntity, UUID> {
             "WHERE s.id = :id " +
             "AND s.isDeleted = false")
     Optional<StoreEntity> findByIdWithDetailsForOwner(@Param("id") UUID id);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT s FROM StoreEntity s " +
+            "LEFT JOIN FETCH s.storeCategoryMaps sc " +
+            "LEFT JOIN FETCH sc.category " +
+            "LEFT JOIN FETCH s.users su " +
+            "WHERE s.id = :id " +
+            "AND s.isDeleted = false")
+    Optional<StoreEntity> findByIdWithDetailsForOwnerWithLock(@Param("id") UUID id);
 }
