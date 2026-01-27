@@ -73,6 +73,9 @@ public interface OrderService {
     OrderResponseDto customerCancelOrder(UUID orderId, String reason);
     OrderResponseDto storeCancelOrder(UUID orderId, String reason);
     
+    // 주문 취소 완료
+    void completeOrderCancellation(UUID orderId);
+    
     // 결제 관련 (Payment Service에서 호출)
     OrderResponseDto completePayment(UUID orderId);
     OrderResponseDto failPayment(UUID orderId);
