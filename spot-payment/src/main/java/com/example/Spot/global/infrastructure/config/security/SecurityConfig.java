@@ -29,7 +29,7 @@ public class SecurityConfig {
 
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authorizeHttpRequests(auth -> auth
-                .requestMatchers("OPTIONS", "/**").permitAll()
+                .requestMatchers("OPTIONS", "/**", "/actuator/**").permitAll()
                 .requestMatchers(
                         "/", "/swagger-ui/**", "/v3/api-docs/**",
                         "/api/stores/**", "/api/categories/**"
