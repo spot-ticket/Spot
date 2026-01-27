@@ -1,13 +1,21 @@
 package com.example.Spot.order.domain.repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.UUID;
 
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import com.example.Spot.order.domain.entity.OrderOutboxEntity;
 import com.example.Spot.order.domain.enums.OutboxStatus;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface OrderOutboxRepository extends JpaRepository<OrderOutboxEntity, UUID> {
-    List<OrderOutboxEntity> findTop10ByOutboxStatusOrderByCreatedAtAsc(OutboxStatus status);
+    @Query("SELECT o FROM OrderOutboxEntity  o " + 
+    "Where o.outboxStatus = 'INIT' " +
+    "AND o.nextAttemptAt <= :now " + 
+    "ORDER By o.createdAt ASC")
+    List<OrderOutboxEntity> findTop10ReadyTopublish(@Param("now") LocalDateTime now, Pageable pageable);
 }

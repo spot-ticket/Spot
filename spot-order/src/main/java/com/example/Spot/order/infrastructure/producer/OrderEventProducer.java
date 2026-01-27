@@ -1,5 +1,7 @@
 package com.example.Spot.order.infrastructure.producer;
 
+import com.example.Spot.order.domain.entity.OrderOutboxEntity;
+import com.example.Spot.order.domain.repository.OrderOutboxRepository;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -23,7 +25,9 @@ import lombok.extern.slf4j.Slf4j;
 public class OrderEventProducer {
     
     private final KafkaTemplate<String, String> kafkaTemplate;
+    private final OrderOutboxRepository outboxRepository;
     private final ObjectMapper objectMapper;
+    
     @Value("${spring.kafka.topic.order.created}")
     private String orderCreatedTopic;
     @Value("${spring.kafka.topic.order.pending}")
@@ -33,50 +37,63 @@ public class OrderEventProducer {
     @Value("${spring.kafka.topic.order.cancelled}")
     private String orderCancelledTopic;
     
-    public void sendOrderCreated(UUID orderId, Integer userId, Long amount) {
+    public void reserveOrderCreated(UUID orderId, Integer userId, Long amount) {
         OrderCreatedEvent event = OrderCreatedEvent.builder()
                 .orderId(orderId)
                 .userId(userId)
                 .amount(amount)
                 .build();
-        send(orderCreatedTopic, orderId.toString(), event);
+        saveOutbox(orderCreatedTopic, orderId, userId.toString(), event);
     }
 
-    public void sendOrderPending(UUID storeId, UUID orderId) {
+    public void reserveOrderPending(UUID storeId, UUID orderId) {
         OrderPendingEvent event = OrderPendingEvent.builder()
                 .storeId(storeId)
                 .orderId(orderId)
                 .timestamp(LocalDateTime.now())
                 .build();
-        send(orderPendingTopic, storeId.toString(), event);
+        saveOutbox(orderPendingTopic, orderId, storeId.toString(), event);
     }
     
-    public void sendOrderAccepted(Integer userId, UUID orderId, Integer estimatedTime) {
+    public void reserveOrderAccepted(Integer userId, UUID orderId, Integer estimatedTime) {
         OrderAcceptedEvent event = OrderAcceptedEvent.builder()
                 .userId(userId)
                 .orderId(orderId)
                 .estimatedTime(estimatedTime)
                 .build();
-        send(orderAcceptedTopic, userId.toString(), event);
+        saveOutbox(orderAcceptedTopic, orderId, userId.toString(), event);
     }
     
-    public void sendOrderCancelled(UUID orderId, String reason) {
+    public void reserveOrderCancelled(UUID orderId, String reason) {
         OrderCancelledEvent event = OrderCancelledEvent.builder()
                 .orderId(orderId)
                 .reason(reason)
                 .build();
-        
-        send(orderCancelledTopic, orderId.toString(), event);
+        saveOutbox(orderCancelledTopic, orderId, orderId.toString(), event);
     }
     
-    public void send(String topic, String key, Object event) {
+    public void saveOutbox(String topic, UUID aggregateId, String eventKey, Object event) {
         try {
             String payload = objectMapper.writeValueAsString(event);
-            kafkaTemplate.send(topic, key, payload);
+            
+            OrderOutboxEntity outbox = OrderOutboxEntity.builder()
+                    .aggregateType("ORDER")
+                    .aggregateId(aggregateId)
+                    .eventKey(eventKey)
+                    .eventType(topic)
+                    .payload(payload)
+                    .build();
+            
+            outboxRepository.save(outbox);
+            log.info("✅[Outbox 저장 성공] topic:{}, Key:{}, AggregateId:{}", topic, eventKey, aggregateId);
         } catch (JsonProcessingException e) {
-            log.error("❌[Kafka 발행 실패] topic={}, key={}, error={}", topic, key, e.getMessage());
-            throw new RuntimeException("이벤트 직렬화 중 오류 발생", e);
+            log.error("❌[Outbox 저장 실패] AggregateId={}, error={}", aggregateId, e.getMessage());
+            throw new RuntimeException("이벤트 발해 예약 중 오류 발생", e);
         }
+    }
+    
+    public void publish(OrderOutboxEntity outbox) throws Exception {
+        kafkaTemplate.send(outbox.getEventType(), outbox.getEventKey(), outbox.getPayload()).get();
     }
 }
 
