@@ -2,7 +2,7 @@
   "containerDefinitions": [
     {
       "name": "spot-gateway-container",
-      "image": "322546275072.dkr.ecr.ap-northeast-2.amazonaws.com/spot-gateway:20260126-221924",
+      "image": "<AWS_ID>.dkr.ecr.ap-northeast-2.amazonaws.com/spot-gateway:20260126-221924",
       "cpu": 0,
       "portMappings": [
         {
@@ -201,8 +201,8 @@
     }
   ],
   "family": "spot-gateway-task",
-  "taskRoleArn": "arn:aws:iam::322546275072:role/spot-dev-ecs-task-role",
-  "executionRoleArn": "arn:aws:iam::322546275072:role/spot-dev-ecs-task-execution-role",
+  "taskRoleArn": "arn:aws:iam::<AWS_ID>:role/spot-dev-ecs-task-role",
+  "executionRoleArn": "arn:aws:iam::<AWS_ID>:role/spot-dev-ecs-task-execution-role",
   "networkMode": "awsvpc",
   "volumes": [],
   "placementConstraints": [],

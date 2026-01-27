@@ -2,7 +2,7 @@
   "containerDefinitions": [
     {
       "name": "spot-user-container",
-      "image": "322546275072.dkr.ecr.ap-northeast-2.amazonaws.com/spot-user:20260126-221924",
+      "image": "<AWS_ID>.dkr.ecr.ap-northeast-2.amazonaws.com/spot-user:20260126-221924",
       "cpu": 0,
       "portMappings": [
         {
@@ -121,15 +121,15 @@
       "secrets": [
         {
           "name": "SPRING_DATASOURCE_PASSWORD",
-          "valueFrom": "arn:aws:ssm:ap-northeast-2:322546275072:parameter/spot/dev/database/password"
+          "valueFrom": "arn:aws:ssm:ap-northeast-2:<AWS_ID>:parameter/spot/dev/database/password"
         },
         {
           "name": "SPRING_JWT_SECRET",
-          "valueFrom": "arn:aws:ssm:ap-northeast-2:322546275072:parameter/spot/dev/secrets/jwt_secret"
+          "valueFrom": "arn:aws:ssm:ap-northeast-2:<AWS_ID>:parameter/spot/dev/secrets/jwt_secret"
         },
         {
           "name": "SPRING_MAIL_PASSWORD",
-          "valueFrom": "arn:aws:ssm:ap-northeast-2:322546275072:parameter/spot/dev/secrets/mail_password"
+          "valueFrom": "arn:aws:ssm:ap-northeast-2:<AWS_ID>:parameter/spot/dev/secrets/mail_password"
         }
       ],
       "logConfiguration": {
@@ -154,8 +154,8 @@
     }
   ],
   "family": "spot-user-task",
-  "taskRoleArn": "arn:aws:iam::322546275072:role/spot-dev-ecs-task-role",
-  "executionRoleArn": "arn:aws:iam::322546275072:role/spot-dev-ecs-task-execution-role",
+  "taskRoleArn": "arn:aws:iam::<AWS_ID>:role/spot-dev-ecs-task-role",
+  "executionRoleArn": "arn:aws:iam::<AWS_ID>:role/spot-dev-ecs-task-execution-role",
   "networkMode": "awsvpc",
   "volumes": [],
   "placementConstraints": [],
