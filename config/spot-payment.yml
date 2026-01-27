@@ -6,10 +6,8 @@ spring:
   application:
     name: spot-payment
   kafka:
-    bootstrap-servers: ${KAFKA_BOOTSTRAP_SERVERS:kafka:29092}
     consumer:
       group-id: payment-group
-      auto-offset-reset: earliest
     
 server:
   port: 8084
