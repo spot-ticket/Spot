@@ -38,7 +38,7 @@ public class TokenService {
         Integer userId = jwtUtil.getUserId(refreshToken);
 
         // 권한은 DB에서 최신 role 조회 (수정 중이면 대기)
-        Role role = userRepository.findRoleByIdWithLock(userId)
+        Role role = userRepository.findByIdWithLock(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found")).getRole();
 
         long accessExpMs = 1000L * 60 * 30; // 30분

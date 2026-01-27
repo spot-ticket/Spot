@@ -22,11 +22,7 @@ public interface UserRepository extends JpaRepository<UserEntity, Integer> {
 
     Optional<UserEntity> findByUsername(String username);
     Optional<UserEntity> findRoleById(Integer id);
-
-    @Lock(LockModeType.PESSIMISTIC_READ)
-    @Query("SELECT u FROM UserEntity u WHERE u.id = :id")
-    Optional<UserEntity> findRoleByIdWithLock(@Param("id") Integer id);
-
+    
     Optional<UserEntity> findById(Integer id);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
