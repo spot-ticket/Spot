@@ -13,7 +13,7 @@ import com.example.Spot.order.domain.entity.OrderOutboxEntity;
 
 public interface OrderOutboxRepository extends JpaRepository<OrderOutboxEntity, UUID> {
     @Query("SELECT o FROM OrderOutboxEntity  o " + 
-    "Where o.outboxStatus = 'INIT' " +
+    "WHERE o.outboxStatus = 'INIT' " +
     "AND o.nextAttemptAt <= :now " + 
     "ORDER By o.createdAt ASC")
     List<OrderOutboxEntity> findTop10ReadyTopublish(@Param("now") LocalDateTime now, Pageable pageable);

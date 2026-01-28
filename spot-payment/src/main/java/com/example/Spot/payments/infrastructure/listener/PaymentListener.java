@@ -53,7 +53,7 @@ public class PaymentListener {
                 log.info("결제 승인 완료: paymentId={}", paymentId);
                 
                 // 결제 성공 이벤트 발행(자동)
-                paymentEventProducer.sendPaymentSucceededEvent(event.getOrderId(), event.getUserId());
+                paymentEventProducer.reservePaymentSucceededEvent(event.getOrderId(), event.getUserId());
             } catch (BillingKeyNotFoundException e) {
 
                 AuthRequiredEvent authEvent = AuthRequiredEvent.builder()
@@ -62,7 +62,7 @@ public class PaymentListener {
                         .message(e.getMessage())
                         .build();
                 
-                paymentEventProducer.sendAuthRequiredEvent(authEvent);
+                paymentEventProducer.reserveAuthRequiredEvent(authEvent);
             }
             ack.acknowledge();
             log.info("✅ 주문 생성 메시지 처리 완료 및 오프셋 커밋: orderId={}", event.getOrderId());
@@ -86,7 +86,7 @@ public class PaymentListener {
             
             if (isRefunded) {
                 // 환불 성공 시 주문 서비스에게 이벤트 발행
-                paymentEventProducer.sendPaymentRefundedEvent(event.getOrderId());
+                paymentEventProducer.reservePaymentRefundedEvent(event.getOrderId());
             } 
             ack.acknowledge();
             log.info("✅ [결제서비스] 환불 및 보상 트랜잭션 완료: orderId={}", event.getOrderId());
