@@ -51,7 +51,7 @@ jobs:
 
     - name: Make application.properties
       env:
-        COMMON_YML:
+        COMMON_YML: ${{ secrets.COMMON_APPLICATION_YML }}
       run: |
         mkdir -p ./src/main/resources
         echo "$COMMON_YML" > ./src/main/resources/common-application.yml
