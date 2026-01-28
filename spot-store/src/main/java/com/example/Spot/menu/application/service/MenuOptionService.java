@@ -11,15 +11,11 @@ import com.example.Spot.menu.presentation.dto.response.MenuOptionAdminResponseDt
 
 public interface MenuOptionService {
 
-    // 메뉴 옵션 생성
     CreateMenuOptionResponseDto createMenuOption(UUID storeId, UUID menuId, Integer userId, Role userRole, CreateMenuOptionRequestDto request);
 
-    // 메뉴 옵션 업데이트
     MenuOptionAdminResponseDto updateMenuOption(UUID storeId, UUID menuId, UUID optionId, Integer userId, Role userRole, UpdateMenuOptionRequestDto request);
 
-    // 메뉴 옵션 삭제
     void deleteMenuOption(UUID storeId, UUID menuId, UUID optionID, Integer userId, Role userRole);
 
-    // 메뉴 옵션 숨김
     void hiddenMenuOption(UUID storeId, UUID menuId, UUID optionId, Integer userId, Role userRole, UpdateMenuOptionHiddenRequestDto request);
 }
