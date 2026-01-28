@@ -20,6 +20,7 @@ public record MenuAdminResponseDto(
         Integer price,
         String description,
         String imageUrl,
+        Integer quantity,
 
         List<MenuOptionAdminResponseDto> options,
 
@@ -74,6 +75,7 @@ public record MenuAdminResponseDto(
                 menu.getPrice(),
                 menu.getDescription(),
                 menu.getImageUrl(),
+                menu.getQuantity(),
                 optionDtos,
                 menu.getIsAvailable(),
                 menu.getIsDeleted(),

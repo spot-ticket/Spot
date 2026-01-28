@@ -2,6 +2,7 @@ package com.example.Spot.menu.application.service;
 
 import java.util.UUID;
 
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -28,25 +29,35 @@ public class MenuOptionServiceImpl implements MenuOptionService {
     private final MenuRepository menuRepository;
     private final MenuOptionRepository menuOptionRepository;
 
+    // *********** //
+    // 메뉴 옵션 생성 //
+    // *********** //
     @Override
     @Transactional
     public CreateMenuOptionResponseDto createMenuOption(UUID storeId, UUID menuId, Integer userId, Role userRole, CreateMenuOptionRequestDto request) {
-        // 가게 조회
+
         StoreEntity store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalArgumentException("가게가 존재하지 않습니다."));
 
         validateOwner(store, userId, userRole, "본인 가게의 메뉴 옵션만 생성할 수 있습니다.");
 
-        // 해당 메뉴가 가게에 있는지 체크
         MenuEntity menu = menuRepository.findByStoreIdAndId(storeId, menuId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메뉴가 존재하지 않습니다."));
 
         MenuOptionEntity option = request.toEntity(menu);
-        menuOptionRepository.save(option);
+
+        try {
+            menuOptionRepository.save(option);
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("이미 같은 이름의 옵션이 존재합니다.");
+        }
 
         return CreateMenuOptionResponseDto.from(option);
     }
 
+    // *********** //
+    // 메뉴 옵션 변경 //
+    // *********** //
     @Override
     @Transactional
     public MenuOptionAdminResponseDto updateMenuOption(UUID storeId, UUID menuId, UUID optionId, Integer userId, Role userRole, UpdateMenuOptionRequestDto request) {
@@ -59,7 +70,7 @@ public class MenuOptionServiceImpl implements MenuOptionService {
         menuRepository.findByStoreIdAndId(storeId, menuId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메뉴가 존재하지 않습니다."));
 
-        MenuOptionEntity option = menuOptionRepository.findById(optionId)
+        MenuOptionEntity option = menuOptionRepository.findByIdWithLock(optionId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메뉴 옵션이 존재하지 않습니다."));
 
         if (option.getIsDeleted()) {
@@ -79,6 +90,9 @@ public class MenuOptionServiceImpl implements MenuOptionService {
         return MenuOptionAdminResponseDto.of(option, userRole);
     }
 
+    // *********** //
+    // 메뉴 옵션 삭제 //
+    // *********** //
     @Override
     @Transactional
     public void deleteMenuOption(UUID storeId, UUID menuId, UUID optionId, Integer userId, Role userRole) {
@@ -91,7 +105,7 @@ public class MenuOptionServiceImpl implements MenuOptionService {
         menuRepository.findByStoreIdAndId(storeId, menuId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메뉴가 존재하지 않습니다."));
 
-        MenuOptionEntity option = menuOptionRepository.findById(optionId)
+        MenuOptionEntity option = menuOptionRepository.findByIdWithLock(optionId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메뉴의 옵션이 존재하지 않습니다."));
 
 
@@ -106,6 +120,9 @@ public class MenuOptionServiceImpl implements MenuOptionService {
         option.softDelete(userId);
     }
 
+    // *********** //
+    // 메뉴 옵션 숨김 //
+    // *********** //
     @Override
     @Transactional
     public void hiddenMenuOption(UUID storeId, UUID menuId, UUID optionId, Integer userId, Role userRole, UpdateMenuOptionHiddenRequestDto request) {
@@ -118,7 +135,7 @@ public class MenuOptionServiceImpl implements MenuOptionService {
         menuRepository.findByStoreIdAndId(storeId, menuId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메뉴가 존재하지 않습니다."));
 
-        MenuOptionEntity option = menuOptionRepository.findById(optionId)
+        MenuOptionEntity option = menuOptionRepository.findByIdWithLock(optionId)
                 .orElseThrow(() -> new IllegalArgumentException("해당 메뉴의 옵션이 존재하지 않습니다."));
 
         if (!option.getMenu().getId().equals(menuId)) {

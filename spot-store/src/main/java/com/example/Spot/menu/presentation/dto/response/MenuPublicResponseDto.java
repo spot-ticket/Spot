@@ -16,6 +16,7 @@ public record MenuPublicResponseDto(
         Integer price,
         String description,
         String imageUrl,
+        Integer quantity,
         Boolean isAvailable,
 
         List<MenuOptionPublicResponseDto> options
@@ -37,6 +38,7 @@ public record MenuPublicResponseDto(
                 menu.getPrice(),
                 menu.getDescription(),
                 menu.getImageUrl(),
+                menu.getQuantity(),
                 menu.getIsAvailable(),
                 optionDtos
         );
