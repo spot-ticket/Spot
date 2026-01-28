@@ -123,22 +123,18 @@ jobs:
                JAR_FILE=$(find build/libs -name "*.jar" | head -n 1)
                echo "Testing JAR: $JAR_FILE"
           
-          # 2. JAR 실행 (bootRun 대신 사용)
-          # java -jar는 로그를 버퍼링 없이 바로 뱉어냅니다.
-               nohup java -jar $JAR_FILE --spring.profiles.active=dev > app.log 2>&1 &
+          # 백그라운드 실행
+               nohup java -Dspring.output.ansi.enabled=NEVER -jar $JAR_FILE > app.log 2>&1 &
                APP_PID=$!
                echo "Started JAR with PID: $APP_PID"
           
           # 최대 60초 대기하면서 애플리케이션 시작 확인
           echo "Waiting for application to start..."
+          
           for i in {1..60}; do
-            # 로그에서 시작 완료 메시지 확인
-            if grep -q "Started SpotUserApplication" bootrun.log 2>/dev/null; then
+            # 서버 헬스 체크
+            if curl -s http://localhost:8084/actuator/health > /dev/null; then
               echo "✅ Application started successfully after ${i}s"
-          
-              # 확인용으로 로그 앞부분 출력
-              head -n 20 app.log
-          
               kill $APP_PID 2>/dev/null || true
               exit 0
             fi
@@ -152,7 +148,6 @@ jobs:
             sleep 1
           done
 
-          # 4. 타임아웃 시
           echo "❌ Application failed to start within 60s"
           cat app.log
           kill $APP_PID 2>/dev/null || true
