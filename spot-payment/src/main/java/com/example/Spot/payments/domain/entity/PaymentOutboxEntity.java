@@ -1,13 +1,7 @@
-package com.example.Spot.order.domain.entity;
-
-import java.time.LocalDateTime;
-import java.util.UUID;
-
-import org.hibernate.annotations.UuidGenerator;
+package com.example.Spot.payments.domain.entity;
 
 import com.example.Spot.global.common.BaseEntity;
-import com.example.Spot.order.domain.enums.OutboxStatus;
-
+import com.example.Spot.payments.domain.enums.OutboxStatus;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -16,25 +10,29 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.hibernate.annotations.UuidGenerator;
 
 @Entity
-@Getter
-@Table(name = "p_order_outbox", indexes = {
-        @Index(name = "idx_outbox_status_next_attempt", columnList = "outbox_status, next_attempt_at")
+@Table(name = "p_payment_outbox", indexes = {
+        @Index(name = "idx_outbox_status_next_attempt", columnList = "outobx_status, next_attempt_at")
 })
+@Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class OrderOutboxEntity extends BaseEntity {
-
+public class PaymentOutboxEntity extends BaseEntity {
+    
     @Id
     @GeneratedValue
     @UuidGenerator
     @Column(columnDefinition = "UUID")
     private UUID id;
-
+    
     @Column(name = "aggregate_type", nullable = false)
     private String aggregateType;
 
@@ -56,12 +54,12 @@ public class OrderOutboxEntity extends BaseEntity {
 
     @Column(name = "next_attempt_at")
     private LocalDateTime nextAttemptAt;
-    
+
     @Column(name = "published_at")
     private LocalDateTime publishedAt;
 
     @Builder
-    public OrderOutboxEntity(String aggregateType, UUID aggregateId, String eventKey, String eventType, String payload) {
+    public PaymentOutboxEntity(String aggregateType, UUID aggregateId, String eventKey, String eventType, String payload) {
         this.aggregateType = aggregateType;
         this.aggregateId = aggregateId;
         this.eventType = eventType;
@@ -90,4 +88,3 @@ public class OrderOutboxEntity extends BaseEntity {
         this.nextAttemptAt = LocalDateTime.now().plusSeconds(delaySeconds);
     }
 }
-

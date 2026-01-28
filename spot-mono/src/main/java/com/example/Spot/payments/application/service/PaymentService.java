@@ -226,7 +226,7 @@ public class PaymentService {
     List<PaymentHistoryEntity.PaymentStatus> cancelStatuses =
         List.of(
             PaymentHistoryEntity.PaymentStatus.CANCELLED,
-            PaymentHistoryEntity.PaymentStatus.PARTIAL_CANCELD);
+            PaymentHistoryEntity.PaymentStatus.PARTIAL_CANCELLED);
 
     List<Object[]> results =
         paymentHistoryRepository.findByPaymentIdAndStatusesWithPayment(paymentId, cancelStatuses);

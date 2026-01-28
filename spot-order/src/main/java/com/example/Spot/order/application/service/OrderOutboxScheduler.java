@@ -46,8 +46,6 @@ public class OrderOutboxScheduler {
             } catch (Exception e) {
                 // 전송 실패 시 지수 백오프 로직 실행
                 outbox.retryFailed();
-                log.warn("이벤트 발행 실패 - 재시도 횟수: {}, 다음 시도: {}, 사유: {}",
-                        outbox.getRetryCount(), outbox.getNextAttemptAt(), e.getMessage());
                 // 10회 이상 실패 시 관리 대상으로 전환
                 if (outbox.getRetryCount() >= 10) {
                     outbox.markFailed();
