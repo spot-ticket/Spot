@@ -5,14 +5,24 @@ import java.util.Optional;
 import java.util.UUID;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.example.Spot.menu.domain.entity.MenuEntity;
 
+import jakarta.persistence.LockModeType;
+
 public interface MenuRepository extends JpaRepository<MenuEntity, UUID> {
 
-    // [손님용] 메뉴 전체 조회 (삭제 X, 숨김 X)
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT m FROM MenuEntity m WHERE m.id = :menuId")
+    Optional<MenuEntity> findByIdWithLock(@Param("menuId") UUID menuId);
+
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT m FROM MenuEntity m WHERE m.store.id = :storeId AND m.id = :menuId")
+    Optional<MenuEntity> findByStoreIdAndIdWithLock(@Param("storeId") UUID storeId, @Param("menuId") UUID menuId);
+
     @Query("select m from MenuEntity m where m.store.id = :storeId AND m.isDeleted = false AND m.isHidden = false")
     List<MenuEntity> findAllActiveMenus(@Param("storeId") UUID storeId);
 

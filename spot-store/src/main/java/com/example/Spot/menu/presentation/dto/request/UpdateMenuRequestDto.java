@@ -23,6 +23,9 @@ public record UpdateMenuRequestDto(
         String imageUrl,
 
         @JsonProperty("is_available")
-        Boolean isAvailable
+        Boolean isAvailable,
+
+        @Min(value = 0, message = "수량은 0개 이상이어야 합니다.")
+        Integer quantity
 ) {
 }
