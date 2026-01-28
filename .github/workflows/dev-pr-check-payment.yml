@@ -5,7 +5,7 @@ on:
     branches: [ dev ]
     paths:
       - 'spot-payment/**'
-      - '.github/workflows/pr-check-payment.yml'
+      - '.github/workflows/dev-pr-check-payment.yml'
 
 jobs:
   build-and-test:
@@ -50,6 +50,17 @@ jobs:
       run: |
         mkdir -p ./src/main/resources
         echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
+      shell: bash
+
+    - name: Make application-ci.yml
+      run: |
+        mkdir -p ./src/main/resources
+        cat > ./src/main/resources/application-ci.yml <<'YML'
+        management:
+          health:
+            redis:
+              enabled: false
+        YML
       shell: bash
 
     - name: Check code formatting
