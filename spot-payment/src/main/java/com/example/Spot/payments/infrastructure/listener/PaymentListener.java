@@ -28,7 +28,7 @@ public class PaymentListener {
     private final ObjectMapper objectMapper;
     private final PaymentEventProducer paymentEventProducer;
 
-    @KafkaListener(topics = "${spring.kafka.topic.order.created}", groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = "${spring.kafka.topic.order.created}", groupId = "${spring.kafka.consumer.group.payment}")
     public void handleOrderCreated(String message, Acknowledgment ack) {
         try {
             OrderCreatedEvent event = objectMapper.readValue(message, OrderCreatedEvent.class);
@@ -74,7 +74,7 @@ public class PaymentListener {
     }
     
     // 고객취소, 가게취소, 주문거절 이벤트 수신 시 환불 처리
-    @KafkaListener(topics = "${spring.kafka.topic.order.cancelled}", groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = "${spring.kafka.topic.order.cancelled}", groupId = "${spring.kafka.consumer.group.payment}")
     public void handleOrderCancelled(String message, Acknowledgment ack) {
         try {
             // 1. 이벤트 파싱

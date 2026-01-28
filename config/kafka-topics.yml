@@ -11,7 +11,9 @@ spring:
       acks: all
       retries: 5
       properties:
-        retry.backoff.ms: 300
+        retry.backoff.ms: 2000
+        reconnect.backoff.ms: 5000
+        reconnect.backoff.max.ms: 30000
         delivery.timeout.ms: 30000
         enable.idempotence: true
         max.in.flight.requests.per.connection: 5
@@ -25,6 +27,12 @@ spring:
       max.poll.interval.ms: 300000
       session.timeout.ms: 15000
       heartbeat.interval.ms: 3000
+      group:
+        order: order-group
+        payment: payment-group
+        customer: customer-group
+        chef: chef-group
+        owner: owner-group
       
     topic:
       order:

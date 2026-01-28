@@ -5,9 +5,6 @@ spring:
       - file:/config/kafka-topics.yml
   application:
     name: spot-order
-  kafka:
-    consumer:
-      group-id: order-group
       
 server:
   port: 8082

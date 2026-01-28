@@ -5,9 +5,6 @@ spring:
       - file:/config/kafka-topics.yml
   application:
     name: spot-payment
-  kafka:
-    consumer:
-      group-id: payment-group
     
 server:
   port: 8084

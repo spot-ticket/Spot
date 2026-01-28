@@ -20,7 +20,7 @@ public class OrderEventListener {
     private final OrderService orderService;
     private final ObjectMapper objectMapper;
     
-    @KafkaListener(topics = "${spring.kafka.topic.payment.succeeded}", groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = "${spring.kafka.topic.payment.succeeded}", groupId = "${spring.kafka.consumer.group.order}")
     public void handlePaymentSucceeded(String message, Acknowledgment ack) {
         try {
             PaymentSucceededEvent event = objectMapper.readValue(message, PaymentSucceededEvent.class);
@@ -33,7 +33,7 @@ public class OrderEventListener {
         }
     }
     
-    @KafkaListener(topics = "${spring.kafka.topic.payment.refunded}", groupId = "${spring.kafka.consumer.group-id}")
+    @KafkaListener(topics = "${spring.kafka.topic.payment.refunded}", groupId = "${spring.kafka.consumer.group.order}")
     public void handlePaymentRefunded(String message, Acknowledgment ack) {
         try {
             PaymentRefundedEvent event = objectMapper.readValue(message, PaymentRefundedEvent.class);
