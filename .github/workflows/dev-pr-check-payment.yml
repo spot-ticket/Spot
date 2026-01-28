@@ -167,7 +167,7 @@ jobs:
             if [ $((i % 10)) -eq 0 ]; then
                echo "⏳ Waiting... ($i/60s)"
                echo "Last curl response: $RESPONSE"
-               # 연결 자체가 안되는지, 401 에러인지 확인하기 위해 상태 코드만 찍어봄
+               # 확인하기 위한 상태 코드
                curl -s -o /dev/null -w "%{http_code}" http://localhost:8084/actuator/health || echo "Connection Refused"
                echo "" 
             fi
