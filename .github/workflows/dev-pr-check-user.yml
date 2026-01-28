@@ -50,9 +50,11 @@ jobs:
       run: chmod +x gradlew
 
     - name: Make application.properties
+      env:
+        COMMON_YML:
       run: |
         mkdir -p ./src/main/resources
-        echo "${{ secrets.DEV_COMMON_YML }}" > ./src/main/resources/common-application.yml
+        echo "$COMMON_YML" > ./src/main/resources/common-application.yml
         cp ../config/spot-user.yml ./src/main/resources/application.yml
       shell: bash
 
