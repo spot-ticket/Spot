@@ -21,7 +21,7 @@ import org.hibernate.annotations.UuidGenerator;
 
 @Entity
 @Table(name = "p_payment_outbox", indexes = {
-        @Index(name = "idx_outbox_status_next_attempt", columnList = "outobx_status, next_attempt_at")
+        @Index(name = "idx_outbox_status_next_attempt", columnList = "outbox_status, next_attempt_at")
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)

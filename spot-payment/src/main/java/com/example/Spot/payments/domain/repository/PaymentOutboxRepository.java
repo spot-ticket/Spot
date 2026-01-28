@@ -16,5 +16,5 @@ public interface PaymentOutboxRepository extends JpaRepository<PaymentOutboxEnti
     "WHERE p.outboxStatus = 'INIT' " +
     "AND p.nextAttemptAt <= :now " +
     "ORDER BY p.createdAt ASC")
-    List<PaymentOutboxEntity> findTop10ReadyTopublish(@Param("noew")LocalDateTime now, Pageable pageable);
+    List<PaymentOutboxEntity> findTop10ReadyTopublish(@Param("now")LocalDateTime now, Pageable pageable);
 }
