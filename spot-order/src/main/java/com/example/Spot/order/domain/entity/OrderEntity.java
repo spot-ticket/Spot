@@ -34,6 +34,9 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 public class OrderEntity extends BaseEntity {
 
+    // userId, storeId, pickupTime, orderItems가 DB unique constraint로 들어가야 하는데,
+    // orderItems는 unique key에 포함할 수 없음.
+
     @Id
     @GeneratedValue
     @UuidGenerator
@@ -60,7 +63,7 @@ public class OrderEntity extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "order_status", nullable = false, length = 20)
-    private OrderStatus orderStatus = OrderStatus.PAYMENT_PENDING;
+    private OrderStatus orderStatus;
 
     @Column(name = "payment_completed_at")
     private LocalDateTime paymentCompletedAt;
@@ -121,6 +124,8 @@ public class OrderEntity extends BaseEntity {
         this.request = request;
         this.needDisposables = needDisposables;
         this.pickupTime = pickupTime;
+
+        this.orderStatus = OrderStatus.PAYMENT_PENDING;
     }
 
     public void addOrderItem(OrderItemEntity orderItem) {
@@ -159,7 +164,6 @@ public class OrderEntity extends BaseEntity {
         this.orderItems.remove(orderItem);
     }
 
-    // 주문 수락 (OWNER)
     public void acceptOrder(Integer estimatedTime) {
         validateStatusTransition(OrderStatus.ACCEPTED);
         this.orderStatus = OrderStatus.ACCEPTED;
@@ -167,7 +171,6 @@ public class OrderEntity extends BaseEntity {
         this.estimatedTime = estimatedTime;
     }
 
-    // 주문 거절 (OWNER)
     public void rejectOrder(String reason) {
         validateStatusTransition(OrderStatus.REJECTED);
         this.orderStatus = OrderStatus.REJECTED;
@@ -175,7 +178,6 @@ public class OrderEntity extends BaseEntity {
         this.reason = reason;
     }
 
-    // 주문 취소 (OWNER, CUSTOMER)
     public void cancelOrder(String reason, CancelledBy cancelledBy) {
         validateStatusTransition(OrderStatus.CANCELLED);
         this.orderStatus = OrderStatus.CANCELLED;
@@ -184,28 +186,24 @@ public class OrderEntity extends BaseEntity {
         this.cancelledBy = cancelledBy;
     }
 
-    // 조리 시작 (CHEF)
     public void startCooking() {
         validateStatusTransition(OrderStatus.COOKING);
         this.orderStatus = OrderStatus.COOKING;
         this.cookingStartedAt = LocalDateTime.now();
     }
 
-    // 조리 완료 = 픽업 대기 (CHEF)
     public void readyForPickup() {
         validateStatusTransition(OrderStatus.READY);
         this.orderStatus = OrderStatus.READY;
         this.cookingCompletedAt = LocalDateTime.now();
     }
 
-    // 픽업 완료 (OWNER)
     public void completeOrder() {
         validateStatusTransition(OrderStatus.COMPLETED);
         this.orderStatus = OrderStatus.COMPLETED;
         this.pickedUpAt = LocalDateTime.now();
     }
 
-    // 취소/거절 프로세스 
     public void initiateCancel(String reason, CancelledBy cancelledBy) {
         validateStatusTransition(OrderStatus.CANCEL_PENDING);
         this.orderStatus = OrderStatus.CANCEL_PENDING;
