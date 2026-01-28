@@ -50,15 +50,17 @@ jobs:
     - name: Make application.properties
       run: |
         mkdir -p ./src/main/resources
-        echo "${{ secrets.DEV_USER_APPLICATION_YML }}" > ./src/main/resources/application.yml
+        echo "${{ secrets.COMMON_APPLICATION_YML }}" > ./src/main/resources/common-application.yml
+        echo ../config/spot-user.yml > ./src/main/resources/application.yml
       shell: bash
 
     - name: Check code formatting
-      run: ./gradlew checkstyleMain checkstyleTest
-      continue-on-error: true
+      run: ./gradlew checkstyleMain
+#      checkstyleTest
+#      continue-on-error: true
 
     - name: Build with Gradle
-      run: ./gradlew build -x test
+      run: ./gradlew bootJar -x test
 
     - name: Run tests
       run: ./gradlew test

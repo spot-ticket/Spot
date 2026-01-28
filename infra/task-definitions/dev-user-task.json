@@ -1,0 +1,157 @@
+{
+  "containerDefinitions": [
+    {
+      "name": "spot-user-container",
+      "image": "<AWS_ID>.dkr.ecr.ap-northeast-2.amazonaws.com/spot-user:latest",
+      "cpu": 0,
+      "portMappings": [
+        {
+          "containerPort": 8081,
+          "hostPort": 8081,
+          "protocol": "tcp",
+          "name": "user",
+          "appProtocol": "http"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://spot-dev-db.cj6iq2cow597.ap-northeast-2.rds.amazonaws.com:5432/spotdb?currentSchema=users"
+        },
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "dev"
+        },
+        {
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "spot"
+        },
+        {
+          "name": "SPRING_DATA_REDIS_HOST",
+          "value": "spot-dev-redis.ohks6h.ng.0001.apn2.cache.amazonaws.com"
+        },
+        {
+          "name": "SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT",
+          "value": "org.hibernate.dialect.PostgreSQLDialect"
+        },
+        {
+          "name": "FEIGN_PAYMENT_URL",
+          "value": "http://payment.spot.local:8084"
+        },
+        {
+          "name": "SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH",
+          "value": "true"
+        },
+        {
+          "name": "SPRING_JPA_SHOW_SQL",
+          "value": "false"
+        },
+        {
+          "name": "SPRING_MAIL_USERNAME",
+          "value": "spotemail3@gmail.com"
+        },
+        {
+          "name": "SERVICE_ACTIVE_REGIONS",
+          "value": "종로구"
+        },
+        {
+          "name": "SPRING_KAFKA_BOOTSTRAP_SERVERS",
+          "value": "10.0.1.147:9092"
+        },
+        {
+          "name": "SPRING_MAIL_PORT",
+          "value": "587"
+        },
+        {
+          "name": "SPRING_KAFKA_CONSUMER_GROUP_ID",
+          "value": "spot-user"
+        },
+        {
+          "name": "DB_SCHEMA",
+          "value": "users"
+        },
+        {
+          "name": "SERVICE_NAME",
+          "value": "spot-user"
+        },
+        {
+          "name": "FEIGN_USER_URL",
+          "value": "http://user.spot.local:8081"
+        },
+        {
+          "name": "SPRING_JPA_HIBERNATE_DDL_AUTO",
+          "value": "update"
+        },
+        {
+          "name": "SPRING_SECURITY_REFRESH_TOKEN_EXPIRE_DAYS",
+          "value": "14"
+        },
+        {
+          "name": "SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE",
+          "value": "true"
+        },
+        {
+          "name": "SPRING_DATA_REDIS_PORT",
+          "value": "6379"
+        },
+        {
+          "name": "SPRING_JWT_EXPIRE_MS",
+          "value": "3600000"
+        },
+        {
+          "name": "SPRING_MAIL_HOST",
+          "value": "smtp.gmail.com"
+        },
+        {
+          "name": "FEIGN_ORDER_URL",
+          "value": "http://order.spot.local:8082"
+        },
+        {
+          "name": "SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET",
+          "value": "earliest"
+        },
+        {
+          "name": "FEIGN_STORE_URL",
+          "value": "http://store.spot.local:8083"
+        }
+      ],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "secrets": [
+        {
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "valueFrom": "arn:aws:ssm:ap-northeast-2:<AWS_ID>:parameter/spot/dev/database/password"
+        },
+        {
+          "name": "SPRING_JWT_SECRET",
+          "valueFrom": "arn:aws:ssm:ap-northeast-2:<AWS_ID>:parameter/spot/dev/secrets/jwt_secret"
+        },
+        {
+          "name": "SPRING_MAIL_PASSWORD",
+          "valueFrom": "arn:aws:ssm:ap-northeast-2:<AWS_ID>:parameter/spot/dev/secrets/mail_password"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/spot-user",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "systemControls": []
+    }
+  ],
+  "family": "spot-dev-user-task",
+  "taskRoleArn": "arn:aws:iam::<AWS_ID>:role/spot-dev-ecs-task-role",
+  "executionRoleArn": "arn:aws:iam::<AWS_ID>:role/spot-dev-ecs-task-execution-role",
+  "networkMode": "awsvpc",
+  "volumes": [],
+  "placementConstraints": [],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "512",
+  "memory": "1024"
+}
