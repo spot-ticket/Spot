@@ -1,18 +1,16 @@
 package com.example.Spot.order.application.service;
 
-import com.example.Spot.order.infrastructure.producer.OrderEventProducer;
 import java.time.LocalDateTime;
 import java.util.List;
 
 import org.springframework.data.domain.PageRequest;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.Spot.order.domain.entity.OrderOutboxEntity;
-import com.example.Spot.order.domain.enums.OutboxStatus;
 import com.example.Spot.order.domain.repository.OrderOutboxRepository;
+import com.example.Spot.order.infrastructure.producer.OrderEventProducer;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -42,6 +40,7 @@ public class OrderOutboxScheduler {
                 // .get()을 사용해 성공/실패 응답을 기다림 (동기 전송)
                 orderEventProducer.publish(outbox);
                 outbox.markPublished();
+                outboxRepository.saveAndFlush(outbox);
                 log.info("이벤트 발행 성공: [orderID: {}, eventType: {}", outbox.getAggregateId(), outbox.getEventType());
                 
             } catch (Exception e) {

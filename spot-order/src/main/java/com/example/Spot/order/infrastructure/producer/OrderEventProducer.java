@@ -1,7 +1,5 @@
 package com.example.Spot.order.infrastructure.producer;
 
-import com.example.Spot.order.domain.entity.OrderOutboxEntity;
-import com.example.Spot.order.domain.repository.OrderOutboxRepository;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -9,6 +7,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+import com.example.Spot.order.domain.entity.OrderOutboxEntity;
+import com.example.Spot.order.domain.repository.OrderOutboxRepository;
 import com.example.Spot.order.infrastructure.event.publish.OrderAcceptedEvent;
 import com.example.Spot.order.infrastructure.event.publish.OrderCancelledEvent;
 import com.example.Spot.order.infrastructure.event.publish.OrderCreatedEvent;
@@ -87,7 +87,7 @@ public class OrderEventProducer {
             log.info("✅[Outbox 저장 성공] topic:{}, AggregateId:{}", topic, aggregateId);
         } catch (JsonProcessingException e) {
             log.error("❌[Outbox 저장 실패] AggregateId={}, error={}", aggregateId, e.getMessage());
-            throw new RuntimeException("이벤트 발해 예약 중 오류 발생", e);
+            throw new RuntimeException("이벤트 발행 예약 중 오류 발생", e);
         }
     }
     

@@ -16,15 +16,13 @@ public class AdminStoreService {
 
     private final StoreClient storeClient;
 
-
     public StorePageResponse<AdminStoreListResponseDto> getAllStores(Pageable pageable) {
         return storeClient.getAllStores(
                 pageable.getPageNumber(),
                 pageable.getPageSize()
         );
     }
-
-
+    
     public void approveStore(UUID storeId) {
         storeClient.updateStoreStatus(storeId, "APPROVED");
     }
@@ -32,6 +30,5 @@ public class AdminStoreService {
     public void deleteStore(UUID storeId, Integer userId) {
         storeClient.deleteStore(storeId);
     }
-
-
+    
 }

@@ -6,11 +6,10 @@ import java.util.UUID;
 
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-
-import com.example.Spot.order.domain.entity.OrderOutboxEntity;
-import com.example.Spot.order.domain.enums.OutboxStatus;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
+
+import com.example.Spot.order.domain.entity.OrderOutboxEntity;
 
 public interface OrderOutboxRepository extends JpaRepository<OrderOutboxEntity, UUID> {
     @Query("SELECT o FROM OrderOutboxEntity  o " + 

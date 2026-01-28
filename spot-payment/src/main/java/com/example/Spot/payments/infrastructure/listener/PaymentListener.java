@@ -3,6 +3,7 @@ package com.example.Spot.payments.infrastructure.listener;
 import java.util.UUID;
 
 import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
 import com.example.Spot.global.presentation.advice.BillingKeyNotFoundException;
@@ -28,7 +29,7 @@ public class PaymentListener {
     private final PaymentEventProducer paymentEventProducer;
 
     @KafkaListener(topics = "${spring.kafka.topic.order.created}", groupId = "${spring.kafka.consumer.group-id}")
-    public void handleOrderCreated(String message) {
+    public void handleOrderCreated(String message, Acknowledgment ack) {
         try {
             OrderCreatedEvent event = objectMapper.readValue(message, OrderCreatedEvent.class);
             log.info("주문 생성 이벤트 수신: orderId={}", event.getOrderId());
@@ -63,6 +64,8 @@ public class PaymentListener {
                 
                 paymentEventProducer.sendAuthRequiredEvent(authEvent);
             }
+            ack.acknowledge();
+            log.info("✅ 주문 생성 메시지 처리 완료 및 오프셋 커밋: orderId={}", event.getOrderId());
             
         } catch (Exception e) {
             // 에러 처리 로직
@@ -72,7 +75,7 @@ public class PaymentListener {
     
     // 고객취소, 가게취소, 주문거절 이벤트 수신 시 환불 처리
     @KafkaListener(topics = "${spring.kafka.topic.order.cancelled}", groupId = "${spring.kafka.consumer.group-id}")
-    public void handleOrderCancelled(String message) {
+    public void handleOrderCancelled(String message, Acknowledgment ack) {
         try {
             // 1. 이벤트 파싱
             OrderCancelledEvent event = objectMapper.readValue(message, OrderCancelledEvent.class);
@@ -84,8 +87,10 @@ public class PaymentListener {
             if (isRefunded) {
                 // 환불 성공 시 주문 서비스에게 이벤트 발행
                 paymentEventProducer.sendPaymentRefundedEvent(event.getOrderId());
-                log.info("✅ [결제서비스] 환불 및 보상 트랜잭션 완료: orderId={}", event.getOrderId());
-            }
+            } 
+            ack.acknowledge();
+            log.info("✅ [결제서비스] 환불 및 보상 트랜잭션 완료: orderId={}", event.getOrderId());
+
         } catch (Exception e) {
             log.error("❌ [결제서비스] 환불 처리 실패: {}", e.getMessage());
         }

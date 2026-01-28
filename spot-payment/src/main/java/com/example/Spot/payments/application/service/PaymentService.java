@@ -3,6 +3,7 @@ package com.example.Spot.payments.application.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -68,6 +69,12 @@ public class PaymentService {
   // ready -> createPaymentBillingApprove -> confirmBillingPayment
   @Ready
   public UUID ready(Integer userId, UUID orderId, PaymentRequestDto.Confirm request) {
+    Optional<PaymentEntity> existingPayment = paymentRepository.findByOrderId(orderId);
+    
+    if (existingPayment.isPresent()) {
+      log.info("ℹ️ [이미 처리된 주문] 기존 결제 ID를 반환합니다. orderId={}", orderId);
+      return existingPayment.get().getId(); //
+    }
     PaymentEntity payment = createPayment(userId, orderId, request);
     return payment.getId();
   }

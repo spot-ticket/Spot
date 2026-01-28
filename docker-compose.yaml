@@ -93,14 +93,6 @@ services:
     networks:
       - spot-network
 
-  spot-mono:
-    build:
-      context: ./spot-mono
-      dockerfile: Dockerfile
-    container_name: spot-mono
-    networks:
-      - spot-network
-
   spot-order:
     build:
       context: ./spot-order
