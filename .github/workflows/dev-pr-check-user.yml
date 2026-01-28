@@ -52,7 +52,7 @@ jobs:
     - name: Make application.properties
       run: |
         mkdir -p ./src/main/resources
-        echo "${{ secrets.COMMON_APPLICATION_YML }}" > ./src/main/resources/common-application.yml
+        echo "${{ secrets.DEV_COMMON_YML }}" > ./src/main/resources/common-application.yml
         cp ../config/spot-user.yml ./src/main/resources/application.yml
       shell: bash
 
