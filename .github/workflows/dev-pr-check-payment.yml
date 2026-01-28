@@ -133,11 +133,17 @@ jobs:
           
           for i in {1..60}; do
             # 서버 헬스 체크
-            if curl -s http://localhost:8084/actuator/health > /dev/null; then
+            if curl -s -f http://localhost:8084/actuator/health > /dev/null; then
               echo "✅ Application started successfully after ${i}s"
               kill $APP_PID 2>/dev/null || true
               exit 0
             fi
+          
+              # 헬스 체크 응답 결과 출력
+              echo "=== Actuator Health Response ==="
+              curl -s http://localhost:8084/actuator/health
+              echo ""
+              echo "=================================="
           
             # 프로세스가 중간에 죽었는지 체크
             if ! kill -0 $APP_PID 2>/dev/null; then
