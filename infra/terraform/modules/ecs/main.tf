@@ -578,13 +578,9 @@ resource "aws_ecs_task_definition" "services" {
         }
       }
 
-      healthCheck = {
-        command     = ["CMD-SHELL", "curl -f http://localhost:${each.value.container_port}${each.value.health_check_path} || exit 1"]
-        interval    = 30
-        timeout     = 5
-        retries     = 3
-        startPeriod = 60
-      }
+      # Container-level healthCheck 삭제됨
+      # ALB Target Group 헬스체크가 이미 외부에서 /actuator/health를 검증하므로
+      # 컨테이너 내부 curl 헬스체크는 불필요하며, curl 미설치 이미지에서 문제 발생
     }
   ])
 
@@ -602,6 +598,9 @@ resource "aws_ecs_service" "services" {
   task_definition = aws_ecs_task_definition.services[each.key].arn
   desired_count   = var.standby_mode ? 0 : each.value.desired_count
   launch_type     = "FARGATE"
+
+  # Spring Boot 부팅 시간을 고려한 Health Check 유예 기간 (120초)
+  health_check_grace_period_seconds = 120
 
   # 모든 active 서비스를 ALB에 연결
   dynamic "load_balancer" {

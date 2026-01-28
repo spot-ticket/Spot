@@ -117,8 +117,8 @@ variable "services" {
   default = {
     "gateway" = {
       container_port    = 8080
-      cpu               = "256"
-      memory            = "512"
+      cpu               = "512"
+      memory            = "1024"
       desired_count     = 1
       health_check_path = "/actuator/health"
       # 모든 트래픽을 Gateway로 몰아주기 위해 /* 패턴 사용
@@ -130,8 +130,8 @@ variable "services" {
     }
     "order" = {
       container_port    = 8082
-      cpu               = "256"
-      memory            = "512"
+      cpu               = "1024"
+      memory            = "2048"
       desired_count     = 1
       health_check_path = "/actuator/health"
       path_patterns     = ["/api/orders/*", "/api/orders"]
@@ -143,8 +143,8 @@ variable "services" {
     }
     "payment" = {
       container_port    = 8084
-      cpu               = "256"
-      memory            = "512"
+      cpu               = "512"
+      memory            = "1024"
       desired_count     = 1
       health_check_path = "/actuator/health"
       path_patterns     = ["/api/payments/*", "/api/payments"]
@@ -156,8 +156,8 @@ variable "services" {
     }
     "store" = {
       container_port    = 8083
-      cpu               = "256"
-      memory            = "512"
+      cpu               = "1024"
+      memory            = "2048"
       desired_count     = 1
       health_check_path = "/actuator/health"
       path_patterns     = ["/api/stores/*", "/api/stores"]
@@ -169,8 +169,8 @@ variable "services" {
     }
     "user" = {
       container_port    = 8081
-      cpu               = "256"
-      memory            = "512"
+      cpu               = "512"
+      memory            = "1024"
       desired_count     = 1
       health_check_path = "/actuator/health"
       path_patterns     = ["/api/users/*", "/api/users", "/api/auth/*", "/api/admin/*"]
