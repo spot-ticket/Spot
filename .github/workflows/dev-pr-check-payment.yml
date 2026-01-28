@@ -133,7 +133,7 @@ jobs:
           
           for i in {1..60}; do
             # 서버 헬스 체크
-            RESPONSE=${curl -s -f http://localhost:8084/actuator/health || true}
+            RESPONSE=$(curl -s -f http://localhost:8084/actuator/health || true)
             if  [[ "$RESPONSE" == *"UP"* ]]; then
               echo "✅ Application started successfully after ${i}s"
               kill $APP_PID 2>/dev/null || true
