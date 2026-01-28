@@ -1,13 +1,82 @@
 spring:
   config:
-    import: 
-      - file:/config/common.yml
-      - file:/config/kafka-topics.yml
+    import: optional:classpath:common-application.yml
   application:
     name: spot-order
-  kafka:
-    consumer:
-      group-id: order-group
-      
+
 server:
   port: 8082
+
+feign:
+  user:
+    url: ${FEIGN_USER_URL:http://spot-user:8081}
+  client:
+    config:
+      spot-user:
+        connectTimeout: 100
+        readTimeout: 500
+        loggerLevel: BASIC
+
+resilience4j:
+  timelimiter:
+    configs:
+      default:
+        cancelRunningFuture: true
+    instances:
+      user_validate_activeUser:
+        timeoutDuration: 250ms
+
+  bulkhead:
+    instances:
+      user_validate_activeUser:
+        maxConcurrentCalls: 40
+        maxWaitDuration: 0
+
+  retry:
+    instances:
+      user_validate_activeUser:
+        maxAttempts: 1
+        waitDuration: 0ms
+
+  circuitbreaker:
+    configs:
+      cb_slowCall_user:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 20
+        minimumNumberOfCalls: 10
+        slowCallRateThreshold: 50
+        slowCallDurationThreshold: 250ms
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 5
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        recordExceptions:
+          - java.io.IOException
+          - java.net.SocketTimeoutException
+          - feign.RetryableException
+          - feign.FeignException
+    instances:
+      user_validate_activeUser:
+        baseConfig: cb_slowCall_user
+
+# Actuator & Logging
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+logging:
+  level:
+    root: INFO
+    com.example.Spot: INFO
+    feign: INFO
+    io.github.resilience4j.circuitbreaker: INFO
+    io.github.resilience4j.retry: INFO
+    io.github.resilience4j.bulkhead: INFO
