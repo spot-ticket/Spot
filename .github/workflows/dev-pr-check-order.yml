@@ -69,10 +69,44 @@ jobs:
           echo "=== Application YML Content ==="
           cat ./src/main/resources/application.yml
 
+      # Kafka & Zookeeper 수동 실행 (docker run)
+      - name: Start Kafka & Zookeeper
+        run: |
+          echo "Starting Zookeeper..."
+          docker run -d --name zookeeper -p 2181:2181 -e ZOOKEEPER_CLIENT_PORT=2181 confluentinc/cp-zookeeper:7.5.0
+          
+          echo "Waiting for Zookeeper..."
+          sleep 5
+          
+          echo "Starting Kafka..."
+          # --link zookeeper:zookeeper 옵션으로 컨테이너끼리 연결
+          # ADVERTISED_LISTENERS에 localhost:9092를 명시하여 외부(CI Runner) 접속 허용
+          docker run -d --name kafka \
+            -p 9092:9092 \
+            --link zookeeper:zookeeper \
+            -e KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181 \
+            -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 \
+            -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 \
+            confluentinc/cp-kafka:7.5.0
+
+      # Kafka 켜질 때까지 대기
+      - name: Wait for Kafka to be ready
+        run: |
+          echo "Waiting for Kafka to be ready on localhost:9092..."
+          for i in {1..30}; do
+            if nc -z localhost 9092; then
+              echo "✅ Kafka is up and running!"
+              exit 0
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 2
+          done
+          echo "❌ Kafka failed to start."
+          docker logs kafka
+          exit 1
+
       - name: Check code formatting
         run: ./gradlew checkstyleMain
-      #      checkstyleTest
-      #      continue-on-error: true
 
       - name: Run tests
         run: ./gradlew test
@@ -83,36 +117,59 @@ jobs:
 
       - name: Test application startup
         run: |
-          ./gradlew bootRun > bootrun.log 2>&1 &
-          APP_PID=$!
-          echo "Started bootRun with PID: $APP_PID"
+          # 1. 빌드된 JAR 파일 찾기
+               JAR_FILE=$(find build/libs -name "*.jar" | head -n 1)
+               echo "Testing JAR: $JAR_FILE"
+          
+          # 백그라운드 실행
+               nohup java -Dspring.output.ansi.enabled=NEVER \
+                  -jar $JAR_FILE \
+                  --management.endpoint.health.show-details=always > app.log 2>&1 &
+          
+               APP_PID=$!
+               echo "Started JAR with PID: $APP_PID"
           
           # 최대 60초 대기하면서 애플리케이션 시작 확인
+          echo "Waiting for application to start..."
+          
           for i in {1..60}; do
-            # 로그에서 시작 완료 메시지 확인
-            if grep -q "Started SpotUserApplication" bootrun.log 2>/dev/null; then
+            # 서버 헬스 체크
+            RESPONSE=$(curl -s -f http://localhost:8084/actuator/health || true)
+            if  [[ "$RESPONSE" == *"UP"* ]]; then
               echo "✅ Application started successfully after ${i}s"
               kill $APP_PID 2>/dev/null || true
               exit 0
             fi
           
-            # 프로세스가 죽었는지 확인
+              # 헬스 체크 응답 결과 출력
+              echo "=== Actuator Health Response ==="
+              echo "$RESPONSE" | jq .
+              echo "=================================="
+          
+            # 프로세스가 중간에 죽었는지 체크
             if ! kill -0 $APP_PID 2>/dev/null; then
-              echo "❌ Application process terminated unexpectedly"
-              echo "=== bootRun log ==="
-              cat bootrun.log
-              exit 1
+               echo "❌ Application process died unexpectedly"
+               cat app.log
+               exit 1
+            fi
+          
+          # 디버깅: 왜 실패하는지 확인
+            if [ $((i % 10)) -eq 0 ]; then
+               echo "⏳ Waiting... ($i/60s)"
+               echo "Last curl response: $RESPONSE"
+               # 연결 자체가 안되는지, 401 에러인지 확인하기 위해 상태 코드만 찍어봄
+               curl -s -o /dev/null -w "%{http_code}" http://localhost:8084/actuator/health || echo "Connection Refused"
+               echo "" 
             fi
           
             sleep 1
           done
-          
-          echo "❌ Application failed to start within 60 seconds"
-          echo "=== bootRun log ==="
-          cat bootrun.log
+
+          echo "❌ Application failed to start within 60s"
+          cat app.log
           kill $APP_PID 2>/dev/null || true
           exit 1
-        timeout-minutes: 2
+        shell: bash
 
       - name: Upload build artifacts
         if: failure()

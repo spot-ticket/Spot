@@ -163,7 +163,7 @@ jobs:
                exit 1
             fi
           
-          # 디버깅: 10초마다 왜 실패하는지 확인
+          # 디버깅: 왜 실패하는지 확인
             if [ $((i % 10)) -eq 0 ]; then
                echo "⏳ Waiting... ($i/60s)"
                echo "Last curl response: $RESPONSE"
