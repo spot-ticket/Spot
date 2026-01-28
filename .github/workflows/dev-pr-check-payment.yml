@@ -15,20 +15,20 @@ jobs:
       run:
         working-directory: spot-payment
 
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_DB: myapp_db
-          POSTGRES_USER: admin
-          POSTGRES_PASSWORD: secret
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
+#    services:
+#      postgres:
+#        image: postgres:16
+#        env:
+#          POSTGRES_DB: myapp_db
+#          POSTGRES_USER: admin
+#          POSTGRES_PASSWORD: secret
+#        ports:
+#          - 5432:5432
+#        options: >-
+#          --health-cmd pg_isready
+#          --health-interval 10s
+#          --health-timeout 5s
+#          --health-retries 5
 
     steps:
       - name: Checkout code
@@ -68,6 +68,31 @@ jobs:
           
           echo "=== Application YML Content ==="
           cat ./src/main/resources/application.yml
+
+      # Docker Compose 실행 (DB + Kafka)
+      - name: Start Docker Containers (DB & Kafka)
+        run: |
+          echo "Starting Docker Compose..."
+          # 상위 폴더의 docker-compose.yml을 사용하여 실행
+          docker-compose -f ../docker-compose.yml up -d
+          
+          echo "Waiting for Kafka to be ready on localhost:9092..."
+          # 카프카가 켜질 때까지 최대 60초 대기 (nc 명령어로 포트 체크)
+          for i in {1..30}; do
+            if nc -z localhost 9092; then
+              echo "✅ Kafka is up and running!"
+              break
+            fi
+            echo "Waiting... ($i/30)"
+            sleep 2
+          done
+          
+          # 혹시 DB(5432) 확인도 필요하면 추가 가능
+          if ! nc -z localhost 9092; then
+            echo "❌ Kafka failed to start."
+            docker-compose -f ../docker-compose.yml logs kafka
+            exit 1
+          fi
 
       - name: Check code formatting
         run: ./gradlew checkstyleMain
