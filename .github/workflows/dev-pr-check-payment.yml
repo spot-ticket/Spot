@@ -2,7 +2,7 @@ name: DEV PR Check - Payment Service
 
 on:
   pull_request:
-    branches: [ dev ]
+    branches: [ main ]
     paths:
       - 'spot-payment/**'
       - '.github/workflows/pr-check-payment.yml'

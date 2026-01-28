@@ -2,7 +2,7 @@ name: DEV PR Check - Monolithic Service
 
 on:
   pull_request:
-    branches: [ dev ]
+    branches: [ main ]
     paths:
       - 'spot-mono/**'
       - '.github/workflows/pr-check-mono.yml'

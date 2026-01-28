@@ -2,7 +2,7 @@ name: DEV PR Check - Store Service
 
 on:
   pull_request:
-    branches: [ dev ]
+    branches: [ main ]
     paths:
       - 'spot-store/**'
       - '.github/workflows/pr-check-store.yml'

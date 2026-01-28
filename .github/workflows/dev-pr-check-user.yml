@@ -2,7 +2,7 @@ name: DEV PR Check - User Service
 
 on:
   pull_request:
-    branches: [ dev ]
+    branches: [ main ]
     paths:
       - 'spot-user/**'
       - '.github/workflows/pr-check-user.yml'
