@@ -105,7 +105,7 @@ public class OrderServiceImpl implements OrderService {
         OrderEntity savedOrder = orderRepository.save(order);
         OrderResponseDto responseDto = OrderResponseDto.from(savedOrder);
         
-        orderEventProducer.sendOrderCreated(
+        orderEventProducer.reserveOrderCreated(
                 savedOrder.getId(),
                 userId,
                 responseDto.getTotalAmount().longValue()
@@ -296,7 +296,7 @@ public class OrderServiceImpl implements OrderService {
         order.acceptOrder(estimatedTime);
         
         // 주문 수락 이벤트 발행
-        orderEventProducer.sendOrderAccepted(order.getUserId(), order.getId(), estimatedTime);
+        orderEventProducer.reserveOrderAccepted(order.getUserId(), order.getId(), estimatedTime);
         log.info("주문 수락 및 이벤트 발행 완료: orderId={}, estimatedTime={}분", orderId, estimatedTime);
         
         return OrderResponseDto.from(order);
@@ -310,7 +310,7 @@ public class OrderServiceImpl implements OrderService {
         
         order.initiateCancel(reason, null);
         // 주문 취소(거절) 이벤트 발행
-        orderEventProducer.sendOrderCancelled(order.getId(), reason);
+        orderEventProducer.reserveOrderCancelled(order.getId(), reason);
         log.info("주문 거절 처리 시작 (환불 대기): orderId={}, reason={}", orderId, reason);
         
         return OrderResponseDto.from(order);
@@ -369,7 +369,7 @@ public class OrderServiceImpl implements OrderService {
 
         order.initiateCancel(reason, CancelledBy.CUSTOMER);
         // 주문 취소(거절) 이벤트 발행
-        orderEventProducer.sendOrderCancelled(order.getId(), reason);
+        orderEventProducer.reserveOrderCancelled(order.getId(), reason);
         log.info("고객에 의한 취소 처리 시작 (환불 대기): orderId={}, reason={}", orderId, reason);
 
         // 결제 취소 처리 (Payment 서비스 호출) - 비동기 전환으로 인한 주석처리: 추후 삭제 afterDelete
@@ -387,7 +387,7 @@ public class OrderServiceImpl implements OrderService {
         // 주문 취소 처리
         order.initiateCancel(reason, CancelledBy.STORE);
         // 주문 취소(거절) 이벤트 발행
-        orderEventProducer.sendOrderCancelled(order.getId(), reason);
+        orderEventProducer.reserveOrderCancelled(order.getId(), reason);
         log.info("가게에 의한 취소 처리 시작 (환불 대기): orderId={}, reason={}", orderId, reason);
         
         // 결제 취소 처리 (Payment 서비스 호출) - 비동기 전환으로 인한 주석 처리: 추후 삭제 afterDelete
@@ -437,7 +437,7 @@ public class OrderServiceImpl implements OrderService {
         // 1. 상태 변경(PAYMENT_PENDING -> PENDING)
         order.completePayment();
         // 2. 가게 사장에게 수락/거절의 이벤트 발행
-        orderEventProducer.sendOrderPending(order.getStoreId(), order.getId());
+        orderEventProducer.reserveOrderPending(order.getStoreId(), order.getId());
         log.info("결제 처리 및 사장님 알림 이벤트 발행 완료: orderId={}", orderId);
         
         return OrderResponseDto.from(order);
