@@ -46,7 +46,7 @@ public class AdminOrderController {
         LocalDateTime dateTime = date != null ? date.atStartOfDay() : null;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Page<OrderResponseDto> response = orderService.getAllOrdersWithPagination(
+        Page<OrderResponseDto> response = orderService.getAllOrders(
                 storeId, dateTime, status, pageable);
 
         return ResponseEntity
