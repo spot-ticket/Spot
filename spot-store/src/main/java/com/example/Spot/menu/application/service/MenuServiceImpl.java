@@ -212,7 +212,8 @@ public class MenuServiceImpl implements MenuService {
                 request.price(),
                 request.category(),
                 request.description(),
-                request.imageUrl()
+                request.imageUrl(),
+                request.quantity()
         );
 
         if (request.isAvailable() != null) {

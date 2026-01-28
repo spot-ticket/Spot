@@ -13,6 +13,7 @@ public record CreateMenuResponseDto(
         Integer price,
         String description,
         String imageUrl,
+        Integer quantity,
         LocalDateTime createdAt
 ) {
     // Entity를 DTO로 변환하는 생성자
@@ -24,6 +25,7 @@ public record CreateMenuResponseDto(
                 menu.getPrice(),
                 menu.getDescription(),
                 menu.getImageUrl(),
+                menu.getQuantity(),
                 menu.getCreatedAt()
         );
     }
