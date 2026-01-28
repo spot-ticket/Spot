@@ -5,6 +5,8 @@ set -e
 
 echo "=== 기존 컨테이너 종료 및 삭제 ==="
 docker compose down --remove-orphans
+# kafka 데이터 볼륨 삭제
+docker volume ls -q | grep "kafka-data" | xargs -r docker volume rm
 # 컨테이너가 없을 경우 에러 메시지를 숨기기 위해 || true 사용
 docker rm -f redis_cache local-postgres_db spot-gateway spot-user spot-store spot-order spot-payment 2>/dev/null || true
 
