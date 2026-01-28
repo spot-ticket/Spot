@@ -103,7 +103,7 @@ public class OrderAspect {
         log.info("[주문 상태 변경] 시작 - OrderId: {}, Type: {}, Method: {}", orderId, statusType, methodName);
 
         try {
-            OrderEntity order = orderRepository.findById(orderId)
+            OrderEntity order = orderRepository.findByIdWithLock(orderId)
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
 
             OrderValidationContext.setCurrentOrder(order);

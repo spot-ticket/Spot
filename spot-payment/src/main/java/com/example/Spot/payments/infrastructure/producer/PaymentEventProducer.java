@@ -1,13 +1,14 @@
 package com.example.Spot.payments.infrastructure.producer;
 
-import com.example.Spot.payments.domain.entity.PaymentOutboxEntity;
-import com.example.Spot.payments.domain.repository.PaymentOutboxRepository;
 import java.util.UUID;
+
 
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
+import com.example.Spot.payments.domain.entity.PaymentOutboxEntity;
+import com.example.Spot.payments.domain.repository.PaymentOutboxRepository;
 import com.example.Spot.payments.infrastructure.event.publish.AuthRequiredEvent;
 import com.example.Spot.payments.infrastructure.event.publish.PaymentRefundedEvent;
 import com.example.Spot.payments.infrastructure.event.publish.PaymentSucceededEvent;

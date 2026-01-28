@@ -1,13 +1,15 @@
 package com.example.Spot.payments.application.service;
 
-import com.example.Spot.payments.domain.entity.PaymentOutboxEntity;
-import com.example.Spot.payments.domain.repository.PaymentOutboxRepository;
-import com.example.Spot.payments.infrastructure.producer.PaymentEventProducer;
-import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
+
+import com.example.Spot.payments.domain.entity.PaymentOutboxEntity;
+import com.example.Spot.payments.domain.repository.PaymentOutboxRepository;
+import com.example.Spot.payments.infrastructure.producer.PaymentEventProducer;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 @Slf4j
 @Service

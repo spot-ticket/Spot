@@ -72,7 +72,7 @@ public class CustomerOrderController implements CustomerOrderApi {
         LocalDateTime dateTime = date != null ? date.atStartOfDay() : null;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Page<OrderResponseDto> response = orderService.getUserOrdersWithPagination(
+        Page<OrderResponseDto> response = orderService.getUserOrders(
                 userId, storeId, dateTime, status, pageable);
 
         return ResponseEntity
