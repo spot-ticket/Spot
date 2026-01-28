@@ -43,7 +43,7 @@ public class OrderEventProducer {
                 .userId(userId)
                 .amount(amount)
                 .build();
-        saveOutbox(orderCreatedTopic, orderId, userId.toString(), event);
+        saveOutbox(orderCreatedTopic, orderId, event);
     }
 
     public void reserveOrderPending(UUID storeId, UUID orderId) {
@@ -52,7 +52,7 @@ public class OrderEventProducer {
                 .orderId(orderId)
                 .timestamp(LocalDateTime.now())
                 .build();
-        saveOutbox(orderPendingTopic, orderId, storeId.toString(), event);
+        saveOutbox(orderPendingTopic, orderId, event);
     }
     
     public void reserveOrderAccepted(Integer userId, UUID orderId, Integer estimatedTime) {
@@ -61,7 +61,7 @@ public class OrderEventProducer {
                 .orderId(orderId)
                 .estimatedTime(estimatedTime)
                 .build();
-        saveOutbox(orderAcceptedTopic, orderId, userId.toString(), event);
+        saveOutbox(orderAcceptedTopic, orderId, event);
     }
     
     public void reserveOrderCancelled(UUID orderId, String reason) {
@@ -69,23 +69,22 @@ public class OrderEventProducer {
                 .orderId(orderId)
                 .reason(reason)
                 .build();
-        saveOutbox(orderCancelledTopic, orderId, orderId.toString(), event);
+        saveOutbox(orderCancelledTopic, orderId, event);
     }
     
-    public void saveOutbox(String topic, UUID aggregateId, String eventKey, Object event) {
+    public void saveOutbox(String topic, UUID aggregateId, Object event) {
         try {
             String payload = objectMapper.writeValueAsString(event);
             
             OrderOutboxEntity outbox = OrderOutboxEntity.builder()
                     .aggregateType("ORDER")
                     .aggregateId(aggregateId)
-                    .eventKey(eventKey)
                     .eventType(topic)
                     .payload(payload)
                     .build();
             
             outboxRepository.save(outbox);
-            log.info("✅[Outbox 저장 성공] topic:{}, Key:{}, AggregateId:{}", topic, eventKey, aggregateId);
+            log.info("✅[Outbox 저장 성공] topic:{}, AggregateId:{}", topic, aggregateId);
         } catch (JsonProcessingException e) {
             log.error("❌[Outbox 저장 실패] AggregateId={}, error={}", aggregateId, e.getMessage());
             throw new RuntimeException("이벤트 발해 예약 중 오류 발생", e);
@@ -93,7 +92,7 @@ public class OrderEventProducer {
     }
     
     public void publish(OrderOutboxEntity outbox) throws Exception {
-        kafkaTemplate.send(outbox.getEventType(), outbox.getEventKey(), outbox.getPayload()).get();
+        kafkaTemplate.send(outbox.getEventType(), outbox.getAggregateId().toString(), outbox.getPayload()).get();
     }
 }
 

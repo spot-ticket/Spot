@@ -41,9 +41,6 @@ public class OrderOutboxEntity extends BaseEntity {
     @Column(name = "aggregate_id", nullable = false, columnDefinition = "UUID")
     private UUID aggregateId;
 
-    @Column(name = "event_key")
-    private String eventKey;
-
     @Column(name = "event_type", nullable = false)
     private String eventType;
 
@@ -67,7 +64,6 @@ public class OrderOutboxEntity extends BaseEntity {
     public OrderOutboxEntity(String aggregateType, UUID aggregateId, String eventKey, String eventType, String payload) {
         this.aggregateType = aggregateType;
         this.aggregateId = aggregateId;
-        this.eventKey = eventKey;
         this.eventType = eventType;
         this.payload = payload;
         this.retryCount = 0;
