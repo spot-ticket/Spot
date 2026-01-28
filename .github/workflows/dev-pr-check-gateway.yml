@@ -35,7 +35,7 @@ jobs:
       - name: Make application.properties
         run: |
           mkdir -p ./src/main/resources
-          cp ../config/spot-gateway.yml > ./src/main/resources/application.yml
+          cp ../config/spot-gateway.yml ./src/main/resources/application.yml
         shell: bash
 
       - name: Check code formatting
