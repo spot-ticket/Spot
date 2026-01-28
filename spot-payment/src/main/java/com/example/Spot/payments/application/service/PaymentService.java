@@ -442,7 +442,7 @@ public class PaymentService {
     paymentKeyRepository.save(paymentKey);
     
     // 결제 성공 이벤트 발행(수동)
-    paymentEventProducer.sendPaymentSucceededEvent(
+    paymentEventProducer.reservePaymentSucceededEvent(
             savedPayment.getOrderId(),
             savedPayment.getUserId()
     );
