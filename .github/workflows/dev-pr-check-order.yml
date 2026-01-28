@@ -55,7 +55,7 @@ jobs:
         run: |
           mkdir -p ./src/main/resources
           echo "$COMMON_YML" > ./src/main/resources/common-application.yml
-          cp ../config/spot-user.yml ./src/main/resources/application.yml
+          cp ../config/spot-order.yml ./src/main/resources/application.yml
         shell: bash
 
       - name: Debug - Check Configuration Files
