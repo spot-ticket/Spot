@@ -15,20 +15,20 @@ jobs:
       run:
         working-directory: spot-payment
 
-#    services:
-#      postgres:
-#        image: postgres:16
-#        env:
-#          POSTGRES_DB: myapp_db
-#          POSTGRES_USER: admin
-#          POSTGRES_PASSWORD: secret
-#        ports:
-#          - 5432:5432
-#        options: >-
-#          --health-cmd pg_isready
-#          --health-interval 10s
-#          --health-timeout 5s
-#          --health-retries 5
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: myapp_db
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
 
     steps:
       - name: Checkout code
@@ -69,30 +69,41 @@ jobs:
           echo "=== Application YML Content ==="
           cat ./src/main/resources/application.yml
 
-      # Docker Compose 실행 (DB + Kafka)
-      - name: Start Docker Containers (DB & Kafka)
+      # Kafka & Zookeeper 수동 실행 (docker run)
+      - name: Start Kafka & Zookeeper
         run: |
-          echo "Starting Docker Compose..."
-          # 상위 폴더의 docker-compose.yml을 사용하여 실행
-          docker-compose -f ../docker-compose.yml up -d
+          echo "Starting Zookeeper..."
+          docker run -d --name zookeeper -p 2181:2181 -e ZOOKEEPER_CLIENT_PORT=2181 confluentinc/cp-zookeeper:7.5.0
           
+          echo "Waiting for Zookeeper..."
+          sleep 5
+          
+          echo "Starting Kafka..."
+          # --link zookeeper:zookeeper 옵션으로 컨테이너끼리 연결
+          # ADVERTISED_LISTENERS에 localhost:9092를 명시하여 외부(CI Runner) 접속 허용
+          docker run -d --name kafka \
+            -p 9092:9092 \
+            --link zookeeper:zookeeper \
+            -e KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181 \
+            -e KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://localhost:9092 \
+            -e KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR=1 \
+            confluentinc/cp-kafka:7.5.0
+
+      # Kafka 켜질 때까지 대기
+      - name: Wait for Kafka to be ready
+        run: |
           echo "Waiting for Kafka to be ready on localhost:9092..."
-          # 카프카가 켜질 때까지 최대 60초 대기 (nc 명령어로 포트 체크)
           for i in {1..30}; do
             if nc -z localhost 9092; then
               echo "✅ Kafka is up and running!"
-              break
+              exit 0
             fi
             echo "Waiting... ($i/30)"
             sleep 2
           done
-          
-          # 혹시 DB(5432) 확인도 필요하면 추가 가능
-          if ! nc -z localhost 9092; then
-            echo "❌ Kafka failed to start."
-            docker-compose -f ../docker-compose.yml logs kafka
-            exit 1
-          fi
+          echo "❌ Kafka failed to start."
+          docker logs kafka
+          exit 1
 
       - name: Check code formatting
         run: ./gradlew checkstyleMain
