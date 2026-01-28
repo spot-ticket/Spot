@@ -39,10 +39,12 @@ jobs:
       with:
         java-version: '21'
         distribution: 'temurin'
-        cache: gradle
+#        cache: gradle
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
+      with:
+        cache-read-only: true
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
@@ -51,7 +53,7 @@ jobs:
       run: |
         mkdir -p ./src/main/resources
         echo "${{ secrets.COMMON_APPLICATION_YML }}" > ./src/main/resources/common-application.yml
-        echo ../config/spot-user.yml > ./src/main/resources/application.yml
+        cp ../config/spot-user.yml > ./src/main/resources/application.yml
       shell: bash
 
     - name: Check code formatting
@@ -59,12 +61,12 @@ jobs:
 #      checkstyleTest
 #      continue-on-error: true
 
-    - name: Build with Gradle
-      run: ./gradlew bootJar -x test
-
     - name: Run tests
       run: ./gradlew test
       continue-on-error: true
+
+    - name: Build with Gradle
+      run: ./gradlew bootJar -x test
 
     - name: Test application startup
       run: |
