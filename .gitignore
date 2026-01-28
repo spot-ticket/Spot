@@ -3,6 +3,7 @@
 **/terraform.tfstate
 **/terraform.tfstate.*
 *.tfvars
+**/backend.hcl
 
 # Lambda build artifacts
 **/lambda/*.zip

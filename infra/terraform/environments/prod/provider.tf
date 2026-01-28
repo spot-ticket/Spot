@@ -9,8 +9,9 @@ terraform {
   }
 
   # 원격 상태 저장소 (팀 협업)
+  # bucket은 backend.hcl에서 설정 (민감 정보 분리)
+  # 초기화: terraform init -backend-config=backend.hcl
   backend "s3" {
-    bucket         = "spot-terraform-state-322546275072"
     key            = "prod/terraform.tfstate"
     region         = "ap-northeast-2"
     encrypt        = true
