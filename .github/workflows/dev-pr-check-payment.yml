@@ -133,7 +133,7 @@ jobs:
           
           for i in {1..60}; do
             # 서버 헬스 체크
-            RESPONSE=$(curl -s -f http://localhost:8084/actuator/health || true)
+            RESPONSE=$(curl -s -f http://127.0.0.1:8084/actuator/health || true)
             if  [[ "$RESPONSE" == *"UP"* ]]; then
               echo "✅ Application started successfully after ${i}s"
               kill $APP_PID 2>/dev/null || true
@@ -151,6 +151,16 @@ jobs:
                cat app.log
                exit 1
             fi
+          
+          # 디버깅: 10초마다 왜 실패하는지 확인
+            if [ $((i % 10)) -eq 0 ]; then
+               echo "⏳ Waiting... ($i/120s)"
+               echo "Last curl response: $RESPONSE"
+               # 연결 자체가 안되는지, 401 에러인지 확인하기 위해 상태 코드만 찍어봄
+               curl -s -o /dev/null -w "%{http_code}" http://127.0.0.1:8084/actuator/health || echo "Connection Refused"
+               echo "" 
+            fi
+          
             sleep 1
           done
 
