@@ -5,7 +5,7 @@ on:
     branches: [ dev ]
     paths:
       - 'spot-store/**'
-      - '.github/workflows/dev-pr-check-store.yml'
+      - '.github/workflows/pr-check-store.yml'
 
 jobs:
   build-and-test:
