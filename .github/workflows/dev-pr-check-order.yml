@@ -4,7 +4,9 @@ on:
   pull_request:
     branches: [ dev ]
     paths:
-      #        - 'infra/client/**'
+      - 'config/common.yml'
+      - 'config/kafka-topics.yml'
+      - 'config/spot-order.yml'
       - 'spot-order/**'
       - '.github/workflows/pr-check-order.yml'
 
@@ -96,7 +98,9 @@ jobs:
           COMMON_YML: ${{ secrets.DEV_COMMON_YML }}
         run: |
           mkdir -p ./src/main/resources
-          echo "$COMMON_YML" > ./src/main/resources/common-application.yml
+          echo "Copying config files..."
+          cp ../config/common.yml > ./src/main/resources/common.yml
+          cp ../config/kafka-topics.yml > ./src/main/resources/kafka-topics.yml
           cp ../config/spot-order.yml ./src/main/resources/application.yml
         shell: bash
 

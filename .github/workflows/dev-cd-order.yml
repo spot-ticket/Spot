@@ -3,7 +3,9 @@ on:
   push:
     branches: [ dev ]
     paths:
-      #        - 'infra/client/**'
+      - 'config/common.yml'
+      - 'config/kafka-topics.yml'
+      - 'config/spot-order.yml'
       - 'spot-order/**'
       - '.github/workflows/dev-cd-order.yml'
 
@@ -41,6 +43,17 @@ jobs:
 
       - name: Build with Gradle
         run: ./gradlew build -x test
+
+      - name: Copy Configuration Files
+        run: |
+          mkdir -p ./src/main/resources
+          echo "Copying config files..."
+          cp ../config/common.yml ./src/main/resources/common.yml
+          cp ../config/kafka-topics.yml ./src/main/resources/kafka-topics.yml
+          cp ../config/spot-order.yml ./src/main/resources/application.yml
+          
+          # 확인용
+          ls -al ./src/main/resources/
 
       # AWS OIDC 인증
       - name: configure aws
