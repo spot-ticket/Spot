@@ -10,6 +10,9 @@ on:
       - '.github/workflows/dev-cd-order.yml'
 
 env:
+  SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}
+  TOSS_SECRET_KEY: ${{ secrets.TOSS_SECRET_KEY }}
+  TOSS_CUSTOMER_KEY: ${{ secrets.TOSS_CUSTOMER_KEY }}
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY: spot-order
   SERVICE_NAME: order-task
@@ -41,9 +44,6 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Build with Gradle
-        run: ./gradlew build -x test
-
       - name: Copy Configuration Files
         run: |
           mkdir -p ./src/main/resources
@@ -55,6 +55,8 @@ jobs:
           # 확인용
           ls -al ./src/main/resources/
 
+      - name: Build with Gradle
+        run: ./gradlew build -x test
       # AWS OIDC 인증
       - name: configure aws
         id: aws-config
@@ -107,9 +109,9 @@ jobs:
           REGION="$AWS_REGION"
 
           aws ecs describe-task-definition \
-          --task-definition "spot-dev-$SERVICE_NAME" \
-          --region "$AWS_REGION" \
-          jq --arg IMAGE="$NEW_IMAGE" \
+            --task-definition "spot-dev-$SERVICE_NAME" \
+            --region "$AWS_REGION" \
+          | jq --arg IMAGE="$NEW_IMAGE" \
           '.taskDefinition |
           '.containerDefinitions[0].image = $IMAGE |
             del(
