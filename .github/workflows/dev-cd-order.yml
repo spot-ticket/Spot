@@ -105,25 +105,27 @@ jobs:
         run: |
           echo "Rendering Task Definition..."
 
-          NAME="$SERVICE_NAME"
-          REGION="$AWS_REGION"
-
           aws ecs describe-task-definition \
             --task-definition "spot-dev-$SERVICE_NAME" \
             --region "$AWS_REGION" \
             --query 'taskDefinition' \
-          | jq --arg IMAGE="$NEW_IMAGE" \
-          '.containerDefinitions[0].image = $IMAGE |
-            del(
-              .taskDefinitionArn,
-              .revision,
-              .status,
-              .requiresAttributes,
-              .compatibilities,
-              .registeredAt,
-              .registeredBy
-            )' \
-          > new-task-def.json
+            --output json > raw-task-def.json
+          
+          jq --arg IMAGE="$NEW_IMAGE" \
+          'del(
+            .taskDefinitionArn,
+            .revision,
+            .status,
+            .requiresAttributes,
+            .compatibilities,
+            .registeredAt,
+            .registeredBy
+          ) | .containerDefinitions[0].image = $IMAGE' \
+          raw-task-def.json > new-task-def.json
+
+          # 디버깅용
+          echo "=== NEW Task Definition ==="
+          cat new-task-def.json
 
           # AWS에 등록
           NEW_TASK_INFO=$(aws ecs register-task-definition --cli-input-json file://new-task-def.json)
