@@ -107,7 +107,9 @@ jobs:
             --query 'taskDefinition' \
             --output json > raw-task-def.json
           
-          jq --arg IMAGE="$NEW_IMAGE" 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy) | .containerDefinitions[0].image = $IMAGE' raw-task-def.json > new-task-def.json
+          cat raw-task-def.json | jq --arg IMAGE="$NEW_IMAGE" 
+            'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy) | 
+            .containerDefinitions[0].image = $IMAGE' > new-task-def.json
 
           # 디버깅용
           echo "=== NEW Task Definition ==="
