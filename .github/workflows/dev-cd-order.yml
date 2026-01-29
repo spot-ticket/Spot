@@ -109,7 +109,7 @@ jobs:
           REGION="$AWS_REGION"
 
           aws ecs describe-task-definition \
-            --task-definition "spot-dev-$SERVICE_NAME" \
+            --task-definition "spot-dev-$SERVICE_NAME-task" \
             --region "$AWS_REGION" \
           | jq --arg IMAGE="$NEW_IMAGE" \
           '.taskDefinition |
