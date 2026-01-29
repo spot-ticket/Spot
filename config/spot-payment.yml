@@ -25,30 +25,6 @@ feign:
         loggerLevel: BASIC
 
 resilience4j:
-  timelimiter:
-    instances:
-      store_me_ownership:
-        timeoutDuration: 300ms
-        cancelRunningFuture: true
-      store_menus_validation:
-        timeoutDuration: 350ms
-        cancelRunningFuture: true
-      payment_ready_create:
-        timeoutDuration: 400ms
-        cancelRunningFuture: true
-
-  bulkhead:
-    instances:
-      store_me_ownership:
-        maxConcurrentCalls: 40
-        maxWaitDuration: 0
-      store_menus_validation:
-        maxConcurrentCalls: 50
-        maxWaitDuration: 0
-      payment_ready_create:
-        maxConcurrentCalls: 40
-        maxWaitDuration: 0
-
   retry:
     instances:
       store_me_ownership:
