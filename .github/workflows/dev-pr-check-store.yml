@@ -123,17 +123,17 @@ jobs:
 
       - name: Test application startup
         run: |
-          # 1. 빌드된 JAR 파일 찾기
-               JAR_FILE=$(find build/libs -name "*.jar" | head -n 1)
-               echo "Testing JAR: $JAR_FILE"
+          # 빌드된 JAR 파일 찾기
+           JAR_FILE=$(find build/libs -name "*.jar" | head -n 1)
+           echo "Testing JAR: $JAR_FILE"
           
           # 백그라운드 실행
-               nohup java -Dspring.output.ansi.enabled=NEVER \
-                  -jar $JAR_FILE \
-                  --management.endpoint.health.show-details=always > app.log 2>&1 &
+           nohup java -Dspring.output.ansi.enabled=NEVER \
+              -jar $JAR_FILE \
+              --management.endpoint.health.show-details=always > app.log 2>&1 &
           
-               APP_PID=$!
-               echo "Started JAR with PID: $APP_PID"
+           APP_PID=$!
+           echo "Started JAR with PID: $APP_PID"
           
           # 최대 60초 대기하면서 애플리케이션 시작 확인
           echo "Waiting for application to start..."
@@ -159,18 +159,18 @@ jobs:
                exit 1
             fi
           
-          # 디버깅: 왜 실패하는지 확인
+          # 디버깅 - 실패 원인 찾기
             if [ $((i % 10)) -eq 0 ]; then
                echo "⏳ Waiting... ($i/60s)"
                echo "Last curl response: $RESPONSE"
-               # 연결 자체가 안되는지, 401 에러인지 확인하기 위해 상태 코드만 찍어봄
+               # 확인하기 위한 상태 코드
                curl -s -o /dev/null -w "%{http_code}" http://localhost:8083/actuator/health || echo "Connection Refused"
                echo "" 
             fi
           
             sleep 1
           done
-          
+
           echo "❌ Application failed to start within 60s"
           cat app.log
           kill $APP_PID 2>/dev/null || true

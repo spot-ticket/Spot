@@ -125,36 +125,59 @@ jobs:
 
     - name: Test application startup
       run: |
-        ./gradlew bootRun > bootrun.log 2>&1 &
-        APP_PID=$!
-        echo "Started bootRun with PID: $APP_PID"
-
+        # 빌드된 JAR 파일 찾기
+         JAR_FILE=$(find build/libs -name "*.jar" | head -n 1)
+         echo "Testing JAR: $JAR_FILE"
+        
+        # 백그라운드 실행
+         nohup java -Dspring.output.ansi.enabled=NEVER \
+            -jar $JAR_FILE \
+            --management.endpoint.health.show-details=always > app.log 2>&1 &
+        
+         APP_PID=$!
+         echo "Started JAR with PID: $APP_PID"
+        
         # 최대 60초 대기하면서 애플리케이션 시작 확인
+        echo "Waiting for application to start..."
+        
         for i in {1..60}; do
-          # 로그에서 시작 완료 메시지 확인
-          if grep -q "Started SpotUserApplication" bootrun.log 2>/dev/null; then
+          # 서버 헬스 체크
+          RESPONSE=$(curl -s -f http://localhost:8081/actuator/health || true)
+          if  [[ "$RESPONSE" == *"UP"* ]]; then
             echo "✅ Application started successfully after ${i}s"
             kill $APP_PID 2>/dev/null || true
             exit 0
           fi
-
-          # 프로세스가 죽었는지 확인
+        
+            # 헬스 체크 응답 결과 출력
+            echo "=== Actuator Health Response ==="
+            echo "$RESPONSE" | jq .
+            echo "=================================="
+        
+          # 프로세스가 중간에 죽었는지 체크
           if ! kill -0 $APP_PID 2>/dev/null; then
-            echo "❌ Application process terminated unexpectedly"
-            echo "=== bootRun log ==="
-            cat bootrun.log
-            exit 1
+             echo "❌ Application process died unexpectedly"
+             cat app.log
+             exit 1
           fi
-
+        
+        # 디버깅 - 실패 원인 찾기
+          if [ $((i % 10)) -eq 0 ]; then
+             echo "⏳ Waiting... ($i/60s)"
+             echo "Last curl response: $RESPONSE"
+             # 확인하기 위한 상태 코드
+             curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/actuator/health || echo "Connection Refused"
+             echo "" 
+          fi
+        
           sleep 1
         done
-
-        echo "❌ Application failed to start within 60 seconds"
-        echo "=== bootRun log ==="
-        cat bootrun.log
+        
+        echo "❌ Application failed to start within 60s"
+        cat app.log
         kill $APP_PID 2>/dev/null || true
         exit 1
-      timeout-minutes: 2
+      shell: bash
 
     - name: Upload build artifacts
       if: failure()
