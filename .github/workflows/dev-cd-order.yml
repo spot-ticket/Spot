@@ -113,7 +113,7 @@ jobs:
             --region "$AWS_REGION" \
           | jq --arg IMAGE="$NEW_IMAGE" \
           '.taskDefinition |
-          '.containerDefinitions[0].image = $IMAGE |
+          .containerDefinitions[0].image = $IMAGE |
             del(
               .taskDefinitionArn,
               .revision,
