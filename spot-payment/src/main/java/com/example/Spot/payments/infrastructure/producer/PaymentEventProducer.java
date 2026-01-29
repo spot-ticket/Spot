@@ -1,0 +1,69 @@
+package com.example.Spot.payments.infrastructure.producer;
+
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.stereotype.Component;
+
+import com.example.Spot.payments.infrastructure.event.publish.AuthRequiredEvent;
+import com.example.Spot.payments.infrastructure.event.publish.PaymentRefundedEvent;
+import com.example.Spot.payments.infrastructure.event.publish.PaymentSucceededEvent;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+
+@Slf4j
+@Component
+@RequiredArgsConstructor
+public class PaymentEventProducer {
+    
+    private final KafkaTemplate<String, String> kafkaTemplate;
+    private final ObjectMapper objectMapper;
+    @Value("${spring.kafka.topic.payment-auth.required}")
+    private String authRequiredTopic;
+    @Value("${spring.kafka.topic.payment.succeeded}")
+    private String paymentSucceededTopic;
+    @Value("${spring.kafka.topic.payment.refunded}")
+    private String paymentRefundedTopic;
+    
+    public void sendAuthRequiredEvent(AuthRequiredEvent authRequiredEvent) {
+        try {
+            String payload = objectMapper.writeValueAsString(authRequiredEvent);
+            log.info("인증 필요 이벤트 발행: topic={}, orderId={}", authRequiredTopic, authRequiredEvent.getOrderId());
+            kafkaTemplate.send(authRequiredTopic, payload);
+        } catch (JsonProcessingException e) {
+            log.error("AuthRequireEvent 직렬화 실패 - orderId: {}", authRequiredEvent.getOrderId(), e);
+            throw new RuntimeException("이벤트 발행 실패", e);
+        }
+    }
+    
+    public void sendPaymentSucceededEvent(UUID orderId, Integer userId) {
+        try {
+            PaymentSucceededEvent event = new PaymentSucceededEvent(orderId, userId);
+            String payload = objectMapper.writeValueAsString(event);
+            
+            log.info("주문 확정 요청 이벤트 발행: topic={}, orderId={}",
+                    paymentSucceededTopic, orderId);
+            
+            kafkaTemplate.send(paymentSucceededTopic, payload);
+        } catch (JsonProcessingException e) {
+            log.error("PaymentSucceededEvent 직렬화 실패 - orderId: {}", orderId, e);
+        }
+    }
+    
+    public void sendPaymentRefundedEvent(UUID orderId) {
+        try {
+            PaymentRefundedEvent event = new PaymentRefundedEvent(orderId);
+            String payload = objectMapper.writeValueAsString(event);
+            
+            log.info("결제 환불 완료 이벤트 발행: topic={}, orderId={}", paymentRefundedTopic, orderId);
+            kafkaTemplate.send(paymentRefundedTopic, payload);
+        } catch (JsonProcessingException e) {
+            log.error("PaymentRefundedEvent 직렬화 실패 - orderId: {}", orderId, e);
+            throw new RuntimeException("이벤트 발행 실패", e);
+        }
+    }
+}

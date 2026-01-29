@@ -1,12 +1,31 @@
-src/main/resources/application.yaml
-src/main/resources/application.yml
-src/main/resources/application-*.yml
-!src/main/resources/application-example.yml
+### infra ###
+**/.terraform/*
+**/terraform.tfstate
+**/terraform.tfstate.*
+*.tfvars
+
+# Lambda build artifacts
+**/lambda/*.zip
+
+.idea/
+.vscode/
+out/
+bin/
+postgres_data/*
 
 ### Gradle ###
 .gradle/
 build/
-postgres_data/
+
+### yml ###
+**/*.yml
+**/*.yaml
+
+!**/application-example.yml
+!**/application-example.yaml
+!**/application.example.yml
+!**/application.example.yaml
+
 
 ### Maven ###
 target/
@@ -16,15 +35,12 @@ pom.xml.utils
 pom.xml.v
 release.properties
 
+
 ### IntelliJ IDEA ###
-.idea/
 *.iws
 *.iml
 *.ipr
-out/
 
-### VS Code ###
-.vscode/
 
 ### Eclipse ###
 .settings/
@@ -40,8 +56,4 @@ Thumbs.db
 *.log
 logs/
 
-
-### infra ###
-infra/terraform/provider.tf
-infra/terraform/terraform.*
-infra/terraform/.terraform*
+./config/common.yml
