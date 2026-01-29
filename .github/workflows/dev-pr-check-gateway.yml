@@ -7,7 +7,7 @@ on:
       - 'config/spot-gateway.yml'
       - 'spot-gateway/**'
       - '.github/workflows/dev-pr-check-gateway.yml'
-
+#
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
