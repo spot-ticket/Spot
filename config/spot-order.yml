@@ -18,20 +18,6 @@ feign:
         loggerLevel: BASIC
 
 resilience4j:
-  timelimiter:
-    configs:
-      default:
-        cancelRunningFuture: true
-    instances:
-      user_validate_activeUser:
-        timeoutDuration: 250ms
-
-  bulkhead:
-    instances:
-      user_validate_activeUser:
-        maxConcurrentCalls: 40
-        maxWaitDuration: 0
-
   retry:
     instances:
       user_validate_activeUser:
