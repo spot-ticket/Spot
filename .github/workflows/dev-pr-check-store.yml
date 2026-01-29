@@ -4,9 +4,16 @@ on:
   pull_request:
     branches: [ dev ]
     paths:
-      #        - 'infra/client/**'
+      - 'config/common.yml'
+      - 'config/kafka-topics.yml'
+      - 'config/spot-store.yml'
       - 'spot-store/**'
-      - '.github/workflows/pr-check-store.yml'
+      - '.github/workflows/dev-pr-check-store.yml'
+
+env:
+  SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}
+  TOSS_SECRET_KEY: ${{ secrets.TOSS_SECRET_KEY }}
+  TOSS_CUSTOMER_KEY: ${{ secrets.TOSS_CUSTOMER_KEY }}
 
 jobs:
   build-and-test:
@@ -92,11 +99,11 @@ jobs:
         run: chmod +x gradlew
 
       - name: Make application.properties
-        env:
-          COMMON_YML: ${{ secrets.DEV_COMMON_YML }}
         run: |
           mkdir -p ./src/main/resources
-          echo "$COMMON_YML" > ./src/main/resources/common-application.yml
+          echo "Copying config files..."
+          cp ../config/common.yml ./src/main/resources/common.yml
+          cp ../config/kafka-topics.yml ./src/main/resources/kafka-topics.yml
           cp ../config/spot-store.yml ./src/main/resources/application.yml
         shell: bash
 
@@ -106,7 +113,10 @@ jobs:
           ls -al ./src/main/resources/
           
           echo "=== Common YML Content ==="
-          cat ./src/main/resources/common-application.yml
+          cat ./src/main/resources/common.yml
+          
+          echo "=== Kafka Topics YML Content ==="
+          cat ./src/main/resources/kafka-topics.yml
           
           echo "=== Application YML Content ==="
           cat ./src/main/resources/application.yml
