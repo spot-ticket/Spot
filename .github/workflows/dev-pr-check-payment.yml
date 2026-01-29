@@ -8,7 +8,7 @@ on:
       - 'config/kafka-topics.yml'
       - 'config/spot-payment.yml'
       - 'spot-payment/**'
-      - '.github/workflows/pr-check-payment.yml'
+      - '.github/workflows/dev-pr-check-payment.yml'
 
 env:
   SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}

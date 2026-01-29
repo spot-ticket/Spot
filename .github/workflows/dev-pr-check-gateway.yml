@@ -4,9 +4,9 @@ on:
   pull_request:
     branches: [ dev ]
     paths:
-      #        - 'infra/client/**'
+      - 'config/spot-gateway.yml'
       - 'spot-gateway/**'
-      - '.github/workflows/pr-check-gateway.yml'
+      - '.github/workflows/dev-pr-check-gateway.yml'
 
 jobs:
   build-and-test:
@@ -40,8 +40,6 @@ jobs:
 
       - name: Check code formatting
         run: ./gradlew checkstyleMain
-#        checkstyleTest
-#        continue-on-error: true
 
       - name: Run tests
         run: ./gradlew test
