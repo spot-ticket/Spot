@@ -107,9 +107,7 @@ jobs:
 
           aws ecs describe-task-definition \
             --task-definition "spot-dev-$SERVICE_NAME" \
-            --region "$AWS_REGION" \
-            --query 'taskDefinition' \
-            --output json > raw-task-def.json
+            --query 'taskDefinition' > raw-task-def.json
           
           cat raw-task-def.json | jq --arg IMAGE="$NEW_IMAGE" 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy) | .containerDefinitions[0].image = $IMAGE' > new-task-def.json
 
