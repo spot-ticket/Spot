@@ -13,9 +13,9 @@ env:
   SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}
   TOSS_SECRET_KEY: ${{ secrets.TOSS_SECRET_KEY }}
   TOSS_CUSTOMER_KEY: ${{ secrets.TOSS_CUSTOMER_KEY }}
+  SERVICE_NAME: order-task
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY: spot-order
-  SERVICE_NAME: order-task
   ECS_SERVICE: spot-order-service
   ECS_CLUSTER: spot-dev-cluster
 
@@ -44,7 +44,7 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Copy Configuration Files
+      - name: Make application.properties
         run: |
           mkdir -p ./src/main/resources
           echo "Copying config files..."
@@ -109,7 +109,7 @@ jobs:
           REGION="$AWS_REGION"
 
           aws ecs describe-task-definition \
-            --task-definition "spot-dev-$SERVICE_NAME-task" \
+            --task-definition "spot-dev-$SERVICE_NAME" \
             --region "$AWS_REGION" \
           | jq --arg IMAGE="$NEW_IMAGE" \
           '.taskDefinition |

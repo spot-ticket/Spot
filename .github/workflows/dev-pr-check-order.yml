@@ -99,8 +99,6 @@ jobs:
         run: chmod +x gradlew
 
       - name: Make application.properties
-        env:
-          COMMON_YML: ${{ secrets.DEV_COMMON_YML }}
         run: |
           mkdir -p ./src/main/resources
           echo "Copying config files..."
