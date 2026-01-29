@@ -1,19 +1,19 @@
-name: DEV PR Check - Store Service
+name: DEV PR Check - Order Service
 
 on:
   pull_request:
     branches: [ dev ]
     paths:
       #        - 'infra/client/**'
-      - 'spot-store/**'
-      - '.github/workflows/pr-check-store.yml'
+      - 'spot-order/**'
+      - '.github/workflows/pr-check-order.yml'
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: spot-store
+        working-directory: spot-order
 
     services:
       postgres:
@@ -39,6 +39,7 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -64,7 +65,7 @@ jobs:
         run: |
           mkdir -p ./src/main/resources
           echo "$COMMON_YML" > ./src/main/resources/common-application.yml
-          cp ../config/spot-store.yml ./src/main/resources/application.yml
+          cp ../config/spot-order.yml ./src/main/resources/application.yml
         shell: bash
 
       - name: Debug - Check Configuration Files
@@ -143,7 +144,7 @@ jobs:
           
           for i in {1..60}; do
             # 서버 헬스 체크
-            RESPONSE=$(curl -s -f http://localhost:8083/actuator/health || true)
+            RESPONSE=$(curl -s -f http://localhost:8082/actuator/health || true)
             if  [[ "$RESPONSE" == *"UP"* ]]; then
               echo "✅ Application started successfully after ${i}s"
               kill $APP_PID 2>/dev/null || true
@@ -166,14 +167,14 @@ jobs:
             if [ $((i % 10)) -eq 0 ]; then
                echo "⏳ Waiting... ($i/60s)"
                echo "Last curl response: $RESPONSE"
-               # 연결 자체가 안되는지, 401 에러인지 확인하기 위해 상태 코드만 찍어봄
-               curl -s -o /dev/null -w "%{http_code}" http://localhost:8083/actuator/health || echo "Connection Refused"
+               # 확인하기 위한 상태 코드
+               curl -s -o /dev/null -w "%{http_code}" http://localhost:8082/actuator/health || echo "Connection Refused"
                echo "" 
             fi
           
             sleep 1
           done
-          
+
           echo "❌ Application failed to start within 60s"
           cat app.log
           kill $APP_PID 2>/dev/null || true

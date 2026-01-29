@@ -2,7 +2,7 @@
   "containerDefinitions": [
     {
       "name": "spot-user-container",
-      "image": "<AWS_ID>.dkr.ecr.ap-northeast-2.amazonaws.com/spot-user:20260126-221924",
+      "image": "<AWS_ID>.dkr.ecr.ap-northeast-2.amazonaws.com/spot-user:latest",
       "cpu": 0,
       "portMappings": [
         {
@@ -57,7 +57,7 @@
         },
         {
           "name": "SPRING_KAFKA_BOOTSTRAP_SERVERS",
-          "value": "10.0.1.211:9092"
+          "value": "10.0.1.147:9092"
         },
         {
           "name": "SPRING_MAIL_PORT",
@@ -140,20 +140,10 @@
           "awslogs-stream-prefix": "ecs"
         }
       },
-      "healthCheck": {
-        "command": [
-          "CMD-SHELL",
-          "curl -f http://localhost:8081/actuator/health || exit 1"
-        ],
-        "interval": 30,
-        "timeout": 5,
-        "retries": 3,
-        "startPeriod": 60
-      },
       "systemControls": []
     }
   ],
-  "family": "spot-user-task",
+  "family": "spot-dev-user-task",
   "taskRoleArn": "arn:aws:iam::<AWS_ID>:role/spot-dev-ecs-task-role",
   "executionRoleArn": "arn:aws:iam::<AWS_ID>:role/spot-dev-ecs-task-execution-role",
   "networkMode": "awsvpc",
@@ -162,6 +152,6 @@
   "requiresCompatibilities": [
     "FARGATE"
   ],
-  "cpu": "256",
-  "memory": "512"
+  "cpu": "512",
+  "memory": "1024"
 }
