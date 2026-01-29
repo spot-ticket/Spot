@@ -1,6 +1,8 @@
 spring:
   config:
-    import: optional:classpath:common-application.yml
+    import:
+      - classpath:common.yml
+      - classpath:kafka-topics.yml
   application:
     name: spot-order
 

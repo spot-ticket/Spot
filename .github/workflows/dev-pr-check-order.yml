@@ -4,9 +4,16 @@ on:
   pull_request:
     branches: [ dev ]
     paths:
-      #        - 'infra/client/**'
+      - 'config/common.yml'
+      - 'config/kafka-topics.yml'
+      - 'config/spot-order.yml'
       - 'spot-order/**'
       - '.github/workflows/pr-check-order.yml'
+
+env:
+  SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}
+  TOSS_SECRET_KEY: ${{ secrets.TOSS_SECRET_KEY }}
+  TOSS_CUSTOMER_KEY: ${{ secrets.TOSS_CUSTOMER_KEY }}
 
 jobs:
   build-and-test:
@@ -83,10 +90,10 @@ jobs:
           distribution: 'temurin'
       #        cache: gradle
 
-      - name: Setup Gradle
-        uses: gradle/actions/setup-gradle@v3
-        with:
-          cache-read-only: true
+#      - name: Setup Gradle
+#        uses: gradle/actions/setup-gradle@v3
+#        with:
+#          cache-read-only: true
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
@@ -96,7 +103,9 @@ jobs:
           COMMON_YML: ${{ secrets.DEV_COMMON_YML }}
         run: |
           mkdir -p ./src/main/resources
-          echo "$COMMON_YML" > ./src/main/resources/common-application.yml
+          echo "Copying config files..."
+          cp ../config/common.yml ./src/main/resources/common.yml
+          cp ../config/kafka-topics.yml ./src/main/resources/kafka-topics.yml
           cp ../config/spot-order.yml ./src/main/resources/application.yml
         shell: bash
 
@@ -106,7 +115,7 @@ jobs:
           ls -al ./src/main/resources/
           
           echo "=== Common YML Content ==="
-          cat ./src/main/resources/common-application.yml
+          cat ./src/main/resources/common.yml
           
           echo "=== Application YML Content ==="
           cat ./src/main/resources/application.yml
