@@ -43,7 +43,11 @@ public class SecurityConfig {
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/", "/swagger-ui/**", "/v3/api-docs/**", "/api/internal/**").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers(
+                        "/", "/swagger-ui/**", "/v3/api-docs/**", 
+                        "/api/internal/**" 
+                ).permitAll()
                 .anyRequest().authenticated()
         );
 

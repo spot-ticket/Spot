@@ -3,7 +3,6 @@ package com.example.Spot.global.infrastructure.config.security;
 import org.springframework.boot.actuate.autoconfigure.security.servlet.EndpointRequest;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -46,7 +45,11 @@ public class SecurityConfig {
         http.sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS));
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
-                .requestMatchers("/", "/swagger-ui/**", "/v3/api-docs/**", "/api/internal/**").permitAll()
+                .requestMatchers("/actuator/**").permitAll()
+                .requestMatchers(
+                        "/", "/swagger-ui/**", "/v3/api-docs/**",
+                        "/api/stores/**", "/api/categories/**"
+                ).permitAll()
                 .anyRequest().authenticated()
         );
 
