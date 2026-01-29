@@ -1,19 +1,19 @@
-name: DEV PR Check - Store Service
+name: DEV PR Check - Order Service
 
 on:
   pull_request:
     branches: [ dev ]
     paths:
       #        - 'infra/client/**'
-      - 'spot-store/**'
-      - '.github/workflows/pr-check-store.yml'
+      - 'spot-order/**'
+      - '.github/workflows/pr-check-order.yml'
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: spot-store
+        working-directory: spot-order
 
     services:
       postgres:
@@ -97,7 +97,7 @@ jobs:
         run: |
           mkdir -p ./src/main/resources
           echo "$COMMON_YML" > ./src/main/resources/common-application.yml
-          cp ../config/spot-store.yml ./src/main/resources/application.yml
+          cp ../config/spot-order.yml ./src/main/resources/application.yml
         shell: bash
 
       - name: Debug - Check Configuration Files
@@ -126,12 +126,12 @@ jobs:
           # 빌드된 JAR 파일 찾기
           JAR_FILE=$(find build/libs -name "*.jar" | head -n 1)
           echo "Testing JAR: $JAR_FILE"
-          
+      
           # 백그라운드 실행
           nohup java -Dspring.output.ansi.enabled=NEVER \
               -jar $JAR_FILE \
               --management.endpoint.health.show-details=always > app.log 2>&1 &
-          
+      
           APP_PID=$!
           echo "Started JAR with PID: $APP_PID"
           
@@ -140,7 +140,7 @@ jobs:
           
           for i in {1..60}; do
             # 서버 헬스 체크
-            RESPONSE=$(curl -s -f http://localhost:8083/actuator/health || true)
+            RESPONSE=$(curl -s -f http://localhost:8082/actuator/health || true)
             if  [[ "$RESPONSE" == *"UP"* ]]; then
               echo "✅ Application started successfully after ${i}s"
               kill $APP_PID 2>/dev/null || true
@@ -164,7 +164,7 @@ jobs:
                echo "⏳ Waiting... ($i/60s)"
                echo "Last curl response: $RESPONSE"
                # 확인하기 위한 상태 코드
-               curl -s -o /dev/null -w "%{http_code}" http://localhost:8083/actuator/health || echo "Connection Refused"
+               curl -s -o /dev/null -w "%{http_code}" http://localhost:8082/actuator/health || echo "Connection Refused"
                echo "" 
             fi
           

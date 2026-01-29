@@ -30,6 +30,48 @@ jobs:
           --health-timeout 5s
           --health-retries 5
 
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      kafka:
+        image: confluentinc/cp-kafka:7.5.0
+        ports:
+          - 9092:9092
+        env:
+          KAFKA_LOG4J_ROOT_LOGLEVEL: 'WARN'
+          KAFKA_LOG4J_LOGGERS: 'kafka.controller=WARN,state.change.logger=WARN,kafka.producer.async.DefaultEventHandler=WARN'
+
+          KAFKA_NODE_ID: 1
+          KAFKA_PROCESS_ROLES: 'broker,controller'
+          KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+          KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093'
+
+          KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://localhost:9092'
+
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT'
+          KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+          KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+          CLUSTER_ID: 'J9Xz7kQPRYyK8VkqH3mW5A'
+
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+          KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+
+        options: >-
+          --health-cmd "kafka-topics --bootstrap-server localhost:9092 --list"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5      
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
@@ -39,63 +81,103 @@ jobs:
       with:
         java-version: '21'
         distribution: 'temurin'
-        cache: gradle
+#        cache: gradle
 
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
+      with:
+        cache-read-only: true
 
     - name: Grant execute permission for gradlew
       run: chmod +x gradlew
 
     - name: Make application.properties
+      env:
+        COMMON_YML: ${{ secrets.DEV_COMMON_YML }}
       run: |
         mkdir -p ./src/main/resources
-        echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
+        echo "$COMMON_YML" > ./src/main/resources/common-application.yml
+        cp ../config/spot-user.yml ./src/main/resources/application.yml
       shell: bash
 
-    - name: Check code formatting
-      run: ./gradlew checkstyleMain checkstyleTest
-      continue-on-error: true
+    - name: Debug - Check Configuration Files
+      run: |
+        echo "=== File List ==="
+        ls -al ./src/main/resources/
+        
+        echo "=== Common YML Content ==="
+        cat ./src/main/resources/common-application.yml
+        
+        echo "=== Application YML Content ==="
+        cat ./src/main/resources/application.yml
 
-    - name: Build with Gradle
-      run: ./gradlew build -x test
+    - name: Check code formatting
+      run: ./gradlew checkstyleMain
+#      checkstyleTest
+#      continue-on-error: true
 
     - name: Run tests
       run: ./gradlew test
       continue-on-error: true
 
+    - name: Build with Gradle
+      run: ./gradlew bootJar -x test
+
     - name: Test application startup
       run: |
-        ./gradlew bootRun > bootrun.log 2>&1 &
+        # 빌드된 JAR 파일 찾기
+        JAR_FILE=$(find build/libs -name "*.jar" | head -n 1)
+        echo "Testing JAR: $JAR_FILE"
+        
+        # 백그라운드 실행
+        nohup java -Dspring.output.ansi.enabled=NEVER \
+            -jar $JAR_FILE \
+            --management.endpoint.health.show-details=always > app.log 2>&1 &
+        
         APP_PID=$!
-        echo "Started bootRun with PID: $APP_PID"
-
+        echo "Started JAR with PID: $APP_PID"
+        
         # 최대 60초 대기하면서 애플리케이션 시작 확인
+        echo "Waiting for application to start..."
+        
         for i in {1..60}; do
-          # 로그에서 시작 완료 메시지 확인
-          if grep -q "Started SpotUserApplication" bootrun.log 2>/dev/null; then
+          # 서버 헬스 체크
+          RESPONSE=$(curl -s -f http://localhost:8081/actuator/health || true)
+          if  [[ "$RESPONSE" == *"UP"* ]]; then
             echo "✅ Application started successfully after ${i}s"
             kill $APP_PID 2>/dev/null || true
             exit 0
           fi
-
-          # 프로세스가 죽었는지 확인
+        
+            # 헬스 체크 응답 결과 출력
+            echo "=== Actuator Health Response ==="
+            echo "$RESPONSE" | jq .
+            echo "=================================="
+        
+          # 프로세스가 중간에 죽었는지 체크
           if ! kill -0 $APP_PID 2>/dev/null; then
-            echo "❌ Application process terminated unexpectedly"
-            echo "=== bootRun log ==="
-            cat bootrun.log
-            exit 1
+             echo "❌ Application process died unexpectedly"
+             cat app.log
+             exit 1
           fi
-
+        
+        # 디버깅 - 실패 원인 찾기
+          if [ $((i % 10)) -eq 0 ]; then
+             echo "⏳ Waiting... ($i/60s)"
+             echo "Last curl response: $RESPONSE"
+             # 확인하기 위한 상태 코드
+             curl -s -o /dev/null -w "%{http_code}" http://localhost:8081/actuator/health || echo "Connection Refused"
+             echo "" 
+          fi
+        
           sleep 1
         done
-
-        echo "❌ Application failed to start within 60 seconds"
-        echo "=== bootRun log ==="
-        cat bootrun.log
+        
+        echo "❌ Application failed to start within 60s"
+        cat app.log
         kill $APP_PID 2>/dev/null || true
         exit 1
-      timeout-minutes: 2
+      shell: bash
 
     - name: Upload build artifacts
       if: failure()
