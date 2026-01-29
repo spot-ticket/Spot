@@ -113,8 +113,11 @@ jobs:
         ls -al ./src/main/resources/
         
         echo "=== Common YML Content ==="
-        cat ./src/main/resources/common-application.yml
-        
+        cat ./src/main/resources/common.yml
+      
+        echo "=== Kafka Topics YML Content ==="
+        cat ./src/main/resources/kafka-topics.yml
+      
         echo "=== Application YML Content ==="
         cat ./src/main/resources/application.yml
 
