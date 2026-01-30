@@ -2,7 +2,7 @@
   "containerDefinitions": [
     {
       "name": "spot-gateway-container",
-      "image": "<AWS_ID>.dkr.ecr.ap-northeast-2.amazonaws.com/spot-gateway:20260126-221924",
+      "image": "322546275072.dkr.ecr.ap-northeast-2.amazonaws.com/spot-gateway:latest",
       "cpu": 0,
       "portMappings": [
         {
@@ -190,25 +190,25 @@
       "healthCheck": {
         "command": [
           "CMD-SHELL",
-          "curl -f http://localhost:8080/actuator/health || exit 1"
+          "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health/liveness || exit 1"
         ],
         "interval": 30,
         "timeout": 5,
         "retries": 3,
-        "startPeriod": 60
+        "startPeriod": 90
       },
       "systemControls": []
     }
   ],
-  "family": "spot-gateway-task",
-  "taskRoleArn": "arn:aws:iam::<AWS_ID>:role/spot-dev-ecs-task-role",
-  "executionRoleArn": "arn:aws:iam::<AWS_ID>:role/spot-dev-ecs-task-execution-role",
+  "family": "spot-dev-gateway-task",
+  "taskRoleArn": "arn:aws:iam::322546275072:role/spot-dev-ecs-task-role",
+  "executionRoleArn": "arn:aws:iam::322546275072:role/spot-dev-ecs-task-execution-role",
   "networkMode": "awsvpc",
   "volumes": [],
   "placementConstraints": [],
   "requiresCompatibilities": [
     "FARGATE"
   ],
-  "cpu": "256",
-  "memory": "512"
+  "cpu": "1024",
+  "memory": "2048"
 }

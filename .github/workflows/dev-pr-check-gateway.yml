@@ -4,31 +4,16 @@ on:
   pull_request:
     branches: [ dev ]
     paths:
-      #        - 'infra/client/**'
+      - 'config/spot-gateway.yml'
       - 'spot-gateway/**'
-      - '.github/workflows/pr-check-gateway.yml'
-
+      - '.github/workflows/dev-pr-check-gateway.yml'
+#
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: spot-gateway
-
-    services:
-      postgres:
-        image: postgres:16
-        env:
-          POSTGRES_DB: myapp_db
-          POSTGRES_USER: admin
-          POSTGRES_PASSWORD: secret
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
 
     steps:
       - name: Checkout code
@@ -50,19 +35,18 @@ jobs:
       - name: Make application.properties
         run: |
           mkdir -p ./src/main/resources
-          echo "${{ secrets.APPLICATION_YML }}" > ./src/main/resources/application.yml
+          cp ../config/spot-gateway.yml ./src/main/resources/application.yml
         shell: bash
 
       - name: Check code formatting
-        run: ./gradlew checkstyleMain checkstyleTest
-        continue-on-error: true
-
-      - name: Build with Gradle
-        run: ./gradlew build -x test
+        run: ./gradlew checkstyleMain
 
       - name: Run tests
         run: ./gradlew test
         continue-on-error: true
+
+      - name: Build with Gradle
+        run: ./gradlew bootJar -x test
 
       - name: Test application startup
         run: |

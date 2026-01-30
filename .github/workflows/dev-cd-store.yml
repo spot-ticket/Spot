@@ -3,14 +3,19 @@ on:
   push:
     branches: [ dev ]
     paths:
-      #        - 'infra/client/**'
+      - 'config/common.yml'
+      - 'config/kafka-topics.yml'
+      - 'config/spot-store.yml'
       - 'spot-store/**'
       - '.github/workflows/dev-cd-store.yml'
 
 env:
+  SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}
+  TOSS_SECRET_KEY: ${{ secrets.TOSS_SECRET_KEY }}
+  TOSS_CUSTOMER_KEY: ${{ secrets.TOSS_CUSTOMER_KEY }}
+  SERVICE_NAME: store-task
   AWS_REGION: ap-northeast-2
   ECR_REPOSITORY: spot-store
-  TASK_DEFINITION: infra/task-definitions/dev-store-task.json
   ECS_SERVICE: spot-store-service
   ECS_CLUSTER: spot-dev-cluster
 
@@ -38,6 +43,17 @@ jobs:
 
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
+
+      - name: Make application.properties
+        run: |
+          mkdir -p ./src/main/resources
+          echo "Copying config files..."
+          cp ../config/common.yml ./src/main/resources/common.yml
+          cp ../config/kafka-topics.yml ./src/main/resources/kafka-topics.yml
+          cp ../config/spot-store.yml ./src/main/resources/application.yml
+          
+          # 확인용
+          ls -al ./src/main/resources/
 
       - name: Build with Gradle
         run: ./gradlew build -x test
@@ -85,31 +101,37 @@ jobs:
         id: render-task-def
         env:
           NEW_IMAGE: ${{ steps.login-ecr.outputs.registry }}/${{ env.ECR_REPOSITORY }}:${{ steps.image-tag.outputs.short_tag }}
-          AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
+          SERVICE_NAME: ${{ env.SERVICE_NAME }}
+          AWS_REGION: ${{ env.AWS_REGION }}
         run: |
           echo "Rendering Task Definition..."
 
-          # 1. <AWS_ID> 치환
-          sed "s|<AWS_ID>|$AWS_ACCOUNT_ID|g" ../${{ env.TASK_DEFINITION }} > temp-task-def.json
+          aws ecs describe-task-definition \
+            --task-definition "spot-dev-$SERVICE_NAME" \
+            --region "$AWS_REGION" \
+            --query 'taskDefinition' \
+            --output json > raw-task-def.json
+          
+          cat raw-task-def.json | jq --arg IMAGE="$NEW_IMAGE" \
+            'del(
+            .taskDefinitionArn,
+            .revision,
+            .status,
+            .requiresAttributes,
+            .compatibilities,
+            .registeredAt,
+            .registeredBy
+            ) | .containerDefinitions[0].image = $IMAGE' \
+          > new-task-def.json
+          
+          # 디버깅용
+          echo "=== NEW Task Definition ==="
+          cat new-task-def.json
 
-          # TASK_DEFINITION 내의 불필요한 메타데이터 삭제 및 이미지 교체
-          jq --arg IMAGE "$NEW_IMAGE" \
-          '.containerDefinitions[0].image = $IMAGE | 
-            del(
-              .taskDefinitionArn, 
-              .revision, 
-              .status, 
-              .requiresAttributes, 
-              .compatibilities, 
-              .registeredAt, 
-              .registeredBy
-            )' \
-          temp-task-def.json > new-task-def.json
-
-          # 3. AWS에 등록
+          # AWS에 등록
           NEW_TASK_INFO=$(aws ecs register-task-definition --cli-input-json file://new-task-def.json)
 
-          # 4. ARN 추출
+          # ARN 추출
           NEW_TASK_ARN=$(echo $NEW_TASK_INFO | jq -r '.taskDefinition.taskDefinitionArn')
           echo "NEW_TASK_ARN=$NEW_TASK_ARN" >> $GITHUB_OUTPUT
           echo "New Task Definition ARN: $NEW_TASK_ARN"
