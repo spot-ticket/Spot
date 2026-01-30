@@ -9,7 +9,7 @@ on:
       - 'config/spot-order.yml'
       - 'spot-order/**'
       - '.github/workflows/dev-pr-check-order.yml'
-
+#
 env:
   SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}
   TOSS_SECRET_KEY: ${{ secrets.TOSS_SECRET_KEY }}
