@@ -1,0 +1,214 @@
+{
+  "containerDefinitions": [
+    {
+      "name": "spot-gateway-container",
+      "image": "322546275072.dkr.ecr.ap-northeast-2.amazonaws.com/spot-gateway:latest",
+      "cpu": 0,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 8080,
+          "protocol": "tcp",
+          "name": "gateway",
+          "appProtocol": "http"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_7_ID",
+          "value": "review-service"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_9_URI",
+          "value": "http://order.spot.local:8082"
+        },
+        {
+          "name": "MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE",
+          "value": "health,info,gateway"
+        },
+        {
+          "name": "LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_CLOUD_GATEWAY",
+          "value": "DEBUG"
+        },
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "dev"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_4_URI",
+          "value": "http://user.spot.local:8081"
+        },
+        {
+          "name": "SPRING_DATA_REDIS_HOST",
+          "value": "spot-dev-redis.ohks6h.ng.0001.apn2.cache.amazonaws.com"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_10_URI",
+          "value": "http://payment.spot.local:8084"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_0_URI",
+          "value": "http://user.spot.local:8081"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_3_URI",
+          "value": "http://user.spot.local:8081"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_9_PREDICATES_0",
+          "value": "Path=/api/orders/**"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_8_PREDICATES_0",
+          "value": "Path=/api/menus/**"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_10_ID",
+          "value": "payment-service"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_1_ID",
+          "value": "user-join"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_7_PREDICATES_0",
+          "value": "Path=/api/reviews/**"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_3_ID",
+          "value": "user-service"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_5_PREDICATES_0",
+          "value": "Path=/api/stores/**"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_8_URI",
+          "value": "http://store.spot.local:8083"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_5_ID",
+          "value": "store-service"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_9_ID",
+          "value": "order-service"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_6_PREDICATES_0",
+          "value": "Path=/api/categories/**"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_8_ID",
+          "value": "menu-service"
+        },
+        {
+          "name": "SERVICE_NAME",
+          "value": "spot-gateway"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_6_ID",
+          "value": "category-service"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_0_PREDICATES_0",
+          "value": "Path=/api/login"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_3_PREDICATES_0",
+          "value": "Path=/api/users/**"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_6_URI",
+          "value": "http://store.spot.local:8083"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_4_PREDICATES_0",
+          "value": "Path=/api/admin/**"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_7_URI",
+          "value": "http://store.spot.local:8083"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_2_URI",
+          "value": "http://user.spot.local:8081"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_2_PREDICATES_0",
+          "value": "Path=/api/auth/**"
+        },
+        {
+          "name": "SPRING_DATA_REDIS_PORT",
+          "value": "6379"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_1_PREDICATES_0",
+          "value": "Path=/api/join"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_10_PREDICATES_0",
+          "value": "Path=/api/payments/**"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_0_ID",
+          "value": "user-login"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_5_URI",
+          "value": "http://store.spot.local:8083"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_2_ID",
+          "value": "user-auth"
+        },
+        {
+          "name": "MANAGEMENT_ENDPOINT_GATEWAY_ACCESS",
+          "value": "unrestricted"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_1_URI",
+          "value": "http://user.spot.local:8081"
+        },
+        {
+          "name": "SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_4_ID",
+          "value": "admin-service"
+        }
+      ],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "secrets": [],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/spot-gateway",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "wget --no-verbose --tries=1 --spider http://localhost:8080/actuator/health/liveness || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 90
+      },
+      "systemControls": []
+    }
+  ],
+  "family": "spot-dev-gateway-task",
+  "taskRoleArn": "arn:aws:iam::322546275072:role/spot-dev-ecs-task-role",
+  "executionRoleArn": "arn:aws:iam::322546275072:role/spot-dev-ecs-task-execution-role",
+  "networkMode": "awsvpc",
+  "volumes": [],
+  "placementConstraints": [],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "1024",
+  "memory": "2048"
+}
