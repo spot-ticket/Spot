@@ -105,15 +105,11 @@ jobs:
         run: |
           echo "Rendering Task Definition..."
 
-          aws ecs describe-task-definition \
-            --task-definition "spot-dev-$SERVICE_NAME" \
-            --query 'taskDefinition' \
-            --output json > raw-task-def.json
+          # 로컬 파일을 읽어서, 이미지 태그만 'NEW_IMAGE'로 교체 후 저장
+          jq --arg IMAGE "$NEW_IMAGE" '.containerDefinitions[0].image = $IMAGE' ../infra/task-definitions/dev-order-task.json > new-task-def.json
           
-          cat raw-task-def.json | jq --arg IMAGE="$NEW_IMAGE" 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy) | .containerDefinitions[0].image = $IMAGE' > new-task-def.json
-
-          # 디버깅용
-          echo "=== NEW Task Definition ==="
+          # 디버깅용 확인
+          echo "=== NEW Task Definition Preview ==="
           cat new-task-def.json
 
           # AWS에 등록
