@@ -8,6 +8,21 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.verify;
 
+import java.time.LocalTime;
+import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.test.util.ReflectionTestUtils;
+
 import com.example.Spot.menu.domain.repository.MenuRepository;
 import com.example.Spot.store.application.service.StoreService;
 import com.example.Spot.store.application.service.UserCallService;
@@ -19,19 +34,6 @@ import com.example.Spot.store.domain.repository.StoreRepository;
 import com.example.Spot.store.infrastructure.aop.StoreValidationContext;
 import com.example.Spot.store.presentation.dto.request.StoreCreateRequest;
 import com.example.Spot.store.presentation.dto.request.StoreUpdateRequest;
-import java.time.LocalTime;
-import java.util.List;
-import java.util.Optional;
-import java.util.UUID;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.DisplayName;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class StoreServiceTest {
@@ -65,7 +67,8 @@ class StoreServiceTest {
 
         // when
         UUID storeId = storeService.createStore(request, 1);
-
+        assertThat(storeId).isNotNull();
+        
         // then
         verify(storeRepository).saveAndFlush(any());
         verify(storeCategoryRepository).saveAll(any());
@@ -92,7 +95,7 @@ class StoreServiceTest {
         // given
         UUID storeId = UUID.randomUUID();
         StoreEntity store = spy(StoreEntity.builder().name("옛날이름").build());
-        StoreUpdateRequest request = new StoreUpdateRequest("새이름", "서울", "상세", "010", LocalTime.of(10,0), LocalTime.of(20,0), null);
+        StoreUpdateRequest request = new StoreUpdateRequest("새이름", "서울", "상세", "010", LocalTime.of(10, 0), LocalTime.of(20, 0), null);
 
         // AOP에서 컨텍스트에 저장했다고 가정
         StoreValidationContext.setCurrentStore(store);
