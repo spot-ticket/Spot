@@ -1,6 +1,7 @@
 spring:
   config:
-    import: classpath:/common.yml
+    import:
+      - classpath:common.yml
   application:
     name: spot-user
 
@@ -8,9 +9,53 @@ server:
   port: 8081
 
 feign:
-  order:
-    url: http://spot-order:8083
   store:
     url: http://spot-store:8082
+  order:
+    url: http://spot-order:8083
   payment:
     url: http://spot-payment:8084
+  client:
+    config:
+      default:
+        loggerLevel: FULL
+
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - health
+          - info
+          - metrics
+          - prometheus
+
+  endpoint:
+    health:
+      probes:
+        enabled: true
+
+  metrics:
+    tags:
+      application: ${spring.application.name}
+
+service:
+  active-regions: 종로구
+
+toss:
+  payments:
+    base-url: https://api.tosspayments.com
+    customerKey: customer_1
+    timeout: 10
+    secretKey: test_sk_E92LAa5PVb91Y01y1nXZ37YmpXyJ
+
+logging:
+  level:
+    feign: DEBUG
+    com.example.Spot: DEBUG
+    com.example.Spot.global.feign: DEBUG
+    io.github.resilience4j.circuitbreaker: INFO
+    io.github.resilience4j.retry: INFO
+    io.github.resilience4j.bulkhead: INFO
