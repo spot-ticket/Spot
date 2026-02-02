@@ -29,4 +29,8 @@ public class AdminStoreInternalService {
         storeService.deleteStore(storeId, userId, true);
     }
 
+    public long getStoreCount() {
+        return storeRepository.count();
+    }
+
 }

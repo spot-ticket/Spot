@@ -40,7 +40,6 @@ import com.example.Spot.order.presentation.dto.request.OrderItemRequestDto;
 import com.example.Spot.order.presentation.dto.response.OrderResponseDto;
 import com.example.Spot.order.presentation.dto.response.OrderStatsResponseDto;
 
-import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
@@ -399,7 +398,6 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @CircuitBreaker(name = "payment_ready_create")
-    @Bulkhead(name = "payment_ready_create", type = Bulkhead.Type.SEMAPHORE)
     @Retry(name = "payment_ready_create")
     private void cancelPaymentIfExists(UUID orderId, String cancelReason) {
         try {

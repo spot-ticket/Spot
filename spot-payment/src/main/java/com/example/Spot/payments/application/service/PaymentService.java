@@ -215,7 +215,6 @@ public class PaymentService {
 
   // User 서비스 호출 - 사용자 존재 확인
   @CircuitBreaker(name = "user_validate_activeUser")
-  @Bulkhead(name = "user_validate_activeUser", type = Bulkhead.Type.SEMAPHORE)
   @Retry(name = "user_validate_activeUser")
   private void validateUserExists(Integer userId) {
     if (!userClient.existsById(userId)) {

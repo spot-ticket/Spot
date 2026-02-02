@@ -9,8 +9,8 @@ server:
 
 feign:
   order:
-    url: http://spot-order:8083
+    url: http://spot-order:8082
   store:
-    url: http://spot-store:8082
+    url: http://spot-store:8083
   payment:
     url: http://spot-payment:8084

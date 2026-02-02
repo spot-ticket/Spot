@@ -34,6 +34,7 @@ public class InternalStoreController {
         return ResponseEntity.ok(InternalStoreResponse.from(store));
     }
 
+
     @GetMapping("/stores/{storeId}/exists")
     public ResponseEntity<Boolean> existsById(@PathVariable UUID storeId) {
         return ResponseEntity.ok(storeRepository.existsById(storeId));

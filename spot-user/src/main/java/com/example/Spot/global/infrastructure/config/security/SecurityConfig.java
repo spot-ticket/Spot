@@ -2,6 +2,7 @@ package com.example.Spot.global.infrastructure.config.security;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.configuration.AuthenticationConfiguration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
@@ -68,10 +69,11 @@ public class SecurityConfig {
         // 경로별 인가 작업
         http
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("OPTIONS", "/**", "/actuator/**").permitAll()
+                                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+                                .requestMatchers("/actuator/**").permitAll()
                         // 누구나 접근 가능 (로그인, 회원가입, 토큰 갱신, 가게 조회, 카테고리 조회)
                         .requestMatchers("/api/login", "/", "/api/join", "/api/auth/refresh", "/swagger-ui/*", "v3/api-docs", "/v3/api-docs/*",
-                                "/api/stores", "/api/stores/*", "/api/stores/search", "/api/categories", "/api/categories/**").permitAll()
+                                "/api/stores", "/api/stores/*", "/api/stores/search", "/api/categories", "/api/categories/**", "/api/internal/admin/**").permitAll()
 
                         // 관리자 전용 API (MASTER, MANAGER만 접근 가능)
                         .requestMatchers("/api/admin/**").hasAnyRole("MASTER", "MANAGER")

@@ -28,4 +28,18 @@ public interface StoreAdminClient {
 
     @DeleteMapping("/api/internal/admin/stores/{storeId}")
     void deleteStore(@PathVariable("storeId") UUID storeId);
+
+
+
+    @GetMapping("/api/internal/admin/stores/count")
+    long getStoreCount();
+
+    @PatchMapping("/api/internal/admin/stores/{storeId}/status")
+    void updateStoreStatus(
+            @PathVariable("storeId") UUID storeId,
+            @RequestParam("status") String status
+    );
+
+
+
 }

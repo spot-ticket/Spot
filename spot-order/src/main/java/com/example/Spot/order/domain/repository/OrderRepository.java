@@ -183,5 +183,19 @@ public interface OrderRepository extends JpaRepository<OrderEntity, UUID> {
             "ORDER BY order_number DESC " +
             "LIMIT 1", nativeQuery = true)
     Optional<String> findTopOrderNumberByDatePattern(@Param("datePattern") String datePattern);
+
+    // internal admin
+    @Query("""
+    SELECT o.orderStatus, COUNT(o)
+    FROM OrderEntity o
+    GROUP BY o.orderStatus
+""")
+    List<Object[]> countGroupByStatus();
+
+    long countByCreatedAtBetween(LocalDateTime startDate, LocalDateTime endDate);
+
+    long countByOrderStatusIn(List<OrderStatus> statuses);
+
+
 }
 

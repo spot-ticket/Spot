@@ -47,6 +47,13 @@ public class AdminStoreController {
         return ResponseEntity
                 .ok(ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, stores));
     }
+    @GetMapping("/count")
+    public ResponseEntity<ApiResponse<Long>> getStoreCount() {
+        long count = adminStoreService.getStoreCount();
+
+        return ResponseEntity
+                .ok(ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, count));
+    }
 
     @PatchMapping("/{storeId}/approve")
     public ResponseEntity<ApiResponse<Void>> approveStore(@PathVariable UUID storeId) {
