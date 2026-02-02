@@ -82,10 +82,7 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
-    volumes:
-      - ./config/common.yml:/config/common.yml:ro
-      - ./config/spot-gateway.yml:/config/application.yml:ro
+      - SPRING_CONFIG_NAME=spot-gateway
     depends_on:
       - redis
       - spot-user
@@ -103,14 +100,13 @@ services:
     ports:
       - "8082:8082"
     environment:
-      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+      - SPRING_CONFIG_NAME=spot-order
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/myapp_db
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=secret
       - FEIGN_STORE_URL=http://spot-store:8083
       - FEIGN_PAYMENT_URL=http://spot-payment:8084
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
-    volumes:
-      - ./config/common.yml:/config/common.yml:ro
-      - ./config/kafka-topics.yml:/config/kafka-topics.yml:ro
-      - ./config/spot-order.yml:/config/application.yml:ro
     depends_on:
       - db
       - redis
@@ -126,14 +122,13 @@ services:
     ports:
       - "8084:8084"
     environment:
-      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+      - SPRING_CONFIG_NAME=spot-payment
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/myapp_db
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=secret
       - FEIGN_ORDER_URL=http://spot-order:8082
       - FEIGN_USER_URL=http://spot-user:8081
       - FEIGN_STORE_URL=http://spot-store:8083
-    volumes:
-      - ./config/common.yml:/config/common.yml:ro
-      - ./config/kafka-topics.yml:/config/kafka-topics.yml:ro
-      - ./config/spot-payment.yml:/config/application.yml:ro
     depends_on:
       - db
       - redis
@@ -149,11 +144,11 @@ services:
     ports:
       - "8083:8083"
     environment:
-      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+      - SPRING_CONFIG_NAME=spot-store
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/myapp_db
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=secret
       - FEIGN_USER_URL=http://spot-user:8081
-    volumes:
-      - ./config/common.yml:/config/common.yml:ro
-      - ./config/spot-store.yml:/config/application.yml:ro
     depends_on:
       - db
       - redis
@@ -168,12 +163,12 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+      - SPRING_CONFIG_NAME=spot-user
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/myapp_db
+      - SPRING_DATASOURCE_USERNAME=admin
+      - SPRING_DATASOURCE_PASSWORD=secret
       - FEIGN_STORE_URL=http://spot-store:8083
       - FEIGN_ORDER_URL=http://spot-order:8082
-    volumes:
-      - ./config/common.yml:/config/common.yml:ro
-      - ./config/spot-user.yml:/config/application.yml:ro
     depends_on:
       - db
       - redis

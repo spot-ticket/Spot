@@ -19,6 +19,15 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDirs '../config'
+            include 'common.yml', 'kafka-topics.yml', 'spot-user.yml'
+        }
+    }
+}
+
 dependencyManagement {
     imports {
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:2025.0.1"

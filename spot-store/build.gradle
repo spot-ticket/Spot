@@ -23,6 +23,15 @@ ext {
     set('springCloudVersion', "2025.0.1")
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDirs '../config'
+            include 'common.yml', 'kafka-topics.yml', 'spot-store.yml'
+        }
+    }
+}
+
 dependencyManagement {
     imports {
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:${springCloudVersion}"
