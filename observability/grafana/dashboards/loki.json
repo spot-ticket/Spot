@@ -1,0 +1,89 @@
+{
+  "uid": "loki-poc",
+  "title": "Loki Logs - POC",
+  "timezone": "browser",
+  "schemaVersion": 38,
+  "version": 1,
+  "refresh": "10s",
+  "tags": ["loki", "logs", "poc"],
+  "time": { "from": "now-15m", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "service",
+        "type": "query",
+        "datasource": { "type": "loki", "uid": "loki-thomas-vitale" },
+        "refresh": 1,
+        "query": "label_values({job=\"fluent-bit\"}, container_name)",
+        "includeAll": true,
+        "allValue": ".*",
+        "multi": false,
+        "current": { "text": "All", "value": "$__all" }
+      },
+      {
+        "name": "level",
+        "type": "custom",
+        "query": "ALL,ERROR,WARN,INFO,DEBUG",
+        "current": { "text": "ALL", "value": "ALL" }
+      }
+    ]
+  },
+  "annotations": { "list": [] },
+  "panels": [
+    {
+      "type": "timeseries",
+      "title": "Error logs / min",
+      "id": 1,
+      "datasource": { "type": "loki", "uid": "__default__" },
+      "gridPos": { "x": 0, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "sum by (container_name) (rate({job=\"fluent-bit\", container_name=~\"$service\"} |~ \"(?i)error\" [1m]))",
+          "legendFormat": "{{container_name}}"
+        }
+      ],
+      "options": {
+        "legend": { "showLegend": true, "displayMode": "list", "placement": "bottom" },
+        "tooltip": { "mode": "multi" }
+      }
+    },
+    {
+      "type": "bargauge",
+      "title": "Top services by ERROR (last 15m)",
+      "id": 2,
+      "datasource": { "type": "loki", "uid": "__default__" },
+      "gridPos": { "x": 12, "y": 0, "w": 12, "h": 8 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "topk(10, sum by (container_name) (count_over_time({job=\"fluent-bit\", container_name=~\"$service\"} |~ \"(?i)error\" [15m])))",
+          "legendFormat": "{{container_name}}"
+        }
+      ],
+      "options": {
+        "displayMode": "basic",
+        "reduceOptions": { "calcs": ["lastNotNull"], "values": false }
+      }
+    },
+    {
+      "type": "logs",
+      "title": "Recent logs",
+      "id": 3,
+      "datasource": { "type": "loki", "uid": "__default__" },
+      "gridPos": { "x": 0, "y": 8, "w": 24, "h": 12 },
+      "targets": [
+        {
+          "refId": "A",
+          "expr": "{job=\"fluent-bit\", container_name=~\"$service\"}"
+        }
+      ],
+      "options": {
+        "showTime": true,
+        "wrapLogMessage": true,
+        "prettifyLogMessage": true,
+        "sortOrder": "Descending"
+      }
+    }
+  ]
+}
