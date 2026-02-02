@@ -13,7 +13,7 @@ feign:
   user:
     url: http://spot-user:8081
   store:
-    base-url: http://spot-store:8083
+    url: http://spot-store:8083
   payment:
     base-url: http://spot-payment:8084
   client:
