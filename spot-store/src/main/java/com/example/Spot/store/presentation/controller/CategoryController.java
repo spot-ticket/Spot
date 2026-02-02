@@ -37,11 +37,11 @@ public class CategoryController implements CategoryApi {
 
     @Override
     @GetMapping
-    public List<CategoryResponseDTO.CategoryItem> getAll() {
+    public List<CategoryResponseDTO.CategoryItem> getAllCategory() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         System.out.println(auth);
 
-        return categoryService.getAll();
+        return categoryService.getAllCategory();
     }
 
     @Override
@@ -54,29 +54,29 @@ public class CategoryController implements CategoryApi {
     @PreAuthorize("hasAnyRole('MASTER','MANAGER','OWNER')")
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CategoryResponseDTO.CategoryDetail create(@RequestBody @Valid CategoryRequestDTO.Create request) {
+    public CategoryResponseDTO.CategoryDetail createCategory(@RequestBody @Valid CategoryRequestDTO.Create request) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         System.out.println(auth);
 
-        return categoryService.create(request);
+        return categoryService.createCategory(request);
     }
 
     @Override
     @PreAuthorize("hasAnyRole('MASTER','MANAGER')")
     @PatchMapping("/{categoryId}")
-    public CategoryResponseDTO.CategoryDetail update(
+    public CategoryResponseDTO.CategoryDetail updateCategory(
             @PathVariable UUID categoryId,
             @RequestBody @Valid CategoryRequestDTO.Update request
     ) {
-        return categoryService.update(categoryId, request);
+        return categoryService.updateCategory(categoryId, request);
     }
 
     @Override
     @PreAuthorize("hasAnyRole('MASTER','MANAGER')")
     @DeleteMapping("/{categoryId}")
     @ResponseStatus(HttpStatus.NO_CONTENT)
-    public void delete(@PathVariable UUID categoryId, @AuthenticationPrincipal CustomUserDetails principal) {
+    public void deleteCategory(@PathVariable UUID categoryId, @AuthenticationPrincipal CustomUserDetails principal) {
         Integer userId = principal.getUserId();
-        categoryService.delete(categoryId, userId);
+        categoryService.deleteCategory(categoryId, userId);
     }
 }

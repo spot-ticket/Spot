@@ -10,7 +10,9 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -18,11 +20,18 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "p_user")
+@Table(
+    name = "p_user",
+    uniqueConstraints = {
+        @UniqueConstraint(columnNames = "username")
+    },
+    indexes = {
+        @Index(name = "idx_user_username", columnList = "name"),
+        @Index(name = "idx_user_nickname", columnList = "nickname")
+    }
+)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class UserEntity extends UpdateBaseEntity {
-
-    // MSA 전환으로 StoreUserEntity와의 관계 제거 (userId로 참조)
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

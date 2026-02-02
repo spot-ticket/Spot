@@ -22,7 +22,10 @@ public record CreateMenuRequestDto(
         String description,
 
         @JsonProperty("image_url")
-        String imageUrl
+        String imageUrl,
+
+        @Min(value = 0, message = "수량은 0개 이상이어야 합니다.")
+        Integer quantity
 ) {
     // Record 내부에 편의 메서드 작성 가능
     public MenuEntity toEntity(StoreEntity store) {
@@ -33,6 +36,7 @@ public record CreateMenuRequestDto(
                 .price(this.price)
                 .description(this.description)
                 .imageUrl(this.imageUrl)
+                .quantity(this.quantity)
                 .build();
     }
 }

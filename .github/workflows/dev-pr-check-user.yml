@@ -4,6 +4,7 @@ on:
   pull_request:
     branches: [ dev ]
     paths:
+      #        - 'infra/client/**'
       - 'spot-user/**'
       - '.github/workflows/pr-check-user.yml'
 
@@ -39,7 +40,7 @@ jobs:
         java-version: '21'
         distribution: 'temurin'
         cache: gradle
-    
+
     - name: Setup Gradle
       uses: gradle/actions/setup-gradle@v3
 

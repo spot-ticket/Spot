@@ -57,7 +57,7 @@ public class OwnerOrderController {
         LocalDateTime dateTime = date != null ? date.atStartOfDay() : null;
         Pageable pageable = PageRequest.of(page, size, Sort.by(direction, sortBy));
 
-        Page<OrderResponseDto> response = orderService.getMyStoreOrdersWithPagination(
+        Page<OrderResponseDto> response = orderService.getMyStoreOrders(
                 userId, customerId, dateTime, status, pageable);
 
         return ResponseEntity

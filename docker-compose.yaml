@@ -35,6 +35,8 @@ services:
       - "19093:19093"
     environment:
       KAFKA_NODE_ID: 1
+      KAFKA_LOG4J_ROOT_LOGLEVEL: 'WARN'
+      KAFKA_LOG4J_LOGGERS: 'kafka.controller=WARN,state.change.logger=WARN,kafka.producer.async.DefaultEventHandler=WARN'
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:19093'
       KAFKA_LISTENERS: 'INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:19093'
@@ -64,8 +66,8 @@ services:
     environment:
       KAFKA_CLUSTERS_0_NAME: local-spot-cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka:29092'
-      LOGGING_LEVEL_ROOT: INFO
-      LOGGING_LEVEL_COM_PROVECTUS: INFO
+      LOGGING_LEVEL_ROOT: WARN
+      LOGGING_LEVEL_COM_PROVECTUS: WARN
     depends_on:
       - kafka
     networks:
@@ -90,14 +92,6 @@ services:
       - spot-store
       - spot-order
       - spot-payment
-    networks:
-      - spot-network
-
-  spot-mono:
-    build:
-      context: ./spot-mono
-      dockerfile: Dockerfile
-    container_name: spot-mono
     networks:
       - spot-network
 

@@ -1,0 +1,155 @@
+{
+  "containerDefinitions": [
+    {
+      "name": "spot-payment-container",
+      "image": "<AWS_ID>.dkr.ecr.ap-northeast-2.amazonaws.com/spot-payment:20260126-221924",
+      "cpu": 0,
+      "portMappings": [
+        {
+          "containerPort": 8084,
+          "hostPort": 8084,
+          "protocol": "tcp",
+          "name": "payment",
+          "appProtocol": "http"
+        }
+      ],
+      "essential": true,
+      "environment": [
+        {
+          "name": "TOSS_PAYMENTS_CUSTOMER_KEY",
+          "value": "customer_1"
+        },
+        {
+          "name": "SERVICE_NAME",
+          "value": "spot-payment"
+        },
+        {
+          "name": "FEIGN_USER_URL",
+          "value": "http://user.spot.local:8081"
+        },
+        {
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://spot-dev-db.cj6iq2cow597.ap-northeast-2.rds.amazonaws.com:5432/spotdb?currentSchema=payments"
+        },
+        {
+          "name": "SPRING_PROFILES_ACTIVE",
+          "value": "dev"
+        },
+        {
+          "name": "SPRING_JPA_HIBERNATE_DDL_AUTO",
+          "value": "update"
+        },
+        {
+          "name": "SPRING_SECURITY_REFRESH_TOKEN_EXPIRE_DAYS",
+          "value": "14"
+        },
+        {
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "spot"
+        },
+        {
+          "name": "SPRING_DATA_REDIS_HOST",
+          "value": "spot-dev-redis.ohks6h.ng.0001.apn2.cache.amazonaws.com"
+        },
+        {
+          "name": "SPRING_DATA_REDIS_PORT",
+          "value": "6379"
+        },
+        {
+          "name": "SPRING_JPA_PROPERTIES_HIBERNATE_DIALECT",
+          "value": "org.hibernate.dialect.PostgreSQLDialect"
+        },
+        {
+          "name": "FEIGN_PAYMENT_URL",
+          "value": "http://payment.spot.local:8084"
+        },
+        {
+          "name": "SPRING_JPA_SHOW_SQL",
+          "value": "false"
+        },
+        {
+          "name": "SPRING_JWT_EXPIRE_MS",
+          "value": "3600000"
+        },
+        {
+          "name": "SERVICE_ACTIVE_REGIONS",
+          "value": "종로구"
+        },
+        {
+          "name": "TOSS_PAYMENTS_BASE_URL",
+          "value": "https://api.tosspayments.com"
+        },
+        {
+          "name": "SPRING_KAFKA_BOOTSTRAP_SERVERS",
+          "value": "10.0.1.211:9092"
+        },
+        {
+          "name": "FEIGN_ORDER_URL",
+          "value": "http://order.spot.local:8082"
+        },
+        {
+          "name": "SPRING_KAFKA_CONSUMER_GROUP_ID",
+          "value": "spot-payment"
+        },
+        {
+          "name": "SPRING_KAFKA_CONSUMER_AUTO_OFFSET_RESET",
+          "value": "earliest"
+        },
+        {
+          "name": "DB_SCHEMA",
+          "value": "payments"
+        },
+        {
+          "name": "FEIGN_STORE_URL",
+          "value": "http://store.spot.local:8083"
+        }
+      ],
+      "mountPoints": [],
+      "volumesFrom": [],
+      "secrets": [
+        {
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "valueFrom": "arn:aws:ssm:ap-northeast-2:<AWS_ID>:parameter/spot/dev/database/password"
+        },
+        {
+          "name": "SPRING_JWT_SECRET",
+          "valueFrom": "arn:aws:ssm:ap-northeast-2:<AWS_ID>:parameter/spot/dev/secrets/jwt_secret"
+        },
+        {
+          "name": "TOSS_PAYMENTS_SECRET_KEY",
+          "valueFrom": "arn:aws:ssm:ap-northeast-2:<AWS_ID>:parameter/spot/dev/secrets/toss_secret_key"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/spot-payment",
+          "awslogs-region": "ap-northeast-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      },
+      "healthCheck": {
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:8084/actuator/health || exit 1"
+        ],
+        "interval": 30,
+        "timeout": 5,
+        "retries": 3,
+        "startPeriod": 60
+      },
+      "systemControls": []
+    }
+  ],
+  "family": "spot-payment-task",
+  "taskRoleArn": "arn:aws:iam::<AWS_ID>:role/spot-dev-ecs-task-role",
+  "executionRoleArn": "arn:aws:iam::<AWS_ID>:role/spot-dev-ecs-task-execution-role",
+  "networkMode": "awsvpc",
+  "volumes": [],
+  "placementConstraints": [],
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "256",
+  "memory": "512"
+}
