@@ -12,6 +12,10 @@ server:
 feign:
   user:
     url: http://spot-user:8081
+  store:
+    base-url: http://spot-store:8083
+  payment:
+    base-url: http://spot-payment:8084
   client:
     config:
       spot-user:
@@ -51,11 +55,11 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,beans,mappings,env,configprops
+        include: health,info,metrics
 
   endpoint:
     health:
-      show-details: always
+      show-details: when_authorized
   metrics:
     tags:
       application: ${spring.application.name}
