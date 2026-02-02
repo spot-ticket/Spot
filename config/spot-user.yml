@@ -1,6 +1,6 @@
 spring:
   config:
-    import: file:/config/common.yml
+    import: classpath:/common.yml
   application:
     name: spot-user
 
