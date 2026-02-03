@@ -97,29 +97,6 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-#      - name: Make application.properties
-#        run: |
-#          mkdir -p ./src/main/resources
-#          echo "Copying config files..."
-#          cp ../config/common.yml ./src/main/resources/common.yml
-#          cp ../config/kafka-topics.yml ./src/main/resources/kafka-topics.yml
-#          cp ../config/spot-user.yml ./src/main/resources/application.yml
-#        shell: bash
-
-#      - name: Debug - Check Configuration Files
-#        run: |
-#          echo "=== File List ==="
-#          ls -al ./src/main/resources/
-#
-#          echo "=== Common YML Content ==="
-#          cat ./src/main/resources/common.yml
-#
-#          echo "=== Kafka Topics YML Content ==="
-#          cat ./src/main/resources/kafka-topics.yml
-#
-#          echo "=== Application YML Content ==="
-#          cat ./src/main/resources/application.yml
-
       - name: Check code formatting
         run: ./gradlew checkstyleMain
 
