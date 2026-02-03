@@ -16,6 +16,15 @@ java {
 }
 repositories { mavenCentral() }
 
+sourceSets {
+    main {
+        resources {
+            srcDirs '../config'
+            include 'spot-gateway.yml'
+        }
+    }
+}
+
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.cloud:spring-cloud-starter-gateway-server-webflux:4.3.3"

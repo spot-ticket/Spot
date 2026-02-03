@@ -1,29 +1,32 @@
-#name: dev-cd-gateway.yml
+#name: dev-cd-user.yml
 #on:
+#  workflow_run:
+#    workflows: [ PROD CI - User Service ]
+#    type: [ completed ]
 #  push:
-#    branches: [ dev ]
+#    branches: [ main ]
 #    paths:
-#      - 'config/spot-gateway.yml'
-#      - 'spot-gateway/src/main/**'
-#      - '.github/workflows/dev-cd-gateway.yml'
+#      #        - 'infra/client/**'
+#      - 'spot-user/**'
+#      - '.github/workflows/prod-cd-user.yml'
 #
 #env:
-#  SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}
-#  TOSS_SECRET_KEY: ${{ secrets.TOSS_SECRET_KEY }}
-#  TOSS_CUSTOMER_KEY: ${{ secrets.TOSS_CUSTOMER_KEY }}
-#  SERVICE_NAME: gateway-task
+#  SERVICE_NAME: user-task
 #  AWS_REGION: ap-northeast-2
-#  ECR_REPOSITORY: spot-gateway
-#  ECS_SERVICE: spot-gateway-service
-#  ECS_CLUSTER: spot-dev-cluster
+#  ECR_REPOSITORY: spot-user
+#  ECS_SERVICE: spot-user-service
+#  ECS_CLUSTER: spot-prod-cluster
+#  ECS_CONTAINER: spot-user-container
+#  APP_SEC: infra/appsec-template.yml
 #
 #jobs:
 #  deploy:
-#    name: Deploy to ECS DEV Cluster
+#    name: Deploy to ECS Prod Cluster
 #    runs-on: ubuntu-latest
+#    if: ${{ github.event.workflow_run.conclusion == 'success' }}
 #    defaults:
 #      run:
-#        working-directory: spot-gateway
+#        working-directory: spot-user
 #    permissions:
 #      id-token: write
 #      contents: read
@@ -41,6 +44,17 @@
 #
 #      - name: Grant execute permission for gradlew
 #        run: chmod +x gradlew
+#
+#      - name: Make application.properties
+#        run: |
+#          mkdir -p ./src/main/resources
+#          echo "Copying config files..."
+#          cp ../config/common.yml ./src/main/resources/common.yml
+#          cp ../config/kafka-topics.yml ./src/main/resources/kafka-topics.yml
+#          cp ../config/spot-user.yml ./src/main/resources/application.yml
+#
+#          # 확인용
+#          ls -al ./src/main/resources/
 #
 #      - name: Build with Gradle
 #        run: ./gradlew build -x test
@@ -61,7 +75,7 @@
 #      # Git SHA 이미지 태그
 #      - name: Get Image Tag
 #        id: image-tag
-#        run: echo "short_tag=dev-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+#        run: echo "short_tag=prod-$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 #
 #      # Docker 이미지 빌드
 #      - name: Build Docker Image
@@ -83,7 +97,7 @@
 #        run: |
 #          docker push $REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
 #
-#      # Task Definition 랜더링 작업
+#      # Task Definition 교체 작업
 #      - name: Render Task Definition
 #        id: render-task-def
 #        env:
@@ -93,35 +107,30 @@
 #        run: |
 #          echo "Rendering Task Definition..."
 #
-#          # 1. 필요한 필드만 가져오기 (family, cpu, memory, role 등 필수값 포함)
+#          NAME="$SERVICE_NAME"
+#          REGION="$AWS_REGION"
+#
 #          aws ecs describe-task-definition \
-#            --task-definition "spot-dev-$SERVICE_NAME" \
-#            --region "$AWS_REGION" \
-#            --query '{
-#              family: taskDefinition.family,
-#              cpu: taskDefinition.cpu,
-#              memory: taskDefinition.memory,
-#              networkMode: taskDefinition.networkMode,
-#              executionRoleArn: taskDefinition.executionRoleArn,
-#              taskRoleArn: taskDefinition.taskRoleArn,
-#              containerDefinitions: taskDefinition.containerDefinitions,
-#              volumes: taskDefinition.volumes,
-#              placementConstraints: taskDefinition.placementConstraints,
-#              requiresCompatibilities: taskDefinition.requiresCompatibilities
-#            }' \
-#            --output json > raw-task-def.json
+#          --task-definition "spot-prod-$SERVICE_NAME" \
+#          --region "$AWS_REGION" \
+#          jq --arg IMAGE="$NEW_IMAGE" \
+#          '.taskDefinition |
+#          .containerDefinitions[0].image = $IMAGE |
+#            del(
+#              .taskDefinitionArn,
+#              .revision,
+#              .status,
+#              .requiresAttributes,
+#              .compatibilities,
+#              .registeredAt,
+#              .registeredBy
+#            )' \
+#          > new-task-def.json
 #
-#          # 로컬 파일을 읽어서, 이미지 태그만 'NEW_IMAGE'로 교체 후 저장
-#          jq --arg IMAGE "$NEW_IMAGE" '.containerDefinitions[0].image = $IMAGE' raw-task-def.json > new-task-def.json
-#
-#          # 디버깅용 확인
-#          echo "=== NEW Task Definition Preview ==="
-#          cat new-task-def.json
-#
-#          # AWS에 등록
+#          # 2. AWS에 등록
 #          NEW_TASK_INFO=$(aws ecs register-task-definition --cli-input-json file://new-task-def.json)
 #
-#          # ARN 추출
+#          # 3. ARN 추출
 #          NEW_TASK_ARN=$(echo $NEW_TASK_INFO | jq -r '.taskDefinition.taskDefinitionArn')
 #          echo "NEW_TASK_ARN=$NEW_TASK_ARN" >> $GITHUB_OUTPUT
 #          echo "New Task Definition ARN: $NEW_TASK_ARN"
@@ -138,30 +147,44 @@
 #            --task-definition ${{ steps.render-task-def.outputs.NEW_TASK_ARN }} \
 #            --force-new-deployment
 #
-#      # 서버 부팅 확인
-#      - name: Wait Service
-#        id: wait-service
+#      # AppSecs 랜더링
+#      - name: Render AppSecs
+#        id: render-appsec
+#        env:
+#          TASK_ARN: ${{ steps.render-task-def.outputs.NEW_TASK_ARN }}
+#          CONTAINER_NAME: ${{  }}
+#          CONTAINER_PORT: ${{  }}
+#          HOOKS: ${{  }}
 #        run: |
-#          echo "Wait For Boot Service"
-#          aws ecs wait services-stable \
-#          --cluster ${{ env.ECS_CLUSTER }} \
-#          --service ${{ env.ECS_SERVICE }}
+#          echo "Rendering AppSec..."
+#
+#          jq --arg TASK "$TASK_ARN" \
+#                   NAME "$CONTAINER_NAME" \
+#                   PORT "$CONTAINER_PORT" \
+#          '.Resources[0].Properties.TaskDefinition = $TASK' |
+#          '.Resources[0].Properties.LoadBalancerInfo[0] = $NAME' |
+#          '.Resources[0].Properties.LoadBalancerInfo[1] = $PORT' \
+#          ../${{ env.APP_SEC }} > appsec.yml
+#
+##      # Code Deploy로 트래픽 전환
+##      - name: Trigger Code Deploy
+##        id: trigger-code-deploy
 #
 #      # Discord 알림 - 성공
-#      - name: Notify Discord - Dev CD SUCCESS
+#      - name: Notify Discord - Prod CD SUCCESS
 #        run: |
 #          curl -X POST ${{ secrets.DISCORD_WEBHOOK_URL }} \
 #            -H "Content-Type: application/json" \
 #            -d '{
 #              "embeds": [{
-#                "title": "✅ DEV CD 성공 - GateWay",
+#                "title": "✅ Prod CD 성공 - User",
 #                "description": "**설명**\n- 배포 성공\n\n**이미지**\n- ${{ steps.image-tag.outputs.short_tag }}",
 #                "color": 3066993
 #                }]
 #            }'
 #
 #      # Discord 알림 - 실패
-#      - name: Notify Discord - DEV CD FAIL
+#      - name: Notify Discord - Prod CD FAIL
 #        if: failure()  # 앞 단계 중 하나라도 실패하면 실행됨
 #        run: |
 #          # ---------------------------------------------------------
@@ -175,14 +198,15 @@
 #          if [ "${{ steps.docker-push.outcome }}" == "failure" ]; then FAILED_STEP="ECR Push"; fi
 #          if [ "${{ steps.render-task-def.outcome }}" == "failure" ]; then FAILED_STEP="Task Definition 교체"; fi
 #          if [ "${{ steps.update-service.outcome }}" == "failure" ]; then FAILED_STEP="ECS 서비스 업데이트"; fi
-#          if [ "${{ steps.wait-service.outcome }}" == "failure" ]; then FAILED_STEP="서비스 부팅"; fi
+#          if [ "${{ steps.render-appsec.outcome }}" == "failure" ]; then FAILED_STEP="AppSec 교체"; fi
+#          if [ "${{ steps.trigger-code-deploy.outcome }}" == "failure" ]; then FAILED_STEP="배포"; fi
 #
 #          DISCORD_PAYLOAD=$(jq -n \
 #            --arg step "$FAILED_STEP" \
 #            --arg tag "${{ steps.image-tag.outputs.short_tag }}" \
 #            '{
 #              embeds: [{
-#                title: "❌ DEV CD 실패 - GateWay",
+#                title: "❌ Prod CD 실패 - User",
 #                description: ("**원인**\n - " + $step + " 실패\n**태그**\n - `" + $tag + "`"),
 #                color: 15158332
 #              }]

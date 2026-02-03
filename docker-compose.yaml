@@ -104,9 +104,11 @@ services:
       - "8082:8082"
     environment:
       - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+      - DB_HOST=db
+      - SPRING_DATA_REDIS_HOST=redis
       - FEIGN_STORE_URL=http://spot-store:8083
       - FEIGN_PAYMENT_URL=http://spot-payment:8084
-      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
     volumes:
       - ./config/common.yml:/config/common.yml:ro
       - ./config/kafka-topics.yml:/config/kafka-topics.yml:ro
@@ -127,9 +129,13 @@ services:
       - "8084:8084"
     environment:
       - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+      - DB_HOST=db
+      - SPRING_DATA_REDIS_HOST=redis
       - FEIGN_ORDER_URL=http://spot-order:8082
       - FEIGN_USER_URL=http://spot-user:8081
       - FEIGN_STORE_URL=http://spot-store:8083
+      - TOSS_SECRET_KEY=test_sk_E92LAa5PVb91Y01y1nXZ37YmpXyJ
+      - TOSS_CUSTOMER_KEY=customer_1
     volumes:
       - ./config/common.yml:/config/common.yml:ro
       - ./config/kafka-topics.yml:/config/kafka-topics.yml:ro
@@ -150,6 +156,8 @@ services:
       - "8083:8083"
     environment:
       - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+      - DB_HOST=db
+      - SPRING_DATA_REDIS_HOST=redis
       - FEIGN_USER_URL=http://spot-user:8081
     volumes:
       - ./config/common.yml:/config/common.yml:ro
@@ -169,6 +177,8 @@ services:
       - "8081:8081"
     environment:
       - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
+      - DB_HOST=db
+      - SPRING_DATA_REDIS_HOST=redis
       - FEIGN_STORE_URL=http://spot-store:8083
       - FEIGN_ORDER_URL=http://spot-order:8082
     volumes:
