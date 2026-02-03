@@ -40,6 +40,8 @@ jobs:
 
       - name: Check code formatting
         run: ./gradlew checkstyleMain
+#        checkstyleTest
+#        continue-on-error: true
 
       - name: Run tests
         run: ./gradlew test

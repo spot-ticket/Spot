@@ -131,9 +131,9 @@ jobs:
         id: wait-service
         run: |
           echo "Wait For Boot Service"
-          timeout 300 aws ecs wait services-stable \
+          aws ecs wait services-stable \
           --cluster ${{ env.ECS_CLUSTER }} \
-          --service ${{ env.ECS_SERVICE }}
+          --service ${{ env.ECS_SERVICE }} \
 
       # Discord 알림 - 성공
       - name: Notify Discord - Dev CD SUCCESS

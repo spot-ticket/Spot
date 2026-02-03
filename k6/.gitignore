@@ -1,0 +1,12 @@
+# Log files
+logs/
+
+# Environment variables (sensitive)
+.env
+
+# IDE
+.idea/
+.vscode/
+
+# OS
+.DS_Store

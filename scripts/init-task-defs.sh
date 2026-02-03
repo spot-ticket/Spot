@@ -19,7 +19,7 @@ do
     # 3. AWS에서 다운로드 및 불필요한 필드 제거 (jq 사용)
     # register-task-definition 시 에러를 유발하는 항목들을 삭제합니다.
     aws ecs describe-task-definition \
-        --task-definition "spot-$TASK_NAME" \
+        --task-definition "spot-dev-$TASK_NAME" \
         --region "$REGION" \
         --query 'taskDefinition' \
         | jq 'del(.taskDefinitionArn, .revision, .status, .requiresAttributes, .compatibilities, .registeredAt, .registeredBy)' \
