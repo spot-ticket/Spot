@@ -23,7 +23,7 @@ jobs:
     defaults:
       run:
         working-directory: spot-user
-
+#
     services:
       postgres:
         image: postgres:16
