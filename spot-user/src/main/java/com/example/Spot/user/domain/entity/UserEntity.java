@@ -23,7 +23,7 @@ import lombok.NoArgsConstructor;
 @Table(
     name = "p_user",
     uniqueConstraints = {
-        @UniqueConstraint(columnNames = "username")
+        @UniqueConstraint(columnNames = "name")
     },
     indexes = {
         @Index(name = "idx_user_username", columnList = "name"),
@@ -37,7 +37,7 @@ public class UserEntity extends UpdateBaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "username", nullable = false)
     private String username;
 
     @Column(nullable = false)
