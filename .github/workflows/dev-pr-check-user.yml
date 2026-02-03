@@ -104,6 +104,9 @@ jobs:
     - name: Build with Gradle
       run: ./gradlew bootJar -x test
 
+    - name: Check list of YML
+      run: jar tf ./build/libs/*SNAPSHOT.jar | grep yml
+
     - name: Test application startup
       run: |
         # 빌드된 JAR 파일 찾기
