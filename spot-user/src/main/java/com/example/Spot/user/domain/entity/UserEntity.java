@@ -37,7 +37,7 @@ public class UserEntity extends UpdateBaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(name = "name", nullable = false)
+    @Column(name = "username", nullable = false)
     private String username;
 
     @Column(nullable = false)
