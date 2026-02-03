@@ -1,62 +1,49 @@
-spring:
-  application:
-    name: spot-gateway
+cloud:
+  gateway:
+    server:
+      webflux:
+        routes:
+          - id: user-auth
+            uri: http://localhost:8081
+            predicates:
+              - Path=/api/login,/api/join,/api/auth/refresh
 
-data:
-  redis:
-    host: ${SPRING_DATA_REDIS_HOST:localhost}
-    port: 6379
+          - id: user-service
+            uri: http://localhost:8081
+            predicates:
+              - Path=/api/users/**, /api/admin/**
 
-  cloud:
-    gateway:
-      server:
-        webflux:
-          routes:
-            - id: user-auth
-              uri: ${SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_0_URI:http://localhost:8081}
-              predicates:
-                - Path=/api/login,/api/join,/api/auth/refresh
+          - id: store-service
+            uri: http://localhost:8083
+            predicates:
+              - Path=/api/stores/**
 
-            - id: user-service
-              uri: ${SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_0_URI:http://localhost:8081}
-              predicates:
-                - Path=/api/users/**, /api/admin/**
+          - id: order-service
+            uri: http://localhost:8082
+            predicates:
+              - Path=/api/orders/**
 
-            - id: store-service
-              uri: ${SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_5_URI:http://localhost:8083}
-              predicates:
-                - Path=/api/stores/**
+          - id: payment-service
+            uri: http://localhost:8084
+            predicates:
+              - Path=/api/payments/**
 
-            - id: order-service
-              uri: ${SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_9_URI:http://localhost:8082}
-              predicates:
-                - Path=/api/orders/**
-
-            - id: payment-service
-              uri: ${SPRING_CLOUD_GATEWAY_SERVER_WEBFLUX_ROUTES_10_URI:http://localhost:8084}
-              predicates:
-                - Path=/api/payments/**
-
-            - id: block-internal
-              uri: http://localhost:9999
-              predicates:
-                - Path=/internal/**
-              filters:
-                - SetStatus=403
-
+          - id: block-internal
+            uri: http://localhost:9999
+            predicates:
+              - Path=/internal/**
+            filters:
+              - SetStatus=403
 
 logging:
-  level:
-    org.springframework.boot.context.config: DEBUG
-    org.springframework.cloud.gateway: DEBUG
-    org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: DEBUG
-    org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping: TRACE
+level:
+  org.springframework.boot.context.config: DEBUG
+  org.springframework.cloud.gateway: DEBUG
+  org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: DEBUG
+  org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping: TRACE
 
 management:
-  endpoints:
-    web:
-      exposure:
-        include: "*"
-  endpoint:
-    gateway:
-      enabled: true
+endpoints:
+  web:
+    exposure:
+      include: "*"
