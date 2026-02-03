@@ -3,11 +3,11 @@ server:
 
 feign:
   user:
-    url: ${FEIGN_USER_URL:http://localhost:8081}
+    url: ${FEIGN_USER_URL:http://spot-user:8081}
   store:
-    url: ${FEIGN_STORE_URL:http://localhost:8083}
+    url: ${FEIGN_STORE_URL:http://spot-store:8083}
   payment:
-    url: ${FEIGN_PAYMENT_URL:http://localhost:8084}
+    url: ${FEIGN_PAYMENT_URL:http://spot-payment:8084}
   client:
     config:
       spot-user:
