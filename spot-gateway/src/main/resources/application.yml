@@ -1,7 +1,0 @@
-spring:
-  application:
-    name: spot-gateway
-  config:
-    import:
-      # bootRun 실행용
-      - optional:file:../config/spot-gateway.yml
