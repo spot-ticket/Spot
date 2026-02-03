@@ -69,7 +69,7 @@ dependencies {
 
     // postgreSQL
     implementation 'org.postgresql:postgresql'
-    
+
     // kafka
     implementation 'org.springframework.kafka:spring-kafka'
 }
