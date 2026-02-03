@@ -1,6 +1,8 @@
 spring:
   config:
-    import: optional:classpath:common-application.yml
+    import:
+      - optional:file:/config/common.yml
+      - optional:file:/config/kafka-topics.yml
   application:
     name: spot-payment
 

@@ -1,6 +1,6 @@
 spring:
   config:
-    import: optional:classpath:common-application.yml
+    import: optional:file:/config/common.yml
   application:
     name: spot-store
 
