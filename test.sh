@@ -13,20 +13,22 @@ docker rm -f redis_cache local-postgres_db spot-gateway spot-user spot-store spo
 echo "=== 각 MSA 서비스 빌드 ==="
 for service in spot-gateway spot-user spot-store spot-order spot-payment; do
     echo ">> $service 빌드 시작"
-    (cd "$service" && ./gradlew bootJar -x test)
+    (cd "$service" && ./gradlew clean bootJar -x test)
 done
 
+clear
+
 echo "=== Docker 이미지 빌드 및 컨테이너 시작 ==="
-docker compose up --build -d
+docker compose up --build
 
-echo "=== 실행 중인 컨테이너 확인 ==="
-docker compose ps
-
-echo "=== 로그 확인 (./logs 폴더에 저장됨) ==="
-mkdir -p ./logs
-# 파일명을 변수로 빼서 가독성을 높였습니다.
-LOG_FILE="./logs/current_logs_$(date +'%Y%m%d_%H%M%S').txt"
-
-docker compose logs -f | \
-    grep --line-buffered -v -E "redis_cache|local-postgres_db" | \
-    tee -a "$LOG_FILE"
+#echo "=== 실행 중인 컨테이너 확인 ==="
+#docker compose ps
+#
+#echo "=== 로그 확인 (./logs 폴더에 저장됨) ==="
+#mkdir -p ./logs
+## 파일명을 변수로 빼서 가독성을 높였습니다.
+#LOG_FILE="./logs/current_logs_$(date +'%Y%m%d_%H%M%S').txt"
+#
+#docker compose logs -f | \
+#    grep --line-buffered -v -E "redis_cache|local-postgres_db" | \
+#    tee -a "$LOG_FILE"

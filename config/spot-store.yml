@@ -1,18 +1,11 @@
-spring:
-  config:
-    import:
-      - classpath:common.yml
-  application:
-    name: spot-store
-
 server:
   port: 8083
 
 feign:
   user:
-    base-url: http://spot-user:8081
+    url: ${FEIGN_USER_URL:http://spot-user:8081}
   order:
-    base-url: http://spot-order:8082
+    url: ${FEIGN_ORDER_URL:http://spot-order:8082}
   client:
     config:
       spot-user:

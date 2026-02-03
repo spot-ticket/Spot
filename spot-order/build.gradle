@@ -22,14 +22,15 @@ repositories {
 sourceSets {
     main {
         resources {
-            srcDirs '../config'
-            include 'common.yml', 'kafka-topics.yml', 'spot-order.yml'
+            srcDirs 'src/main/resources'
         }
     }
 }
 
 tasks.named('processResources') {
-    // 중복된 파일이 발견되면, 나중에 발견된 것으로 덮어쓰거나 포함시킴 (에러 무시)
+    from('../config') {
+        include 'common.yml', 'kafka-topics.yml', 'spot-order.yml'
+    }
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 

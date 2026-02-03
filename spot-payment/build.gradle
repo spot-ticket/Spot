@@ -22,10 +22,16 @@ repositories {
 sourceSets {
     main {
         resources {
-            srcDirs '../config'
-            include 'common.yml', 'kafka-topics.yml', 'spot-payment.yml'
+            srcDirs 'src/main/resources'
         }
     }
+}
+
+tasks.named('processResources') {
+    from('../config') {
+        include 'common.yml', 'kafka-topics.yml', '${project.name}.yml'
+    }
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 dependencyManagement {

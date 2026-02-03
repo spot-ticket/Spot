@@ -1,19 +1,15 @@
-spring:
-  config:
-    import:
-      - classpath:common.yml
-      - classpath:kafka-topics.yml
-  application:
-    name: spot-payment
-
 server:
   port: 8084
 
 feign:
+  user:
+    url: ${FEIGN_USER_URL:http://spot-user:8081}
+  order:
+    url: ${FEIGN_ORDER_URL:http://spot-order:8082}
   store:
-    base-url: http://spot-store:8083
+    url: ${FEIGN_STORE_URL:http://spot-store:8083}
   payment:
-    base-url: http://spot-payment:8084
+    url: ${FEIGN_PAYMENT_URL:http://spot-payment:8084}
   client:
     config:
       spot-store:

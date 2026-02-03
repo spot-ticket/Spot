@@ -1,26 +1,17 @@
-spring:
-  config:
-    import:
-      - classpath:common.yml
-  application:
-    name: spot-user
-
 server:
   port: 8081
 
 feign:
-  store:
-    url: http://spot-store:8082
   order:
-    url: http://spot-order:8083
+    url: ${FEIGN_ORDER_URL:http://spot-order:8082}
+  store:
+    url: ${FEIGN_STORE_URL:http://spot-store:8083}
   payment:
-    url: http://spot-payment:8084
+    url: ${FEIGN_PAYMENT_URL:http://spot-payment:8084}
   client:
     config:
       default:
         loggerLevel: FULL
-
-
 
 management:
   endpoints:
@@ -41,15 +32,6 @@ management:
     tags:
       application: ${spring.application.name}
 
-service:
-  active-regions: 종로구
-
-toss:
-  payments:
-    base-url: https://api.tosspayments.com
-    customerKey: customer_1
-    timeout: 10
-    secretKey: test_sk_E92LAa5PVb91Y01y1nXZ37YmpXyJ
 
 logging:
   level:
