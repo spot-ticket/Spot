@@ -56,4 +56,6 @@ Thumbs.db
 *.log
 logs/
 
-./config/common.yml
+config/application-secret.yml
+
+.env
