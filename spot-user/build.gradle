@@ -27,7 +27,6 @@ sourceSets {
     }
 }
 
-// 외부 설정을 가져오는 가장 깔끔한 방식
 processResources {
     from('../config') {
         include 'common.yml', 'kafka-topics.yml', "${project.name}.yml"

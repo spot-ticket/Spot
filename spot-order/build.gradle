@@ -19,18 +19,11 @@ repositories {
     mavenCentral()
 }
 
-sourceSets {
-    main {
-        resources {
-            srcDirs 'src/main/resources'
-        }
-    }
-}
-
-tasks.named('processResources') {
+processResources {
     from('../config') {
-        include 'common.yml', 'kafka-topics.yml', 'spot-order.yml'
+        include 'common.yml', 'kafka-topics.yml', "${project.name}.yml"
     }
+    // 중복 발생 시 외부(config 폴더) 파일을 우선시함
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 

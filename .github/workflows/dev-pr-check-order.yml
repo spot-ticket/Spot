@@ -1,4 +1,4 @@
-name: DEV PR Check - User Service
+name: DEV PR Check - Order Service
 
 on:
   pull_request:
