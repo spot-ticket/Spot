@@ -27,6 +27,10 @@ build/
 !**/application-example.yaml
 !**/application.example.yml
 !**/application.example.yaml
+!docker-compose.yaml
+!config/*.yml
+!infra/**/*.yaml
+!infra/**/*.yml
 
 
 ### Maven ###

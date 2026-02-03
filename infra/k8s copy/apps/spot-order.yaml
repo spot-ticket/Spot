@@ -1,0 +1,65 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: spot-order
+  namespace: spot
+  labels:
+    app: spot-order
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: spot-order
+  template:
+    metadata:
+      labels:
+        app: spot-order
+    spec:
+      containers:
+        - name: spot-order
+          image: spot-registry.localhost:5111/spot-order:latest
+          ports:
+            - containerPort: 8082
+          envFrom:
+            - configMapRef:
+                name: spot-common-config
+            - secretRef:
+                name: spot-secrets
+          env:
+            - name: FEIGN_USER_URL
+              value: "http://spot-user:8081"
+            - name: FEIGN_STORE_URL
+              value: "http://spot-store:8083"
+            - name: FEIGN_PAYMENT_URL
+              value: "http://spot-payment:8084"
+          resources:
+            requests:
+              memory: "256Mi"
+              cpu: "200m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
+          readinessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 30
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /actuator/health
+              port: 8082
+            initialDelaySeconds: 60
+            periodSeconds: 30
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: spot-order
+  namespace: spot
+spec:
+  selector:
+    app: spot-order
+  ports:
+    - port: 8082
+      targetPort: 8082
