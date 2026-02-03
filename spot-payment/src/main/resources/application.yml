@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: spot-payment
+  config:
+    import:
+      # bootRun
+      - optional:file:../config/common.yml
+      - optional:file:../config/kafka-topics.yml
+      - optional:file:../config/application-secret.yml
+      - optional:file:../config/spot-payment.yml
+
+      # docker-compose
+      - optional:file:/config/common.yml
+      - optional:file:/config/spot-payment.yml
+      - optional:file:/config/application-secret.yml

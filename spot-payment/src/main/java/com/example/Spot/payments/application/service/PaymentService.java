@@ -72,7 +72,7 @@ public class PaymentService {
     Optional<PaymentEntity> existingPayment = paymentRepository.findByOrderId(orderId);
     
     if (existingPayment.isPresent()) {
-      log.info("ℹ️ [이미 처리된 주문] 기존 결제 ID를 반환합니다. orderId={}", orderId);
+      log.info("[이미 처리된 주문] 기존 결제 ID를 반환합니다. orderId={}", orderId);
       return existingPayment.get().getId(); //
     }
     PaymentEntity payment = createPayment(userId, orderId, request);

@@ -81,11 +81,8 @@ services:
     container_name: spot-gateway
     ports:
       - "8080:8080"
-    environment:
-      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
     volumes:
-      - ./config/common.yml:/config/common.yml:ro
-      - ./config/spot-gateway.yml:/config/application.yml:ro
+      - ./config:/config
     depends_on:
       - fluent-bit
       - redis
@@ -109,14 +106,10 @@ services:
     ports:
       - "8082:8082"
     environment:
-      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
-      - FEIGN_STORE_URL=http://spot-store:8083
-      - FEIGN_PAYMENT_URL=http://spot-payment:8084
+      - DB_HOST=db
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
     volumes:
-      - ./config/common.yml:/config/common.yml:ro
-      - ./config/kafka-topics.yml:/config/kafka-topics.yml:ro
-      - ./config/spot-order.yml:/config/application.yml:ro
+      - ./config:/config
     depends_on:
       - fluent-bit
       - db
@@ -137,15 +130,13 @@ services:
     container_name: spot-payment
     ports:
       - "8084:8084"
+    env_file:
+      - .env
     environment:
-      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
-      - FEIGN_ORDER_URL=http://spot-order:8082
-      - FEIGN_USER_URL=http://spot-user:8081
-      - FEIGN_STORE_URL=http://spot-store:8083
+      - DB_HOST=db
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
     volumes:
-      - ./config/common.yml:/config/common.yml:ro
-      - ./config/kafka-topics.yml:/config/kafka-topics.yml:ro
-      - ./config/spot-payment.yml:/config/application.yml:ro
+      - ./config:/config
     depends_on:
       - fluent-bit
       - db
@@ -167,11 +158,10 @@ services:
     ports:
       - "8083:8083"
     environment:
-      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
-      - FEIGN_USER_URL=http://spot-user:8081
+      - DB_HOST=db
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
     volumes:
-      - ./config/common.yml:/config/common.yml:ro
-      - ./config/spot-store.yml:/config/application.yml:ro
+      - ./config:/config
     depends_on:
       - fluent-bit
       - db
@@ -192,12 +182,10 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
-      - FEIGN_STORE_URL=http://spot-store:8083
-      - FEIGN_ORDER_URL=http://spot-order:8082
+      - DB_HOST=db
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
     volumes:
-      - ./config/common.yml:/config/common.yml:ro
-      - ./config/spot-user.yml:/config/application.yml:ro
+      - ./config:/config
     depends_on:
       - fluent-bit
       - db
