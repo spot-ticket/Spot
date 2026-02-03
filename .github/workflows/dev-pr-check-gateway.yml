@@ -4,10 +4,10 @@ on:
   pull_request:
     branches: [ dev ]
     paths:
-      #        - 'infra/client/**'
+      - 'config/spot-gateway.yml'
       - 'spot-gateway/**'
-      - '.github/workflows/pr-check-gateway.yml'
-
+      - '.github/workflows/dev-pr-check-gateway.yml'
+#
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
@@ -32,16 +32,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Make application.properties
-        run: |
-          mkdir -p ./src/main/resources
-          cp ../config/spot-gateway.yml ./src/main/resources/application.yml
-        shell: bash
-
       - name: Check code formatting
-        run: ./gradlew checkstyleMain
-#        checkstyleTest
-#        continue-on-error: true
+        run: ./gradlew checkstyleMain checkstyleTest
+        continue-on-error: true
 
       - name: Run tests
         run: ./gradlew test
@@ -55,7 +48,6 @@ jobs:
           ./gradlew bootRun > bootrun.log 2>&1 &
           APP_PID=$!
           echo "Started bootRun with PID: $APP_PID"
-
           # 최대 60초 대기하면서 애플리케이션 시작 확인
           for i in {1..60}; do
             # 로그에서 시작 완료 메시지 확인
@@ -64,7 +56,6 @@ jobs:
               kill $APP_PID 2>/dev/null || true
               exit 0
             fi
-
             # 프로세스가 죽었는지 확인
             if ! kill -0 $APP_PID 2>/dev/null; then
               echo "❌ Application process terminated unexpectedly"
@@ -72,10 +63,8 @@ jobs:
               cat bootrun.log
               exit 1
             fi
-
             sleep 1
           done
-
           echo "❌ Application failed to start within 60 seconds"
           echo "=== bootRun log ==="
           cat bootrun.log
