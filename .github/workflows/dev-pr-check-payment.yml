@@ -58,6 +58,29 @@ jobs:
           KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
           KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093'
 
+      redis:
+        image: redis:alpine
+        ports:
+          -  6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      kafka:
+        image: confluentinc/cp-kafka:7.5.0
+        ports:
+          - 9092:9092
+        env:
+          KAFKA_LOG4J_ROOT_LOGLEVEL: 'WARN'
+          KAFKA_LOG4J_LOGGERS: 'kafka.controller=WARN,state.change.logger=WARN,kafka.producer.async.DefaultEventHandler=WARN'
+
+          KAFKA_NODE_ID: 1
+          KAFKA_PROCESS_ROLES: 'broker,controller'
+          KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+          KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093'
+
           KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://localhost:9092'
 
           KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT'
@@ -76,6 +99,7 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -93,28 +117,6 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Make application.properties
-        run: |
-          mkdir -p ./src/main/resources
-          echo "Copying config files..."
-          cp ../config/common.yml ./src/main/resources/common.yml
-          cp ../config/kafka-topics.yml ./src/main/resources/kafka-topics.yml
-          cp ../config/spot-payment.yml ./src/main/resources/application.yml
-        shell: bash
-
-      - name: Debug - Check Configuration Files
-        run: |
-          echo "=== File List ==="
-          ls -al ./src/main/resources/
-          
-          echo "=== Common YML Content ==="
-          cat ./src/main/resources/common.yml
-          
-          echo "=== Kafka Topics YML Content ==="
-          cat ./src/main/resources/kafka-topics.yml
-          
-          echo "=== Application YML Content ==="
-          cat ./src/main/resources/application.yml
       - name: Check code formatting
         run: ./gradlew checkstyleMain
 
@@ -174,6 +176,7 @@ jobs:
           
             sleep 1
           done
+
           echo "❌ Application failed to start within 60s"
           cat app.log
           kill $APP_PID 2>/dev/null || true
