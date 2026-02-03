@@ -104,19 +104,20 @@ jobs:
 #          cp ../config/spot-user.yml ./src/main/resources/application.yml
 #        shell: bash
 
-      - name: Debug - Check Configuration Files
-        run: |
-          echo "=== File List ==="
-          ls -al ./src/main/resources/
-          
-          echo "=== Common YML Content ==="
-          cat ./src/main/resources/common.yml
-          
-          echo "=== Kafka Topics YML Content ==="
-          cat ./src/main/resources/kafka-topics.yml
-          
-          echo "=== Application YML Content ==="
-          cat ./src/main/resources/application.yml
+#      - name: Debug - Check Configuration Files
+#        run: |
+#          echo "=== File List ==="
+#          ls -al ./src/main/resources/
+#
+#          echo "=== Common YML Content ==="
+#          cat ./src/main/resources/common.yml
+#
+#          echo "=== Kafka Topics YML Content ==="
+#          cat ./src/main/resources/kafka-topics.yml
+#
+#          echo "=== Application YML Content ==="
+#          cat ./src/main/resources/application.yml
+      
       - name: Check code formatting
         run: ./gradlew checkstyleMain
 
