@@ -12,6 +12,8 @@ on:
 
 env:
   SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}
+  EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+  EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
   TOSS_SECRET_KEY: ${{ secrets.TOSS_SECRET_KEY }}
   TOSS_CUSTOMER_KEY: ${{ secrets.TOSS_CUSTOMER_KEY }}
 
@@ -117,7 +119,7 @@ jobs:
 #
 #          echo "=== Application YML Content ==="
 #          cat ./src/main/resources/application.yml
-      
+
       - name: Check code formatting
         run: ./gradlew checkstyleMain
 

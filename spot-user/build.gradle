@@ -22,15 +22,17 @@ repositories {
 sourceSets {
     main {
         resources {
-            srcDirs 'src/main/resources'
+            srcDir 'src/main/resources'
         }
     }
 }
 
-tasks.named('processResources') {
+// 외부 설정을 가져오는 가장 깔끔한 방식
+processResources {
     from('../config') {
-        include 'common.yml', 'kafka-topics.yml', '${project.name}.yml'
+        include 'common.yml', 'kafka-topics.yml', "${project.name}.yml"
     }
+    // 중복 발생 시 외부(config 폴더) 파일을 우선시함
     duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
