@@ -24,7 +24,7 @@ import lombok.NoArgsConstructor;
 @Entity
 @Getter
 @Table(name = "p_order_outbox", indexes = {
-        @Index(name = "idx_outbox_status_next_attempt", columnList = "outbox_status, next_attempt_at")
+        @Index(name = "idx_order_outbox_status_next_attempt", columnList = "outbox_status, next_attempt_at")
 })
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class OrderOutboxEntity extends BaseEntity {

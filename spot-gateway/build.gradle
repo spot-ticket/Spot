@@ -1,3 +1,4 @@
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.9'
@@ -15,6 +16,15 @@ java {
     }
 }
 repositories { mavenCentral() }
+
+sourceSets {
+    main {
+        resources {
+            srcDirs '../config'
+            include 'spot-gateway.yml'
+        }
+    }
+}
 
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-actuator"

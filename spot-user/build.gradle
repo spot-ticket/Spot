@@ -19,6 +19,22 @@ repositories {
     mavenCentral()
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDir 'src/main/resources'
+        }
+    }
+}
+
+processResources {
+    from('../config') {
+        include 'common.yml', 'kafka-topics.yml', "${project.name}.yml"
+    }
+    // 중복 발생 시 외부(config 폴더) 파일을 우선시함
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
 dependencyManagement {
     imports {
         mavenBom "org.springframework.cloud:spring-cloud-dependencies:2025.0.1"
@@ -77,6 +93,10 @@ tasks.named('test') {
 
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
+}
+
+tasks.withType(JavaCompile) {
+    options.compilerArgs << "-Xlint:unchecked"
 }
 
 checkstyle {
