@@ -118,6 +118,8 @@ services:
     container_name: spot-payment
     ports:
       - "8084:8084"
+    env_file:
+      - .env
     environment:
       - DB_HOST=db
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가

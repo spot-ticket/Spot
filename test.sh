@@ -1,5 +1,7 @@
 #!/bin/bash
 
+clear
+
 # 에러 발생 시 즉시 중단
 set -e
 
@@ -21,14 +23,14 @@ clear
 echo "=== Docker 이미지 빌드 및 컨테이너 시작 ==="
 docker compose up --build
 
-#echo "=== 실행 중인 컨테이너 확인 ==="
-#docker compose ps
-#
-#echo "=== 로그 확인 (./logs 폴더에 저장됨) ==="
-#mkdir -p ./logs
-## 파일명을 변수로 빼서 가독성을 높였습니다.
-#LOG_FILE="./logs/current_logs_$(date +'%Y%m%d_%H%M%S').txt"
-#
+echo "=== 실행 중인 컨테이너 확인 ==="
+docker compose ps
+
+echo "=== 로그 확인 (./logs 폴더에 저장됨) ==="
+mkdir -p ./logs
+# 파일명을 변수로 빼서 가독성을 높였습니다.
+LOG_FILE="./logs/current_logs_$(date +'%Y%m%d_%H%M%S').txt"
+
 #docker compose logs -f | \
 #    grep --line-buffered -v -E "redis_cache|local-postgres_db" | \
 #    tee -a "$LOG_FILE"
