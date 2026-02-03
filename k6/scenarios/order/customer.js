@@ -4,7 +4,9 @@ import { check, group } from 'k6';
 import { Trend, Rate } from 'k6/metrics';
 import { env, endpoints, buildUrl } from '../../config/index.js';
 import { getAuthHeaders } from '../../lib/auth.js';
-import { thinkTime, buildQueryString } from '../../lib/helpers.js';
+import { thinkTime, buildQueryString, randomItem } from '../../lib/helpers.js';
+import { testGetStores } from '../store/store.js';
+import { testGetMenus } from '../store/menu.js';
 
 // Custom Metrics
 const orderCreateDuration = new Trend('order_create_duration');
@@ -13,6 +15,11 @@ const orderListDuration = new Trend('order_list_duration');
 const orderListErrors = new Rate('order_list_errors');
 const orderActiveDuration = new Trend('order_active_duration');
 const orderCancelDuration = new Trend('order_cancel_duration');
+
+// Data Integrity Metrics
+const priceIntegrityErrors = new Rate('price_integrity_errors');
+const orderReflectionErrors = new Rate('order_reflection_errors');
+const storeStatusErrors = new Rate('store_status_errors');
 
 /**
  * Create Order (Customer)
@@ -117,9 +124,123 @@ export function testCustomerCancelOrder(accessToken, orderId, cancelData) {
 }
 
 /**
+ * Create Order with Dynamic Store/Menu Selection + Data Integrity Validation
+ * 실시간으로 store 목록을 조회하고 랜덤 선택 후, 해당 store의 menu를 조회하여 주문 생성
+ * 데이터 정합성 검증 포함
+ */
+export function testCreateOrderDynamic(accessToken, options = {}) {
+  const { validateIntegrity = true } = options;
+
+  // 1. Store 목록 조회
+  const storesResult = testGetStores(accessToken, { page: 0, size: 50 });
+  if (!storesResult || !storesResult.content || storesResult.content.length === 0) {
+    console.warn('No stores available, falling back to fixed storeId');
+    return testCreateOrder(accessToken);
+  }
+
+  // 2. OPEN 상태인 store만 필터링
+  const openStores = storesResult.content.filter((store) => {
+    const status = store.status || store.storeStatus;
+    return status === 'OPEN' || status === 'open';
+  });
+
+  if (openStores.length === 0) {
+    console.warn('No OPEN stores available');
+    storeStatusErrors.add(1);
+    // OPEN이 아닌 store에 주문 시도하여 실패 확인
+    if (validateIntegrity && storesResult.content.length > 0) {
+      const closedStore = randomItem(storesResult.content);
+      const closedStoreId = closedStore.id || closedStore.storeId;
+      const menus = testGetMenus(accessToken, closedStoreId);
+      if (menus && menus.length > 0) {
+        const testOrder = testCreateOrder(accessToken, {
+          storeId: closedStoreId,
+          items: [{ menuId: menus[0].id || menus[0].menuId, quantity: 1, options: [] }],
+          memo: 'Testing closed store order rejection',
+        });
+        // 주문이 성공하면 정합성 오류
+        if (testOrder) {
+          console.error(`[INTEGRITY ERROR] Order created for non-OPEN store: ${closedStoreId}`);
+          storeStatusErrors.add(1);
+        }
+      }
+    }
+    return null;
+  }
+  storeStatusErrors.add(0);
+
+  // 3. 랜덤 OPEN store 선택
+  const selectedStore = randomItem(openStores);
+  const storeId = selectedStore.id || selectedStore.storeId;
+
+  // 4. 선택된 store의 메뉴 목록 조회
+  const menus = testGetMenus(accessToken, storeId);
+  if (!menus || menus.length === 0) {
+    console.warn(`No menus available for store ${storeId}`);
+    return null;
+  }
+
+  // 5. 랜덤 메뉴 선택
+  const selectedMenu = randomItem(menus);
+  const menuId = selectedMenu.id || selectedMenu.menuId;
+  const menuPrice = selectedMenu.price || 0;
+  const quantity = Math.floor(Math.random() * 3) + 1;
+  const expectedTotal = menuPrice * quantity;
+
+  // 6. 동적으로 선택된 store/menu로 주문 생성
+  const orderData = {
+    storeId: storeId,
+    items: [
+      {
+        menuId: menuId,
+        quantity: quantity,
+        options: [],
+      },
+    ],
+    memo: `Dynamic order from k6 - Store: ${selectedStore.name || storeId}`,
+  };
+
+  const orderResult = testCreateOrder(accessToken, orderData);
+
+  // 7. 데이터 정합성 검증
+  if (validateIntegrity && orderResult) {
+    // 가격 정합성 검증
+    const orderTotal = orderResult.totalPrice || orderResult.totalAmount || 0;
+    if (orderTotal > 0 && expectedTotal > 0 && orderTotal !== expectedTotal) {
+      console.error(`[PRICE INTEGRITY ERROR] Expected: ${expectedTotal}, Got: ${orderTotal}`);
+      priceIntegrityErrors.add(1);
+    } else {
+      priceIntegrityErrors.add(0);
+    }
+
+    // 주문 내역 반영 검증
+    const orderId = orderResult.id || orderResult.orderId;
+    if (orderId) {
+      thinkTime(0.3); // 잠시 대기 후 조회
+      const myOrders = testGetMyOrders(accessToken, { page: 0, size: 10 });
+      if (myOrders && myOrders.content) {
+        const foundOrder = myOrders.content.find(
+          (o) => (o.id || o.orderId) === orderId
+        );
+        if (!foundOrder) {
+          console.error(`[REFLECTION ERROR] Order ${orderId} not found in my orders`);
+          orderReflectionErrors.add(1);
+        } else {
+          orderReflectionErrors.add(0);
+        }
+      }
+    }
+  }
+
+  return orderResult;
+}
+
+/**
  * Customer Order Flow
  */
-export function customerOrderFlow(accessToken) {
+export function customerOrderFlow(accessToken, options = {}) {
+  const { enableDynamicOrder = false } = options;
+
   group('Customer Order Flow', () => {
     // 1. View order history
     testGetMyOrders(accessToken, { page: 0, size: 5 });
@@ -129,8 +250,65 @@ export function customerOrderFlow(accessToken) {
     testGetMyActiveOrders(accessToken);
     thinkTime(0.5);
 
-    // Note: Creating orders might affect data, enable if needed
-    // const newOrder = testCreateOrder(accessToken);
+    // 3. Create order (optional)
+    if (enableDynamicOrder) {
+      const newOrder = testCreateOrderDynamic(accessToken);
+      if (newOrder) {
+        console.log(`Created dynamic order: ${newOrder.id || newOrder.orderId}`);
+      }
+    }
+  });
+}
+
+/**
+ * Customer Browse Flow (조회 전용)
+ * 주문 생성 없이 조회만 수행
+ */
+export function customerBrowseFlow(accessToken) {
+  group('Customer Browse Flow', () => {
+    // 1. 주문 내역 조회
+    testGetMyOrders(accessToken, { page: 0, size: 10 });
+    thinkTime(1);
+
+    // 2. 활성 주문 조회
+    testGetMyActiveOrders(accessToken);
+    thinkTime(0.5);
+  });
+}
+
+/**
+ * Customer Integrity Flow (정합성 검증 전용)
+ * 주문 생성 + 데이터 정합성 검증
+ */
+export function customerIntegrityFlow(accessToken) {
+  group('Customer Integrity Flow', () => {
+    // 동적 주문 생성 + 정합성 검증
+    const newOrder = testCreateOrderDynamic(accessToken, { validateIntegrity: true });
+    thinkTime(1);
+
+    if (newOrder) {
+      console.log(`Integrity test order: ${newOrder.id || newOrder.orderId}`);
+    }
+  });
+}
+
+/**
+ * Customer Dynamic Order Flow
+ * 동적으로 store/menu를 선택하여 주문하는 전용 플로우
+ */
+export function customerDynamicOrderFlow(accessToken) {
+  group('Customer Dynamic Order Flow', () => {
+    // 1. 동적 주문 생성 (store/menu 실시간 조회)
+    const newOrder = testCreateOrderDynamic(accessToken);
+    thinkTime(1);
+
+    // 2. 주문 내역 확인
+    if (newOrder) {
+      testGetMyOrders(accessToken, { page: 0, size: 5 });
+      thinkTime(0.5);
+
+      testGetMyActiveOrders(accessToken);
+    }
   });
 }
 

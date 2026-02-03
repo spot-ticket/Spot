@@ -58,9 +58,40 @@ else
 fi
 
 # ==========================================
-# Test type selection
+# Test type and mode selection
 # ==========================================
 TEST_TYPE="${1:-smoke}"
+TEST_MODE="${2:-all}"      # browse, integrity, all
+BROWSE_MODE="${3:-random}" # random, fixed
+
+# Validate TEST_MODE
+case "$TEST_MODE" in
+  browse|integrity|all)
+    ;;
+  *)
+    echo "Error: Unknown test mode: $TEST_MODE"
+    echo ""
+    echo "Available test modes:"
+    echo "  browse    - Read-only tests (store, menu, order list)"
+    echo "  integrity - Data integrity tests (order creation + validation)"
+    echo "  all       - All tests (default)"
+    exit 1
+    ;;
+esac
+
+# Validate BROWSE_MODE
+case "$BROWSE_MODE" in
+  random|fixed)
+    ;;
+  *)
+    echo "Error: Unknown browse mode: $BROWSE_MODE"
+    echo ""
+    echo "Available browse modes:"
+    echo "  random - Random store/menu selection each iteration"
+    echo "  fixed  - Same store/menu for all iterations"
+    exit 1
+    ;;
+esac
 
 case "$TEST_TYPE" in
   smoke)
@@ -88,6 +119,11 @@ case "$TEST_TYPE" in
       echo "  load    - Normal load (10 VUs, 5m)"
       echo "  stress  - Stress test (100 VUs)"
       echo "  spike   - Spike test (sudden 100 VUs)"
+      echo ""
+      echo "Available test modes (2nd argument):"
+      echo "  browse    - Read-only tests"
+      echo "  integrity - Data integrity tests"
+      echo "  all       - All tests (default)"
       exit 1
     fi
     ;;
@@ -100,16 +136,20 @@ mkdir -p "${LOGS_DIR}"
 JSON_LOG="${LOGS_DIR}/${TIMESTAMP}_${TEST_TYPE}_result.json"
 SUMMARY_LOG="${LOGS_DIR}/${TIMESTAMP}_${TEST_TYPE}_summary.json"
 
-# Shift to remove test type argument
+# Shift to remove test type, mode, and browse mode arguments
+shift 2>/dev/null || true
+shift 2>/dev/null || true
 shift 2>/dev/null || true
 
 echo "=========================================="
 echo "  Spot k6 Load Test Runner"
 echo "=========================================="
-echo "Test Type:  ${TEST_TYPE}"
-echo "Base URL:   ${BASE_URL}"
-echo "Store ID:   ${STORE_ID:-not set}"
-echo "Timestamp:  ${TIMESTAMP}"
+echo "Test Type:   ${TEST_TYPE}"
+echo "Test Mode:   ${TEST_MODE}"
+echo "Browse Mode: ${BROWSE_MODE}"
+echo "Base URL:    ${BASE_URL}"
+echo "Store ID:    ${STORE_ID:-not set}"
+echo "Timestamp:   ${TIMESTAMP}"
 echo "=========================================="
 
 # ==========================================
@@ -121,6 +161,8 @@ k6 run \
   -e BASE_URL="${BASE_URL}" \
   -e STORE_ID="${STORE_ID}" \
   -e MENU_ID="${MENU_ID}" \
+  -e TEST_MODE="${TEST_MODE}" \
+  -e BROWSE_MODE="${BROWSE_MODE}" \
   -e CUSTOMER_USERNAME="${CUSTOMER_USERNAME:-customer}" \
   -e CUSTOMER_PASSWORD="${CUSTOMER_PASSWORD:-customer}" \
   -e OWNER_USERNAME="${OWNER_USERNAME:-owner}" \
