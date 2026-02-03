@@ -32,16 +32,9 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
-      - name: Make application.properties
-        run: |
-          mkdir -p ./src/main/resources
-          cp ../config/spot-gateway.yml ./src/main/resources/application.yml
-        shell: bash
-
       - name: Check code formatting
-        run: ./gradlew checkstyleMain
-#        checkstyleTest
-#        continue-on-error: true
+        run: ./gradlew checkstyleMain checkstyleTest
+        continue-on-error: true
 
       - name: Run tests
         run: ./gradlew test

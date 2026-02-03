@@ -1,9 +1,3 @@
-spring:
-  config:
-    import: optional:classpath:common-application.yml
-  application:
-    name: spot-order
-
 server:
   port: 8082
 
