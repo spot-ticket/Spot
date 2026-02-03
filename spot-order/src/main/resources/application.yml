@@ -1,0 +1,9 @@
+spring:
+  application:
+    name: spot-order
+  config:
+    import:
+      - optional:file:../config/common.yml
+      - optional:file:../config/kafka-topics.yml
+      - optional:file:../config/application-secret.yml
+      - optional:file:../config/spot-order.yml
