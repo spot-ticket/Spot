@@ -15,5 +15,4 @@ import lombok.NoArgsConstructor;
 public class OrderPendingEvent {
     private UUID storeId;
     private UUID orderId;
-    private LocalDateTime timestamp;
 }

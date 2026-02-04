@@ -50,7 +50,6 @@ public class OrderEventProducer {
         OrderPendingEvent event = OrderPendingEvent.builder()
                 .storeId(storeId)
                 .orderId(orderId)
-                .timestamp(LocalDateTime.now())
                 .build();
         saveOutbox(orderPendingTopic, orderId, event);
     }
