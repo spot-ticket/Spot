@@ -4,4 +4,4 @@ spring:
   config:
     import:
       # bootRun용
-      - optional:file:../config/spot-gateway.yml
+      - optional:classpath:/spot-gateway.yml

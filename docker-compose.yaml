@@ -91,6 +91,12 @@ services:
       - spot-payment
     networks:
       - spot-network
+    environment:
+      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=*
+      - MANAGEMENT_ENDPOINT_GATEWAY_ENABLED=true
+      - SPRING_CONFIG_IMPORT=optional:file:/config/spot-gateway.yml
+    env_file:
+      - .env
 
   spot-order:
     build:
@@ -110,6 +116,8 @@ services:
       - kafka
     networks:
       - spot-network
+    env_file:
+      - .env
 
   spot-payment:
     build:
@@ -149,6 +157,8 @@ services:
       - redis
     networks:
       - spot-network
+    env_file:
+      - .env
 
   spot-user:
     build:
@@ -167,6 +177,8 @@ services:
       - redis
     networks:
       - spot-network
+    env_file:
+      - .env
 
 networks:
   spot-network:
