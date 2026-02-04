@@ -19,7 +19,7 @@ spring:
         - id: store-service
           uri: ${SPOT_STORE_URI:http://spot-store:8083}
           predicates:
-            - Path=/api/stores/**
+            - Path=/api/stores/**,/api/categories/**,/api/reviews/**
 
         - id: order-service
           uri: ${SPOT_ORDER_URI:http://spot-order:8082}
