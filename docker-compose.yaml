@@ -41,7 +41,7 @@ services:
     environment:
       KAFKA_NODE_ID: 1
       KAFKA_LOG4J_ROOT_LOGLEVEL: 'WARN'
-      KAFKA_LOG4J_LOGGERS: 'kafka.controller=WARN,state.change.logger=WARN,kafka.producer.async.DefaultEventHandler=WARN'
+      KAFKA_LOG4J_LOGGERS: 'kafka=WARN,state.change.logger=WARN'
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:19093'
       KAFKA_LISTENERS: 'INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:19093'
@@ -60,6 +60,29 @@ services:
       KAFKA_HEAP_OPTS: '-Xmx512M -Xms512M'
     volumes:
       - kafka-data:/var/lib/kafka/data
+    networks:
+      - spot-network
+        
+  connect:
+    image: debezium/connect:2.4
+    container_name: connect
+    depends_on:
+      - kafka
+      - db
+    ports:
+      - "8888:8888"
+    environment:
+      LOGGING_LEVEL: 'WARN' 
+      CONNECT_LOG4J_LOGGERS: "org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR"
+      BOOTSTRAP_SERVERS: kafka:29092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: my_connect_configs
+      OFFSET_STORAGE_TOPIC: my_connect_offsets
+      STATUS_STORAGE_TOPIC: my_connect_statuses
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
     networks:
       - spot-network
 
@@ -84,6 +107,8 @@ services:
       context: ./spot-gateway
       dockerfile: Dockerfile
     container_name: spot-gateway
+    environment:
+      - LOGGING_LEVEL_ROOT=WARN
     ports:
       - "8080:8080"
     volumes:
@@ -107,6 +132,7 @@ services:
     environment:
       - DB_HOST=db
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
+      - LOGGING_LEVEL_ROOT=WARN
     volumes:
       - ./config:/config
     depends_on:
@@ -128,6 +154,7 @@ services:
     environment:
       - DB_HOST=db
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
+      - LOGGING_LEVEL_ROOT=WARN
     volumes:
       - ./config:/config
     depends_on:
@@ -147,6 +174,7 @@ services:
     environment:
       - DB_HOST=db
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
+      - LOGGING_LEVEL_ROOT=WARN
     volumes:
       - ./config:/config
     depends_on:
@@ -165,6 +193,7 @@ services:
     environment:
       - DB_HOST=db
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
+      - LOGGING_LEVEL_ROOT=WARN
     volumes:
       - ./config:/config
     depends_on:
