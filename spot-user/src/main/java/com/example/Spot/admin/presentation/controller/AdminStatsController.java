@@ -7,7 +7,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.example.Spot.admin.application.service.AdminDashboardStatsService;
+import com.example.Spot.admin.application.service.AdminDashboardService;
 import com.example.Spot.admin.application.service.AdminStatsService;
 import com.example.Spot.admin.presentation.dto.response.AdminStatsResponseDto;
 import com.example.Spot.global.presentation.ApiResponse;
@@ -22,11 +22,11 @@ import lombok.RequiredArgsConstructor;
 public class AdminStatsController {
 
     private final AdminStatsService adminStatsService;
-    private final AdminDashboardStatsService adminDashboardStatsService;
+    private final AdminDashboardService adminDashboardService;
 
     @GetMapping("/dashboard")
     public ResponseEntity<ApiResponse<AdminStatsResponseDto>> getDashboardStats() {
-        AdminStatsResponseDto stats = adminDashboardStatsService.getDashboard();
+        AdminStatsResponseDto stats = adminDashboardService.getDashboard();
 
         return ResponseEntity
                 .ok(ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, stats));
