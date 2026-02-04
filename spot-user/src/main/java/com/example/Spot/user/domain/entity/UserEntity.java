@@ -23,10 +23,10 @@ import lombok.NoArgsConstructor;
 @Table(
     name = "p_user",
     uniqueConstraints = {
-        @UniqueConstraint(columnNames = "name")
+        @UniqueConstraint(columnNames = "username")
     },
     indexes = {
-        @Index(name = "idx_user_username", columnList = "name"),
+        @Index(name = "idx_user_username", columnList = "username"),
         @Index(name = "idx_user_nickname", columnList = "nickname")
     }
 )

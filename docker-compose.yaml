@@ -35,8 +35,8 @@ services:
       - "19093:19093"
     environment:
       KAFKA_NODE_ID: 1
-      KAFKA_LOG4J_ROOT_LOGLEVEL: 'WARN'
-      KAFKA_LOG4J_LOGGERS: 'kafka.controller=WARN,state.change.logger=WARN,kafka.producer.async.DefaultEventHandler=WARN'
+      KAFKA_LOG4J_ROOT_LOGLEVEL: 'ERROR'
+      KAFKA_LOG4J_LOGGERS: 'kafka=ERROR,kafka.controller=ERROR,kafka.log.LogCleaner=ERROR,kafka.server=ERROR,state.change.logger=ERROR,kafka.producer.async.DefaultEventHandler=ERROR,org.apache.kafka=ERROR,org.apache.zookeeper=ERROR'
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:19093'
       KAFKA_LISTENERS: 'INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:19093'

@@ -6,7 +6,7 @@ import { thresholds, k6Thresholds, scenarios } from './thresholds.js';
 
 // Environment Configuration
 export const env = {
-  baseUrl: __ENV.BASE_URL || 'http://139.150.11.41:8080',
+  baseUrl: __ENV.BASE_URL || 'http://localhost:8080',
 
   // Test Users
   users: {
