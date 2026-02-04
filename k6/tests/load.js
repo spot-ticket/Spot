@@ -1,8 +1,9 @@
 // Load Test
 // 일반적인 부하 상황에서의 성능 테스트
+import http from 'k6/http';
 import { sleep, group } from 'k6';
-import { env, k6Thresholds } from '../config/index.js';
-import { login, loginAllUsers } from '../lib/auth.js';
+import { env, endpoints, buildUrl, k6Thresholds } from '../config/index.js';
+import { login, loginAllUsers, getAuthHeaders } from '../lib/auth.js';
 import { randomItem, thinkTime } from '../lib/helpers.js';
 
 // Scenarios
@@ -57,12 +58,56 @@ export function setup() {
   console.log(`Base URL: ${env.baseUrl}`);
 
   // Login multiple users
-  const tokens = {
-    customer: login('customer'),
-    owner: login('owner'),
-  };
+  const customerTokens = login('customer');
+  const ownerTokens = login('owner');
 
-  return tokens;
+  if (!customerTokens.accessToken) {
+    console.error('Customer login failed!');
+    return { customer: null, owner: ownerTokens, stores: [], menus: {} };
+  }
+
+  // Dynamically fetch stores
+  const storesRes = http.get(buildUrl(endpoints.store.getStores) + '?page=0&size=30', {
+    headers: getAuthHeaders(customerTokens.accessToken),
+  });
+
+  let stores = [];
+  let menusCache = {};
+
+  if (storesRes.status === 200) {
+    try {
+      const storesData = JSON.parse(storesRes.body);
+      stores = storesData.content || storesData;
+
+      console.log(`Fetched ${stores.length} stores for load testing`);
+
+      // Cache menus for first 5 stores
+      for (let i = 0; i < Math.min(5, stores.length); i++) {
+        const store = stores[i];
+        const storeId = store.id || store.storeId;
+
+        const menusRes = http.get(buildUrl(endpoints.store.getMenus(storeId)), {
+          headers: getAuthHeaders(customerTokens.accessToken),
+        });
+
+        if (menusRes.status === 200) {
+          try {
+            const menusData = JSON.parse(menusRes.body);
+            menusCache[storeId] = menusData.content || menusData;
+          } catch (e) {}
+        }
+      }
+    } catch (e) {
+      console.error('Failed to parse stores response');
+    }
+  }
+
+  return {
+    customer: customerTokens,
+    owner: ownerTokens,
+    stores: stores,
+    menus: menusCache,
+  };
 }
 
 // Customer Browse Scenario
@@ -70,30 +115,44 @@ export function customerBrowseScenario(data) {
   const token = data.customer?.accessToken;
   if (!token) return;
 
+  const stores = data.stores || [];
+  const menusCache = data.menus || {};
+
   group('Customer: Browse Stores', () => {
     // 1. Get categories
     const categories = testGetCategories(token);
     thinkTime(1);
 
     // 2. Browse stores
-    const stores = testGetStores(token, { page: 0, size: 10 });
+    const storesList = testGetStores(token, { page: 0, size: 10 });
     thinkTime(2);
 
+    // Select random store from available stores
+    const selectedStore = randomItem(stores);
+    if (!selectedStore) return;
+
+    const storeId = selectedStore.id || selectedStore.storeId;
+
     // 3. View store detail
-    testGetStore(token, env.testData.storeId);
+    testGetStore(token, storeId);
     thinkTime(1);
 
     // 4. View menus
-    const menus = testGetMenus(token, env.testData.storeId);
+    const menus = testGetMenus(token, storeId);
     thinkTime(1);
 
     // 5. View menu detail
-    testGetMenu(token, env.testData.storeId, env.testData.menuId);
+    const availableMenus = menus || menusCache[storeId];
+    if (availableMenus && availableMenus.length > 0) {
+      const selectedMenu = randomItem(availableMenus);
+      const menuId = selectedMenu.id || selectedMenu.menuId;
+      testGetMenu(token, storeId, menuId);
+    }
     thinkTime(1);
 
     // 6. Check reviews
-    testGetStoreReviewStats(env.testData.storeId);
-    testGetStoreReviews(env.testData.storeId, { page: 0, size: 5 });
+    testGetStoreReviewStats(storeId);
+    testGetStoreReviews(storeId, { page: 0, size: 5 });
     thinkTime(2);
   });
 
