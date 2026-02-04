@@ -91,10 +91,6 @@ services:
       - spot-payment
     networks:
       - spot-network
-    environment:
-      - MANAGEMENT_ENDPOINTS_WEB_EXPOSURE_INCLUDE=*
-      - MANAGEMENT_ENDPOINT_GATEWAY_ENABLED=true
-      - SPRING_CONFIG_IMPORT=optional:file:/config/spot-gateway.yml
     env_file:
       - .env
 

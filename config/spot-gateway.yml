@@ -1,8 +1,4 @@
 spring:
-  application:
-    name: spot-gateway
-
-
   cloud:
     gateway:
       routes:
