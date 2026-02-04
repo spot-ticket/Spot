@@ -20,10 +20,17 @@ repositories { mavenCentral() }
 sourceSets {
     main {
         resources {
-            srcDirs '../config'
-            include 'spot-gateway.yml'
+            srcDir 'src/main/resources'
         }
     }
+}
+
+processResources {
+    from('../config') {
+        include "${project.name}.yml"
+    }
+    // 중복 발생 시 외부(config 폴더) 파일을 우선시함
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
 }
 
 dependencies {
