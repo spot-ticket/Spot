@@ -69,20 +69,20 @@ class OrderGenerator(BaseGenerator):
         active_count = int(len(customer_users) * 0.2)
         active_customers = random.sample(customer_users, active_count)
         for customer in active_customers:
-            customer_order_counts[customer] = random.randint(10, 30)
+            customer_order_counts[customer] = random.randint(30, 50)
 
         # 일반 고객 (가끔 주문) - 50%
         remaining = [c for c in customer_users if c not in active_customers]
         regular_count = int(len(customer_users) * 0.5)
         regular_customers = random.sample(remaining, min(regular_count, len(remaining)))
         for customer in regular_customers:
-            customer_order_counts[customer] = random.randint(2, 10)
+            customer_order_counts[customer] = random.randint(10, 30)
 
         # 비활성 고객 (거의 주문 안함) - 30%
         inactive_customers = [c for c in customer_users
                              if c not in active_customers and c not in regular_customers]
         for customer in inactive_customers:
-            customer_order_counts[customer] = random.randint(0, 2)
+            customer_order_counts[customer] = random.randint(0, 5)
 
         return customer_order_counts
 
