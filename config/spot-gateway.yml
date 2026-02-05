@@ -3,27 +3,27 @@ spring:
     gateway:
       routes:
         - id: user-auth
-          uri: ${SERVICE_URL_USER:http://spot-user:8081}
+          uri: ${SPOT_USER_URI:http://spot-user:8081}
           predicates:
             - Path=/api/login,/api/join,/api/auth/refresh
 
         - id: user-service
-          uri: ${SERVICE_URL_USER:http://spot-user:8081}
+          uri: ${SPOT_USER_URI:http://spot-user:8081}
           predicates:
             - Path=/api/users/**,/api/admin/**
 
         - id: store-service
-          uri: ${SERVICE_URL_STORE:http://spot-store:8083}
+          uri: ${SPOT_STORE_URI:http://spot-store:8083}
           predicates:
-            - Path=/api/stores/**
+            - Path=/api/stores/**,/api/categories/**,/api/reviews/**
 
         - id: order-service
-          uri: ${SERVICE_URL_ORDER:http://spot-order:8082}
+          uri: ${SPOT_ORDER_URI:http://spot-order:8082}
           predicates:
             - Path=/api/orders/**
 
         - id: payment-service
-          uri: ${SERVICE_URL_PAYMENT:http://spot-payment:8084}
+          uri: ${SPOT_PAYMENT_URI:http://spot-payment:8084}
           predicates:
             - Path=/api/payments/**
 
@@ -34,20 +34,21 @@ spring:
           filters:
             - SetStatus=403
 
-# 테스트용 마커 (설정 로드 확인용)
 test:
   marker: spot-gateway-yml-loaded
 
-# 로깅과 매니지먼트는 최상위 레벨(spring과 동일 레벨)에 있어야 합니다.
 logging:
   level:
+    org.springframework.boot.context.config: DEBUG
     org.springframework.cloud.gateway: DEBUG
+    org.springframework.cloud.gateway.route.RouteDefinitionRouteLocator: DEBUG
+    org.springframework.cloud.gateway.handler.RoutePredicateHandlerMapping: TRACE
 
 management:
   endpoints:
     web:
       exposure:
-        include: "*"
+        include: health, info, metrics, gateway
   endpoint:
     gateway:
-      enabled: true
+      access: unrestricted
