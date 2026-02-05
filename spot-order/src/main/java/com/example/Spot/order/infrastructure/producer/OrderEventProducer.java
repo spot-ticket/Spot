@@ -1,6 +1,5 @@
 package com.example.Spot.order.infrastructure.producer;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -50,7 +49,6 @@ public class OrderEventProducer {
         OrderPendingEvent event = OrderPendingEvent.builder()
                 .storeId(storeId)
                 .orderId(orderId)
-                .timestamp(LocalDateTime.now())
                 .build();
         saveOutbox(orderPendingTopic, orderId, event);
     }
@@ -90,10 +88,4 @@ public class OrderEventProducer {
             throw new RuntimeException("이벤트 발행 예약 중 오류 발생", e);
         }
     }
-    
-    public void publish(OrderOutboxEntity outbox) throws Exception {
-        kafkaTemplate.send(outbox.getEventType(), outbox.getAggregateId().toString(), outbox.getPayload()).get();
-    }
 }
-
-
