@@ -132,7 +132,7 @@ public class PaymentService {
     // 1. 주문 ID로 결제 엔티티 조회
     PaymentEntity payment = paymentRepository.findActivePaymentByOrderId(orderId)
             .orElseThrow(() -> {
-              log.warn("⚠️ [환불 스킵] 취소 가능한 결제 내역이 없거나 이미 취소되었습니다. OrderID: {}", orderId);
+              log.warn("[환불 스킵] 취소 가능한 결제 내역이 없거나 이미 취소되었습니다. OrderID: {}", orderId);
               return new ResourceNotFoundException("취소 가능한 결제 내역을 찾을 수 없습니다.");
             });
     
