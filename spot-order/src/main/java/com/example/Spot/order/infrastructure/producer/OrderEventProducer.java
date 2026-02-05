@@ -1,6 +1,5 @@
 package com.example.Spot.order.infrastructure.producer;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;

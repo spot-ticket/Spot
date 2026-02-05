@@ -1,6 +1,5 @@
 package com.example.Spot.order.infrastructure.event.publish;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
