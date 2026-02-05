@@ -4,7 +4,6 @@ import java.util.UUID;
 
 
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Component;
 
 import com.example.Spot.payments.domain.entity.PaymentOutboxEntity;
@@ -23,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 @RequiredArgsConstructor
 public class PaymentEventProducer {
     
-    private final KafkaTemplate<String, String> kafkaTemplate;
     private final PaymentOutboxRepository outboxRepository;
     private final ObjectMapper objectMapper;
     
@@ -65,9 +63,5 @@ public class PaymentEventProducer {
             log.error("❌[Payment Outbox 저장 실패] AggregateId={}, error={}", aggregateId, e.getMessage());
             throw new RuntimeException("이벤트 발행 예약 중 오류 발생", e);
         }
-    }
-    
-    public void publish(PaymentOutboxEntity outbox) throws Exception {
-        kafkaTemplate.send(outbox.getEventType(), outbox.getAggregateId().toString(), outbox.getPayload()).get();
     }
 }
