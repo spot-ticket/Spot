@@ -20,3 +20,108 @@ stringData:
   SPRING_DATASOURCE_PASSWORD: "secret"
   JWT_SECRET: "jmXDQDnLqV+lOaPKMR06v4+RQ7aj2cj8LR+zgPOlz/GS989tptPtAmIpyaZHrsLOPqKoVtPus28YeXZTL8O8nw=="
   TOSS_SECRET_KEY: "test_sk_E92LAa5PVb91Y01y1nXZ37YmpXyJ"
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: monitoring-secrets
+  namespace: monitoring
+type: Opaque
+stringData:
+  GF_SECURITY_ADMIN_USER: "spot"
+  GF_SECURITY_ADMIN_PASSWORD: "spot-grafana"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-config
+  namespace: monitoring
+data:
+  datasources.yaml: |
+    apiVersion: 1
+    datasources:
+      - name: Loki
+        type: loki
+        uid: loki
+        access: proxy
+        url: http://loki-service.monitoring:3100
+        jsonData:
+          maxLines: 1000
+        isDefault: true
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: loki-config
+  namespace: monitoring
+data:
+  loki-config.yaml: |
+    auth_enabled: false
+    
+    server:
+      http_listen_port: 3100
+      log_level: debug
+      
+    common:
+      path_prefix: /loki
+      storage:
+        filesystem:
+          chunks_directory: /loki/chunks
+          rules_directory: /loki/rules
+      replication_factor: 1
+      ring:
+        kvstore:
+          store: inmemory
+          
+    schema_config:
+      configs:
+        - from: 2023-01-05
+          store: tsdb
+          object_store: filesystem
+          schema: v13
+          index:
+            prefix: index_
+            period: 24h
+            
+    # 로그 보관 기간 설정
+    limits_config:
+      retention_period: 168h  # 7일
+      reject_old_samples: true
+      reject_old_samples_max_age: 168h
+    
+    # 오래된 로그 삭제 설정
+    compactor:
+      working_directory: /loki/compactor
+      retention_enabled: true
+      delete_request_store: filesystem
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fluent-bit-config
+  namespace: monitoring
+data:
+  fluent-bit.conf: |-
+    [SERVICE]
+        Flush         1
+        Daemon        Off
+        Log_Level     info
+    
+    [INPUT]
+        Name           tail
+        Tag            kube.*
+        Path           /var/log/containers/*.log
+        Mem_Buf_Limit  5MB
+
+    [FILTER]
+        Name           kubernetes
+        Match          kube.*
+        Kube_URL       https://kubernetes.default.svc:443
+
+    [OUTPUT]
+        Name        loki
+        Match       *
+        Host        loki-service.monitoring
+        Port        3100
+        Labels      job=fluent-bit
+        Line_Format json

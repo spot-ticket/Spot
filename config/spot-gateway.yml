@@ -34,8 +34,6 @@ spring:
           filters:
             - SetStatus=403
 
-
-
 test:
   marker: spot-gateway-yml-loaded
 
@@ -51,4 +49,6 @@ management:
     web:
       exposure:
         include: health, info, metrics, gateway
-
+  endpoint:
+    gateway:
+      access: unrestricted
