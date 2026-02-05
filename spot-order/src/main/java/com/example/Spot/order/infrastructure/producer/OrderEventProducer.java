@@ -82,9 +82,9 @@ public class OrderEventProducer {
                     .build();
             
             outboxRepository.save(outbox);
-            log.info("✅[Outbox 저장 성공] topic:{}, AggregateId:{}", topic, aggregateId);
+            log.info("[Outbox 저장 성공] topic:{}, AggregateId:{}", topic, aggregateId);
         } catch (JsonProcessingException e) {
-            log.error("❌[Outbox 저장 실패] AggregateId={}, error={}", aggregateId, e.getMessage());
+            log.error("[Outbox 저장 실패] AggregateId={}, error={}", aggregateId, e.getMessage());
             throw new RuntimeException("이벤트 발행 예약 중 오류 발생", e);
         }
     }

@@ -332,7 +332,7 @@ public class OrderServiceImpl implements OrderService {
             order.finalizeCancel();
             log.info("[보상 트랜잭션 완료] 주문 ID {} 가 최종 확정되었습니다.", orderId);
         } else {
-            log.warn("⚠️ [무시됨] 주문 ID {} 는 현재 취소 대기 상태가 아닙니다. (현재 상태: {})",
+            log.warn("[무시됨] 주문 ID {} 는 현재 취소 대기 상태가 아닙니다. (현재 상태: {})",
                     orderId, order.getOrderStatus());
         }
     }
