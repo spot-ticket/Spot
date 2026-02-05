@@ -65,7 +65,7 @@ public class PaymentListener {
                 paymentEventProducer.reserveAuthRequiredEvent(authEvent);
             }
             ack.acknowledge();
-            log.info("✅ 주문 생성 메시지 처리 완료 및 오프셋 커밋: orderId={}", event.getOrderId());
+            log.info("주문 생성 메시지 처리 완료 및 오프셋 커밋: orderId={}", event.getOrderId());
             
         } catch (Exception e) {
             // 에러 처리 로직
@@ -89,10 +89,10 @@ public class PaymentListener {
                 paymentEventProducer.reservePaymentRefundedEvent(event.getOrderId());
             } 
             ack.acknowledge();
-            log.info("✅ [결제서비스] 환불 및 보상 트랜잭션 완료: orderId={}", event.getOrderId());
+            log.info("[결제서비스] 환불 및 보상 트랜잭션 완료: orderId={}", event.getOrderId());
 
         } catch (Exception e) {
-            log.error("❌ [결제서비스] 환불 처리 실패: {}", e.getMessage());
+            log.error("[결제서비스] 환불 처리 실패: {}", e.getMessage());
         }
     }
 }

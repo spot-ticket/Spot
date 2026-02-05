@@ -11,8 +11,10 @@
     "topic.prefix": "order_outbox_cdc",
     "plugin.name": "pgoutput",
     "slot.name": "order_outbox_slot",
-    "snapshot.mode": "schema_only",
+    "snapshot.mode": "no_data",
+    "snapshot.locking.mode": "none",
     "table.include.list": "public.p_order_outbox",
+    "tombstones.on.delete": "false",
     "transforms": "outbox",
     "transforms.outbox.type": "io.debezium.transforms.outbox.EventRouter",
     "transforms.outbox.table.field.event.id": "id",
@@ -25,6 +27,15 @@
     "value.converter": "org.apache.kafka.connect.json.JsonConverter",
     "key.converter.schemas.enable": "false",
     "value.converter.schemas.enable": "false",
-    "transforms.outbox.table.expand.json.payload": "true"
+    "transforms.outbox.table.expand.json.payload": "true",
+    "producer.acks": "all",
+    "producer.enable.idempotence": "true",
+    "producer.max.in.flight.requests.per.connection": "5",
+    "producer.retries": "100",
+    "producer.delivery.timeout.ms": "120000",
+    "producer.retry.backoff.ms": "500",
+    "producer.compression.type": "lz4",
+    "producer.linger.ms": "20",
+    "producer.batch.size": "65536"
   }
 }
