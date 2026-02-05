@@ -12,6 +12,7 @@ import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.Index;
 import jakarta.persistence.Table;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -20,7 +21,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "p_payment")
+@Table(name = "p_payment", indexes = {@Index(name = "idx_payment_order_id", columnList = "order_id")})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class PaymentEntity extends BaseEntity {
 
@@ -33,7 +34,7 @@ public class PaymentEntity extends BaseEntity {
   @Column(updatable = false, nullable = false, name = "user_id")
   private Integer userId;
 
-  @Column(updatable = false, nullable = false, name = "order_id")
+  @Column(unique = true, updatable = false, nullable = false, name = "order_id")
   private UUID orderId;
 
   @Column(updatable = false, nullable = false, length = 100)

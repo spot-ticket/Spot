@@ -3,6 +3,7 @@ package com.example.Spot.payments.application.service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -68,6 +69,12 @@ public class PaymentService {
   // ready -> createPaymentBillingApprove -> confirmBillingPayment
   @Ready
   public UUID ready(Integer userId, UUID orderId, PaymentRequestDto.Confirm request) {
+    Optional<PaymentEntity> existingPayment = paymentRepository.findByOrderId(orderId);
+
+    if (existingPayment.isPresent()) {
+      log.info("[이미 처리된 주문] 기존 결제 ID를 반환합니다. orderId={}", orderId);
+      return existingPayment.get().getId(); //
+    }
     PaymentEntity payment = createPayment(userId, orderId, request);
     return payment.getId();
   }
@@ -215,6 +222,7 @@ public class PaymentService {
 
   // User 서비스 호출 - 사용자 존재 확인
   @CircuitBreaker(name = "user_validate_activeUser")
+  @Bulkhead(name = "user_validate_activeUser", type = Bulkhead.Type.SEMAPHORE)
   @Retry(name = "user_validate_activeUser")
   private void validateUserExists(Integer userId) {
     if (!userClient.existsById(userId)) {
@@ -275,7 +283,7 @@ public class PaymentService {
     List<PaymentHistoryEntity.PaymentStatus> cancelStatuses =
         List.of(
             PaymentHistoryEntity.PaymentStatus.CANCELLED,
-            PaymentHistoryEntity.PaymentStatus.PARTIAL_CANCELD);
+            PaymentHistoryEntity.PaymentStatus.PARTIAL_CANCELLED);
 
     List<Object[]> results =
         paymentHistoryRepository.findByPaymentIdAndStatusesWithPayment(paymentId, cancelStatuses);
@@ -434,7 +442,7 @@ public class PaymentService {
     paymentKeyRepository.save(paymentKey);
     
     // 결제 성공 이벤트 발행(수동)
-    paymentEventProducer.sendPaymentSucceededEvent(
+    paymentEventProducer.reservePaymentSucceededEvent(
             savedPayment.getOrderId(),
             savedPayment.getUserId()
     );

@@ -64,4 +64,6 @@ public interface PaymentRepository extends JpaRepository<PaymentEntity, UUID> {
         )
         """)
   List<Object[]> findPaymentWithLatestStatus(@Param("paymentId") UUID paymentId);
+  
+  Optional<PaymentEntity> findByOrderId(UUID orderId);
 }

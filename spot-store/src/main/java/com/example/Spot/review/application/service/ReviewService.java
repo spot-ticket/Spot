@@ -18,6 +18,7 @@ import com.example.Spot.review.presentation.dto.response.ReviewStatsResponse;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.repository.StoreRepository;
 
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import jakarta.persistence.EntityNotFoundException;
@@ -34,6 +35,7 @@ public class ReviewService {
 
     @Transactional
     @CircuitBreaker(name = "user_validate_activeUser")
+    @Bulkhead(name = "user_validate_activeUser", type = Bulkhead.Type.SEMAPHORE)
     @Retry(name = "user_validate_activeUser")
     public ReviewResponse createReview(ReviewCreateRequest request, Integer userId) {
         // 가게 존재 확인

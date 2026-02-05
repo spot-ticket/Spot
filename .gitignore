@@ -3,6 +3,8 @@
 **/terraform.tfstate
 **/terraform.tfstate.*
 *.tfvars
+infra/terraform/.terraform.lock.hcl
+infra/terraform/terraform-key.pem
 
 # Lambda build artifacts
 **/lambda/*.zip
@@ -25,6 +27,10 @@ build/
 !**/application-example.yaml
 !**/application.example.yml
 !**/application.example.yaml
+!docker-compose.yaml
+!config/*.yml
+!infra/**/*.yaml
+!infra/**/*.yml
 
 
 ### Maven ###
@@ -56,4 +62,6 @@ Thumbs.db
 *.log
 logs/
 
-./config/common.yml
+config/application-secret.yml
+
+.env

@@ -41,7 +41,7 @@ public class PaymentAspect {
     @Around("@annotation(ready)")
     public Object handleReady(ProceedingJoinPoint joinPoint, Ready ready) throws Throwable {
 
-        PaymentRequestDto.Confirm request = (PaymentRequestDto.Confirm) joinPoint.getArgs()[0];
+        PaymentRequestDto.Confirm request = (PaymentRequestDto.Confirm) joinPoint.getArgs()[2];
 
         validatePaymentRequest(request);
 

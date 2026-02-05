@@ -22,6 +22,7 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Getter;
@@ -30,7 +31,13 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
-@Table(name = "p_store")
+@Table(name = "p_store",
+    uniqueConstraints = {
+        @UniqueConstraint(
+            name = "uq_store_name_roadAddress_is_deleted",
+            columnNames = {"name", "roadAddress", "is_deleted"}
+        )
+})
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class StoreEntity extends UpdateBaseEntity {
 

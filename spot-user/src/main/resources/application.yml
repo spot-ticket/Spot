@@ -1,0 +1,15 @@
+spring:
+  application:
+    name: spot-user
+  config:
+    import:
+      # bootRun
+      - optional:classpath:/application-secret.yml
+      - optional:classpath:/common.yml
+      - optional:classpath:/kafka-topics.yml
+      - optional:classpath:/spot-user.yml
+
+      # docker-compose
+      - optional:file:/config/common.yml
+      - optional:file:/config/spot-user.yml
+      - optional:file:/config/application-secret.yml

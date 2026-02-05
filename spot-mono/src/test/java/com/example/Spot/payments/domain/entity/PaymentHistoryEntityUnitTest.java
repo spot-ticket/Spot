@@ -123,7 +123,7 @@ class PaymentHistoryEntityUnitTest {
       assertThat(PaymentStatus.valueOf("CANCELLED")).isEqualTo(PaymentStatus.CANCELLED);
       assertThat(PaymentStatus.valueOf("CANCELLED_IN_PROGRESS"))
           .isEqualTo(PaymentStatus.CANCELLED_IN_PROGRESS);
-      assertThat(PaymentStatus.valueOf("PARTIAL_CANCELD")).isEqualTo(PaymentStatus.PARTIAL_CANCELD);
+      assertThat(PaymentStatus.valueOf("PARTIAL_CANCELD")).isEqualTo(PaymentStatus.PARTIAL_CANCELLED);
       assertThat(PaymentStatus.valueOf("ABORTED")).isEqualTo(PaymentStatus.ABORTED);
       assertThat(PaymentStatus.valueOf("EXPIRED")).isEqualTo(PaymentStatus.EXPIRED);
     }

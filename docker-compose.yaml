@@ -35,6 +35,8 @@ services:
       - "19093:19093"
     environment:
       KAFKA_NODE_ID: 1
+      KAFKA_LOG4J_ROOT_LOGLEVEL: 'WARN'
+      KAFKA_LOG4J_LOGGERS: 'kafka.controller=WARN,state.change.logger=WARN,kafka.producer.async.DefaultEventHandler=WARN'
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:19093'
       KAFKA_LISTENERS: 'INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:19093'
@@ -64,8 +66,8 @@ services:
     environment:
       KAFKA_CLUSTERS_0_NAME: local-spot-cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka:29092'
-      LOGGING_LEVEL_ROOT: INFO
-      LOGGING_LEVEL_COM_PROVECTUS: INFO
+      LOGGING_LEVEL_ROOT: WARN
+      LOGGING_LEVEL_COM_PROVECTUS: WARN
     depends_on:
       - kafka
     networks:
@@ -79,11 +81,8 @@ services:
     container_name: spot-gateway
     ports:
       - "8080:8080"
-    environment:
-      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
     volumes:
-      - ./config/common.yml:/config/common.yml:ro
-      - ./config/spot-gateway.yml:/config/application.yml:ro
+      - ./config:/config
     depends_on:
       - redis
       - spot-user
@@ -92,14 +91,8 @@ services:
       - spot-payment
     networks:
       - spot-network
-
-  spot-mono:
-    build:
-      context: ./spot-mono
-      dockerfile: Dockerfile
-    container_name: spot-mono
-    networks:
-      - spot-network
+    env_file:
+      - .env
 
   spot-order:
     build:
@@ -109,20 +102,18 @@ services:
     ports:
       - "8082:8082"
     environment:
-      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
-      - FEIGN_STORE_URL=http://spot-store:8083
-      - FEIGN_PAYMENT_URL=http://spot-payment:8084
+      - DB_HOST=db
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
     volumes:
-      - ./config/common.yml:/config/common.yml:ro
-      - ./config/kafka-topics.yml:/config/kafka-topics.yml:ro
-      - ./config/spot-order.yml:/config/application.yml:ro
+      - ./config:/config
     depends_on:
       - db
       - redis
       - kafka
     networks:
       - spot-network
+    env_file:
+      - .env
 
   spot-payment:
     build:
@@ -131,15 +122,13 @@ services:
     container_name: spot-payment
     ports:
       - "8084:8084"
+    env_file:
+      - .env
     environment:
-      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
-      - FEIGN_ORDER_URL=http://spot-order:8082
-      - FEIGN_USER_URL=http://spot-user:8081
-      - FEIGN_STORE_URL=http://spot-store:8083
+      - DB_HOST=db
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
     volumes:
-      - ./config/common.yml:/config/common.yml:ro
-      - ./config/kafka-topics.yml:/config/kafka-topics.yml:ro
-      - ./config/spot-payment.yml:/config/application.yml:ro
+      - ./config:/config
     depends_on:
       - db
       - redis
@@ -155,16 +144,17 @@ services:
     ports:
       - "8083:8083"
     environment:
-      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
-      - FEIGN_USER_URL=http://spot-user:8081
+      - DB_HOST=db
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
     volumes:
-      - ./config/common.yml:/config/common.yml:ro
-      - ./config/spot-store.yml:/config/application.yml:ro
+      - ./config:/config
     depends_on:
       - db
       - redis
     networks:
       - spot-network
+    env_file:
+      - .env
 
   spot-user:
     build:
@@ -174,17 +164,17 @@ services:
     ports:
       - "8081:8081"
     environment:
-      - SPRING_CONFIG_ADDITIONAL_LOCATION=file:/config/application.yml
-      - FEIGN_STORE_URL=http://spot-store:8083
-      - FEIGN_ORDER_URL=http://spot-order:8082
+      - DB_HOST=db
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
     volumes:
-      - ./config/common.yml:/config/common.yml:ro
-      - ./config/spot-user.yml:/config/application.yml:ro
+      - ./config:/config
     depends_on:
       - db
       - redis
     networks:
       - spot-network
+    env_file:
+      - .env
 
 networks:
   spot-network:

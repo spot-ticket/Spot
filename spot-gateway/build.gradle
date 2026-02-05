@@ -1,8 +1,15 @@
+
 plugins {
     id 'java'
     id 'org.springframework.boot' version '3.5.9'
     id 'io.spring.dependency-management' version '1.1.7'
+    id 'checkstyle'
 }
+
+group = 'com.example'
+version = '0.0.1-SNAPSHOT'
+description = 'Spot for pickup'
+
 java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(21)
@@ -10,9 +17,47 @@ java {
 }
 repositories { mavenCentral() }
 
+sourceSets {
+    main {
+        resources {
+            srcDir 'src/main/resources'
+        }
+    }
+}
+
+processResources {
+    from('../config') {
+        include "${project.name}.yml"
+    }
+    // 중복 발생 시 외부(config 폴더) 파일을 우선시함
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.cloud:spring-cloud-starter-gateway-server-webflux:4.3.3"
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.hamcrest:hamcrest:2.2"
+}
+
+checkstyle {
+    toolVersion = '10.25.0'
+    configFile = file("${rootProject.projectDir}/config/checkstyle/checkstyle.xml")
+    maxWarnings = 0
+    ignoreFailures = false
+}
+
+configurations.checkstyle {
+    resolutionStrategy.eachDependency { details ->
+        if (details.requested.group == 'org.apache.commons' && details.requested.name == 'commons-lang3') {
+            details.useVersion '3.18.0'
+        }
+    }
+}
+
+tasks.withType(Checkstyle) {
+    reports {
+        xml.required = true
+        html.required = true
+    }
 }

@@ -20,6 +20,7 @@ import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemOptionRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemRequestDto;
 
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +38,7 @@ public class OrderAspect {
 
     @Around("@annotation(validateStoreAndMenu)")
     @CircuitBreaker(name = "store_menus_validation")
+    @Bulkhead(name = "store_menus_validation", type = Bulkhead.Type.SEMAPHORE)
     @Retry(name = "store_menus_validation")
     public Object handleValidateStoreAndMenu(
             ProceedingJoinPoint joinPoint,
@@ -101,7 +103,7 @@ public class OrderAspect {
         log.info("[주문 상태 변경] 시작 - OrderId: {}, Type: {}, Method: {}", orderId, statusType, methodName);
 
         try {
-            OrderEntity order = orderRepository.findById(orderId)
+            OrderEntity order = orderRepository.findByIdWithLock(orderId)
                     .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
 
             OrderValidationContext.setCurrentOrder(order);
@@ -145,6 +147,7 @@ public class OrderAspect {
 
     @Around("@annotation(storeOwnershipRequired)")
     @CircuitBreaker(name = "store_me_ownership")
+    @Bulkhead(name = "store_me_ownership", type = Bulkhead.Type.SEMAPHORE)
     @Retry(name = "store_me_ownership")
     public Object handleStoreOwnershipRequired(
             ProceedingJoinPoint joinPoint,

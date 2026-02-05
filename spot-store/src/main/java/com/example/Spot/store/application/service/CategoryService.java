@@ -8,15 +8,25 @@ import com.example.Spot.store.presentation.dto.response.CategoryResponseDTO;
 
 public interface CategoryService {
 
-    List<CategoryResponseDTO.CategoryItem> getAll();
-
+    // ************* //
+    // 매장 카테고리 조회 //
+    // ************* //
+    List<CategoryResponseDTO.CategoryItem> getAllCategory();
     List<CategoryResponseDTO.StoreSummary> getStoresByCategoryId(UUID categoryId);
-
     List<CategoryResponseDTO.StoreSummary> getStoresByCategoryName(String name);
 
-    CategoryResponseDTO.CategoryDetail create(CategoryRequestDTO.Create request);
+    // ************** //
+    // 매장 카테고리 생성 //
+    // ************** //
+    CategoryResponseDTO.CategoryDetail createCategory(CategoryRequestDTO.Create request);
 
-    CategoryResponseDTO.CategoryDetail update(UUID categoryId, CategoryRequestDTO.Update request);
+    // ************** //
+    // 매장 카테고리 변경 //
+    // ************** //
+    CategoryResponseDTO.CategoryDetail updateCategory(UUID categoryId, CategoryRequestDTO.Update request);
 
-    void delete(UUID categoryId, Integer userId);
+    // ************** //
+    // 매장 카테고리 삭제 //
+    // ************** //
+    void deleteCategory(UUID categoryId, Integer userId);
 }
