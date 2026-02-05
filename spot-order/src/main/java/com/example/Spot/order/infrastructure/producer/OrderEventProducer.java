@@ -89,10 +89,4 @@ public class OrderEventProducer {
             throw new RuntimeException("이벤트 발행 예약 중 오류 발생", e);
         }
     }
-    
-    public void publish(OrderOutboxEntity outbox) throws Exception {
-        kafkaTemplate.send(outbox.getEventType(), outbox.getAggregateId().toString(), outbox.getPayload()).get();
-    }
 }
-
-
