@@ -113,7 +113,7 @@ export default function OrdersPage() {
           <div className="space-y-4">
             {activeOrders.map((order) => (
               <div
-                key={order.id}
+                key={order.orderId}
                 className="bg-white rounded-xl shadow-md p-4 border-l-4 border-orange-500"
               >
                 <div className="flex justify-between items-start mb-3">
@@ -147,13 +147,13 @@ export default function OrdersPage() {
 
                 <div className="flex justify-between items-center pt-3 border-t">
                   <span className="font-semibold text-orange-500">
-                    {order.totalAmount.toLocaleString()}원
+                    {Number(order.totalAmount ?? 0).toLocaleString()}원
                   </span>
                   {canCancel(order.orderStatus) && (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleCancelOrder(order.id)}
+                      onClick={() => handleCancelOrder(order.orderId)}
                     >
                       주문 취소
                     </Button>
@@ -177,7 +177,7 @@ export default function OrdersPage() {
         ) : (
           <div className="space-y-4">
             {orders.map((order) => (
-              <div key={order.id} className="bg-white rounded-xl shadow-md p-4">
+              <div key={order.orderId} className="bg-white rounded-xl shadow-md p-4">
                 <div className="flex justify-between items-start mb-3">
                   <div>
                     <h3 className="font-semibold text-gray-900">{order.storeName}</h3>
@@ -207,13 +207,13 @@ export default function OrdersPage() {
 
                 <div className="flex justify-between items-center pt-3 border-t">
                   <span className="font-semibold text-gray-900">
-                    {order.totalAmount.toLocaleString()}원
+                    {Number(order.totalAmount ?? 0).toLocaleString()}원
                   </span>
                   {canCancel(order.orderStatus) && (
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => handleCancelOrder(order.id)}
+                      onClick={() => handleCancelOrder(order.orderId)}
                     >
                       주문 취소
                     </Button>

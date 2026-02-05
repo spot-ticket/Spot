@@ -185,7 +185,7 @@ export function OrderManagement({ storeId }: OrderManagementProps) {
           </div>
         ) : (
           orders.map((order) => (
-            <div key={order.id} className="bg-white rounded-lg shadow p-6">
+            <div key={order.orderId} className="bg-white rounded-lg shadow p-6">
               {/* 주문 헤더 */}
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -264,14 +264,14 @@ export function OrderManagement({ storeId }: OrderManagementProps) {
                   <>
                     <Button
                       size="sm"
-                      onClick={() => handleAcceptOrder(order.id)}
+                      onClick={() => handleAcceptOrder(order.orderId)}
                     >
                       수락
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleRejectOrder(order.id)}
+                      onClick={() => handleRejectOrder(order.orderId)}
                       className="text-red-600 border-red-600 hover:bg-red-50"
                     >
                       거절
@@ -285,7 +285,7 @@ export function OrderManagement({ storeId }: OrderManagementProps) {
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => setCancelOrderId(order.id)}
+                    onClick={() => setCancelOrderId(order.orderId)}
                     className="text-red-600 border-red-600 hover:bg-red-50"
                   >
                     주문 취소 (고객 요청)
@@ -295,7 +295,7 @@ export function OrderManagement({ storeId }: OrderManagementProps) {
                 {order.orderStatus === 'READY' && (
                   <Button
                     size="sm"
-                    onClick={() => handleCompleteOrder(order.id)}
+                    onClick={() => handleCompleteOrder(order.orderId)}
                     className="bg-green-600 hover:bg-green-700"
                   >
                     픽업 완료

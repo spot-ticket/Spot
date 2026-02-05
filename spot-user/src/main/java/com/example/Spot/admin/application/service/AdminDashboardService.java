@@ -1,11 +1,13 @@
 package com.example.Spot.admin.application.service;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import com.example.Spot.global.feign.dto.OrderResponse;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -32,25 +34,23 @@ public class AdminDashboardService {
         List<AdminStatsResponseDto.UserGrowthDto> userGrowth = calculateUserGrowth(7);
 
         Long totalOrders = 0L;
-        Long totalRevenue = 0L;
+        BigDecimal totalRevenue = BigDecimal.ZERO;
         Long totalStores = 0L;
 
-        List<?> recentOrders = List.of();
+        List<OrderResponse> recentOrders = List.of();
         List<AdminStatsResponseDto.OrderStatusStatsDto> orderStatusStats = List.of();
 
-        // 1) Users
         try {
             totalUsers = userRepository.count();
         } catch (Exception ignored) {
             totalUsers = 0L;
         }
 
-        // 2) Orders
         try {
             OrderStatsResponse stats = orderClient.getOrderStats();
             if (stats != null) {
-                totalOrders = stats.getTotalOrders() == null ? 0L : stats.getTotalOrders();
-                totalRevenue = stats.getTotalRevenue() == null ? 0L : stats.getTotalRevenue();
+                totalOrders = stats.getTotalOrders();
+                totalRevenue = stats.getTotalRevenue() == null ? BigDecimal.ZERO : stats.getTotalRevenue();
 
                 if (stats.getOrderStatusStats() != null) {
                     orderStatusStats = stats.getOrderStatusStats()
@@ -64,7 +64,7 @@ public class AdminDashboardService {
             }
         } catch (Exception ignored) {
             totalOrders = 0L;
-            totalRevenue = 0L;
+            totalRevenue = BigDecimal.ZERO;
             orderStatusStats = List.of();
         }
 
@@ -77,7 +77,6 @@ public class AdminDashboardService {
             recentOrders = List.of();
         }
 
-        // 3) Stores
         try {
             totalStores = storeAdminClient.getStoreCount();
         } catch (Exception ignored) {

@@ -308,9 +308,9 @@ export default function AdminPage() {
                     </thead>
                     <tbody className="bg-white divide-y divide-gray-200">
                       {stats.recentOrders.map((order) => (
-                        <tr key={order.id}>
+                        <tr key={order.orderId}>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            #{order.id}
+                            #{order.orderId}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             {order.storeName}
@@ -321,7 +321,7 @@ export default function AdminPage() {
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {order.totalAmount.toLocaleString()}원
+                            {Number(order.totalAmount ?? 0).toLocaleString()}원
                           </td>
                         </tr>
                       ))}
@@ -460,21 +460,21 @@ export default function AdminPage() {
                   </thead>
                   <tbody className="bg-white divide-y divide-gray-200">
                     {orders.content.map((order) => (
-                      <tr key={order.id}>
+                      <tr key={order.orderId}>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          #{order.id}
+                          #{order.orderId}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {order.storeName}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                          {order.totalAmount.toLocaleString()}원
+                          {Number(order.totalAmount ?? 0).toLocaleString()}원
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <select
                             value={order.orderStatus}
                             onChange={(e) =>
-                              handleUpdateOrderStatus(order.id, e.target.value)
+                              handleUpdateOrderStatus(order.orderId, e.target.value)
                             }
                             className="text-sm border-gray-300 rounded-md"
                           >
@@ -495,7 +495,7 @@ export default function AdminPage() {
                             size="sm"
                             onClick={() => {
                               // 주문 상세 페이지로 이동 또는 모달 열기
-                              alert(`주문 #${order.id} 상세 정보`);
+                              alert(`주문 #${order.orderId} 상세 정보`);
                             }}
                           >
                             상세

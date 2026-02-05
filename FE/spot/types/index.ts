@@ -133,7 +133,7 @@ export interface OrderCreateRequest {
 }
 
 export interface OrderResponse {
-  id: string;
+  orderId: string;
   userId: number;
   storeId: string;
   storeName: string;
