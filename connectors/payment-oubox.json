@@ -11,6 +11,7 @@
     "topic.prefix": "payment_outbox_cdc",
     "plugin.name": "pgoutput",
     "slot.name": "payment_outbox_slot",
+    "snapshot.mode": "schema_only",
     "table.include.list": "public.p_payment_outbox",
     "transforms": "outbox",
     "transforms.outbox.type": "io.debezium.transforms.outbox.EventRouter",

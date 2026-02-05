@@ -109,7 +109,8 @@ services:
     environment:
       KAFKA_CLUSTERS_0_NAME: local-spot-cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka:29092'
-      KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: http://connect:8888
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: connect
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: 'http://connect:8083'
       LOGGING_LEVEL_ROOT: WARN
       LOGGING_LEVEL_COM_PROVECTUS: WARN
     depends_on:

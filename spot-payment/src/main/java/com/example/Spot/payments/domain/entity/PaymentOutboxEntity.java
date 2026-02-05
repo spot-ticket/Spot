@@ -19,7 +19,7 @@ import lombok.NoArgsConstructor;
 
 @Entity
 @Table(name = "p_payment_outbox", indexes = {
-        @Index(name = "idx_payment_outbox_status_next_attempt", columnList = "outbox_status, next_attempt_at")
+        @Index(name = "idx_payment_outbox_created_at", columnList = "created_at")
 })
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
