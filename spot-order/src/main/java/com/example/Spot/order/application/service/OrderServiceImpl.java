@@ -404,6 +404,11 @@ public class OrderServiceImpl implements OrderService {
         OrderEntity order = orderRepository.findByIdWithLock(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
         
+        if (order.getOrderStatus() == OrderStatus.PENDING) {
+            log.info("[중복방지] 이미 결제 처리가 완료된 주문입니다. 스킵합니다: orderId={}", orderId);
+            return OrderResponseDto.from(order); // 예외 없이 정상 응답을 반환하여 컨슈머가 Ack를 찍게 함
+        }
+        
         log.info("결제 성공 이벤트 수신 - 주문 확정 처리 시작: orderId={}", orderId);
         
         // 1. 상태 변경(PAYMENT_PENDING -> PENDING)

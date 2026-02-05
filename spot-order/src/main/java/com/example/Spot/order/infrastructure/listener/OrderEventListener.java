@@ -29,7 +29,7 @@ public class OrderEventListener {
             ack.acknowledge(); // 성공 시 커밋
             log.info("[결제 성공] 처리 완료 및 Ack 커밋: OrderID {}", event.getOrderId());
         } catch (Exception e) {
-            log.error("[OrderService] 결제 성공 이벤트 처리 중 에러 발생: {}", e.getMessage(), e);
+            log.error("[OrderEvent] 결제 성공 이벤트 처리 중 에러 발생: {}", e.getMessage(), e);
         }
     }
     
