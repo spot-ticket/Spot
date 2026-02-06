@@ -35,22 +35,26 @@ jobs:
       - name: Check config changes
         id: config-check
         run: |
-          # 모든 변경된 파일 목록
-          ALL_FILES=$(echo '${{ toJson(github.event.head_commit.added) }} ${{ toJson(github.event.head_commit.modified) }}' | jq -rs 'add | .[]')
+
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
 
           # config/ 폴더 변경 파일 필터링
           CONFIG_FILES=""
-          for file in $ALL_FILES; do
+          while IFS= read -r file; do
             if [[ "$file" == config/* ]]; then
-              CONFIG_FILES="$CONFIG_FILES\n- $file"
+              CONFIG_FILES="${CONFIG_FILES}- ${file}\n"
             fi
-          done
+          done <<< "$CHANGED_FILES"
 
+          # 결과 출력
           if [ -n "$CONFIG_FILES" ]; then
             echo "changed=true" >> $GITHUB_OUTPUT
-            echo "files=$CONFIG_FILES" >> $GITHUB_OUTPUT
+            echo "files<<EOF" >> $GITHUB_OUTPUT
+            echo -e "$CONFIG_FILES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
           else
             echo "changed=false" >> $GITHUB_OUTPUT
+            echo "files=" >> $GITHUB_OUTPUT
           fi
 
       - name: Send Discord notification
