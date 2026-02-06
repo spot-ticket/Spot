@@ -74,12 +74,7 @@ toss:
     customerKey: ${spring.toss.customerKey:${TOSS_CUSTOMER_KEY}}
     secretKey: ${spring.toss.secretKey:${TOSS_SECRET_KEY}}
     timeout: 10
-
-logging:
-  level:
-    org.apache.kafka: WARN
-    com.zaxxer.hikari: WARN
-
+    
 management:
   endpoints:
     web:

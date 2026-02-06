@@ -1,6 +1,5 @@
 package com.example.Spot.order.infrastructure.producer;
 
-import java.time.LocalDateTime;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Value;
@@ -50,7 +49,6 @@ public class OrderEventProducer {
         OrderPendingEvent event = OrderPendingEvent.builder()
                 .storeId(storeId)
                 .orderId(orderId)
-                .timestamp(LocalDateTime.now())
                 .build();
         saveOutbox(orderPendingTopic, orderId, event);
     }
@@ -84,16 +82,10 @@ public class OrderEventProducer {
                     .build();
             
             outboxRepository.save(outbox);
-            log.info("✅[Outbox 저장 성공] topic:{}, AggregateId:{}", topic, aggregateId);
+            log.info("[Outbox 저장 성공] topic:{}, AggregateId:{}", topic, aggregateId);
         } catch (JsonProcessingException e) {
-            log.error("❌[Outbox 저장 실패] AggregateId={}, error={}", aggregateId, e.getMessage());
+            log.error("[Outbox 저장 실패] AggregateId={}, error={}", aggregateId, e.getMessage());
             throw new RuntimeException("이벤트 발행 예약 중 오류 발생", e);
         }
     }
-    
-    public void publish(OrderOutboxEntity outbox) throws Exception {
-        kafkaTemplate.send(outbox.getEventType(), outbox.getAggregateId().toString(), outbox.getPayload()).get();
-    }
 }
-
-

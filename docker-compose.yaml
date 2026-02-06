@@ -5,7 +5,12 @@ services:
   db:
     image: postgres:15-alpine
     container_name: local-postgres_db
-    command: postgres -c max_connections=300
+    command: > 
+      postgres 
+      -c max_connections=300
+      -c wal_level=logical
+      -c max_replication_slots=10
+      -c max_wal_senders=10
     environment:
       - POSTGRES_DB=myapp_db
       - POSTGRES_USER=admin
@@ -27,7 +32,7 @@ services:
 
   # --- Infrastructure: Event Broker (Kafka) ---
   kafka:
-    image: confluentinc/cp-kafka:7.5.0
+    image: apache/kafka:4.0.0
     container_name: kafka-local
     restart: always
     ports:
@@ -35,8 +40,8 @@ services:
       - "19093:19093"
     environment:
       KAFKA_NODE_ID: 1
-      KAFKA_LOG4J_ROOT_LOGLEVEL: 'ERROR'
-      KAFKA_LOG4J_LOGGERS: 'kafka=ERROR,kafka.controller=ERROR,kafka.log.LogCleaner=ERROR,kafka.server=ERROR,state.change.logger=ERROR,kafka.producer.async.DefaultEventHandler=ERROR,org.apache.kafka=ERROR,org.apache.zookeeper=ERROR'
+      KAFKA_LOG4J_ROOT_LOGLEVEL: 'WARN'
+      KAFKA_LOG4J_LOGGERS: 'kafka=WARN,state.change.logger=WARN'
       KAFKA_PROCESS_ROLES: 'broker,controller'
       KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:19093'
       KAFKA_LISTENERS: 'INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:19093'
@@ -57,15 +62,55 @@ services:
       - kafka-data:/var/lib/kafka/data
     networks:
       - spot-network
+        
+  connect:
+    image: quay.io/debezium/connect:3.4.0.Final
+    container_name: connect
+    depends_on:
+      - kafka
+      - db
+    ports:
+      - "8888:8083"
+    env_file:
+      - .env
+    environment:
+      CONNECT_CONFIG_PROVIDERS: 'env'
+      CONNECT_CONFIG_PROVIDERS_ENV_CLASS: 'org.apache.kafka.common.config.provider.EnvVarConfigProvider'
+      BOOTSTRAP_SERVERS: kafka:29092
+      GROUP_ID: 1
+      CONFIG_STORAGE_TOPIC: my_connect_configs
+      OFFSET_STORAGE_TOPIC: my_connect_offsets
+      STATUS_STORAGE_TOPIC: my_connect_statuses
+      KEY_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      VALUE_CONVERTER: org.apache.kafka.connect.json.JsonConverter
+      CONNECT_KEY_CONVERTER_SCHEMAS_ENABLE: "false"
+      CONNECT_VALUE_CONVERTER_SCHEMAS_ENABLE: "false"
+      LOGGING_LEVEL: 'WARN'
+      CONNECT_LOG4J_LOGGERS: "org.apache.kafka.connect.runtime.rest=WARN,org.reflections=ERROR"
+    networks:
+      - spot-network
+      
+  connect-init:
+    image: curlimages/curl:latest
+    container_name: connect-init
+    depends_on:
+      - connect
+    networks:
+      - spot-network
+    volumes:
+      - ./connectors:/configs
+    entrypoint: ["/bin/sh", "/configs/register-connectors.sh"]
 
   kafka-ui:
     image: provectuslabs/kafka-ui:latest
     container_name: kafka-ui-local
     ports:
-      - "8989:8080" # spot-order(8082)와 충돌을 피하기 위해 8989로 변경
+      - "8989:8080"
     environment:
       KAFKA_CLUSTERS_0_NAME: local-spot-cluster
       KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: 'kafka:29092'
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME: connect
+      KAFKA_CLUSTERS_0_KAFKACONNECT_0_ADDRESS: 'http://connect:8083'
       LOGGING_LEVEL_ROOT: WARN
       LOGGING_LEVEL_COM_PROVECTUS: WARN
     depends_on:
@@ -79,6 +124,8 @@ services:
       context: ./spot-gateway
       dockerfile: Dockerfile
     container_name: spot-gateway
+    environment:
+      - LOGGING_LEVEL_ROOT=WARN
     ports:
       - "8080:8080"
     volumes:
@@ -91,6 +138,8 @@ services:
       - spot-payment
     networks:
       - spot-network
+    env_file:
+      - .env
 
   spot-order:
     build:
@@ -102,6 +151,7 @@ services:
     environment:
       - DB_HOST=db
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
+      - LOGGING_LEVEL_ROOT=WARN
     volumes:
       - ./config:/config
     depends_on:
@@ -110,6 +160,8 @@ services:
       - kafka
     networks:
       - spot-network
+    env_file:
+      - .env
 
   spot-payment:
     build:
@@ -123,6 +175,7 @@ services:
     environment:
       - DB_HOST=db
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
+      - LOGGING_LEVEL_ROOT=WARN
     volumes:
       - ./config:/config
     depends_on:
@@ -142,6 +195,7 @@ services:
     environment:
       - DB_HOST=db
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
+      - LOGGING_LEVEL_ROOT=WARN
     volumes:
       - ./config:/config
     depends_on:
@@ -149,6 +203,8 @@ services:
       - redis
     networks:
       - spot-network
+    env_file:
+      - .env
 
   spot-user:
     build:
@@ -160,6 +216,7 @@ services:
     environment:
       - DB_HOST=db
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
+      - LOGGING_LEVEL_ROOT=WARN
     volumes:
       - ./config:/config
     depends_on:
@@ -167,6 +224,8 @@ services:
       - redis
     networks:
       - spot-network
+    env_file:
+      - .env
 
 networks:
   spot-network:
