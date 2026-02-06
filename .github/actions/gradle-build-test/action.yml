@@ -1,0 +1,32 @@
+name: 'Gradle Build and Test'
+description: 'Runs checkstyle, tests, and builds the project'
+
+inputs:
+  working-directory:
+    description: 'Working directory for gradle commands'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check code formatting
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: ./gradlew checkstyleMain checkstyleTest --parallel
+      continue-on-error: true
+
+    - name: Run tests
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: ./gradlew test
+      continue-on-error: true
+
+    - name: Build with Gradle
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: ./gradlew bootJar -x test
+
+    - name: Check list of YML
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: jar tf ./build/libs/*SNAPSHOT.jar | grep yml
