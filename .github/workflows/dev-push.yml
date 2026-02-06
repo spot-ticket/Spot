@@ -2,7 +2,7 @@ name: DEV Push Notification
 
 on:
   push:
-    branches: [ refactor/304-git ]
+    branches: [ main ]
 
 jobs:
   notify-discord:
