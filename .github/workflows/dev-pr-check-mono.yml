@@ -73,14 +73,14 @@ jobs:
         for i in {1..60}; do
           # 로그에서 시작 완료 메시지 확인
           if grep -q "Started SpotApplication" bootrun.log 2>/dev/null; then
-            echo "✅ Application started successfully after ${i}s"
+            echo "Application started successfully after ${i}s"
             kill $APP_PID 2>/dev/null || true
             exit 0
           fi
 
           # 프로세스가 죽었는지 확인
           if ! kill -0 $APP_PID 2>/dev/null; then
-            echo "❌ Application process terminated unexpectedly"
+            echo "Application process terminated unexpectedly"
             echo "=== bootRun log ==="
             cat bootrun.log
             exit 1
@@ -89,7 +89,7 @@ jobs:
           sleep 1
         done
 
-        echo "❌ Application failed to start within 60 seconds"
+        echo "Application failed to start within 60 seconds"
         echo "=== bootRun log ==="
         cat bootrun.log
         kill $APP_PID 2>/dev/null || true

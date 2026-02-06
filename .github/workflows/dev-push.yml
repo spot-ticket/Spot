@@ -1,0 +1,61 @@
+name: DEV Push Notification
+
+on:
+  push:
+    branches: [ dev ]
+
+jobs:
+  notify-discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get commit info
+        id: commit-info
+        run: |
+          echo "author=${{ github.event.head_commit.author.name }}" >> $GITHUB_OUTPUT
+          echo "message<<EOF" >> $GITHUB_OUTPUT
+          echo "${{ github.event.head_commit.message }}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "commit_url=${{ github.event.head_commit.url }}" >> $GITHUB_OUTPUT
+          echo "compare_url=${{ github.event.compare }}" >> $GITHUB_OUTPUT
+
+          # 변경된 파일 수
+          ADDED=$(echo '${{ toJson(github.event.head_commit.added) }}' | jq 'length')
+          MODIFIED=$(echo '${{ toJson(github.event.head_commit.modified) }}' | jq 'length')
+          REMOVED=$(echo '${{ toJson(github.event.head_commit.removed) }}' | jq 'length')
+          echo "files_changed=$((ADDED + MODIFIED + REMOVED))" >> $GITHUB_OUTPUT
+
+      - name: Send Discord notification
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          CLEAN_TITLE=$(echo "$COMMIT_TITLE" | head -n 1 | sed 's/"/\\"/g')
+
+          cat <<EOF > payload.json
+          {
+            "username": "Dev 머지 알림 봇",
+            "content": "새로운 업데이트가 도착했습니다! 🚀",
+            "embeds": [{
+              "title": "DEV Branch Push",
+              "color": 5814783,
+              "fields": [
+                { "name": "Author", "value": "$AUTHOR", "inline": true },
+                { "name": "Branch", "value": "dev", "inline": true },
+                { "name": "Files Changed", "value": "$FILES_CHANGED", "inline": true },
+                { "name": "Commit Message", "value": "$CLEAN_TITLE", "inline": false },
+                { "name": "Links", "value": "[View Commit]($COMMIT_URL) | [Compare Changes]($COMPARE_URL)", "inline": false }
+              ],
+              "footer": { "text": "$REPO" },
+              "timestamp": "$TIMESTAMP"
+            }]
+          }
+          EOF
+
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d @payload.json \
+               $DISCORD_WEBHOOK_URL
