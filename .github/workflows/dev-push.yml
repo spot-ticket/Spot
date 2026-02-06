@@ -33,47 +33,29 @@ jobs:
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
         run: |
-          # Commit 메시지에서 첫 줄만 추출
-          COMMIT_TITLE=$(echo "${{ steps.commit-info.outputs.message }}" | head -n 1)
+          CLEAN_TITLE=$(echo "$COMMIT_TITLE" | head -n 1 | sed 's/"/\\"/g')
 
-          # Discord Embed 메시지 전송
+          cat <<EOF > payload.json
+          {
+            "username": "Dev 머지 알림 봇",
+            "content": "새로운 업데이트가 도착했습니다! 🚀",
+            "embeds": [{
+              "title": "DEV Branch Push",
+              "color": 5814783,
+              "fields": [
+                { "name": "Author", "value": "$AUTHOR", "inline": true },
+                { "name": "Branch", "value": "dev", "inline": true },
+                { "name": "Files Changed", "value": "$FILES_CHANGED", "inline": true },
+                { "name": "Commit Message", "value": "$CLEAN_TITLE", "inline": false },
+                { "name": "Links", "value": "[View Commit]($COMMIT_URL) | [Compare Changes]($COMPARE_URL)", "inline": false }
+              ],
+              "footer": { "text": "$REPO" },
+              "timestamp": "$TIMESTAMP"
+            }]
+          }
+          EOF
+
           curl -H "Content-Type: application/json" \
-            -X POST \
-            -d "{
-              \"embeds\": [{
-                \"title\": \"DEV Branch Push\",
-                \"color\": 5814783,
-                \"fields\": [
-                  {
-                    \"name\": \"Author\",
-                    \"value\": \"${{ steps.commit-info.outputs.author }}\",
-                    \"inline\": true
-                  },
-                  {
-                    \"name\": \"Branch\",
-                    \"value\": \"dev\",
-                    \"inline\": true
-                  },
-                  {
-                    \"name\": \"Files Changed\",
-                    \"value\": \"${{ steps.commit-info.outputs.files_changed }}\",
-                    \"inline\": true
-                  },
-                  {
-                    \"name\": \"Commit Message\",
-                    \"value\": \"${COMMIT_TITLE}\",
-                    \"inline\": false
-                  },
-                  {
-                    \"name\": \"Links\",
-                    \"value\": \"[View Commit](${{ steps.commit-info.outputs.commit_url }}) | [Compare Changes](${{ steps.commit-info.outputs.compare_url }})\",
-                    \"inline\": false
-                  }
-                ],
-                \"footer\": {
-                  \"text\": \"${{ github.repository }}\"
-                },
-                \"timestamp\": \"${{ github.event.head_commit.timestamp }}\"
-              }]
-            }" \
-            $DISCORD_WEBHOOK_URL
+               -X POST \
+               -d @payload.json \
+               $DISCORD_WEBHOOK_URL
