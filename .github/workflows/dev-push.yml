@@ -1,0 +1,79 @@
+name: DEV Push Notification
+
+on:
+  push:
+    branches: [ dev ]
+
+jobs:
+  notify-discord:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Get commit info
+        id: commit-info
+        run: |
+          echo "author=${{ github.event.head_commit.author.name }}" >> $GITHUB_OUTPUT
+          echo "message<<EOF" >> $GITHUB_OUTPUT
+          echo "${{ github.event.head_commit.message }}" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "commit_url=${{ github.event.head_commit.url }}" >> $GITHUB_OUTPUT
+          echo "compare_url=${{ github.event.compare }}" >> $GITHUB_OUTPUT
+
+          # 변경된 파일 수
+          ADDED=$(echo '${{ toJson(github.event.head_commit.added) }}' | jq 'length')
+          MODIFIED=$(echo '${{ toJson(github.event.head_commit.modified) }}' | jq 'length')
+          REMOVED=$(echo '${{ toJson(github.event.head_commit.removed) }}' | jq 'length')
+          echo "files_changed=$((ADDED + MODIFIED + REMOVED))" >> $GITHUB_OUTPUT
+
+      - name: Send Discord notification
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+        run: |
+          # Commit 메시지에서 첫 줄만 추출
+          COMMIT_TITLE=$(echo "${{ steps.commit-info.outputs.message }}" | head -n 1)
+
+          # Discord Embed 메시지 전송
+          curl -H "Content-Type: application/json" \
+            -X POST \
+            -d "{
+              \"embeds\": [{
+                \"title\": \"DEV Branch Push\",
+                \"color\": 5814783,
+                \"fields\": [
+                  {
+                    \"name\": \"Author\",
+                    \"value\": \"${{ steps.commit-info.outputs.author }}\",
+                    \"inline\": true
+                  },
+                  {
+                    \"name\": \"Branch\",
+                    \"value\": \"dev\",
+                    \"inline\": true
+                  },
+                  {
+                    \"name\": \"Files Changed\",
+                    \"value\": \"${{ steps.commit-info.outputs.files_changed }}\",
+                    \"inline\": true
+                  },
+                  {
+                    \"name\": \"Commit Message\",
+                    \"value\": \"${COMMIT_TITLE}\",
+                    \"inline\": false
+                  },
+                  {
+                    \"name\": \"Links\",
+                    \"value\": \"[View Commit](${{ steps.commit-info.outputs.commit_url }}) | [Compare Changes](${{ steps.commit-info.outputs.compare_url }})\",
+                    \"inline\": false
+                  }
+                ],
+                \"footer\": {
+                  \"text\": \"${{ github.repository }}\"
+                },
+                \"timestamp\": \"${{ github.event.head_commit.timestamp }}\"
+              }]
+            }" \
+            $DISCORD_WEBHOOK_URL
