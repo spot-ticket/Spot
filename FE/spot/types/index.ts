@@ -141,7 +141,7 @@ export interface OrderResponse {
   needDisposables: boolean;
   request: string;
   pickupTime: string;
-  orderStatus: OrderStatus;
+  status: OrderStatus;
   estimatedTime?: number;
   reason?: string;
   cancelledBy?: string;

@@ -2,8 +2,13 @@ package com.example.Spot.order.application.service;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
+import com.example.Spot.order.domain.entity.OrderEntity;
+import com.example.Spot.order.domain.entity.OrderItemEntity;
+import com.example.Spot.order.domain.repository.OrderItemRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -24,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 public class InternalOrderAdminService {
 
     private final OrderRepository orderRepository;
+    private final OrderItemRepository orderItemRepository;
 
     private static final List<OrderStatus> ACTIVE_STATUSES = List.of(
             OrderStatus.PAYMENT_PENDING,
@@ -39,6 +45,23 @@ public class InternalOrderAdminService {
         Sort sort = Sort.by(parseDirection(direction), sortBy);
         Pageable sortedPageable = PageRequest.of(pageable.getPageNumber(), pageable.getPageSize(), sort);
 
+        Page<OrderEntity> page = orderRepository.findAll(sortedPageable);
+
+        List<UUID> orderIds = page.getContent().stream()
+                .map(OrderEntity::getId)
+                .toList();
+
+        Map<UUID, BigDecimal> totalAmountMap;
+        if (orderIds.isEmpty()) {
+            totalAmountMap = Map.of();
+        } else {
+            totalAmountMap = orderItemRepository.sumTotalAmountByOrderIdIn(orderIds).stream()
+                    .collect(Collectors.toMap(
+                            r -> (UUID) r[0],
+                            r -> (BigDecimal) r[1]
+                    ));
+        }
+
         return orderRepository.findAll(sortedPageable)
                 .map(order -> OrderResponse.builder()
                         .orderId(order.getId())
@@ -47,7 +70,10 @@ public class InternalOrderAdminService {
                         .orderNumber(order.getOrderNumber())
                         .pickupTime(order.getPickupTime())
                         .createdAt(order.getCreatedAt())
+                        .status(order.getOrderStatus())
+                        .totalAmount(totalAmountMap.getOrDefault(order.getId(), BigDecimal.ZERO))
                         .build());
+
     }
 
 

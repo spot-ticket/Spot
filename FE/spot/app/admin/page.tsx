@@ -317,7 +317,7 @@ export default function AdminPage() {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                              {order.orderStatus}
+                              {order.status}
                             </span>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
@@ -472,7 +472,7 @@ export default function AdminPage() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <select
-                            value={order.orderStatus}
+                            value={order.status}
                             onChange={(e) =>
                               handleUpdateOrderStatus(order.orderId, e.target.value)
                             }
@@ -671,6 +671,7 @@ export default function AdminPage() {
                   variant="outline"
                   disabled={storePage === 0}
                   onClick={() => loadStores(storePage - 1)}
+
                 >
                   이전
                 </Button>

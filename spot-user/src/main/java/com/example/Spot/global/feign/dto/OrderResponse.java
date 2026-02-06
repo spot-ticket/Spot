@@ -1,5 +1,6 @@
 package com.example.Spot.global.feign.dto;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -20,4 +21,7 @@ public class OrderResponse {
     private String orderNumber;
     private LocalDateTime pickupTime;
     private LocalDateTime createdAt;
+    private String status;
+    private BigDecimal totalAmount;
+    private String storeName;
 }

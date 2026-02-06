@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.example.Spot.global.feign.dto.OrderResponse;
@@ -73,6 +75,37 @@ public class AdminDashboardService {
             if (page != null && page.getContent() != null) {
                 recentOrders = page.getContent();
             }
+            List<UUID> storeIds = recentOrders.stream()
+                    .map(OrderResponse::getStoreId)
+                    .filter(id -> id != null)
+                    .distinct()
+                    .toList();
+
+            Map<UUID, String> storeNameMap = Map.of();
+
+            if (!storeIds.isEmpty()) {
+                Map<UUID, String> resp = storeAdminClient.getStoreNames(storeIds);
+
+                if (resp != null) {
+                    storeNameMap = resp;
+                }
+            }
+
+
+            Map<UUID, String> finalStoreNameMap = storeNameMap;
+            recentOrders = recentOrders.stream()
+                    .map(o -> OrderResponse.builder()
+                            .orderId(o.getOrderId())
+                            .userId(o.getUserId())
+                            .storeId(o.getStoreId())
+                            .storeName(finalStoreNameMap.getOrDefault(o.getStoreId(), null))
+                            .orderNumber(o.getOrderNumber())
+                            .pickupTime(o.getPickupTime())
+                            .createdAt(o.getCreatedAt())
+                            .status(o.getStatus())
+                            .totalAmount(o.getTotalAmount())
+                            .build())
+                    .toList();
         } catch (Exception ignored) {
             recentOrders = List.of();
         }

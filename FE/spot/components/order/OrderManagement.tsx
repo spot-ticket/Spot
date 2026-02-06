@@ -195,10 +195,10 @@ export function OrderManagement({ storeId }: OrderManagementProps) {
                     </h3>
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        ORDER_STATUS_COLOR[order.orderStatus]
+                        ORDER_STATUS_COLOR[order.status]
                       }`}
                     >
-                      {ORDER_STATUS_KR[order.orderStatus]}
+                      {ORDER_STATUS_KR[order.status]}
                     </span>
                   </div>
                   <div className="text-sm text-gray-600">
@@ -260,7 +260,7 @@ export function OrderManagement({ storeId }: OrderManagementProps) {
 
               {/* 액션 버튼 */}
               <div className="flex gap-2 flex-wrap">
-                {order.orderStatus === 'PENDING' && (
+                {order.status === 'PENDING' && (
                   <>
                     <Button
                       size="sm"
@@ -279,9 +279,9 @@ export function OrderManagement({ storeId }: OrderManagementProps) {
                   </>
                 )}
 
-                {(order.orderStatus === 'PENDING' ||
-                  order.orderStatus === 'ACCEPTED' ||
-                  order.orderStatus === 'COOKING') && (
+                {(order.status === 'PENDING' ||
+                  order.status === 'ACCEPTED' ||
+                  order.status === 'COOKING') && (
                   <Button
                     size="sm"
                     variant="outline"
@@ -292,7 +292,7 @@ export function OrderManagement({ storeId }: OrderManagementProps) {
                   </Button>
                 )}
 
-                {order.orderStatus === 'READY' && (
+                {order.status === 'READY' && (
                   <Button
                     size="sm"
                     onClick={() => handleCompleteOrder(order.orderId)}

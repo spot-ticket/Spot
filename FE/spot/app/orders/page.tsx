@@ -124,9 +124,9 @@ export default function OrdersPage() {
                     </p>
                   </div>
                   <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[order.orderStatus]}`}
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[order.status]}`}
                   >
-                    {statusLabels[order.orderStatus]}
+                    {statusLabels[order.status]}
                   </span>
                 </div>
 
@@ -149,7 +149,7 @@ export default function OrdersPage() {
                   <span className="font-semibold text-orange-500">
                     {Number(order.totalAmount ?? 0).toLocaleString()}원
                   </span>
-                  {canCancel(order.orderStatus) && (
+                  {canCancel(order.status) && (
                     <Button
                       variant="outline"
                       size="sm"
@@ -184,9 +184,9 @@ export default function OrdersPage() {
                     <p className="text-sm text-gray-500">{formatDate(order.createdAt)}</p>
                   </div>
                   <span
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[order.orderStatus]}`}
+                    className={`px-3 py-1 rounded-full text-sm font-medium ${statusColors[order.status]}`}
                   >
-                    {statusLabels[order.orderStatus]}
+                    {statusLabels[order.status]}
                   </span>
                 </div>
 
@@ -209,7 +209,7 @@ export default function OrdersPage() {
                   <span className="font-semibold text-gray-900">
                     {Number(order.totalAmount ?? 0).toLocaleString()}원
                   </span>
-                  {canCancel(order.orderStatus) && (
+                  {canCancel(order.status) && (
                     <Button
                       variant="outline"
                       size="sm"
