@@ -131,6 +131,7 @@ services:
     volumes:
       - ./config:/config
     depends_on:
+      - fluent-bit
       - redis
       - spot-user
       - spot-store
@@ -155,6 +156,7 @@ services:
     volumes:
       - ./config:/config
     depends_on:
+      - fluent-bit
       - db
       - redis
       - kafka
@@ -179,11 +181,17 @@ services:
     volumes:
       - ./config:/config
     depends_on:
+      - fluent-bit
       - db
       - redis
       - kafka
     networks:
       - spot-network
+    logging:
+      driver: fluentd
+      options:
+        fluentd-address: 127.0.0.1:24224
+        tag: spot-payment
 
   spot-store:
     build:
@@ -199,6 +207,7 @@ services:
     volumes:
       - ./config:/config
     depends_on:
+      - fluent-bit
       - db
       - redis
     networks:
@@ -220,6 +229,7 @@ services:
     volumes:
       - ./config:/config
     depends_on:
+      - fluent-bit
       - db
       - redis
     networks:
