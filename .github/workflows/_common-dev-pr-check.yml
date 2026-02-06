@@ -1,0 +1,124 @@
+name: Common PR Check for dev
+
+on:
+  workflow_call:
+    inputs:
+      service-name:
+        required: true
+        type: string
+      working-directory:
+        required: true
+        type: string
+      health-port:
+        required: true
+        type: number
+    secrets:
+      SPRING_JWT_SECRET:
+        required: false
+      EMAIL_USERNAME:
+        required: false
+      EMAIL_PASSWORD:
+        required: false
+      TOSS_SECRET_KEY:
+        required: false
+      TOSS_CUSTOMER_KEY:
+        required: false
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    env:
+      SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}
+      EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
+      EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+      TOSS_SECRET_KEY: ${{ secrets.TOSS_SECRET_KEY }}
+      TOSS_CUSTOMER_KEY: ${{ secrets.TOSS_CUSTOMER_KEY }}
+
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: myapp_db
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: secret
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      redis:
+        image: redis:alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      kafka:
+        image: confluentinc/cp-kafka:7.5.0
+        ports:
+          - 9092:9092
+        env:
+          KAFKA_LOG4J_ROOT_LOGLEVEL: 'WARN'
+          KAFKA_LOG4J_LOGGERS: 'kafka.controller=WARN,state.change.logger=WARN,kafka.producer.async.DefaultEventHandler=WARN'
+          KAFKA_NODE_ID: 1
+          KAFKA_PROCESS_ROLES: 'broker,controller'
+          KAFKA_CONTROLLER_QUORUM_VOTERS: '1@kafka:29093'
+          KAFKA_LISTENERS: 'PLAINTEXT://0.0.0.0:9092,CONTROLLER://0.0.0.0:29093'
+          KAFKA_ADVERTISED_LISTENERS: 'PLAINTEXT://localhost:9092'
+          KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: 'PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT'
+          KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+          KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+          CLUSTER_ID: 'J9Xz7kQPRYyK8VkqH3mW5A'
+          KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+          KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+          KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+          KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+        options: >-
+          --health-cmd "kafka-topics --bootstrap-server localhost:9092 --list"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java and Gradle
+        uses: ./.github/actions/setup-java-gradle
+        with:
+          working-directory: ${{ inputs.working-directory }}
+
+      - name: Get all changed services
+        id: changed-services
+        uses: tj-actions/changed-files@v42
+        with:
+          dir_names: true
+          files: spot-*/**
+
+      - name: Build and Test
+        uses: ./.github/actions/gradle-build-test
+        with:
+          working-directory: ${{ inputs.working-directory }}
+
+      - name: Test application startup
+        if: steps.changed-services.outputs.any_changed == 'true'
+        uses: ./.github/actions/test-app-startup
+        with:
+          working-directory: ${{ inputs.working-directory }}
+          services: ${{ steps.changed-services.outputs.all_changed_files }}
+          health-port: ${{ inputs.health-port }}
+
+      - name: Upload build artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: build-reports
+          path: |
+            ${{ inputs.working-directory }}/build/reports/
+            ${{ inputs.working-directory }}/build/test-results/
