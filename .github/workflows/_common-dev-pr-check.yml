@@ -9,6 +9,9 @@ on:
       working-directory:
         required: true
         type: string
+      health-port:
+        required: true
+        type: number
     secrets:
       SPRING_JWT_SECRET:
         required: false
@@ -109,6 +112,7 @@ jobs:
         with:
           working-directory: ${{ inputs.working-directory }}
           services: ${{ steps.changed-services.outputs.all_changed_files }}
+          health-port: ${{ inputs.health-port }}
 
       - name: Upload build artifacts
         if: failure()

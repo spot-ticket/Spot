@@ -10,8 +10,7 @@ inputs:
     required: true
   health-port:
     description: 'Health check port'
-    required: false
-    default: '8082'
+    required: true
   timeout-seconds:
     description: 'Startup timeout in seconds'
     required: false
