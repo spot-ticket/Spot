@@ -14,3 +14,4 @@ jobs:
     with:
       service-name: spot-gateway
       working-directory: spot-gateway
+      health-port: 8080

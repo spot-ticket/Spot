@@ -16,6 +16,7 @@ jobs:
     with:
       service-name: spot-payment
       working-directory: spot-payment
+      health-port: 8084
     secrets:
       SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}
       EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}

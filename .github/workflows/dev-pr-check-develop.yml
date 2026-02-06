@@ -10,3 +10,4 @@ jobs:
     with:
       service-name: "test"
       working-directory: 'spot-payment'
+      health-port: 8084

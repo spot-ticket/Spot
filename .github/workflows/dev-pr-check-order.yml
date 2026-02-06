@@ -16,6 +16,7 @@ jobs:
     with:
       service-name: spot-order
       working-directory: spot-order
+      health-port: 8082
     secrets:
       SPRING_JWT_SECRET: ${{ secrets.SPRING_JWT_SECRET }}
       EMAIL_USERNAME: ${{ secrets.EMAIL_USERNAME }}
