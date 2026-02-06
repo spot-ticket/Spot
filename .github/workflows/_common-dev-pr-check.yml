@@ -110,9 +110,8 @@ jobs:
       - name: Test application startup
         if: steps.changed-services.outputs.any_changed == 'true'
         run: |
-          for service in ${{ setps.changed-services.outputs.all_changed_files }}; do
+          for service in ${{ steps.changed-services.outputs.all_changed_files }}; do
             echo "Testing Service... [$service]"
-            cd $service
 
             # 빌드된 JAR 파일 찾기
             JAR_FILE=$(find build/libs -name "*.jar" | head -n 1)
