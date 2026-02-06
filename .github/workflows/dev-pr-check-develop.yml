@@ -3,8 +3,6 @@ name: DEV PR Check - Test
 on:
   push:
     branches: [ refactor/304-git ]
-    paths:
-      - 'spot-payment/**'
 
 jobs:
   call-template:
