@@ -57,43 +57,6 @@ jobs:
             echo "files=" >> $GITHUB_OUTPUT
           fi
 
-      - name: Send Discord notification
-        env:
-          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
-          AUTHOR: ${{ steps.commit-info.outputs.author }}
-          COMMIT_MSG: ${{ steps.commit-info.outputs.message }}
-          COMMIT_URL: ${{ steps.commit-info.outputs.commit_url }}
-          COMPARE_URL: ${{ steps.commit-info.outputs.compare_url }}
-          FILES_CHANGED: ${{ steps.commit-info.outputs.files_changed }}
-          REPO: ${{ steps.commit-info.outputs.repo }}
-          TIMESTAMP: ${{ steps.commit-info.outputs.timestamp }}
-        run: |
-          cat <<EOF > payload.json
-          {
-            "username": "Dev 머지 알림 봇",
-            "content": "새로운 업데이트가 도착했습니다!",
-            "embeds": [{
-              "title": "DEV Branch Push",
-              "color": 5814783,
-              "fields": [
-                { "name": "Author", "value": "${AUTHOR}", "inline": true },
-                { "name": "Branch", "value": "dev", "inline": true },
-                { "name": "Files Changed", "value": "${FILES_CHANGED}", "inline": true },
-                { "name": "Commit Message", "value": "${COMMIT_MSG}", "inline": false },
-                { "name": "Links", "value": "[View Commit](${COMMIT_URL}) | [Compare Changes](${COMPARE_URL})", "inline": false }
-              ],
-              "footer": { "text": "${REPO}" },
-              "timestamp": "${TIMESTAMP}"
-            }]
-          }
-          EOF
-
-          cat payload.json
-          curl -H "Content-Type: application/json" \
-               -X POST \
-               -d @payload.json \
-               $DISCORD_WEBHOOK_URL
-
       - name: Alert Config File is changed
         if: steps.config-check.outputs.changed == 'true'
         env:

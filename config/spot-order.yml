@@ -78,6 +78,3 @@ logging:
     io.github.resilience4j.circuitbreaker: INFO
     io.github.resilience4j.retry: INFO
     io.github.resilience4j.bulkhead: INFO
-
-
-....
