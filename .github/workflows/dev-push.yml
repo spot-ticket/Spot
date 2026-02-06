@@ -2,7 +2,7 @@ name: DEV Push Notification
 
 on:
   push:
-    branches: [ dev ]
+    branches: [ refactor/304-git ]
 
 jobs:
   notify-discord:
@@ -17,11 +17,14 @@ jobs:
         id: commit-info
         run: |
           echo "author=${{ github.event.head_commit.author.name }}" >> $GITHUB_OUTPUT
-          echo "message<<EOF" >> $GITHUB_OUTPUT
-          echo "${{ github.event.head_commit.message }}" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
           echo "commit_url=${{ github.event.head_commit.url }}" >> $GITHUB_OUTPUT
           echo "compare_url=${{ github.event.compare }}" >> $GITHUB_OUTPUT
+          echo "timestamp=${{ github.event.head_commit.timestamp }}" >> $GITHUB_OUTPUT
+          echo "repo=${{ github.repository }}" >> $GITHUB_OUTPUT
+
+          # Commit 메시지 첫 줄
+          COMMIT_MSG=$(echo "${{ github.event.head_commit.message }}" | head -n 1 | sed 's/"/\\"/g')
+          echo "message=$COMMIT_MSG" >> $GITHUB_OUTPUT
 
           # 변경된 파일 수
           ADDED=$(echo '${{ toJson(github.event.head_commit.added) }}' | jq 'length')
@@ -32,29 +35,35 @@ jobs:
       - name: Send Discord notification
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          AUTHOR: ${{ steps.commit-info.outputs.author }}
+          COMMIT_MSG: ${{ steps.commit-info.outputs.message }}
+          COMMIT_URL: ${{ steps.commit-info.outputs.commit_url }}
+          COMPARE_URL: ${{ steps.commit-info.outputs.compare_url }}
+          FILES_CHANGED: ${{ steps.commit-info.outputs.files_changed }}
+          REPO: ${{ steps.commit-info.outputs.repo }}
+          TIMESTAMP: ${{ steps.commit-info.outputs.timestamp }}
         run: |
-          CLEAN_TITLE=$(echo "$COMMIT_TITLE" | head -n 1 | sed 's/"/\\"/g')
-
           cat <<EOF > payload.json
           {
             "username": "Dev 머지 알림 봇",
-            "content": "새로운 업데이트가 도착했습니다! 🚀",
+            "content": "새로운 업데이트가 도착했습니다!",
             "embeds": [{
               "title": "DEV Branch Push",
               "color": 5814783,
               "fields": [
-                { "name": "Author", "value": "$AUTHOR", "inline": true },
+                { "name": "Author", "value": "${AUTHOR}", "inline": true },
                 { "name": "Branch", "value": "dev", "inline": true },
-                { "name": "Files Changed", "value": "$FILES_CHANGED", "inline": true },
-                { "name": "Commit Message", "value": "$CLEAN_TITLE", "inline": false },
-                { "name": "Links", "value": "[View Commit]($COMMIT_URL) | [Compare Changes]($COMPARE_URL)", "inline": false }
+                { "name": "Files Changed", "value": "${FILES_CHANGED}", "inline": true },
+                { "name": "Commit Message", "value": "${COMMIT_MSG}", "inline": false },
+                { "name": "Links", "value": "[View Commit](${COMMIT_URL}) | [Compare Changes](${COMPARE_URL})", "inline": false }
               ],
-              "footer": { "text": "$REPO" },
-              "timestamp": "$TIMESTAMP"
+              "footer": { "text": "${REPO}" },
+              "timestamp": "${TIMESTAMP}"
             }]
           }
           EOF
 
+          cat payload.json
           curl -H "Content-Type: application/json" \
                -X POST \
                -d @payload.json \
