@@ -10,7 +10,7 @@ import com.example.Spot.global.feign.dto.OrderStatsResponse;
 @FeignClient(name = "spot-order", url = "${feign.order.url}")
 public interface OrderClient {
 
-    @GetMapping("/api/admin/orders")
+    @GetMapping("/api/internal/admin/orders")
     OrderPageResponse getAllOrders(
             @RequestParam("page") int page,
             @RequestParam("size") int size,
@@ -18,9 +18,9 @@ public interface OrderClient {
             @RequestParam("direction") String direction
     );
 
-    @GetMapping("/api/admin/orders/stats")
+    @GetMapping("/api/internal/admin/orders/stats")
     OrderStatsResponse getOrderStats();
 
-    @GetMapping("/api/admin/orders/count")
+    @GetMapping("/api/internal/admin/orders/count")
     long getOrderCount();
 }
