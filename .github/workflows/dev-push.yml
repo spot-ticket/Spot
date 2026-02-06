@@ -70,14 +70,14 @@ jobs:
           cat <<EOF > config-alert.json
           {
             "username": "Config 변경 알림 봇",
-            "content": "@here Config 파일이 변경되었습니다! 확인이 필요합니다.",
+            "content": "@CONFIG Config 파일이 변경되었습니다! 확인이 필요합니다.",
             "embeds": [{
               "title": "Config File Changed",
               "color": 16711680,
               "fields": [
                 { "name": "Author", "value": "${AUTHOR}", "inline": true },
                 { "name": "Branch", "value": "dev", "inline": true },
-                { "name": "Changed Config Files", "value": "${CONFIG_FILES}", "inline": false },
+                { "name": "Changed Config Files", "value": "${CONFIG_FILES}", "inline": true },
                 { "name": "Link", "value": "[View Commit](${COMMIT_URL})", "inline": false }
               ],
               "footer": { "text": "${REPO}" },
