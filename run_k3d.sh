@@ -137,12 +137,24 @@ deploy_infrastructure() {
     kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/redis.yaml"
     kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/kafka.yaml"
 
+    # Apply monitoring system (loki, grafana, fluent-bit)
+    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/loki.yaml"
+    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/grafana.yaml"
+    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/fluent-bit.yaml"
+
     log_info "Waiting for infrastructure to be ready..."
     kubectl wait --for=condition=available deployment/postgres -n spot --timeout=120s
     kubectl wait --for=condition=available deployment/redis -n spot --timeout=120s
     kubectl wait --for=condition=available deployment/kafka -n spot --timeout=120s
 
     log_info "Infrastructure deployed successfully!"
+
+    log_info "Waiting for monitoring system to be ready..."
+    kubectl wait --for=condition=available deployment/loki-deploy -n monitoring --timeout=120s
+    kubectl wait --for=condition=available deployment/grafana-deploy -n monitoring --timeout=120s
+    kubectl rollout status daemonset/fluent-bit-daemon -n monitoring --timeout=120s
+
+    log_info "Monitoring System deployed successfully!"
 }
 
 deploy_applications() {
@@ -181,12 +193,17 @@ show_status() {
     kubectl get pods -n argocd
     echo ""
 
+    log_info "Pods in monitoring namespace:"
+    kubectl get pods -n monitoring
+    echo ""
+
     echo "=============================================="
     echo -e "${GREEN}K3d cluster is ready!${NC}"
     echo ""
     echo "Access points:"
     echo "  - Gateway API: http://localhost:30080"
     echo "  - ArgoCD UI:   http://localhost:30090"
+    echo "  - Grafana UI:  http://localhost:30070"
     echo ""
     echo "ArgoCD credentials:"
     echo "  - Username: admin"

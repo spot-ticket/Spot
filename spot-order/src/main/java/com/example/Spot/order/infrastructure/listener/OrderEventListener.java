@@ -27,9 +27,9 @@ public class OrderEventListener {
             orderService.completePayment(event.getOrderId());
 
             ack.acknowledge(); // 성공 시 커밋
-            log.info("✅ [결제 성공] 처리 완료 및 Ack 커밋: OrderID {}", event.getOrderId());
+            log.info("[결제 성공] 처리 완료 및 Ack 커밋: OrderID {}", event.getOrderId());
         } catch (Exception e) {
-            log.error("❌ [OrderService] 결제 성공 이벤트 처리 중 에러 발생: {}", e.getMessage(), e);
+            log.error("[OrderEvent] 결제 성공 이벤트 처리 중 에러 발생: {}", e.getMessage(), e);
         }
     }
     
@@ -42,9 +42,9 @@ public class OrderEventListener {
             orderService.completeOrderCancellation(event.getOrderId());
 
             ack.acknowledge(); // 성공 시 커밋
-            log.info("✅ [결제 환불] 처리 완료 및 Ack 커밋: OrderID {}", event.getOrderId());
+            log.info("[결제 환불] 처리 완료 및 Ack 커밋: OrderID {}", event.getOrderId());
         } catch (Exception e) {
-            log.error("❌ [환불 완료 처리 실패] 메시지 소비 중 오류 발생: {}", e.getMessage());
+            log.error("[환불 완료 처리 실패] 메시지 소비 중 오류 발생: {}", e.getMessage());
         }
     }
 }
