@@ -67,24 +67,29 @@ jobs:
           REPO: ${{ steps.commit-info.outputs.repo }}
           TIMESTAMP: ${{ steps.commit-info.outputs.timestamp }}
         run: |
-          cat <<EOF > config-alert.json
-          {
-            "username": "Config 변경 알림 봇",
-            "content": "@CONFIG Config 파일이 변경되었습니다! 확인이 필요합니다.",
-            "embeds": [{
-              "title": "Config File Changed",
-              "color": 16711680,
-              "fields": [
-                { "name": "Author", "value": "${AUTHOR}", "inline": true },
-                { "name": "Branch", "value": "dev", "inline": true },
-                { "name": "Changed Config Files", "value": "${CONFIG_FILES}", "inline": true },
-                { "name": "Link", "value": "[View Commit](${COMMIT_URL})", "inline": false }
-              ],
-              "footer": { "text": "${REPO}" },
-              "timestamp": "${TIMESTAMP}"
-            }]
-          }
-          EOF
+          
+          jq -n \
+            --arg author "$AUTHOR" \
+            --arg config_files "$CONFIG_FILES" \
+            --arg commit_url "$COMMIT_URL" \
+            --arg repo "$REPO" \
+            --arg timestamp "$TIMESTAMP" \
+            '{
+              "username": "Config 변경 알림 봇",
+              "content": "@here Config 파일이 변경되었습니다! 확인이 필요합니다.",
+              "embeds": [{
+                "title": "Config File Changed",
+                "color": 16711680,
+                "fields": [
+                  { "name": "Author", "value": $author, "inline": true },
+                  { "name": "Branch", "value": "dev", "inline": true },
+                  { "name": "Changed Config Files", "value": $config_files, "inline": false },
+                  { "name": "Link", "value": ("[View Commit](" + $commit_url + ")"), "inline": false }
+                ],
+                "footer": { "text": $repo },
+                "timestamp": $timestamp
+              }]
+            }' > config-alert.json
 
           cat config-alert.json
           curl -H "Content-Type: application/json" \
