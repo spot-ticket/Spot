@@ -37,9 +37,9 @@ public class InternalAdminStoreController {
     ) {
         Pageable pageable = PageRequest.of(page, size);
 
-        // 너가 이미 갖고 있는 admin 목록 조회 서비스가 Page로 주면 이대로 변환
-        Page<AdminStoreListResponse> stores = Page.empty(pageable);
+        //Page<AdminStoreListResponse> stores = Page.empty(pageable);
 
+        Page<AdminStoreListResponse> stores = adminStoreInternalService.getAllStores(pageable);
         return ResponseEntity.ok(StorePageResponse.from(stores));
     }
 
@@ -52,4 +52,10 @@ public class InternalAdminStoreController {
         adminStoreInternalService.deleteStore(storeId, userId);
         return ResponseEntity.noContent().build();
     }
+    @GetMapping("/count")
+    public ResponseEntity<Long> getStoreCount() {
+        long count = adminStoreInternalService.getStoreCount();
+        return ResponseEntity.ok(count);
+    }
+
 }

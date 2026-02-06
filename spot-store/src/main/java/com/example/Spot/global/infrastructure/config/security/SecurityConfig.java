@@ -35,7 +35,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/actuator/**").permitAll()
                 .requestMatchers(
-                        "/", "/swagger-ui/**", "/v3/api-docs/**"
+                        "/", "/swagger-ui/**", "/v3/api-docs/**", "/api/internal/admin/**"
                 ).permitAll()
                 .anyRequest().authenticated()
         );

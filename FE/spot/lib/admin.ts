@@ -112,7 +112,7 @@ export const adminStoreApi = {
 export const adminStatsApi = {
   // 전체 통계 조회
   getStats: async (): Promise<AdminStats> => {
-    const response = await api.get<ApiResponse<AdminStats>>('/api/admin/stats');
+    const response = await api.get<ApiResponse<AdminStats>>('/api/admin/stats/dashboard');
     return response.data.result;
   },
 

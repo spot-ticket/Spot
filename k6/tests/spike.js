@@ -70,7 +70,7 @@ export function setup() {
       // Cache menus for first 3 stores (quick setup for spike test)
       for (let i = 0; i < Math.min(3, stores.length); i++) {
         const store = stores[i];
-        const storeId = store.id || store.storeId;
+        const storeId = store.id || store.id;
 
         const menusRes = http.get(buildUrl(endpoints.store.getMenus(storeId)), {
           headers: getAuthHeaders(customerTokens.accessToken),

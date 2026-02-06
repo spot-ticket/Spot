@@ -32,4 +32,5 @@ public interface StoreClient {
 
     @DeleteMapping("/api/stores/{storeId}")
     void deleteStore(@PathVariable("storeId") UUID storeId);
+
 }
