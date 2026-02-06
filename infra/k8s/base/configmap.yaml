@@ -8,7 +8,7 @@ data:
   SPRING_DATASOURCE_USERNAME: "admin"
   SPRING_DATA_REDIS_HOST: "redis"
   SPRING_DATA_REDIS_PORT: "6379"
-  KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
+  KAFKA_BOOTSTRAP_SERVERS: "kafka-svc:9092"
 ---
 apiVersion: v1
 kind: Secret
@@ -18,7 +18,7 @@ metadata:
 type: Opaque
 stringData:
   SPRING_DATASOURCE_PASSWORD: "secret"
-  JWT_SECRET: "jmXDQDnLqV+lOaPKMR06v4+RQ7aj2cj8LR+zgPOlz/GS989tptPtAmIpyaZHrsLOPqKoVtPus28YeXZTL8O8nw=="
+  SPRING_JWT_SECRET: "jmXDQDnLqV+lOaPKMR06v4+RQ7aj2cj8LR+zgPOlz/GS989tptPtAmIpyaZHrsLOPqKoVtPus28YeXZTL8O8nw=="
   TOSS_SECRET_KEY: "test_sk_E92LAa5PVb91Y01y1nXZ37YmpXyJ"
 ---
 apiVersion: v1
