@@ -2,7 +2,7 @@ name: DEV Push Notification
 
 on:
   push:
-    branches: [ main ]
+    branches: [ refactor/304-git ]
 
 jobs:
   notify-discord:
@@ -31,6 +31,27 @@ jobs:
           MODIFIED=$(echo '${{ toJson(github.event.head_commit.modified) }}' | jq 'length')
           REMOVED=$(echo '${{ toJson(github.event.head_commit.removed) }}' | jq 'length')
           echo "files_changed=$((ADDED + MODIFIED + REMOVED))" >> $GITHUB_OUTPUT
+
+      - name: Check config changes
+        id: config-check
+        run: |
+          # 모든 변경된 파일 목록
+          ALL_FILES=$(echo '${{ toJson(github.event.head_commit.added) }} ${{ toJson(github.event.head_commit.modified) }}' | jq -rs 'add | .[]')
+
+          # config/ 폴더 변경 파일 필터링
+          CONFIG_FILES=""
+          for file in $ALL_FILES; do
+            if [[ "$file" == config/* ]]; then
+              CONFIG_FILES="$CONFIG_FILES\n- $file"
+            fi
+          done
+
+          if [ -n "$CONFIG_FILES" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "files=$CONFIG_FILES" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+          fi
 
       - name: Send Discord notification
         env:
@@ -67,4 +88,39 @@ jobs:
           curl -H "Content-Type: application/json" \
                -X POST \
                -d @payload.json \
+               $DISCORD_WEBHOOK_URL
+
+      - name: Alert Config File is changed
+        if: steps.config-check.outputs.changed == 'true'
+        env:
+          DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          AUTHOR: ${{ steps.commit-info.outputs.author }}
+          COMMIT_URL: ${{ steps.commit-info.outputs.commit_url }}
+          CONFIG_FILES: ${{ steps.config-check.outputs.files }}
+          REPO: ${{ steps.commit-info.outputs.repo }}
+          TIMESTAMP: ${{ steps.commit-info.outputs.timestamp }}
+        run: |
+          cat <<EOF > config-alert.json
+          {
+            "username": "Config 변경 알림 봇",
+            "content": "@here Config 파일이 변경되었습니다! 확인이 필요합니다.",
+            "embeds": [{
+              "title": "Config File Changed",
+              "color": 16711680,
+              "fields": [
+                { "name": "Author", "value": "${AUTHOR}", "inline": true },
+                { "name": "Branch", "value": "dev", "inline": true },
+                { "name": "Changed Config Files", "value": "${CONFIG_FILES}", "inline": false },
+                { "name": "Link", "value": "[View Commit](${COMMIT_URL})", "inline": false }
+              ],
+              "footer": { "text": "${REPO}" },
+              "timestamp": "${TIMESTAMP}"
+            }]
+          }
+          EOF
+
+          cat config-alert.json
+          curl -H "Content-Type: application/json" \
+               -X POST \
+               -d @config-alert.json \
                $DISCORD_WEBHOOK_URL
