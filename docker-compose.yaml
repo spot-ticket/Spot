@@ -128,8 +128,8 @@ services:
       - LOGGING_LEVEL_ROOT=WARN
     ports:
       - "8080:8080"
-    volumes:
-      - ./config:/config
+#    volumes:
+#      - ./config:/config
     depends_on:
       - redis
       - spot-user
@@ -152,8 +152,6 @@ services:
       - DB_HOST=db
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
       - LOGGING_LEVEL_ROOT=WARN
-    volumes:
-      - ./config:/config
     depends_on:
       - db
       - redis
@@ -176,8 +174,6 @@ services:
       - DB_HOST=db
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
       - LOGGING_LEVEL_ROOT=WARN
-    volumes:
-      - ./config:/config
     depends_on:
       - db
       - redis
@@ -196,8 +192,6 @@ services:
       - DB_HOST=db
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
       - LOGGING_LEVEL_ROOT=WARN
-    volumes:
-      - ./config:/config
     depends_on:
       - db
       - redis
@@ -217,8 +211,6 @@ services:
       - DB_HOST=db
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092 # 필요 시 추가
       - LOGGING_LEVEL_ROOT=WARN
-    volumes:
-      - ./config:/config
     depends_on:
       - db
       - redis
