@@ -21,5 +21,17 @@ public interface OrderItemRepository extends JpaRepository<OrderItemEntity, UUID
             "WHERE oi.menuId = :menuId " +
             "ORDER BY oi.createdAt DESC")
     List<OrderItemEntity> findByMenuId(@Param("menuId") UUID menuId);
+
+    @Query("""
+            SELECT oi.order.id AS orderId,
+                   COALESCE(SUM(oi.menuPrice * oi.quantity), 0) AS totalAmount
+            FROM OrderItemEntity oi
+            WHERE oi.order.id IN :orderIds
+            GROUP BY oi.order.id
+            """)
+    List<Object[]> sumTotalAmountByOrderIdIn(@Param("orderIds") List<UUID> orderIds);
+
+
+
 }
 

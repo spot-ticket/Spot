@@ -1,7 +1,10 @@
 package com.example.Spot.internal.controller;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
+import com.example.Spot.store.application.service.AdminStoreInternalService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +28,7 @@ public class InternalStoreController {
 
     private final StoreRepository storeRepository;
     private final StoreUserRepository storeUserRepository;
+    private final AdminStoreInternalService adminStoreInternalService;
 
     @GetMapping("/stores/{storeId}")
     public ResponseEntity<InternalStoreResponse> getStoreById(@PathVariable UUID storeId) {
@@ -33,6 +37,7 @@ public class InternalStoreController {
 
         return ResponseEntity.ok(InternalStoreResponse.from(store));
     }
+
 
     @GetMapping("/stores/{storeId}/exists")
     public ResponseEntity<Boolean> existsById(@PathVariable UUID storeId) {
@@ -54,4 +59,10 @@ public class InternalStoreController {
             @RequestParam Integer userId) {
         return ResponseEntity.ok(storeUserRepository.existsByStoreIdAndUserId(storeId, userId));
     }
+
+    @GetMapping("/admin/stores/names")
+    public Map<UUID, String> getStoreNames(@RequestParam("ids") List<UUID> ids) {
+        return adminStoreInternalService.getStoreNames(ids);
+    }
+
 }

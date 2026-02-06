@@ -159,12 +159,12 @@ export default function CartPage() {
           title: `${cart.storeName} 주문`,
           content: `${cart.items.map((i) => i.menu.name).join(', ')}`,
           userId: user.id,
-          orderId: order.id,
+          orderId: order.orderId,
           paymentMethod,
           paymentAmount: getTotal(),
         };
 
-        await paymentApi.confirmPayment(order.id, paymentData);
+        await paymentApi.confirmPayment(order.orderId, paymentData);
 
         // 장바구니 비우기
         clearCart();
@@ -193,7 +193,7 @@ export default function CartPage() {
         const response = await tossPayments.requestBillingAuth('카드', {
           customerKey: customerKey,
           customerName: user.username,
-          successUrl: `${window.location.origin}/mypage/billing/success?orderId=${order.id}&paymentMethod=${paymentMethod}`,
+          successUrl: `${window.location.origin}/mypage/billing/success?orderId=${order.orderId}&paymentMethod=${paymentMethod}`,
           failUrl: `${window.location.origin}/payemnts/fail`,
         });
 

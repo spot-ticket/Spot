@@ -246,7 +246,7 @@ public class OrderServiceImpl implements OrderService {
 
         OrderEntity savedOrder = orderRepository.save(order);
         OrderResponseDto responseDto = OrderResponseDto.from(savedOrder);
-        
+
         orderEventProducer.reserveOrderCreated(
                 savedOrder.getId(),
                 userId,
@@ -332,7 +332,7 @@ public class OrderServiceImpl implements OrderService {
             order.finalizeCancel();
             log.info("[보상 트랜잭션 완료] 주문 ID {} 가 최종 확정되었습니다.", orderId);
         } else {
-            log.warn("⚠️ [무시됨] 주문 ID {} 는 현재 취소 대기 상태가 아닙니다. (현재 상태: {})",
+            log.warn("[무시됨] 주문 ID {} 는 현재 취소 대기 상태가 아닙니다. (현재 상태: {})",
                     orderId, order.getOrderStatus());
         }
     }
@@ -350,7 +350,7 @@ public class OrderServiceImpl implements OrderService {
 
         // 결제 취소 처리 (Payment 서비스 호출) - 비동기 전환으로 인한 주석처리: 추후 삭제 afterDelete
         // cancelPaymentIfExists(orderId, "고객 주문 취소: " + reason);
-        
+
         return OrderResponseDto.from(order);
     }
 
@@ -403,6 +403,11 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponseDto completePayment(UUID orderId) {
         OrderEntity order = orderRepository.findByIdWithLock(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다."));
+        
+        if (order.getOrderStatus() == OrderStatus.PENDING) {
+            log.info("[중복방지] 이미 결제 처리가 완료된 주문입니다. 스킵합니다: orderId={}", orderId);
+            return OrderResponseDto.from(order); // 예외 없이 정상 응답을 반환하여 컨슈머가 Ack를 찍게 함
+        }
         
         log.info("결제 성공 이벤트 수신 - 주문 확정 처리 시작: orderId={}", orderId);
         

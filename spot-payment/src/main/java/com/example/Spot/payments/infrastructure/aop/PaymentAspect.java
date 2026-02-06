@@ -45,7 +45,6 @@ public class PaymentAspect {
 
         validatePaymentRequest(request);
 
-        // 멱등성 체크: 동일 주문에 대해 진행 중이거나 완료된 결제가 있는지 확인
         paymentRepository
             .findActivePaymentByOrderId(request.orderId())
             .ifPresent(existingPayment -> {
@@ -71,7 +70,6 @@ public class PaymentAspect {
     public Object handlePaymentBillingApproveStatus(ProceedingJoinPoint joinPoint, PaymentBillingApproveTrace trace) throws Throwable {
 
         UUID paymentId = (UUID) joinPoint.getArgs()[0];
-        log.info("📢 [AOP] 결제 승인 기록 시작 - ID: {}", paymentId); // 로그 확인용
         
         try {
             paymentHistoryService.recordPaymentProgress(paymentId);
@@ -81,7 +79,6 @@ public class PaymentAspect {
             if (result instanceof PaymentResponseDto.Confirm) {
                 PaymentResponseDto.Confirm response = (PaymentResponseDto.Confirm) result;
                 String paymentKey = response.paymentKey();
-                log.info("✅ [AOP] 결제 성공 기록 완료");
                 
                 paymentHistoryService.recordPaymentSuccess(paymentId, paymentKey);
             }
@@ -89,8 +86,8 @@ public class PaymentAspect {
             return result;
 
         } catch (Exception e) {
-            log.error("❌ [AOP] 에러 발생: {}", e.getMessage());
-            paymentHistoryService.recordFailure(paymentId, e);
+            // 잠시 막아둠 - 02.04.
+            // paymentHistoryService.recordFailure(paymentId, e);
             throw e;
         }
     }
