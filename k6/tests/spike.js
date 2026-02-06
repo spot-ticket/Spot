@@ -1,14 +1,20 @@
 // Spike Test
 // 급격한 부하 증가에 대한 시스템 반응 테스트
+import http from 'k6/http';
 import { sleep, group } from 'k6';
-import { env, k6Thresholds } from '../config/index.js';
-import { login } from '../lib/auth.js';
+import { env, endpoints, buildUrl, k6Thresholds } from '../config/index.js';
+import { login, getAuthHeaders } from '../lib/auth.js';
 
 // Scenarios
 import { testLogin } from '../scenarios/user/auth.js';
 import { testGetStores, testGetStore } from '../scenarios/store/store.js';
 import { testGetMenus, testGetMenu } from '../scenarios/store/menu.js';
 import { testGetCategories } from '../scenarios/store/category.js';
+
+// Helper: random item from array
+function randomItem(arr) {
+  return arr && arr.length > 0 ? arr[Math.floor(Math.random() * arr.length)] : null;
+}
 
 export const options = {
   scenarios: {
@@ -40,29 +46,86 @@ export function setup() {
   console.log('='.repeat(50));
   console.log(`Base URL: ${env.baseUrl}`);
 
-  const tokens = {
-    customer: login('customer'),
-  };
+  const customerTokens = login('customer');
 
-  return tokens;
+  if (!customerTokens.accessToken) {
+    console.error('Login failed!');
+    return { customer: null, stores: [], menus: {} };
+  }
+
+  // Fetch stores for spike testing
+  const storesRes = http.get(buildUrl(endpoints.store.getStores) + '?page=0&size=30', {
+    headers: getAuthHeaders(customerTokens.accessToken),
+  });
+
+  let stores = [];
+  let menusCache = {};
+
+  if (storesRes.status === 200) {
+    try {
+      const storesData = JSON.parse(storesRes.body);
+      stores = storesData.content || storesData;
+      console.log(`Fetched ${stores.length} stores for spike testing`);
+
+      // Cache menus for first 3 stores (quick setup for spike test)
+      for (let i = 0; i < Math.min(3, stores.length); i++) {
+        const store = stores[i];
+        const storeId = store.id || store.storeId;
+
+        const menusRes = http.get(buildUrl(endpoints.store.getMenus(storeId)), {
+          headers: getAuthHeaders(customerTokens.accessToken),
+        });
+
+        if (menusRes.status === 200) {
+          try {
+            const menusData = JSON.parse(menusRes.body);
+            menusCache[storeId] = menusData.content || menusData;
+          } catch (e) {}
+        }
+      }
+    } catch (e) {
+      console.error('Failed to parse stores response');
+    }
+  }
+
+  return {
+    customer: customerTokens,
+    stores: stores,
+    menus: menusCache,
+  };
 }
 
 export function spikeScenario(data) {
   const token = data.customer?.accessToken;
   if (!token) return;
 
+  const stores = data.stores || [];
+  const menusCache = data.menus || {};
+
   group('Spike Load Operations', () => {
     // Quick succession of requests
     testGetStores(token, { page: 0, size: 10 });
     sleep(0.1);
 
-    testGetStore(token, env.testData.storeId);
+    // Select random store
+    const selectedStore = randomItem(stores);
+    if (!selectedStore) return;
+
+    const storeId = selectedStore.id || selectedStore.storeId;
+
+    testGetStore(token, storeId);
     sleep(0.1);
 
-    testGetMenus(token, env.testData.storeId);
+    const menus = testGetMenus(token, storeId);
     sleep(0.1);
 
-    testGetMenu(token, env.testData.storeId, env.testData.menuId);
+    // Use fetched or cached menus
+    const availableMenus = menus || menusCache[storeId];
+    if (availableMenus && availableMenus.length > 0) {
+      const selectedMenu = randomItem(availableMenus);
+      const menuId = selectedMenu.id || selectedMenu.menuId;
+      testGetMenu(token, storeId, menuId);
+    }
     sleep(0.1);
 
     testGetCategories(token);

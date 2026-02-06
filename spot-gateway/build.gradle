@@ -36,6 +36,10 @@ processResources {
 dependencies {
     implementation "org.springframework.boot:spring-boot-starter-actuator"
     implementation "org.springframework.cloud:spring-cloud-starter-gateway-server-webflux:4.3.3"
+
+    // SpringDoc OpenAPI for WebFlux (Gateway 통합 Swagger)
+    implementation "org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.6"
+
     testImplementation "org.springframework.boot:spring-boot-starter-test"
     testImplementation "org.hamcrest:hamcrest:2.2"
 }
