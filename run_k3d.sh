@@ -105,13 +105,15 @@ install_argocd() {
     kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 
     # Install ArgoCD
-    kubectl apply -n argocd -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
+    kubectl apply -n argocd --server-side -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
     log_info "Waiting for ArgoCD to be ready..."
     kubectl wait --for=condition=available deployment/argocd-server -n argocd --timeout=300s
 
     # Apply ArgoCD NodePort service
-    kubectl apply -f "$SCRIPT_DIR/infra/argo/argocd-ingress.yaml"
+    if [ -f "$SCRIPT_DIR/infra/argo/argocd-ingress.yaml" ]; then
+        kubectl apply -f "$SCRIPT_DIR/infra/argo/argocd-ingress.yaml"
+    fi
 
     # Get ArgoCD admin password
     log_info "ArgoCD installed successfully!"

@@ -34,10 +34,6 @@ import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
-/**
- * 결제 승인 관련 Command Service (CQRS - Command)
- * 결제 생성, 승인, 결제 내역 저장 담당
- */
 @Slf4j
 @Service
 @RequiredArgsConstructor

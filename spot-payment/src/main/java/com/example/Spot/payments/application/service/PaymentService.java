@@ -40,7 +40,6 @@ public class PaymentService {
         return paymentApprovalService.savePaymentHistory(request);
     }
 
-
     // ******* //
     // 결제 취소 //
     // ******* //

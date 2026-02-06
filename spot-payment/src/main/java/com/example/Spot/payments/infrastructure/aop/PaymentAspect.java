@@ -86,7 +86,7 @@ public class PaymentAspect {
             return result;
 
         } catch (Exception e) {
-            // 잠시 막아둠 02.04.
+            // 잠시 막아둠 - 02.04.
             // paymentHistoryService.recordFailure(paymentId, e);
             throw e;
         }
