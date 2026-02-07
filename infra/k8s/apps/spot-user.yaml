@@ -21,22 +21,19 @@ spec:
           ports:
             - containerPort: 8081
           envFrom:
-            - configMapRef:
-                name: spot-common-config
             - secretRef:
                 name: spot-secrets
-          env:
-            - name: FEIGN_STORE_URL
-              value: "http://spot-store:8083"
-            - name: FEIGN_ORDER_URL
-              value: "http://spot-order:8082"
+          volumeMounts:
+            - name: app-config
+              mountPath: /config
+              readOnly: true
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "200m"
-            limits:
               memory: "512Mi"
               cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "800m"
           readinessProbe:
             httpGet:
               path: /actuator/health
@@ -49,6 +46,10 @@ spec:
               port: 8081
             initialDelaySeconds: 60
             periodSeconds: 30
+      volumes:
+        - name: app-config
+          configMap:
+            name: spot-app-config
 ---
 apiVersion: v1
 kind: Service

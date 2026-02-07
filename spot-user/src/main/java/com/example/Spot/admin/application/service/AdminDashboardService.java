@@ -1,0 +1,145 @@
+package com.example.Spot.admin.application.service;
+
+import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+import com.example.Spot.global.feign.dto.OrderResponse;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.stereotype.Service;
+
+import com.example.Spot.admin.presentation.dto.response.AdminStatsResponseDto;
+import com.example.Spot.global.feign.OrderClient;
+import com.example.Spot.global.feign.StoreAdminClient;
+import com.example.Spot.global.feign.dto.OrderPageResponse;
+import com.example.Spot.global.feign.dto.OrderStatsResponse;
+import com.example.Spot.user.domain.repository.UserRepository;
+
+import lombok.RequiredArgsConstructor;
+
+@Service
+@RequiredArgsConstructor
+public class AdminDashboardService {
+
+    private final UserRepository userRepository;
+    private final OrderClient orderClient;
+    private final StoreAdminClient storeAdminClient;
+
+    @Cacheable(value = "admin_dashboard", key = "'dashboard'", cacheManager = "redisCacheManager")
+    public AdminStatsResponseDto getDashboard() {
+        Long totalUsers = 0L;
+        List<AdminStatsResponseDto.UserGrowthDto> userGrowth = calculateUserGrowth(7);
+
+        Long totalOrders = 0L;
+        BigDecimal totalRevenue = BigDecimal.ZERO;
+        Long totalStores = 0L;
+
+        List<OrderResponse> recentOrders = List.of();
+        List<AdminStatsResponseDto.OrderStatusStatsDto> orderStatusStats = List.of();
+
+        try {
+            totalUsers = userRepository.count();
+        } catch (Exception ignored) {
+            totalUsers = 0L;
+        }
+
+        try {
+            OrderStatsResponse stats = orderClient.getOrderStats();
+            if (stats != null) {
+                totalOrders = stats.getTotalOrders();
+                totalRevenue = stats.getTotalRevenue() == null ? BigDecimal.ZERO : stats.getTotalRevenue();
+
+                if (stats.getOrderStatusStats() != null) {
+                    orderStatusStats = stats.getOrderStatusStats()
+                            .stream()
+                            .map(s -> AdminStatsResponseDto.OrderStatusStatsDto.builder()
+                                    .status(s.getStatus())
+                                    .count(s.getCount())
+                                    .build())
+                            .collect(Collectors.toList());
+                }
+            }
+        } catch (Exception ignored) {
+            totalOrders = 0L;
+            totalRevenue = BigDecimal.ZERO;
+            orderStatusStats = List.of();
+        }
+
+        try {
+            OrderPageResponse page = orderClient.getAllOrders(0, 10, "createdAt", "DESC");
+            if (page != null && page.getContent() != null) {
+                recentOrders = page.getContent();
+            }
+            List<UUID> storeIds = recentOrders.stream()
+                    .map(OrderResponse::getStoreId)
+                    .filter(id -> id != null)
+                    .distinct()
+                    .toList();
+
+            Map<UUID, String> storeNameMap = Map.of();
+
+            if (!storeIds.isEmpty()) {
+                Map<UUID, String> resp = storeAdminClient.getStoreNames(storeIds);
+
+                if (resp != null) {
+                    storeNameMap = resp;
+                }
+            }
+
+
+            Map<UUID, String> finalStoreNameMap = storeNameMap;
+            recentOrders = recentOrders.stream()
+                    .map(o -> OrderResponse.builder()
+                            .orderId(o.getOrderId())
+                            .userId(o.getUserId())
+                            .storeId(o.getStoreId())
+                            .storeName(finalStoreNameMap.getOrDefault(o.getStoreId(), null))
+                            .orderNumber(o.getOrderNumber())
+                            .pickupTime(o.getPickupTime())
+                            .createdAt(o.getCreatedAt())
+                            .status(o.getStatus())
+                            .totalAmount(o.getTotalAmount())
+                            .build())
+                    .toList();
+        } catch (Exception ignored) {
+            recentOrders = List.of();
+        }
+
+        try {
+            totalStores = storeAdminClient.getStoreCount();
+        } catch (Exception ignored) {
+            totalStores = 0L;
+        }
+
+        return AdminStatsResponseDto.builder()
+                .totalUsers(totalUsers)
+                .userGrowth(userGrowth)
+                .totalOrders(totalOrders)
+                .totalRevenue(totalRevenue)
+                .totalStores(totalStores)
+                .recentOrders(recentOrders)
+                .orderStats(orderStatusStats)
+                .build();
+    }
+
+    private List<AdminStatsResponseDto.UserGrowthDto> calculateUserGrowth(int days) {
+        List<AdminStatsResponseDto.UserGrowthDto> growth = new ArrayList<>();
+        LocalDateTime now = LocalDateTime.now();
+
+        for (int i = days - 1; i >= 0; i--) {
+            LocalDate date = now.minusDays(i).toLocalDate();
+
+            growth.add(AdminStatsResponseDto.UserGrowthDto.builder()
+                    .date(date.toString())
+                    .count(0L)
+                    .build());
+        }
+
+        return growth;
+    }
+}

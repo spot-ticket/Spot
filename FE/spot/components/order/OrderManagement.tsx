@@ -185,7 +185,7 @@ export function OrderManagement({ storeId }: OrderManagementProps) {
           </div>
         ) : (
           orders.map((order) => (
-            <div key={order.id} className="bg-white rounded-lg shadow p-6">
+            <div key={order.orderId} className="bg-white rounded-lg shadow p-6">
               {/* 주문 헤더 */}
               <div className="flex items-start justify-between mb-4">
                 <div>
@@ -195,10 +195,10 @@ export function OrderManagement({ storeId }: OrderManagementProps) {
                     </h3>
                     <span
                       className={`px-3 py-1 rounded-full text-xs font-semibold ${
-                        ORDER_STATUS_COLOR[order.orderStatus]
+                        ORDER_STATUS_COLOR[order.status]
                       }`}
                     >
-                      {ORDER_STATUS_KR[order.orderStatus]}
+                      {ORDER_STATUS_KR[order.status]}
                     </span>
                   </div>
                   <div className="text-sm text-gray-600">
@@ -260,18 +260,18 @@ export function OrderManagement({ storeId }: OrderManagementProps) {
 
               {/* 액션 버튼 */}
               <div className="flex gap-2 flex-wrap">
-                {order.orderStatus === 'PENDING' && (
+                {order.status === 'PENDING' && (
                   <>
                     <Button
                       size="sm"
-                      onClick={() => handleAcceptOrder(order.id)}
+                      onClick={() => handleAcceptOrder(order.orderId)}
                     >
                       수락
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
-                      onClick={() => handleRejectOrder(order.id)}
+                      onClick={() => handleRejectOrder(order.orderId)}
                       className="text-red-600 border-red-600 hover:bg-red-50"
                     >
                       거절
@@ -279,23 +279,23 @@ export function OrderManagement({ storeId }: OrderManagementProps) {
                   </>
                 )}
 
-                {(order.orderStatus === 'PENDING' ||
-                  order.orderStatus === 'ACCEPTED' ||
-                  order.orderStatus === 'COOKING') && (
+                {(order.status === 'PENDING' ||
+                  order.status === 'ACCEPTED' ||
+                  order.status === 'COOKING') && (
                   <Button
                     size="sm"
                     variant="outline"
-                    onClick={() => setCancelOrderId(order.id)}
+                    onClick={() => setCancelOrderId(order.orderId)}
                     className="text-red-600 border-red-600 hover:bg-red-50"
                   >
                     주문 취소 (고객 요청)
                   </Button>
                 )}
 
-                {order.orderStatus === 'READY' && (
+                {order.status === 'READY' && (
                   <Button
                     size="sm"
-                    onClick={() => handleCompleteOrder(order.id)}
+                    onClick={() => handleCompleteOrder(order.orderId)}
                     className="bg-green-600 hover:bg-green-700"
                   >
                     픽업 완료

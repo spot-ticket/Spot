@@ -15,6 +15,9 @@ import org.springframework.web.client.RestTemplate;
 import com.example.Spot.payments.domain.gateway.PaymentGateway;
 import com.example.Spot.payments.infrastructure.dto.TossPaymentResponse;
 
+import io.github.resilience4j.bulkhead.annotation.Bulkhead;
+import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
+import io.github.resilience4j.retry.annotation.Retry;
 import lombok.RequiredArgsConstructor;
 
 @Component
@@ -33,6 +36,9 @@ public class TossPaymentClient implements PaymentGateway {
   // 결제 //
   // *** //
   @Override
+  @CircuitBreaker(name = "toss_billing_payment")
+  @Bulkhead(name = "toss_billing_payment", type = Bulkhead.Type.SEMAPHORE)
+  @Retry(name = "toss_billing_payment")
   public TossPaymentResponse requestBillingPayment(
       String billingKey,
       Long amount,
@@ -69,6 +75,9 @@ public class TossPaymentClient implements PaymentGateway {
   // 취소 //
   // *** //
   @Override
+  @CircuitBreaker(name = "toss_payment_cancel")
+  @Bulkhead(name = "toss_payment_cancel", type = Bulkhead.Type.SEMAPHORE)
+  @Retry(name = "toss_payment_cancel")
   public TossPaymentResponse cancelPayment(
       String paymentKey, String cancelReason, Integer timeout) {
     String url = baseUrl + "/v1/payments/" + paymentKey + "/cancel";
@@ -88,6 +97,9 @@ public class TossPaymentClient implements PaymentGateway {
   }
 
   @Override
+  @CircuitBreaker(name = "toss_payment_partial_cancel")
+  @Bulkhead(name = "toss_payment_partial_cancel", type = Bulkhead.Type.SEMAPHORE)
+  @Retry(name = "toss_payment_partial_cancel")
   public TossPaymentResponse cancelPaymentPartial(
       String paymentKey, Long cancelAmount, String cancelReason) {
     String url = baseUrl + "/v1/payments/" + paymentKey + "/cancel";
@@ -113,6 +125,9 @@ public class TossPaymentClient implements PaymentGateway {
   // BillingKey 발급 //
   // ************** //
   @Override
+  @CircuitBreaker(name = "toss_billing_key_issue")
+  @Bulkhead(name = "toss_billing_key_issue", type = Bulkhead.Type.SEMAPHORE)
+  @Retry(name = "toss_billing_key_issue")
   public TossPaymentResponse issueBillingKey(String authKey, String customerKey) {
     String url = baseUrl + "/v1/billing/authorizations/issue";
 

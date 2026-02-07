@@ -95,4 +95,12 @@ public interface StoreRepository extends JpaRepository<StoreEntity, UUID> {
             "WHERE s.id = :id " +
             "AND s.isDeleted = false")
     Optional<StoreEntity> findByIdWithDetailsForOwnerWithLock(@Param("id") UUID id);
+
+    // admin dashboard: storename 조회
+    @Query("""
+            SELECT s.id, s.name
+            FROM StoreEntity s
+            WHERE s.id IN :storeIds
+            """)
+    List<Object[]> findStoreNamesByIds(@Param("storeIds") List<UUID> storeIds);
 }

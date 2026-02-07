@@ -69,6 +69,7 @@ dependencies {
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testImplementation 'org.springframework.security:spring-security-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+    testImplementation 'org.springframework.boot:spring-boot-starter-test'
 
     //JWT
     implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
@@ -118,5 +119,18 @@ tasks.withType(Checkstyle) {
     reports {
         xml.required = true
         html.required = true
+    }
+
+    // 변경된 파일만 checkstyle 검사
+    if (project.hasProperty('changedFiles') && project.property('changedFiles').toString().trim()) {
+        def changedFilesList = project.property('changedFiles').toString().trim().split('\\s+').toList()
+        def projectPath = project.projectDir.absolutePath
+
+        source = source.filter { file ->
+            def relativePath = file.absolutePath.replace(projectPath + '/', '')
+            changedFilesList.any { changed ->
+                changed.endsWith(relativePath) || relativePath.endsWith(changed.split('/').last())
+            }
+        }
     }
 }

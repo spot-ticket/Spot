@@ -3,8 +3,7 @@ spring:
     name: spot-gateway
   config:
     import:
-      # bootRun
+      # bootRun용
       - optional:classpath:/spot-gateway.yml
 
-      # docker-compose
       - optional:file:/config/spot-gateway.yml

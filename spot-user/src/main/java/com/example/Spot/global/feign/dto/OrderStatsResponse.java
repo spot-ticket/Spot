@@ -18,6 +18,14 @@ public class OrderStatsResponse {
     private BigDecimal totalRevenue;
     private List<OrderStatusStats> orderStatusStats;
 
+    public static OrderStatsResponse empty() {
+        return OrderStatsResponse.builder()
+                .totalOrders(0L)
+                .totalRevenue(BigDecimal.ZERO)
+                .orderStatusStats(List.of())
+                .build();
+    }
+
     @Getter
     @Builder
     @NoArgsConstructor

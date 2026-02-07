@@ -1,0 +1,58 @@
+name: 'Gradle Build and Test'
+description: 'Runs checkstyle, tests, and builds the project'
+
+inputs:
+  working-directory:
+    description: 'Working directory for gradle commands'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Get changed Java files
+      id: changed-files
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        echo "Looking for something is changed..."
+
+        if [ -n "${{ github.event.pull_request.base.sha }}" ]; then
+          # PR인 경우: base 브랜치와 비교
+          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} HEAD -- '*.java' | tr '\n' ' ')
+        else
+          # Push인 경우: 이전 커밋과 비교
+          CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT HEAD~1 HEAD -- '*.java' 2>/dev/null | tr '\n' ' ' || echo "")
+        fi
+
+        echo "files=$CHANGED_FILES" >> $GITHUB_OUTPUT
+        
+        if [ -n "$CHANGED_FILES" ]; then
+          echo "has_changes=true" >> $GITHUB_OUTPUT
+          echo "Changed Java files: $CHANGED_FILES"
+        else
+          echo "has_changes=false" >> $GITHUB_OUTPUT
+          echo "No Java files changed, skipping checkstyle"
+        fi
+
+    - name: Check formatting for changed files only
+      if: steps.changed-files.outputs.has_changes == 'true'
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: ./gradlew checkstyleMain checkstyleTest --parallel -PchangedFiles="${{ steps.changed-files.outputs.files }}"
+      continue-on-error: true
+
+    - name: Run tests
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: ./gradlew test
+      continue-on-error: true
+
+    - name: Build with Gradle
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: ./gradlew bootJar -x test
+
+    - name: Check list of YML
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: jar tf ./build/libs/*SNAPSHOT.jar | grep yml

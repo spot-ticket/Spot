@@ -58,9 +58,9 @@ public class PaymentEventProducer {
                     .build();
             
             outboxRepository.save(outbox);
-            log.info("✅[Payment Outbox 저장 성공] topic:{}, AggregateId:{}", topic, aggregateId);
+            log.info("[Payment Outbox 저장 성공] topic:{}, AggregateId:{}", topic, aggregateId);
         } catch (JsonProcessingException e) {
-            log.error("❌[Payment Outbox 저장 실패] AggregateId={}, error={}", aggregateId, e.getMessage());
+            log.error("[Payment Outbox 저장 실패] AggregateId={}, error={}", aggregateId, e.getMessage());
             throw new RuntimeException("이벤트 발행 예약 중 오류 발생", e);
         }
     }
