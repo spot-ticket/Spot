@@ -48,6 +48,8 @@ runs:
           echo ">> Checking $service on port $port..."
 
           SUCCESS=false
+
+          # *** Health Check *** #
           for i in $(seq 1 ${{ inputs.timeout-seconds }}); do
             RESPONSE=$(curl -s -f http://localhost:$port/actuator/health 2>/dev/null || echo "")
 
