@@ -12,6 +12,10 @@ on:
       health-port:
         required: true
         type: number
+      run-docker-test:
+        required: false
+        type: boolean
+        default: false
     secrets:
       SPRING_JWT_SECRET:
         required: false
@@ -106,7 +110,7 @@ jobs:
         with:
           working-directory: ${{ inputs.working-directory }}
 
-      - name: Test application startup
+      - name: Check application is able to startup
         if: steps.changed-services.outputs.any_changed == 'true'
         uses: ./.github/actions/test-app-startup
         with:
@@ -122,3 +126,39 @@ jobs:
           path: |
             ${{ inputs.working-directory }}/build/reports/
             ${{ inputs.working-directory }}/build/test-results/
+
+  docker-integration-test:
+    if: ${{ inputs.run-docker-test == true }}
+    runs-on: ubuntu-latest
+    needs: build-and-test
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Java and Gradle
+        uses: ./.github/actions/setup-java-gradle
+        with:
+          working-directory: .
+
+      - name: Create .env file
+        run: |
+          cat <<EOF > .env
+          SPRING_JWT_SECRET=${{ secrets.SPRING_JWT_SECRET }}
+          EMAIL_USERNAME=${{ secrets.EMAIL_USERNAME }}
+          EMAIL_PASSWORD=${{ secrets.EMAIL_PASSWORD }}
+          TOSS_SECRET_KEY=${{ secrets.TOSS_SECRET_KEY }}
+          TOSS_CUSTOMER_KEY=${{ secrets.TOSS_CUSTOMER_KEY }}
+          EOF
+
+      - name: Test Docker Compose
+        uses: ./.github/actions/test-docker
+        with:
+          timeout-seconds: '120'
+
+      - name: Upload docker logs on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-logs
+          path: ./logs/
