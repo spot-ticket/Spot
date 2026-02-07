@@ -11,27 +11,6 @@ data:
   KAFKA_BOOTSTRAP_SERVERS: "kafka:9092"
 ---
 apiVersion: v1
-kind: Secret
-metadata:
-  name: spot-secrets
-  namespace: spot
-type: Opaque
-stringData:
-  SPRING_DATASOURCE_PASSWORD: "secret"
-  JWT_SECRET: "jmXDQDnLqV+lOaPKMR06v4+RQ7aj2cj8LR+zgPOlz/GS989tptPtAmIpyaZHrsLOPqKoVtPus28YeXZTL8O8nw=="
-  TOSS_SECRET_KEY: "test_sk_E92LAa5PVb91Y01y1nXZ37YmpXyJ"
----
-apiVersion: v1
-kind: Secret
-metadata:
-  name: monitoring-secrets
-  namespace: monitoring
-type: Opaque
-stringData:
-  GF_SECURITY_ADMIN_USER: "spot"
-  GF_SECURITY_ADMIN_PASSWORD: "spot-grafana"
----
-apiVersion: v1
 kind: ConfigMap
 metadata:
   name: grafana-config

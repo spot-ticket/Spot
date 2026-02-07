@@ -20,19 +20,20 @@ spec:
           image: spot-registry.localhost:5111/spot-gateway:latest
           ports:
             - containerPort: 8080
-          env:
-            - name: SPRING_DATA_REDIS_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: spot-common-config
-                  key: SPRING_DATA_REDIS_HOST
+          envFrom:
+            - secretRef:
+                name: spot-secrets
+          volumeMounts:
+            - name: app-config
+              mountPath: /config
+              readOnly: true
           resources:
             requests:
-              memory: "256Mi"
-              cpu: "200m"
-            limits:
               memory: "512Mi"
               cpu: "500m"
+            limits:
+              memory: "1Gi"
+              cpu: "800m"
           readinessProbe:
             httpGet:
               path: /actuator/health
@@ -45,6 +46,10 @@ spec:
               port: 8080
             initialDelaySeconds: 60
             periodSeconds: 30
+      volumes:
+        - name: app-config
+          configMap:
+            name: spot-app-config
 ---
 apiVersion: v1
 kind: Service
