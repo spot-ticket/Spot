@@ -36,7 +36,6 @@ jobs:
             ["spot-order"]="8082"
             ["spot-store"]="8083"
             ["spot-payment"]="8084"
-            ["spot-mono"]="8085"
           )
 
           # config/common.yml과 config/kafka-topics.yml 변경 여부 확인
