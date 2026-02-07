@@ -23,7 +23,9 @@ runs:
           # Push인 경우: 이전 커밋과 비교
           CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT HEAD~1 HEAD -- '*.java' 2>/dev/null | tr '\n' ' ' || echo "")
         fi
+
         echo "files=$CHANGED_FILES" >> $GITHUB_OUTPUT
+        
         if [ -n "$CHANGED_FILES" ]; then
           echo "has_changes=true" >> $GITHUB_OUTPUT
           echo "Changed Java files: $CHANGED_FILES"
