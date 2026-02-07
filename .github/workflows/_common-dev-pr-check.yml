@@ -15,7 +15,7 @@ on:
       run-docker-test:
         required: false
         type: boolean
-        default: false
+        default: true
     secrets:
       SPRING_JWT_SECRET:
         required: false
