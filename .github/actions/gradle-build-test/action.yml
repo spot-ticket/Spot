@@ -14,6 +14,8 @@ runs:
       shell: bash
       working-directory: ${{ inputs.working-directory }}
       run: |
+        echo "Looking for something is changed..."
+
         if [ -n "${{ github.event.pull_request.base.sha }}" ]; then
           # PR인 경우: base 브랜치와 비교
           CHANGED_FILES=$(git diff --name-only --diff-filter=ACMRT ${{ github.event.pull_request.base.sha }} HEAD -- '*.java' | tr '\n' ' ')
@@ -30,7 +32,7 @@ runs:
           echo "No Java files changed, skipping checkstyle"
         fi
 
-    - name: Check code formatting
+    - name: Check formatting for changed files only
       if: steps.changed-files.outputs.has_changes == 'true'
       shell: bash
       working-directory: ${{ inputs.working-directory }}

@@ -81,7 +81,7 @@ jobs:
 
           SERVICES_JSON+="]"
 
-          echo "Detected services: $SERVICES_JSON"
+          echo "Detected changed services: $SERVICES_JSON"
 
           if [ "$SERVICES_JSON" = "[]" ]; then
             echo "has_changes=false" >> $GITHUB_OUTPUT
@@ -161,6 +161,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Setup Java and Gradle
         uses: ./.github/actions/setup-java-gradle
