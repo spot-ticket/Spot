@@ -1,8 +1,8 @@
 spring:
   cloud:
-    server:
-      webflux:
-        gateway:
+    gateway:
+      server:
+        webflux:
           routes:
             - id: user-auth
               uri: ${SPOT_USER_URI:http://spot-user:8081}
