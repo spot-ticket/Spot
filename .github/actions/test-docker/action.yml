@@ -1,0 +1,94 @@
+name: 'Test Docker Compose'
+description: 'Build and test all services using docker-compose'
+
+inputs:
+  timeout-seconds:
+    description: 'Timeout for health check in seconds'
+    required: false
+    default: '120'
+
+runs:
+  using: "composite"
+  steps:
+    - name: Build all MSA services
+      shell: bash
+      run: |
+        echo "=== Building all MSA services ==="
+        for service in spot-gateway spot-user spot-store spot-order spot-payment; do
+          echo ">> Building $service"
+          (cd "$service" && chmod +x gradlew && ./gradlew bootJar -x test)
+        done
+
+    - name: Start Docker Compose
+      shell: bash
+      run: |
+        echo "=== Starting Docker Compose ==="
+        docker compose up --build -d
+
+        echo "=== Running containers ==="
+        docker compose ps
+
+    - name: Health check all services
+      shell: bash
+      run: |
+        echo "=== Health checking all services ==="
+
+        declare -A SERVICES=(
+          ["spot-gateway"]="8080"
+          ["spot-user"]="8081"
+          ["spot-order"]="8082"
+          ["spot-store"]="8083"
+          ["spot-payment"]="8084"
+        )
+
+        FAILED_SERVICES=""
+
+        for service in "${!SERVICES[@]}"; do
+          port="${SERVICES[$service]}"
+          echo ">> Checking $service on port $port..."
+
+          SUCCESS=false
+          for i in $(seq 1 ${{ inputs.timeout-seconds }}); do
+            RESPONSE=$(curl -s -f http://localhost:$port/actuator/health 2>/dev/null || echo "")
+
+            if [[ "$RESPONSE" == *"UP"* ]]; then
+              echo "$service is healthy after ${i}s"
+              SUCCESS=true
+              break
+            fi
+
+            if [ $((i % 10)) -eq 0 ]; then
+              echo "Waiting for $service... ($i/${{ inputs.timeout-seconds }}s)"
+            fi
+
+            sleep 1
+          done
+
+          if [ "$SUCCESS" = false ]; then
+            echo "$service failed to start"
+            FAILED_SERVICES="$FAILED_SERVICES $service"
+          fi
+        done
+
+        if [ -n "$FAILED_SERVICES" ]; then
+          echo ""
+          echo "=== Failed services:$FAILED_SERVICES ==="
+          exit 1
+        fi
+
+        echo ""
+        echo "=== All services are healthy ==="
+
+    - name: Show logs on failure
+      if: failure()
+      shell: bash
+      run: |
+        echo "=== Docker Compose Logs ==="
+        docker compose logs --tail=100
+
+    - name: Cleanup
+      if: always()
+      shell: bash
+      run: |
+        echo "=== Cleaning up ==="
+        docker compose down --remove-orphans || true
