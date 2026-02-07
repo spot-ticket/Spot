@@ -25,6 +25,7 @@ spec:
       labels:
         app: kafka
     spec:
+      enableServiceLinks: false
       containers:
         - name: kafka
           image: confluentinc/cp-kafka:7.5.0
@@ -41,7 +42,7 @@ spec:
             - name: KAFKA_LISTENERS
               value: "INTERNAL://0.0.0.0:29092,EXTERNAL://0.0.0.0:9092,CONTROLLER://0.0.0.0:19093"
             - name: KAFKA_ADVERTISED_LISTENERS
-              value: "INTERNAL://kafka-svc:29092,EXTERNAL://kafka-svc:9092"
+              value: "INTERNAL://kafka:29092,EXTERNAL://kafka:9092"
             - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
               value: "INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT"
             - name: KAFKA_INTER_BROKER_LISTENER_NAME
@@ -82,7 +83,7 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: kafka-svc
+  name: kafka
   namespace: spot
 spec:
   selector:
