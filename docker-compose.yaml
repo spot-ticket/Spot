@@ -128,8 +128,8 @@ services:
       - LOGGING_LEVEL_ROOT=WARN
     ports:
       - "8080:8080"
-#    volumes:
-#      - ./config:/config
+    volumes:
+      - ./config:/config
     depends_on:
       - redis
       - spot-user
@@ -148,6 +148,8 @@ services:
     container_name: spot-order
     ports:
       - "8082:8082"
+    volumes:
+      - ./config:/config
     environment:
       - DB_HOST=db
       - SPRING_DATA_REDIS_HOST=redis
@@ -169,6 +171,8 @@ services:
     container_name: spot-payment
     ports:
       - "8084:8084"
+    volumes:
+      - ./config:/config
     env_file:
       - .env
     environment:
@@ -190,6 +194,8 @@ services:
     container_name: spot-store
     ports:
       - "8083:8083"
+    volumes:
+      - ./config:/config
     environment:
       - DB_HOST=db
       - SPRING_DATA_REDIS_HOST=redis
@@ -210,6 +216,8 @@ services:
     container_name: spot-user
     ports:
       - "8081:8081"
+    volumes:
+      - ./config:/config
     environment:
       - DB_HOST=db
       - SPRING_DATA_REDIS_HOST=redis
