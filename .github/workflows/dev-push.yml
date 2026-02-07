@@ -17,11 +17,14 @@ jobs:
         id: commit-info
         run: |
           echo "author=${{ github.event.head_commit.author.name }}" >> $GITHUB_OUTPUT
-          echo "message<<EOF" >> $GITHUB_OUTPUT
-          echo "${{ github.event.head_commit.message }}" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
           echo "commit_url=${{ github.event.head_commit.url }}" >> $GITHUB_OUTPUT
           echo "compare_url=${{ github.event.compare }}" >> $GITHUB_OUTPUT
+          echo "timestamp=${{ github.event.head_commit.timestamp }}" >> $GITHUB_OUTPUT
+          echo "repo=${{ github.repository }}" >> $GITHUB_OUTPUT
+
+          # Commit 메시지 첫 줄
+          COMMIT_MSG=$(echo "${{ github.event.head_commit.message }}" | head -n 1 | sed 's/"/\\"/g')
+          echo "message=$COMMIT_MSG" >> $GITHUB_OUTPUT
 
           # 변경된 파일 수
           ADDED=$(echo '${{ toJson(github.event.head_commit.added) }}' | jq 'length')
@@ -29,33 +32,67 @@ jobs:
           REMOVED=$(echo '${{ toJson(github.event.head_commit.removed) }}' | jq 'length')
           echo "files_changed=$((ADDED + MODIFIED + REMOVED))" >> $GITHUB_OUTPUT
 
-      - name: Send Discord notification
+      - name: Check config changes
+        id: config-check
+        run: |
+
+          CHANGED_FILES=$(git diff --name-only HEAD~1 HEAD 2>/dev/null || echo "")
+
+          # config/ 폴더 변경 파일 필터링
+          CONFIG_FILES=""
+          while IFS= read -r file; do
+            if [[ "$file" == config/* ]]; then
+              CONFIG_FILES="${CONFIG_FILES}- ${file}\n"
+            fi
+          done <<< "$CHANGED_FILES"
+
+          # 결과 출력
+          if [ -n "$CONFIG_FILES" ]; then
+            echo "changed=true" >> $GITHUB_OUTPUT
+            echo "files<<EOF" >> $GITHUB_OUTPUT
+            echo -e "$CONFIG_FILES" >> $GITHUB_OUTPUT
+            echo "EOF" >> $GITHUB_OUTPUT
+          else
+            echo "changed=false" >> $GITHUB_OUTPUT
+            echo "files=" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Alert Config File is changed
+        if: steps.config-check.outputs.changed == 'true'
         env:
           DISCORD_WEBHOOK_URL: ${{ secrets.DISCORD_WEBHOOK_URL }}
+          AUTHOR: ${{ steps.commit-info.outputs.author }}
+          COMMIT_URL: ${{ steps.commit-info.outputs.commit_url }}
+          CONFIG_FILES: ${{ steps.config-check.outputs.files }}
+          REPO: ${{ steps.commit-info.outputs.repo }}
+          TIMESTAMP: ${{ steps.commit-info.outputs.timestamp }}
         run: |
-          CLEAN_TITLE=$(echo "$COMMIT_TITLE" | head -n 1 | sed 's/"/\\"/g')
+          
+          jq -n \
+            --arg author "$AUTHOR" \
+            --arg config_files "$CONFIG_FILES" \
+            --arg commit_url "$COMMIT_URL" \
+            --arg repo "$REPO" \
+            --arg timestamp "$TIMESTAMP" \
+            '{
+              "username": "Config 변경 알림 봇",
+              "content": "@here Config 파일이 변경되었습니다! 확인이 필요합니다.",
+              "embeds": [{
+                "title": "Config File Changed",
+                "color": 16711680,
+                "fields": [
+                  { "name": "Author", "value": $author, "inline": true },
+                  { "name": "Branch", "value": "dev", "inline": true },
+                  { "name": "Changed Config Files", "value": $config_files, "inline": false },
+                  { "name": "Link", "value": ("[View Commit](" + $commit_url + ")"), "inline": false }
+                ],
+                "footer": { "text": $repo },
+                "timestamp": $timestamp
+              }]
+            }' > config-alert.json
 
-          cat <<EOF > payload.json
-          {
-            "username": "Dev 머지 알림 봇",
-            "content": "새로운 업데이트가 도착했습니다! 🚀",
-            "embeds": [{
-              "title": "DEV Branch Push",
-              "color": 5814783,
-              "fields": [
-                { "name": "Author", "value": "$AUTHOR", "inline": true },
-                { "name": "Branch", "value": "dev", "inline": true },
-                { "name": "Files Changed", "value": "$FILES_CHANGED", "inline": true },
-                { "name": "Commit Message", "value": "$CLEAN_TITLE", "inline": false },
-                { "name": "Links", "value": "[View Commit]($COMMIT_URL) | [Compare Changes]($COMPARE_URL)", "inline": false }
-              ],
-              "footer": { "text": "$REPO" },
-              "timestamp": "$TIMESTAMP"
-            }]
-          }
-          EOF
-
+          cat config-alert.json
           curl -H "Content-Type: application/json" \
                -X POST \
-               -d @payload.json \
+               -d @config-alert.json \
                $DISCORD_WEBHOOK_URL

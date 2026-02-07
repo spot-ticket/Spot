@@ -30,7 +30,7 @@ runs:
           JAR_FILE=$(find build/libs -name "*.jar" | head -n 1)
           echo "Testing JAR: $JAR_FILE"
 
-          # 백그라운드 실행
+          # *** Run SpringBoot on Background **** #
           nohup java -Dspring.output.ansi.enabled=NEVER \
               -jar $JAR_FILE \
               --management.endpoint.health.show-details=always > app.log 2>&1 &
@@ -50,10 +50,8 @@ runs:
               exit 0
             fi
 
-            # 헬스 체크 응답 결과 출력
-            echo "=== Actuator Health Response ==="
+            echo "[$i] Actuator Health Response..."
             echo "$RESPONSE" | jq .
-            echo "=================================="
 
             # 프로세스가 중간에 죽었는지 체크
             if ! kill -0 $APP_PID 2>/dev/null; then
@@ -62,7 +60,7 @@ runs:
               exit 1
             fi
 
-            # 디버깅 - 실패 원인 찾기
+            # *** Health Check Failed *** #
             if [ $((i % 10)) -eq 0 ]; then
               echo "Waiting... ($i/${{ inputs.timeout-seconds }}s)"
               echo "Last curl response: $RESPONSE"
