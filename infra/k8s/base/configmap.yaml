@@ -95,12 +95,13 @@ data:
         Flush         1
         Daemon        Off
         Log_Level     info
+        Parsers_file  /fluent-bit/etc/parsers.conf
     
     [INPUT]
         Name           tail
         Tag            kube.*
         Path           /var/log/containers/*.log
-        Mem_Buf_Limit  5MB
+        Parser         cri
 
     [FILTER]
         Name           kubernetes
@@ -108,9 +109,17 @@ data:
         Kube_URL       https://kubernetes.default.svc:443
 
     [OUTPUT]
-        Name        loki
-        Match       *
-        Host        loki-service.monitoring
-        Port        3100
-        Labels      job=fluent-bit
-        Line_Format json
+        Name           loki
+        Match          *
+        Host           loki-service.monitoring
+        Port           3100
+        Labels         job=fluent-bit
+        Line_Format    json
+
+  parsers.conf: |-
+    [PARSER]
+        Name           cri
+        Format         regex
+        Regex          ^(?<time>[^ ]+) (?<stream>stdout|stderr) (?<logtag>[^ ]*) (?<log>.*)$
+        Time_Key       time
+        Time_Format    %Y-%m-%dT%H:%M:%S.%L%z
