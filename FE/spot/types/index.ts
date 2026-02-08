@@ -133,7 +133,7 @@ export interface OrderCreateRequest {
 }
 
 export interface OrderResponse {
-  id: string;
+  orderId: string;
   userId: number;
   storeId: string;
   storeName: string;
@@ -141,7 +141,7 @@ export interface OrderResponse {
   needDisposables: boolean;
   request: string;
   pickupTime: string;
-  orderStatus: OrderStatus;
+  status: OrderStatus;
   estimatedTime?: number;
   reason?: string;
   cancelledBy?: string;

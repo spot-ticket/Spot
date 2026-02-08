@@ -62,11 +62,11 @@ spec:
               mountPath: /fluent-bit/etc/
           resources:
             requests:
-              cpu: "250m"
-              memory: "256Mi"
+              cpu: "10m"
+              memory: "25Mi"
             limits:
-              cpu: "500m"
-              memory: "512Mi"
+              cpu: "100m"
+              memory: "100Mi"
       volumes:
         - name: varlog
           hostPath:

@@ -1,5 +1,6 @@
 package com.example.Spot.order.domain.repository;
 
+import java.math.BigDecimal;
 import java.util.List;
 import java.util.UUID;
 
@@ -26,5 +27,12 @@ public interface OrderItemOptionRepository extends JpaRepository<OrderItemOption
     @Query("SELECT oio FROM OrderItemOptionEntity oio " +
             "WHERE oio.orderItem.id IN :orderItemIds")
     List<OrderItemOptionEntity> findByOrderItemIdIn(@Param("orderItemIds") List<UUID> orderItemIds);
+
+    // internal admin
+    @Query("""
+    SELECT COALESCE(SUM(oi.menuPrice * oi.quantity), 0)
+    FROM OrderItemEntity oi
+""")
+    BigDecimal sumTotalRevenue();
 }
 

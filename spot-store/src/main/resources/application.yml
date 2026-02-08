@@ -4,12 +4,12 @@ spring:
   config:
     import:
       # bootRun
-      - optional:file:../config/common.yml
-      - optional:file:../config/kafka-topics.yml
-      - optional:file:../config/application-secret.yml
-      - optional:file:../config/spot-store.yml
+      # bootRun
+      - optional:classpath:/common.yml
+      - optional:classpath:/kafka-topics.yml
+      - optional:classpath:/spot-store.yml
 
       # docker-compose
       - optional:file:/config/common.yml
+      - optional:file:/config/kafka-topics.yml
       - optional:file:/config/spot-store.yml
-      - optional:file:/config/application-secret.yml

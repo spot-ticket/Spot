@@ -116,7 +116,7 @@ export function testAdminGetUsers(accessToken, params = {}) {
 export function testAdminStats(accessToken) {
   const res = http.get(buildUrl(endpoints.user.adminStats), {
     headers: getAuthHeaders(accessToken),
-    tags: { name: 'GET /api/admin/stats' },
+    tags: { name: 'GET /api/admin/stats/dashboard' },
   });
 
   const success = check(res, {

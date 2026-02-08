@@ -1,0 +1,42 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+# namespace: spot 제거 - 각 리소스가 자체 네임스페이스 유지
+
+resources:
+  - base/namespace.yaml
+  - base/configmap.yaml
+  - base/postgres.yaml
+  - base/redis.yaml
+  - base/kafka.yaml
+  - base/loki.yaml
+  - base/grafana.yaml
+  - base/fluent-bit.yaml
+  - apps/spot-gateway.yaml
+  - apps/spot-user.yaml
+  - apps/spot-store.yaml
+  - apps/spot-order.yaml
+  - apps/spot-payment.yaml
+
+# config 디렉토리의 yml 파일들을 ConfigMap으로 생성
+configMapGenerator:
+  - name: spot-app-config
+    namespace: spot
+    files:
+      - ../../config/common.yml
+      - ../../config/kafka-topics.yml
+      - ../../config/spot-gateway.yml
+      - ../../config/spot-user.yml
+      - ../../config/spot-store.yml
+      - ../../config/spot-order.yml
+      - ../../config/spot-payment.yml
+    options:
+      disableNameSuffixHash: true
+
+secretGenerator:
+  - name: spot-secrets
+    namespace: spot
+    envs:
+      - ../../.env
+    options:
+      disableNameSuffixHash: true

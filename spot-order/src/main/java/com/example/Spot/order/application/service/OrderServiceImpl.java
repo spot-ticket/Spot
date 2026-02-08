@@ -246,7 +246,7 @@ public class OrderServiceImpl implements OrderService {
 
         OrderEntity savedOrder = orderRepository.save(order);
         OrderResponseDto responseDto = OrderResponseDto.from(savedOrder);
-        
+
         orderEventProducer.reserveOrderCreated(
                 savedOrder.getId(),
                 userId,
@@ -350,7 +350,7 @@ public class OrderServiceImpl implements OrderService {
 
         // 결제 취소 처리 (Payment 서비스 호출) - 비동기 전환으로 인한 주석처리: 추후 삭제 afterDelete
         // cancelPaymentIfExists(orderId, "고객 주문 취소: " + reason);
-        
+
         return OrderResponseDto.from(order);
     }
 
