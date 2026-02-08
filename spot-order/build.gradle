@@ -69,9 +69,13 @@ dependencies {
 
     // postgreSQL
     implementation 'org.postgresql:postgresql'
-
+    
     // kafka
     implementation 'org.springframework.kafka:spring-kafka'
+    
+    // temporal
+    implementation 'io.temporal:temporal-spring-boot-starter:1.31.0'
+    testImplementation 'io.temporal:temporal-testing:1.31.0'
 }
 
 tasks.named('test') {
