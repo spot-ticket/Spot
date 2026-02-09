@@ -20,6 +20,11 @@ spec:
           image: spot-registry.localhost:5111/spot-store:latest
           ports:
             - containerPort: 8083
+          env:
+            - name: SPRING_PROFILES_ACTIVE
+              value: "k8s"
+            - name: LOGGING_CONFIG
+              value: "classpath:logback-spring.xml"
           envFrom:
             - secretRef:
                 name: spot-secrets
