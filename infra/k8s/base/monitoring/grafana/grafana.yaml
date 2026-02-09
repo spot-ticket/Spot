@@ -38,9 +38,13 @@ spec:
         - name: grafana-config-vol
           configMap:
             name: grafana-config
+        - name: grafana-dashboards-vol
+          configMap:
+            name: grafana-dashboards
+
       containers:
         - name: grafana
-          image: grafana/grafana:latest
+          image: grafana/grafana:10.4.3
           envFrom:
             - secretRef:
                 name: monitoring-secrets
@@ -59,6 +63,14 @@ spec:
               mountPath: /var/lib/grafana
             - name: grafana-config-vol
               mountPath: /etc/grafana/provisioning/datasources
+              readOnly: true
+            - name: grafana-config-vol
+              mountPath: /etc/grafana/provisioning/dashboards
+              readOnly: true
+            - name: grafana-dashboards-vol
+              mountPath: /var/lib/grafana/dashboards
+              readOnly: true
+
 ---
 apiVersion: v1
 kind: Service
