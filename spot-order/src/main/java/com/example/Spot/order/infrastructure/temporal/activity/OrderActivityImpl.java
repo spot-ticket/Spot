@@ -9,6 +9,7 @@ import com.example.Spot.order.domain.entity.OrderEntity;
 import com.example.Spot.order.domain.repository.OrderRepository;
 import com.example.Spot.order.infrastructure.producer.OrderEventProducer;
 import com.example.Spot.order.infrastructure.temporal.config.TemporalConstants;
+import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 
 import io.temporal.spring.boot.ActivityImpl;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +21,11 @@ public class OrderActivityImpl implements OrderActivity {
     
     private final OrderRepository orderRepository;
     private final OrderEventProducer orderEventProducer;
+
+    @Override
+    public void createOrderRecord(OrderCreateRequestDto requestDto, Integer userId, UUID orderId) {
+        
+    }
 
     @Override
     @Transactional

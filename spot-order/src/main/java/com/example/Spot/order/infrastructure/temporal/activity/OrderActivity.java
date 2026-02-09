@@ -2,11 +2,16 @@ package com.example.Spot.order.infrastructure.temporal.activity;
 
 import java.util.UUID;
 
+import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
+
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 
 @ActivityInterface
 public interface OrderActivity {
+    
+    @ActivityMethod
+    void createOrderRecord(OrderCreateRequestDto requestDto, Integer userId, UUID orderId);
     
     @ActivityMethod
     void completePaymentStatus(UUID orderId);
@@ -16,5 +21,5 @@ public interface OrderActivity {
 
     @ActivityMethod
     void cancelOrder(UUID orderId, String reason);
-
+        
 }
