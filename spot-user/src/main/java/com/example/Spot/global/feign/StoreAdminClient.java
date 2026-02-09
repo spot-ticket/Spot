@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.example.Spot.global.feign.dto.StoreResponse;
 import org.springframework.cloud.openfeign.FeignClient;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,8 +11,8 @@ import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.example.Spot.admin.presentation.dto.response.AdminStoreListResponseDto;
 import com.example.Spot.global.feign.dto.StorePageResponse;
+import com.example.Spot.global.feign.dto.StoreResponse;
 
 @FeignClient(name = "spot-store", contextId = "storeAdminClient", url = "${feign.store.url}")
 public interface StoreAdminClient {

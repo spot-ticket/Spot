@@ -5,6 +5,9 @@ spring:
   application:
     name: spot-order
   temporal:
+    workers-auto-discovery:
+      packages:
+        - "com.example.Spot"
     workers:
       - task-queue: ORDER_TASK_QUEUE
         name: order-worker

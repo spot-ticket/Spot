@@ -14,6 +14,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 
 import com.example.Spot.global.feign.PaymentClient;
 import com.example.Spot.global.feign.StoreClient;
@@ -35,6 +37,8 @@ import com.example.Spot.order.infrastructure.aop.OrderValidationContext;
 import com.example.Spot.order.infrastructure.aop.StoreOwnershipRequired;
 import com.example.Spot.order.infrastructure.aop.ValidateStoreAndMenu;
 import com.example.Spot.order.infrastructure.producer.OrderEventProducer;
+import com.example.Spot.order.infrastructure.temporal.config.TemporalConstants;
+import com.example.Spot.order.infrastructure.temporal.workflow.OrderWorkflow;
 import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemOptionRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemRequestDto;
@@ -44,6 +48,8 @@ import com.example.Spot.order.presentation.dto.response.OrderStatsResponseDto;
 import io.github.resilience4j.bulkhead.annotation.Bulkhead;
 import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.retry.annotation.Retry;
+import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowOptions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -58,6 +64,7 @@ public class OrderServiceImpl implements OrderService {
     private final PaymentClient paymentClient;
     private final StoreClient storeClient;
     private final OrderEventProducer orderEventProducer;
+    private final WorkflowClient workflowClient;
 
     // ******* //
     // 주문 조회 //
@@ -253,6 +260,19 @@ public class OrderServiceImpl implements OrderService {
                 responseDto.getTotalAmount().longValue()
         );
 
+        OrderWorkflow workflow = workflowClient.newWorkflowStub(OrderWorkflow.class,
+                WorkflowOptions.newBuilder()
+                        .setWorkflowId(savedOrder.getId().toString())
+                        .setTaskQueue(TemporalConstants.ORDER_TASK_QUEUE)
+                        .build());
+
+        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+            @Override
+            public void afterCommit() {
+                WorkflowClient.start(workflow::processOrder, savedOrder.getId());
+            }
+        });
+        
         return responseDto;
     }
 

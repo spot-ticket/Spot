@@ -190,11 +190,13 @@ services:
       - DB_HOST=db
       - SPRING_DATA_REDIS_HOST=redis
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - SPRING_TEMPORAL_CONNECTION_TARGET=temporal:7233
       - LOGGING_LEVEL_ROOT=WARN
     depends_on:
       - db
       - redis
       - kafka
+      - temporal
     networks:
       - spot-network
     env_file:

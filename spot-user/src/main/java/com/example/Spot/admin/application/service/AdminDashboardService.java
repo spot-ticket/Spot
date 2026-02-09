@@ -9,7 +9,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import com.example.Spot.global.feign.dto.OrderResponse;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -17,6 +16,7 @@ import com.example.Spot.admin.presentation.dto.response.AdminStatsResponseDto;
 import com.example.Spot.global.feign.OrderClient;
 import com.example.Spot.global.feign.StoreAdminClient;
 import com.example.Spot.global.feign.dto.OrderPageResponse;
+import com.example.Spot.global.feign.dto.OrderResponse;
 import com.example.Spot.global.feign.dto.OrderStatsResponse;
 import com.example.Spot.user.domain.repository.UserRepository;
 

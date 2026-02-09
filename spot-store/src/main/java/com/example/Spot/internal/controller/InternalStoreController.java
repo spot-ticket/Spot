@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import com.example.Spot.store.application.service.AdminStoreInternalService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -14,6 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Spot.internal.dto.InternalStoreResponse;
 import com.example.Spot.internal.dto.InternalStoreUserResponse;
+import com.example.Spot.store.application.service.AdminStoreInternalService;
 import com.example.Spot.store.domain.entity.StoreEntity;
 import com.example.Spot.store.domain.entity.StoreUserEntity;
 import com.example.Spot.store.domain.repository.StoreRepository;
