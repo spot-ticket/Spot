@@ -7,6 +7,10 @@ CLUSTER_NAME="spot-cluster"
 REGISTRY_NAME="spot-registry.localhost"
 REGISTRY_PORT="5111"
 
+# 로컬 레지스트리는 프록시 우회
+export NO_PROXY="${NO_PROXY:-},localhost,127.0.0.1,spot-registry.localhost,*.localhost"
+export no_proxy="${no_proxy:-},localhost,127.0.0.1,spot-registry.localhost,*.localhost"
+
 # Colors for output
 RED='\033[0;31m'
 GREEN='\033[0;32m'
@@ -41,6 +45,11 @@ check_prerequisites() {
     if ! command -v kubectl &> /dev/null; then
         log_error "kubectl is not installed. Please install kubectl first."
         exit 1
+    fi
+
+    if ! command -v kustomize &> /dev/null; then
+        log_error "kustomize is not installed. Installing kustomize..."
+        brew install kustomize
     fi
 
     log_info "All prerequisites are met."
@@ -125,22 +134,11 @@ install_argocd() {
     log_info "ArgoCD admin password: $ARGOCD_PASSWORD"
 }
 
-deploy_infrastructure() {
-    log_info "Deploying infrastructure components..."
+deploy_all() {
+    log_info "Deploying all resources using Kustomize..."
 
-    # Apply namespace and configmaps
-    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/namespace.yaml"
-    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/configmap.yaml"
-
-    # Apply infrastructure (postgres, redis, kafka)
-    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/postgres.yaml"
-    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/redis.yaml"
-    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/kafka.yaml"
-
-    # Apply monitoring system (loki, grafana, fluent-bit)
-    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/loki.yaml"
-    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/grafana.yaml"
-    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/fluent-bit.yaml"
+    # Apply all resources using Kustomize (--load-restrictor: 상위 디렉토리 파일 접근 허용)
+    kustomize build "$SCRIPT_DIR/infra/k8s/" --load-restrictor LoadRestrictionsNone | kubectl apply -f -
 
     log_info "Waiting for infrastructure to be ready..."
     kubectl wait --for=condition=available deployment/postgres -n spot --timeout=120s
@@ -155,13 +153,6 @@ deploy_infrastructure() {
     kubectl rollout status daemonset/fluent-bit-daemon -n monitoring --timeout=120s
 
     log_info "Monitoring System deployed successfully!"
-}
-
-deploy_applications() {
-    log_info "Deploying applications..."
-
-    # Apply application manifests
-    kubectl apply -f "$SCRIPT_DIR/infra/k8s/apps/"
 
     log_info "Waiting for applications to be ready..."
     kubectl wait --for=condition=available deployment/spot-user -n spot --timeout=180s || true
@@ -170,7 +161,7 @@ deploy_applications() {
     kubectl wait --for=condition=available deployment/spot-payment -n spot --timeout=180s || true
     kubectl wait --for=condition=available deployment/spot-gateway -n spot --timeout=180s || true
 
-    log_info "Applications deployed!"
+    log_info "All resources deployed!"
 }
 
 show_status() {
@@ -247,8 +238,7 @@ main() {
     create_cluster
     build_and_push_images
     install_argocd
-    deploy_infrastructure
-    deploy_applications
+    deploy_all
     show_status
 }
 
