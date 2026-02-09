@@ -39,13 +39,21 @@ data:
         Reserve_Data    On
     
     [OUTPUT]
-        Name            loki
-        Match           kube.var.log.containers.*
-        Host            loki-service.monitoring.svc.cluster.local
-        Uri             /loki/api/v1/push
-        Port            3100
-        Labels          job=fluent-bit,namespace=$kubernetes['namespace_name'],container=$kubernetes['container_name'],pod=$kubernetes['pod_name']
-        Line_Format     json
+        Name                  loki
+        Match                 kube.var.log.containers.*
+        Host                  loki-service.monitoring.svc.cluster.local
+        Port                  3100
+        Uri                   /loki/api/v1/push
+    
+        labels                job=fluent-bit
+        auto_kubernetes_labels on
+        line_format           json
+
+
+    [OUTPUT]
+        Name   stdout
+        Match  kube.var.log.containers.*
+
 
   parsers.conf: |-
     [PARSER]
