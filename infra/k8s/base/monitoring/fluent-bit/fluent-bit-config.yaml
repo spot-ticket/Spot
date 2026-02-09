@@ -9,8 +9,8 @@ data:
         Flush         1
         Daemon        Off
         Log_Level     info
-        Parsers_File  parsers.conf
-    
+        Parsers_File  parsers.conf  
+
     [INPUT]
         Name              tail
         Tag               kube.*
@@ -20,6 +20,9 @@ data:
         Mem_Buf_Limit     50MB
         Skip_Long_Lines   On
         Refresh_Interval  10
+    
+        Read_from_Head    Off
+        Ignore_Older      10m        
     
     
     [FILTER]
@@ -40,6 +43,25 @@ data:
         Key_Name        log_processed
         Parser          json
         Reserve_Data    On
+  
+    
+    
+    # 사용하지 않는 로그제거 
+    [FILTER]
+        Name   grep
+        Match  kube.*
+        Exclude log .*\/actuator\/(health|readiness|liveness).*
+    
+    [FILTER]
+        Name    grep
+        Match   kube.*
+        Exclude $kubernetes['namespace_name'] kube-system
+    [FILTER]
+        Name    grep
+        Match   kube.*
+        Exclude $kubernetes['namespace_name'] monitoring
+    
+    
     
     [OUTPUT]
         Name        loki
@@ -49,10 +71,13 @@ data:
         Uri         /loki/api/v1/push
     
         labels      job=fluent-bit
-        label_keys  $kubernetes['namespace_name'],$kubernetes['pod_name'],$kubernetes['container_name']
+        label_keys  $kubernetes['labels']['app'],$kubernetes['namespace_name'],$kubernetes['container_name']
         line_format json
         
         workers     1
+        Retry_Limit 5
+        net.keepalive on
+        net.keepalive_idle_timeout 10
 
 
     [OUTPUT]
