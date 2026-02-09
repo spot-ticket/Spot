@@ -1,13 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <configuration>
 
-    <!-- CONSOLE_PATTERN (공통 패턴) -->
     <property name="CONSOLE_PATTERN"
               value="%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n"/>
 
-    <!-- ========================= -->
-    <!-- Development: Plain Console -->
-    <!-- ========================= -->
     <springProfile name="!k8s">
         <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
             <encoder>
@@ -20,25 +16,9 @@
         </root>
     </springProfile>
 
-
-    <!-- ========================= -->
-    <!-- Kubernetes: JSON Logging -->
-    <!-- ========================= -->
     <springProfile name="k8s">
         <appender name="JSON_CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
-            <encoder class="net.logstash.logback.encoder.LogstashEncoder">
-                <providers>
-                    <timestamp/>
-                    <logLevel/>
-                    <loggerName/>
-                    <message/>
-
-                    <!-- MDC 필드 포함 -->
-                    <mdc/>
-
-                    <stackTrace/>
-                </providers>
-            </encoder>
+            <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
         </appender>
 
         <root level="INFO">
