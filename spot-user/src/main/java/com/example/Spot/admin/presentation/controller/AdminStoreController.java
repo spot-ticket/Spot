@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.Spot.admin.application.service.AdminStoreService;
-import com.example.Spot.admin.presentation.dto.AdminStoreListResponseDto;
+import com.example.Spot.admin.presentation.dto.response.AdminStoreListResponseDto;
 import com.example.Spot.auth.security.CustomUserDetails;
 import com.example.Spot.global.feign.dto.StorePageResponse;
 import com.example.Spot.global.presentation.ApiResponse;
@@ -46,6 +46,13 @@ public class AdminStoreController {
 
         return ResponseEntity
                 .ok(ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, stores));
+    }
+    @GetMapping("/count")
+    public ResponseEntity<ApiResponse<Long>> getStoreCount() {
+        long count = adminStoreService.getStoreCount();
+
+        return ResponseEntity
+                .ok(ApiResponse.onSuccess(GeneralSuccessCode.GOOD_REQUEST, count));
     }
 
     @PatchMapping("/{storeId}/approve")

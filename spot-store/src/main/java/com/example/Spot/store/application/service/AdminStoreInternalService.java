@@ -1,6 +1,9 @@
 package com.example.Spot.store.application.service;
 
+import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -27,6 +30,22 @@ public class AdminStoreInternalService {
     @Transactional
     public void deleteStore(UUID storeId, Integer userId) {
         storeService.deleteStore(storeId, userId, true);
+    }
+
+    public long getStoreCount() {
+        return storeRepository.count();
+    }
+
+    public Map<UUID, String> getStoreNames(List<UUID> storeIds) {
+        if (storeIds == null || storeIds.isEmpty()) {
+            return Map.of();
+        }
+
+        return storeRepository.findStoreNamesByIds(storeIds).stream()
+                .collect(Collectors.toMap(
+                        r -> (UUID) r[0],
+                        r -> (String) r[1]
+                ));
     }
 
 }

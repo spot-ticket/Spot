@@ -6,12 +6,26 @@ import com.example.Spot.store.domain.StoreStatus;
 import com.example.Spot.store.domain.entity.StoreEntity;
 
 public record AdminStoreListResponse(
-        UUID storeId,
+        UUID id,
         String name,
-        StoreStatus status
+        String roadAddress,
+        String addressDetail,
+        String phoneNumber,
+        StoreStatus status,
+        boolean isDeleted
+
+
 ) {
 
     public static AdminStoreListResponse from(StoreEntity store) {
-        return new AdminStoreListResponse(store.getId(), store.getName(), store.getStatus());
+        return new AdminStoreListResponse(
+                store.getId(),
+                store.getName(),
+                store.getRoadAddress(),
+                store.getAddressDetail(),
+                store.getPhoneNumber(),
+                store.getStatus(),
+                store.getIsDeleted()
+        );
     }
 }
