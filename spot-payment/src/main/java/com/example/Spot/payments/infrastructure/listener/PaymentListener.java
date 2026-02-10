@@ -1,5 +1,9 @@
 package com.example.Spot.payments.infrastructure.listener;
 
+import com.example.Spot.payments.infrastructure.temporal.config.PaymentConstants;
+import com.example.Spot.payments.infrastructure.temporal.workflow.PaymentWorkflow;
+import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowOptions;
 import java.util.UUID;
 
 import org.springframework.kafka.annotation.KafkaListener;
@@ -27,6 +31,7 @@ public class PaymentListener {
     private final PaymentService paymentService;
     private final ObjectMapper objectMapper;
     private final PaymentEventProducer paymentEventProducer;
+    private final WorkflowClient workflowClient;
 
     @KafkaListener(topics = "${spring.kafka.topic.order.created}", groupId = "${spring.kafka.consumer.group.payment}")
     public void handleOrderCreated(String message, Acknowledgment ack) {
@@ -48,29 +53,20 @@ public class PaymentListener {
             UUID paymentId = paymentService.ready(event.getUserId(), event.getOrderId(), confirmRequest);
             
             // 3. 결제 시도 및 결과에 따른 분기 처리
-            try {
-                paymentService.createPaymentBillingApprove(paymentId);
-                log.info("결제 승인 완료: paymentId={}", paymentId);
-                
-                // 결제 성공 이벤트 발행(자동)
-                paymentEventProducer.reservePaymentSucceededEvent(event.getOrderId(), event.getUserId());
-            } catch (BillingKeyNotFoundException e) {
+            WorkflowOptions options = WorkflowOptions.newBuilder()
+                    .setWorkflowId("payment-" + paymentId)
+                    .setTaskQueue(PaymentConstants.PAYMENT_TASK_QUEUE)
+                    .build();
 
-                AuthRequiredEvent authEvent = AuthRequiredEvent.builder()
-                        .orderId(event.getOrderId())
-                        .userId(event.getUserId())
-                        .message(e.getMessage())
-                        .build();
-                
-                paymentEventProducer.reserveAuthRequiredEvent(authEvent);
-            }
+            PaymentWorkflow workflow = workflowClient.newWorkflowStub(PaymentWorkflow.class, options);
+            WorkflowClient.start(workflow::processPayment, paymentId);
+            
             ack.acknowledge();
-            log.info("주문 생성 메시지 처리 완료 및 오프셋 커밋: orderId={}", event.getOrderId());
+            log.info("[결제서비스] 결제 워크플로우 시작 및 오프셋 커밋: paymentId={}", paymentId);
             
         } catch (Exception e) {
             // 에러 처리 로직
-            log.error("주문 이벤트 처리 실패: {}", message, e);
-        }
+            log.error("[결제서비스] 주문 이벤트 처리 및 워크플로우 시작 실패", e);        }
     }
     
     // 고객취소, 가게취소, 주문거절 이벤트 수신 시 환불 처리

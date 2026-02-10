@@ -1,12 +1,12 @@
 package com.example.Spot.order.infrastructure.temporal.workflow;
 
+import com.example.Spot.order.infrastructure.temporal.config.OrderConstants;
 import java.time.Duration;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
 import com.example.Spot.order.infrastructure.temporal.activity.OrderActivity;
-import com.example.Spot.order.infrastructure.temporal.config.TemporalConstants;
 
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
@@ -14,7 +14,7 @@ import io.temporal.spring.boot.WorkflowImpl;
 import io.temporal.workflow.Workflow;
 
 @Component
-@WorkflowImpl(taskQueues = TemporalConstants.ORDER_TASK_QUEUE)
+@WorkflowImpl(taskQueues = OrderConstants.ORDER_TASK_QUEUE)
 public class OrderWorkflowImpl implements OrderWorkflow {
 
     private static final ActivityOptions ACTIVITY_OPTIONS = ActivityOptions.newBuilder()

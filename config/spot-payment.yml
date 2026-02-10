@@ -5,6 +5,9 @@ spring:
   application:
     name: spot-payment
   temporal:
+    workers-auto-discovery:
+      packages:
+        - "com.example.Spot"
     workers:
       - task-queue: PAYMENT_TASK_QUEUE
         name: payment-worker

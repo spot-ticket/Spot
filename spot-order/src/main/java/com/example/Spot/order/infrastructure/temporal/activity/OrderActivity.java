@@ -11,9 +11,6 @@ import io.temporal.activity.ActivityMethod;
 public interface OrderActivity {
     
     @ActivityMethod
-    void createOrderRecord(OrderCreateRequestDto requestDto, Integer userId, UUID orderId);
-    
-    @ActivityMethod
     void completePaymentStatus(UUID orderId);
 
     @ActivityMethod
