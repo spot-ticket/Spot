@@ -149,6 +149,13 @@ install_prometheus() {
 deploy_all() {
     log_info "Deploying all resources using Kustomize..."
 
+    # Ingress Controller 설치
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.14.3/deploy/static/provider/cloud/deploy.yaml
+
+    # Ingress Controller 대기
+    kubectl wait --for=condition=ready pod -n ingress-nginx --selector=app.kubernetes.io/component=controller --timeout=120s
+
+    # Apply all resources using Kustomize (--load-restrictor: 상위 디렉토리 파일 접근 허용)
     kustomize build "$SCRIPT_DIR/infra/k8s/" --load-restrictor LoadRestrictionsNone | kubectl apply -f -
 
     log_info "Waiting for infrastructure to be ready..."
@@ -180,9 +187,21 @@ show_status() {
 
     echo ""
     echo "Access points:"
-    echo "  - Gateway API: http://localhost:30080"
     echo "  - ArgoCD UI:   http://localhost:30090"
-    echo "  - Grafana UI:  http://localhost:30070"
+    echo "  - Gateway API: http://localhost"
+    echo "  - Grafana UI:  http://grafana.localhost"
+    echo ""
+    echo "ArgoCD credentials:"
+    echo "  - Username: admin"
+    ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" 2>/dev/null | base64 -d || echo "Not available yet")
+    echo "  - Password: $ARGOCD_PASSWORD"
+    echo ""
+    echo "Useful commands:"
+    echo "  - kubectl get pods -n spot          # Check application pods"
+    echo "  - kubectl logs -f <pod> -n spot     # View pod logs"
+    echo "  - k3d cluster stop $CLUSTER_NAME    # Stop cluster"
+    echo "  - k3d cluster delete $CLUSTER_NAME  # Delete cluster"
+    echo "=============================================="
 }
 
 main() {
