@@ -11,11 +11,13 @@ resources:
   - base/kafka.yaml
   - base/monitoring/loki/loki.yaml
   - base/monitoring/loki/loki-config.yaml
+  - base/monitoring/monitoring-ingress.yaml
   - base/monitoring/grafana/grafana.yaml
   - base/monitoring/grafana/grafana-config.yaml
   - base/monitoring/grafana/grafana-dashboard.yaml
   - base/monitoring/fluent-bit/fluent-bit.yaml
   - base/monitoring/fluent-bit/fluent-bit-config.yaml
+  - apps/spot-ingress.yaml
   - apps/spot-gateway.yaml
   - apps/spot-user.yaml
   - apps/spot-store.yaml

@@ -45,12 +45,16 @@ spec:
               port: 8080
             initialDelaySeconds: 30
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+            successThreshold: 1
           livenessProbe:
             httpGet:
               path: /actuator/health
               port: 8080
             initialDelaySeconds: 60
             periodSeconds: 30
+            timeoutSeconds: 5
       volumes:
         - name: app-config
           configMap:
@@ -62,10 +66,10 @@ metadata:
   name: spot-gateway
   namespace: spot
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: spot-gateway
   ports:
-    - port: 8080
+    - port: 80
       targetPort: 8080
-      nodePort: 30080
+      protocol: TCP
