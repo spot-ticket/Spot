@@ -105,6 +105,7 @@ jobs:
       EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
       TOSS_SECRET_KEY: ${{ secrets.TOSS_SECRET_KEY }}
       TOSS_CUSTOMER_KEY: ${{ secrets.TOSS_CUSTOMER_KEY }}
+      SPRING_TEMPORAL_CONNECTION_TARGET: localhost:7233
 
     services:
       postgres:
