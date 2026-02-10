@@ -73,7 +73,7 @@ spring:
 
 
 
-# ==================== SpringDoc OpenAPI (통합 Swagger) =====================
+# ==================== SpringDoc OpenAPI (통합 Swagger) ====================
 springdoc:
   swagger-ui:
     urls:

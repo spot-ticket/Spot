@@ -199,7 +199,7 @@ show_status() {
     echo ""
     echo "Access points:"
     echo "  - ArgoCD UI:   http://localhost:30090"
-    echo "  - Gateway API: http://localhost"
+    echo "  - Gateway API: http://spot.localhost"
     echo "  - Grafana UI:  http://grafana.localhost"
     echo ""
     echo "ArgoCD credentials:"
