@@ -31,7 +31,9 @@ public class OrderWorkflowImpl implements OrderWorkflow {
         
         boolean paidWithinTime = Workflow.await(Duration.ofMinutes(15),
                 () -> currentStatus == OrderStatus.PENDING || currentStatus.isFinalStatus());
-        
+        Workflow.getLogger(OrderWorkflowImpl.class).info("15분 타이머 완료");
+
+
         if (!paidWithinTime && currentStatus == OrderStatus.PAYMENT_PENDING) {
             OrderStatus actualStatus = activities.getOrderStatus(orderId);
             if (actualStatus == OrderStatus.PENDING) {
@@ -50,6 +52,8 @@ public class OrderWorkflowImpl implements OrderWorkflow {
         
         Workflow.await(Duration.ofMinutes(30),
                 () -> currentStatus == OrderStatus.ACCEPTED || currentStatus.isFinalStatus());
+        Workflow.getLogger(OrderWorkflowImpl.class).info("30분 타이머 완료");
+
         if (shouldStop(OrderStatus.ACCEPTED)) {
             return;
         }

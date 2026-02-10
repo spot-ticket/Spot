@@ -37,6 +37,12 @@ public class PaymentListener {
             OrderCreatedEvent event = objectMapper.readValue(message, OrderCreatedEvent.class);
             log.info("주문 생성 이벤트 수신: orderId={}", event.getOrderId());
 
+            if (paymentService.isAlreadyProcessed(event.getOrderId())) {
+                log.info("[멱등성 패스] 이미 결제 워크플로우가 진행 중이거나 완료된 주문입니다. 스킵: orderId={}", event.getOrderId());
+                ack.acknowledge();
+                return;
+            }
+
             // 1. 부족한 정보를 채워 DTO를 조립합니다.
             PaymentRequestDto.Confirm confirmRequest = PaymentRequestDto.Confirm.builder()
                     .title("Spot 주문 결제")

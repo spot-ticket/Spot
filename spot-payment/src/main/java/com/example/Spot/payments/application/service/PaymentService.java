@@ -1,5 +1,6 @@
 package com.example.Spot.payments.application.service;
 
+import com.example.Spot.payments.domain.repository.PaymentRepository;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -22,7 +23,7 @@ public class PaymentService {
     private final PaymentApprovalService paymentApprovalService;
     private final PaymentCancellationService paymentCancellationService;
     private final BillingAuthService billingAuthService;
-
+    private final PaymentRepository paymentRepository;
     private final PaymentQueryService paymentQueryService;
 
     // ******* //
@@ -94,5 +95,9 @@ public class PaymentService {
 
     public void validatePaymentStoreOwnership(UUID paymentId, Integer userId) {
         paymentQueryService.validatePaymentStoreOwnership(paymentId, userId);
+    }
+    
+    public boolean isAlreadyProcessed(UUID orderId) {
+        return paymentRepository.findActivePaymentByOrderId(orderId).isPresent();
     }
 }
