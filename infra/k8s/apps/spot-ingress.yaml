@@ -9,7 +9,8 @@ metadata:
 spec:
   ingressClassName: nginx
   rules:
-    - http:
+    - host: spot.localhost
+      http:
         paths:
           - path: /
             pathType: Prefix

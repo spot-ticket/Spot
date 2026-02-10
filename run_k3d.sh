@@ -137,6 +137,12 @@ install_argocd() {
 deploy_all() {
     log_info "Deploying all resources using Kustomize..."
 
+    # Ingress Controller 설치
+    kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.14.3/deploy/static/provider/cloud/deploy.yaml
+
+    # Ingress Controller 대기
+    kubectl wait --for=condition=ready pod -n ingress-nginx --selector=app.kubernetes.io/component=controller --timeout=120s
+
     # Apply all resources using Kustomize (--load-restrictor: 상위 디렉토리 파일 접근 허용)
     kustomize build "$SCRIPT_DIR/infra/k8s/" --load-restrictor LoadRestrictionsNone | kubectl apply -f -
 
@@ -192,9 +198,9 @@ show_status() {
     echo -e "${GREEN}K3d cluster is ready!${NC}"
     echo ""
     echo "Access points:"
-    echo "  - Gateway API: http://localhost:30080"
     echo "  - ArgoCD UI:   http://localhost:30090"
-    echo "  - Grafana UI:  http://localhost:30070"
+    echo "  - Gateway API: http://localhost"
+    echo "  - Grafana UI:  http://grafana.localhost"
     echo ""
     echo "ArgoCD credentials:"
     echo "  - Username: admin"
