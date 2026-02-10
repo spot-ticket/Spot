@@ -7,7 +7,6 @@ import org.springframework.stereotype.Component;
 import com.example.Spot.order.application.service.OrderService;
 import com.example.Spot.order.infrastructure.event.subscribe.PaymentRefundedEvent;
 import com.example.Spot.order.infrastructure.event.subscribe.PaymentSucceededEvent;
-import com.example.Spot.order.infrastructure.temporal.workflow.OrderWorkflow;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import io.temporal.client.WorkflowClient;
@@ -27,14 +26,9 @@ public class OrderEventListener {
     public void handlePaymentSucceeded(String message, Acknowledgment ack) {
         try {
             PaymentSucceededEvent event = objectMapper.readValue(message, PaymentSucceededEvent.class);
-            String orderId = event.getOrderId().toString();
-            log.info("[주문서비스] 결제 성공 이벤트 수신 -> 시그널 전송 시작: OrderID {}", event.getOrderId());
             
-            OrderWorkflow workflow = workflowClient.newWorkflowStub(
-                    OrderWorkflow.class,
-                    orderId
-            );
-            workflow.signalPaymentCompleted();
+            orderService.completePayment(event.getOrderId());
+            log.info("[주문서비스] 결제 성공 이벤트 수신 -> 시그널 전송 시작: OrderID {}", event.getOrderId());
             
             ack.acknowledge(); // 성공 시 커밋
             log.info("[결제 성공] 처리 완료 및 Ack 커밋: OrderID {}", event.getOrderId());

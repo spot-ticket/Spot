@@ -21,6 +21,15 @@ public enum OrderStatus {
     public String getDescription() {
         return description;
     }
+    
+    public boolean isFinalStatus() {
+        return this == COMPLETED || this == CANCELLED || this == REJECTED || this == PAYMENT_FAILED;
+    }
+    
+    public boolean isPaid() {
+        return this == PENDING || this == ACCEPTED || this == COOKING ||
+                this == READY || this == COMPLETED;
+    }
 
     // 상태 전환 가능 여부 검증
     public boolean canTransitionTo(OrderStatus newStatus) {

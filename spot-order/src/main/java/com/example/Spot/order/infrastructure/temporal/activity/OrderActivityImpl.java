@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.Spot.order.domain.entity.OrderEntity;
+import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.domain.repository.OrderRepository;
 import com.example.Spot.order.infrastructure.producer.OrderEventProducer;
 import com.example.Spot.order.infrastructure.temporal.config.OrderConstants;
@@ -23,17 +24,17 @@ public class OrderActivityImpl implements OrderActivity {
 
     @Override
     @Transactional
-    public void completePaymentStatus(UUID orderId) {
-        OrderEntity order = orderRepository.findByIdWithLock(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("주문 없음"));
-        order.completePayment();
+    public OrderStatus getOrderStatus(UUID orderId) {
+        return orderRepository.findById(orderId)
+                .map(OrderEntity::getOrderStatus)
+                .orElse(OrderStatus.CANCELLED);
     }
 
     @Override
     @Transactional
     public void handlePaymentFailure(UUID orderId) {
         OrderEntity order = orderRepository.findByIdWithLock(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("주문 없음"));
+                .orElseThrow(() -> new IllegalArgumentException("주문 없음: " + orderId));
         order.failPayment();
     }
 
@@ -41,8 +42,12 @@ public class OrderActivityImpl implements OrderActivity {
     @Transactional
     public void cancelOrder(UUID orderId, String reason) {
         OrderEntity order = orderRepository.findByIdWithLock(orderId)
-                .orElseThrow(() -> new IllegalArgumentException("주문 없음"));
-        order.initiateCancel(reason, null);
-        orderEventProducer.reserveOrderCancelled(order.getId(), reason);
+                .orElseThrow(() -> new IllegalArgumentException("주문 없음" + orderId));
+        
+        if (order.getOrderStatus() != OrderStatus.CANCELLED &&
+        order.getOrderStatus() != OrderStatus.REJECTED) {
+            order.initiateCancel(reason, null);
+            orderEventProducer.reserveOrderCancelled(order.getId(), reason);
+        }
     }
 }

@@ -2,6 +2,8 @@ package com.example.Spot.order.infrastructure.temporal.activity;
 
 import java.util.UUID;
 
+import com.example.Spot.order.domain.enums.OrderStatus;
+
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 
@@ -9,7 +11,7 @@ import io.temporal.activity.ActivityMethod;
 public interface OrderActivity {
     
     @ActivityMethod
-    void completePaymentStatus(UUID orderId);
+    OrderStatus getOrderStatus(UUID orderId);
 
     @ActivityMethod
     void handlePaymentFailure(UUID orderId);

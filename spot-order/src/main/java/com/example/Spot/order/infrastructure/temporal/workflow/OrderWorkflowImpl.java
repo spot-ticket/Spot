@@ -5,6 +5,7 @@ import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
+import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.infrastructure.temporal.activity.OrderActivity;
 import com.example.Spot.order.infrastructure.temporal.config.OrderConstants;
 
@@ -22,23 +23,56 @@ public class OrderWorkflowImpl implements OrderWorkflow {
             .setRetryOptions(RetryOptions.newBuilder().setMaximumAttempts(5).build())
             .build();
     
-    private boolean isPaid = false;
+    private OrderStatus currentStatus = OrderStatus.PAYMENT_PENDING;
     
     @Override
     public void processOrder(UUID orderId) {
         OrderActivity activities = Workflow.newActivityStub(OrderActivity.class, ACTIVITY_OPTIONS);
-        boolean received = Workflow.await(Duration.ofMinutes(15), () -> isPaid);
         
-        if (received) {
-            activities.completePaymentStatus(orderId);
-        } else {
+        boolean paidWithinTime = Workflow.await(Duration.ofMinutes(15),
+                () -> currentStatus == OrderStatus.PENDING || currentStatus.isFinalStatus());
+        
+        if (!paidWithinTime && currentStatus == OrderStatus.PAYMENT_PENDING) {
+            OrderStatus actualStatus = activities.getOrderStatus(orderId);
+            if (actualStatus == OrderStatus.PENDING) {
+                this.currentStatus = OrderStatus.PENDING;
+            }
+        }
+        
+        if (!currentStatus.isPaid()) {
             activities.handlePaymentFailure(orderId);
             activities.cancelOrder(orderId, "결제 시간 초과로 인한 자동 취소");
+            return;
         }
+        if (shouldStop(OrderStatus.PENDING)) {
+            return;
+        }
+        
+        Workflow.await(Duration.ofMinutes(30),
+                () -> currentStatus == OrderStatus.ACCEPTED || currentStatus.isFinalStatus());
+        if (shouldStop(OrderStatus.ACCEPTED)) {
+            return;
+        }
+        
+        Workflow.await(() -> currentStatus == OrderStatus.COOKING || currentStatus.isFinalStatus());
+        if (shouldStop(OrderStatus.COOKING)) {
+            return;
+        }
+
+        Workflow.await(() -> currentStatus == OrderStatus.READY || currentStatus.isFinalStatus());
+        if (shouldStop(OrderStatus.READY)) {
+            return;
+        }
+
+        Workflow.await(() -> currentStatus == OrderStatus.COMPLETED || currentStatus.isFinalStatus());
     }
 
     @Override
-    public void signalPaymentCompleted() {
-        this.isPaid = true;
+    public void signalStatusChanged(OrderStatus nextStatus) {
+        this.currentStatus = nextStatus;
+    }
+
+    private boolean shouldStop(OrderStatus targetStatus) {
+        return currentStatus != targetStatus && currentStatus.isFinalStatus();
     }
 }
