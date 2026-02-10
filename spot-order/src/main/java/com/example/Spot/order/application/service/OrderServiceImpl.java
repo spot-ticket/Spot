@@ -1,5 +1,6 @@
 package com.example.Spot.order.application.service;
 
+import com.example.Spot.order.infrastructure.temporal.config.OrderConstants;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -37,7 +38,6 @@ import com.example.Spot.order.infrastructure.aop.OrderValidationContext;
 import com.example.Spot.order.infrastructure.aop.StoreOwnershipRequired;
 import com.example.Spot.order.infrastructure.aop.ValidateStoreAndMenu;
 import com.example.Spot.order.infrastructure.producer.OrderEventProducer;
-import com.example.Spot.order.infrastructure.temporal.config.TemporalConstants;
 import com.example.Spot.order.infrastructure.temporal.workflow.OrderWorkflow;
 import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemOptionRequestDto;
@@ -263,7 +263,7 @@ public class OrderServiceImpl implements OrderService {
         OrderWorkflow workflow = workflowClient.newWorkflowStub(OrderWorkflow.class,
                 WorkflowOptions.newBuilder()
                         .setWorkflowId(savedOrder.getId().toString())
-                        .setTaskQueue(TemporalConstants.ORDER_TASK_QUEUE)
+                        .setTaskQueue(OrderConstants.ORDER_TASK_QUEUE)
                         .build());
 
         TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {

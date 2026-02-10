@@ -1,5 +1,7 @@
 package com.example.Spot.order.infrastructure.listener;
 
+import com.example.Spot.order.infrastructure.temporal.workflow.OrderWorkflow;
+import io.temporal.client.WorkflowClient;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
@@ -19,13 +21,21 @@ public class OrderEventListener {
     
     private final OrderService orderService;
     private final ObjectMapper objectMapper;
+    private final WorkflowClient workflowClient;
     
     @KafkaListener(topics = "${spring.kafka.topic.payment.succeeded}", groupId = "${spring.kafka.consumer.group.order}")
     public void handlePaymentSucceeded(String message, Acknowledgment ack) {
         try {
             PaymentSucceededEvent event = objectMapper.readValue(message, PaymentSucceededEvent.class);
-            orderService.completePayment(event.getOrderId());
-
+            String orderId = event.getOrderId().toString();
+            log.info("[주문서비스] 결제 성공 이벤트 수신 -> 시그널 전송 시작: OrderID {}", event.getOrderId());
+            
+            OrderWorkflow workflow = workflowClient.newWorkflowStub(
+                    OrderWorkflow.class,
+                    orderId
+            );
+            workflow.signalPaymentCompleted();
+            
             ack.acknowledge(); // 성공 시 커밋
             log.info("[결제 성공] 처리 완료 및 Ack 커밋: OrderID {}", event.getOrderId());
         } catch (Exception e) {
