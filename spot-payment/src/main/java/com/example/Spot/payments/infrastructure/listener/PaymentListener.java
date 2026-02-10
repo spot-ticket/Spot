@@ -1,25 +1,23 @@
 package com.example.Spot.payments.infrastructure.listener;
 
-import com.example.Spot.payments.infrastructure.temporal.config.PaymentConstants;
-import com.example.Spot.payments.infrastructure.temporal.workflow.PaymentWorkflow;
-import io.temporal.client.WorkflowClient;
-import io.temporal.client.WorkflowOptions;
 import java.util.UUID;
 
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.support.Acknowledgment;
 import org.springframework.stereotype.Component;
 
-import com.example.Spot.global.presentation.advice.BillingKeyNotFoundException;
 import com.example.Spot.payments.application.service.PaymentService;
 import com.example.Spot.payments.domain.entity.PaymentEntity;
-import com.example.Spot.payments.infrastructure.event.publish.AuthRequiredEvent;
 import com.example.Spot.payments.infrastructure.event.subscribe.OrderCancelledEvent;
 import com.example.Spot.payments.infrastructure.event.subscribe.OrderCreatedEvent;
 import com.example.Spot.payments.infrastructure.producer.PaymentEventProducer;
+import com.example.Spot.payments.infrastructure.temporal.config.PaymentConstants;
+import com.example.Spot.payments.infrastructure.temporal.workflow.PaymentWorkflow;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowOptions;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -66,7 +64,8 @@ public class PaymentListener {
             
         } catch (Exception e) {
             // 에러 처리 로직
-            log.error("[결제서비스] 주문 이벤트 처리 및 워크플로우 시작 실패", e);        }
+            log.error("[결제서비스] 주문 이벤트 처리 및 워크플로우 시작 실패", e);
+        }
     }
     
     // 고객취소, 가게취소, 주문거절 이벤트 수신 시 환불 처리

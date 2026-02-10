@@ -2,8 +2,6 @@ package com.example.Spot.order.infrastructure.temporal.activity;
 
 import java.util.UUID;
 
-import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
-
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;
 

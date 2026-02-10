@@ -1,7 +1,8 @@
 package com.example.Spot.payments.infrastructure.temporal.activity;
 
-import io.temporal.activity.ActivityInterface;
 import java.util.UUID;
+
+import io.temporal.activity.ActivityInterface;
 
 @ActivityInterface
 public interface PaymentActivities {

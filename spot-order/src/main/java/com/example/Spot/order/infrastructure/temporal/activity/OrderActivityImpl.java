@@ -1,6 +1,5 @@
 package com.example.Spot.order.infrastructure.temporal.activity;
 
-import com.example.Spot.order.infrastructure.temporal.config.OrderConstants;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
@@ -9,6 +8,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.example.Spot.order.domain.entity.OrderEntity;
 import com.example.Spot.order.domain.repository.OrderRepository;
 import com.example.Spot.order.infrastructure.producer.OrderEventProducer;
+import com.example.Spot.order.infrastructure.temporal.config.OrderConstants;
 
 import io.temporal.spring.boot.ActivityImpl;
 import lombok.RequiredArgsConstructor;

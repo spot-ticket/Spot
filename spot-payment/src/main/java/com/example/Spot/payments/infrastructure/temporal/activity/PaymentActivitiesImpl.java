@@ -1,21 +1,23 @@
 package com.example.Spot.payments.infrastructure.temporal.activity;
 
+import java.util.UUID;
+
+import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
+
 import com.example.Spot.payments.application.service.PaymentHistoryService;
 import com.example.Spot.payments.application.service.command.PaymentApprovalService;
 import com.example.Spot.payments.application.service.command.PaymentCancellationService;
 import com.example.Spot.payments.application.service.query.PaymentQueryService;
 import com.example.Spot.payments.domain.entity.PaymentEntity;
-
 import com.example.Spot.payments.infrastructure.event.publish.AuthRequiredEvent;
 import com.example.Spot.payments.infrastructure.producer.PaymentEventProducer;
 import com.example.Spot.payments.infrastructure.temporal.config.PaymentConstants;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
+
 import io.temporal.spring.boot.ActivityImpl;
-import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.stereotype.Component;
-import org.springframework.transaction.annotation.Transactional;
 
 @Component
 @RequiredArgsConstructor
