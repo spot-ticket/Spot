@@ -14,9 +14,13 @@ resources:
   - base/monitoring/monitoring-ingress.yaml
   - base/monitoring/grafana/grafana.yaml
   - base/monitoring/grafana/grafana-config.yaml
-  - base/monitoring/grafana/grafana-dashboard.yaml
   - base/monitoring/fluent-bit/fluent-bit.yaml
   - base/monitoring/fluent-bit/fluent-bit-config.yaml
+  - base/monitoring/servicemonitors/spot-gateway-servicemonitor.yaml
+  - base/monitoring/servicemonitors/spot-user-servicemonitor.yaml
+  - base/monitoring/servicemonitors/spot-order-servicemonitor.yaml
+  - base/monitoring/servicemonitors/spot-store-servicemonitor.yaml
+  - base/monitoring/servicemonitors/spot-payment-servicemonitor.yaml
   - apps/spot-ingress.yaml
   - apps/spot-gateway.yaml
   - apps/spot-user.yaml
@@ -38,6 +42,30 @@ configMapGenerator:
       - ../../config/spot-payment.yml
     options:
       disableNameSuffixHash: true
+  - name: grafana-dashboards-spot
+    namespace: monitoring
+    files:
+      - base/monitoring/grafana/dashboards/spot-logs.json
+
+  - name: grafana-dashboards-9578
+    namespace: monitoring
+    files:
+      - base/monitoring/grafana/dashboards/9578.json
+
+  - name: grafana-dashboards-15760
+    namespace: monitoring
+    files:
+      - base/monitoring/grafana/dashboards/15760.json
+
+  - name: grafana-dashboards-15757
+    namespace: monitoring
+    files:
+      - base/monitoring/grafana/dashboards/15757.json
+
+  - name: grafana-dashboards-15661
+    namespace: monitoring
+    files:
+      - base/monitoring/grafana/dashboards/15661.json
 
 secretGenerator:
   - name: spot-secrets
@@ -46,3 +74,7 @@ secretGenerator:
       - ../../.env
     options:
       disableNameSuffixHash: true
+
+
+generatorOptions:
+  disableNameSuffixHash: true

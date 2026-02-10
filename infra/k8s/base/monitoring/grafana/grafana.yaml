@@ -38,13 +38,32 @@ spec:
         - name: grafana-config-vol
           configMap:
             name: grafana-config
-        - name: grafana-dashboards-vol
+
+        - name: grafana-dashboards-spot
           configMap:
-            name: grafana-dashboards
+            name: grafana-dashboards-spot
+        - name: grafana-dashboards-9578
+          configMap:
+            name: grafana-dashboards-9578
+        - name: grafana-dashboards-15661
+          configMap:
+            name: grafana-dashboards-15661
+        - name: grafana-dashboards-15757
+          configMap:
+            name: grafana-dashboards-15757
+        - name: grafana-dashboards-15760
+          configMap:
+            name: grafana-dashboards-15760
+
 
       containers:
         - name: grafana
           image: grafana/grafana:10.4.3
+          env:
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: "true"
+            - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+              value: "Admin"
           envFrom:
             - secretRef:
                 name: monitoring-secrets
@@ -62,14 +81,41 @@ spec:
             - name: grafana-pv-storage
               mountPath: /var/lib/grafana
             - name: grafana-config-vol
-              mountPath: /etc/grafana/provisioning/datasources
+              mountPath: /etc/grafana/provisioning/datasources/datasources.yaml
+              subPath: datasources.yaml
               readOnly: true
+
             - name: grafana-config-vol
-              mountPath: /etc/grafana/provisioning/dashboards
+              mountPath: /etc/grafana/provisioning/dashboards/dashboards.yaml
+              subPath: dashboards.yaml
               readOnly: true
-            - name: grafana-dashboards-vol
-              mountPath: /var/lib/grafana/dashboards
+
+
+            - name: grafana-dashboards-spot
+              mountPath: /var/lib/grafana/dashboards/spot-logs.json
+              subPath: spot-logs.json
               readOnly: true
+
+            - name: grafana-dashboards-9578
+              mountPath: /var/lib/grafana/dashboards/9578.json
+              subPath: 9578.json
+              readOnly: true
+
+            - name: grafana-dashboards-15760
+              mountPath: /var/lib/grafana/dashboards/15760.json
+              subPath: 15760.json
+              readOnly: true
+
+            - name: grafana-dashboards-15757
+              mountPath: /var/lib/grafana/dashboards/15757.json
+              subPath: 15757.json
+              readOnly: true
+
+            - name: grafana-dashboards-15661
+              mountPath: /var/lib/grafana/dashboards/15661.json
+              subPath: 15661.json
+              readOnly: true
+
 
 ---
 apiVersion: v1

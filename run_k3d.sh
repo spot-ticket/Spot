@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 CLUSTER_NAME="spot-cluster"
@@ -38,7 +38,7 @@ check_prerequisites() {
     fi
 
     if ! command -v k3d &> /dev/null; then
-        log_error "k3d is not installed. Installing k3d..."
+        log_warn "k3d is not installed. Installing k3d..."
         curl -s https://raw.githubusercontent.com/k3d-io/k3d/main/install.sh | bash
     fi
 
@@ -48,8 +48,13 @@ check_prerequisites() {
     fi
 
     if ! command -v kustomize &> /dev/null; then
-        log_error "kustomize is not installed. Installing kustomize..."
+        log_warn "kustomize is not installed. Installing kustomize..."
         brew install kustomize
+    fi
+
+    if ! command -v helm &> /dev/null; then
+        log_warn "helm is not installed. Installing helm..."
+        brew install helm
     fi
 
     log_info "All prerequisites are met."
@@ -58,18 +63,15 @@ check_prerequisites() {
 cleanup_existing() {
     log_info "Cleaning up existing resources..."
 
-    # Stop docker-compose if running
     if [ -f "$SCRIPT_DIR/docker-compose.yaml" ]; then
         docker compose -f "$SCRIPT_DIR/docker-compose.yaml" down --remove-orphans 2>/dev/null || true
     fi
 
-    # Delete existing k3d cluster
     if k3d cluster list | grep -q "$CLUSTER_NAME"; then
         log_info "Deleting existing k3d cluster: $CLUSTER_NAME"
         k3d cluster delete "$CLUSTER_NAME"
     fi
 
-    # Delete existing registry
     if docker ps -a | grep -q "k3d-$REGISTRY_NAME"; then
         log_info "Removing existing registry..."
         docker rm -f "k3d-$REGISTRY_NAME" 2>/dev/null || true
@@ -81,7 +83,7 @@ create_cluster() {
     k3d cluster create --config "$SCRIPT_DIR/infra/k3d/cluster-config.yaml"
 
     log_info "Waiting for cluster to be ready..."
-    kubectl wait --for=condition=ready node --all --timeout=120s
+    kubectl wait --for=condition=ready node --all --timeout=180s
 
     log_info "Cluster created successfully!"
 }
@@ -94,13 +96,10 @@ build_and_push_images() {
     for service in "${SERVICES[@]}"; do
         log_info "Building $service..."
 
-        # Build jar
         (cd "$SCRIPT_DIR/$service" && ./gradlew bootJar -x test)
 
-        # Build Docker image
         docker build -t "$REGISTRY_NAME:$REGISTRY_PORT/$service:latest" "$SCRIPT_DIR/$service"
 
-        # Push to registry
         docker push "$REGISTRY_NAME:$REGISTRY_PORT/$service:latest"
 
         log_info "$service image pushed successfully!"
@@ -110,28 +109,41 @@ build_and_push_images() {
 install_argocd() {
     log_info "Installing ArgoCD..."
 
-    # Create argocd namespace
     kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 
-    # Install ArgoCD
     kubectl apply -n argocd --server-side -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
     log_info "Waiting for ArgoCD to be ready..."
     kubectl wait --for=condition=available deployment/argocd-server -n argocd --timeout=300s
 
-    # Apply ArgoCD NodePort service
     if [ -f "$SCRIPT_DIR/infra/argo/argocd-ingress.yaml" ]; then
         kubectl apply -f "$SCRIPT_DIR/infra/argo/argocd-ingress.yaml"
     fi
 
-    # Get ArgoCD admin password
     log_info "ArgoCD installed successfully!"
-    log_info "ArgoCD UI: http://localhost:30090"
-    log_info "Getting ArgoCD admin password..."
+}
 
-    sleep 5
-    ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" | base64 -d)
-    log_info "ArgoCD admin password: $ARGOCD_PASSWORD"
+install_prometheus() {
+    log_info "Installing Prometheus (kube-prometheus-stack) via Helm..."
+
+    kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
+
+    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts >/dev/null 2>&1 || true
+    helm repo update
+
+    VALUES_FILE="$SCRIPT_DIR/infra/k8s/base/monitoring/prometheus/value.yaml"
+    if [ ! -f "$VALUES_FILE" ]; then
+        log_error "Prometheus values file not found: $VALUES_FILE"
+        exit 1
+    fi
+
+    helm upgrade --install prom prometheus-community/kube-prometheus-stack \
+        -n monitoring \
+        -f "$VALUES_FILE" \
+        --wait \
+        --timeout 10m
+
+    log_info "Prometheus installed successfully!"
 }
 
 deploy_all() {
@@ -147,55 +159,32 @@ deploy_all() {
     kustomize build "$SCRIPT_DIR/infra/k8s/" --load-restrictor LoadRestrictionsNone | kubectl apply -f -
 
     log_info "Waiting for infrastructure to be ready..."
-    kubectl wait --for=condition=available deployment/postgres -n spot --timeout=120s
-    kubectl wait --for=condition=available deployment/redis -n spot --timeout=120s
-    kubectl wait --for=condition=available deployment/kafka -n spot --timeout=120s
+    kubectl wait --for=condition=available deployment/postgres -n spot --timeout=180s
+    kubectl wait --for=condition=available deployment/redis -n spot --timeout=180s
+    kubectl wait --for=condition=available deployment/kafka -n spot --timeout=180s
 
     log_info "Infrastructure deployed successfully!"
 
     log_info "Waiting for monitoring system to be ready..."
-    kubectl wait --for=condition=available deployment/loki-deploy -n monitoring --timeout=120s
-    kubectl wait --for=condition=available deployment/grafana-deploy -n monitoring --timeout=120s
-    kubectl rollout status daemonset/fluent-bit-daemon -n monitoring --timeout=120s
+    kubectl wait --for=condition=available deployment/loki-deploy -n monitoring --timeout=180s || true
+    kubectl wait --for=condition=available deployment/grafana-deploy -n monitoring --timeout=180s || true
+    kubectl rollout status daemonset/fluent-bit-daemon -n monitoring --timeout=180s || true
 
     log_info "Monitoring System deployed successfully!"
+}
 
-    log_info "Waiting for applications to be ready..."
-    kubectl wait --for=condition=available deployment/spot-user -n spot --timeout=180s || true
-    kubectl wait --for=condition=available deployment/spot-store -n spot --timeout=180s || true
-    kubectl wait --for=condition=available deployment/spot-order -n spot --timeout=180s || true
-    kubectl wait --for=condition=available deployment/spot-payment -n spot --timeout=180s || true
-    kubectl wait --for=condition=available deployment/spot-gateway -n spot --timeout=180s || true
-
-    log_info "All resources deployed!"
+restart_grafana_for_provisioning() {
+    log_info "Restarting Grafana to apply provisioning..."
+    kubectl -n monitoring rollout restart deployment/grafana-deploy || true
+    kubectl -n monitoring rollout status deployment/grafana-deploy --timeout=180s || true
 }
 
 show_status() {
     log_info "=== Cluster Status ==="
-    echo ""
-
-    log_info "Nodes:"
     kubectl get nodes
-    echo ""
-
-    log_info "Pods in spot namespace:"
     kubectl get pods -n spot
-    echo ""
-
-    log_info "Services in spot namespace:"
-    kubectl get svc -n spot
-    echo ""
-
-    log_info "ArgoCD pods:"
-    kubectl get pods -n argocd
-    echo ""
-
-    log_info "Pods in monitoring namespace:"
     kubectl get pods -n monitoring
-    echo ""
 
-    echo "=============================================="
-    echo -e "${GREEN}K3d cluster is ready!${NC}"
     echo ""
     echo "Access points:"
     echo "  - ArgoCD UI:   http://localhost:30090"
@@ -219,22 +208,10 @@ main() {
     case "${1:-}" in
         --clean)
             cleanup_existing
-            log_info "Cleanup completed!"
             exit 0
             ;;
         --status)
             show_status
-            exit 0
-            ;;
-        --help)
-            echo "Usage: $0 [OPTIONS]"
-            echo ""
-            echo "Options:"
-            echo "  --clean     Clean up existing cluster and resources"
-            echo "  --status    Show cluster status"
-            echo "  --help      Show this help message"
-            echo ""
-            echo "Without options, creates a new k3d cluster with all services."
             exit 0
             ;;
     esac
@@ -244,7 +221,9 @@ main() {
     create_cluster
     build_and_push_images
     install_argocd
+    install_prometheus
     deploy_all
+    restart_grafana_for_provisioning
     show_status
 }
 

@@ -18,6 +18,7 @@ spec:
       containers:
         - name: spot-gateway
           image: spot-registry.localhost:5111/spot-gateway:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
@@ -65,6 +66,8 @@ kind: Service
 metadata:
   name: spot-gateway
   namespace: spot
+  labels:
+    app: spot-gateway
 spec:
   type: ClusterIP
   selector:

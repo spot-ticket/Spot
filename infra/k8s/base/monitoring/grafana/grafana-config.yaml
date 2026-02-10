@@ -6,6 +6,13 @@ metadata:
 data:
   datasources.yaml: |
     apiVersion: 1
+    
+    deleteDatasources:
+      - name: Loki
+        orgId: 1
+      - name: Prometheus
+        orgId: 1
+
     datasources:
       - name: Loki
         type: loki
@@ -17,6 +24,15 @@ data:
         editable: true
         jsonData:
           maxLines: 1000
+      
+      - name: Prometheus
+        type: prometheus
+        uid: prometheus
+        access: proxy
+        url: http://prom-kube-prometheus-stack-prometheus.monitoring.svc.cluster.local:9090
+        basicAuth: false
+        isDefault: false
+        editable: false
 
   dashboards.yaml: |
     apiVersion: 1
