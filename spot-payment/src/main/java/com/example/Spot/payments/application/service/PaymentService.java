@@ -1,6 +1,5 @@
 package com.example.Spot.payments.application.service;
 
-import com.example.Spot.payments.domain.repository.PaymentRepository;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -9,6 +8,7 @@ import com.example.Spot.payments.application.service.command.BillingAuthService;
 import com.example.Spot.payments.application.service.command.PaymentApprovalService;
 import com.example.Spot.payments.application.service.command.PaymentCancellationService;
 import com.example.Spot.payments.application.service.query.PaymentQueryService;
+import com.example.Spot.payments.domain.repository.PaymentRepository;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
 

@@ -18,6 +18,7 @@ spec:
       containers:
         - name: spot-gateway
           image: spot-registry.localhost:5111/spot-gateway:latest
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           env:
@@ -45,12 +46,16 @@ spec:
               port: 8080
             initialDelaySeconds: 30
             periodSeconds: 10
+            timeoutSeconds: 5
+            failureThreshold: 5
+            successThreshold: 1
           livenessProbe:
             httpGet:
               path: /actuator/health
               port: 8080
             initialDelaySeconds: 60
             periodSeconds: 30
+            timeoutSeconds: 5
       volumes:
         - name: app-config
           configMap:
@@ -61,11 +66,13 @@ kind: Service
 metadata:
   name: spot-gateway
   namespace: spot
+  labels:
+    app: spot-gateway
 spec:
-  type: NodePort
+  type: ClusterIP
   selector:
     app: spot-gateway
   ports:
-    - port: 8080
+    - port: 80
       targetPort: 8080
-      nodePort: 30080
+      protocol: TCP
