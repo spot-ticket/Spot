@@ -16,6 +16,11 @@ resources:
   - base/monitoring/grafana/grafana-dashboard.yaml
   - base/monitoring/fluent-bit/fluent-bit.yaml
   - base/monitoring/fluent-bit/fluent-bit-config.yaml
+  - base/monitoring/servicemonitors/spot-gateway-servicemonitor.yaml
+  - base/monitoring/servicemonitors/spot-user-servicemonitor.yaml
+  - base/monitoring/servicemonitors/spot-order-servicemonitor.yaml
+  - base/monitoring/servicemonitors/spot-store-servicemonitor.yaml
+  - base/monitoring/servicemonitors/spot-payment-servicemonitor.yaml
   - apps/spot-gateway.yaml
   - apps/spot-user.yaml
   - apps/spot-store.yaml
@@ -36,6 +41,14 @@ configMapGenerator:
       - ../../config/spot-payment.yml
     options:
       disableNameSuffixHash: true
+  - name: grafana-dashboards
+    namespace: monitoring
+    files:
+      - base/monitoring/grafana/dashboards//spot-logs.json
+      - base/monitoring/grafana/dashboards/6417.json
+      - base/monitoring/grafana/dashboards/1860.json
+      - base/monitoring/grafana/dashboards/15757.json
+      - base/monitoring/grafana/dashboards/315.json
 
 secretGenerator:
   - name: spot-secrets

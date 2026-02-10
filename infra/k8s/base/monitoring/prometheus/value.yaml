@@ -20,7 +20,6 @@ prometheus:
         cpu: 500m
         memory: 1Gi
 
-# 로그 수집 최소화 (fluentbit 있으니까)
 kubeStateMetrics:
   enabled: true
 

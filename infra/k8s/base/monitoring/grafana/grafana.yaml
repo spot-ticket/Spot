@@ -45,6 +45,11 @@ spec:
       containers:
         - name: grafana
           image: grafana/grafana:10.4.3
+          env:
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: "true"
+            - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+              value: "Admin"
           envFrom:
             - secretRef:
                 name: monitoring-secrets
