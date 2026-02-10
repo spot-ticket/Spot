@@ -11,7 +11,7 @@ resources:
   - base/kafka.yaml
   - base/monitoring/loki/loki.yaml
   - base/monitoring/loki/loki-config.yaml
-  - base/monitoring/grafana/grafana-ingress.yaml
+  - base/monitoring/monitoring-ingress.yaml
   - base/monitoring/grafana/grafana.yaml
   - base/monitoring/grafana/grafana-config.yaml
   - base/monitoring/grafana/grafana-dashboard.yaml
