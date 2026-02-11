@@ -43,16 +43,24 @@ public class OrderWorkflowImpl implements OrderWorkflow {
         }
 
         Workflow.await(Duration.ofMinutes(10), () -> currentStatus == OrderStatus.ACCEPTED || isTrulyFinalStatus(currentStatus));
-        if (handleCancelIfNecessary(orderId, activities)) return;
+        if (handleCancelIfNecessary(orderId, activities)) {
+            return;
+        }
         
         Workflow.await(() -> currentStatus == OrderStatus.COOKING || isTrulyFinalStatus(currentStatus));
-        if (handleCancelIfNecessary(orderId, activities)) return;
+        if (handleCancelIfNecessary(orderId, activities)) {
+            return;
+        }
         
         Workflow.await(() -> currentStatus == OrderStatus.READY || isTrulyFinalStatus(currentStatus));
-        if (handleCancelIfNecessary(orderId, activities)) return;
+        if (handleCancelIfNecessary(orderId, activities)) {
+            return;
+        }
         
         Workflow.await(() -> currentStatus == OrderStatus.COMPLETED || isTrulyFinalStatus(currentStatus));
-        if (handleCancelIfNecessary(orderId, activities)) return;
+        if (handleCancelIfNecessary(orderId, activities)) {
+            return;
+        }
     }
     
     private boolean handleCancelIfNecessary(UUID orderId, OrderActivity activities) {
