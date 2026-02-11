@@ -302,6 +302,7 @@ public class OrderServiceImpl implements OrderService {
         OrderEntity order = OrderValidationContext.getCurrentOrder();
         order.initiateCancel(reason, null);
         orderEventProducer.reserveOrderCancelled(order.getId(), reason);
+        sendSignalToWorkflow(orderId, OrderStatus.CANCEL_PENDING);
         log.info("주문 거절 처리 시작 (환불 대기): orderId={}, reason={}", orderId, reason);
         
         return OrderResponseDto.from(order);
@@ -371,6 +372,7 @@ public class OrderServiceImpl implements OrderService {
         order.initiateCancel(reason, CancelledBy.CUSTOMER);
         // 주문 취소(거절) 이벤트 발행
         orderEventProducer.reserveOrderCancelled(order.getId(), reason);
+        sendSignalToWorkflow(orderId, OrderStatus.CANCEL_PENDING);
         log.info("고객에 의한 취소 처리 시작 (환불 대기): orderId={}, reason={}", orderId, reason);
 
         // 결제 취소 처리 (Payment 서비스 호출) - 비동기 전환으로 인한 주석처리: 추후 삭제 afterDelete
@@ -388,6 +390,7 @@ public class OrderServiceImpl implements OrderService {
         order.initiateCancel(reason, CancelledBy.STORE);
         // 주문 취소(거절) 이벤트 발행
         orderEventProducer.reserveOrderCancelled(order.getId(), reason);
+        sendSignalToWorkflow(orderId, OrderStatus.CANCEL_PENDING);
         log.info("가게에 의한 취소 처리 시작 (환불 대기): orderId={}, reason={}", orderId, reason);
 
         return OrderResponseDto.from(order);
