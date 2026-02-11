@@ -3,15 +3,13 @@ package com.example.Spot.admin.application.service;
 import java.util.List;
 import java.util.UUID;
 
-
-import com.example.Spot.global.feign.dto.StoreResponse;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
 
 import com.example.Spot.admin.presentation.dto.response.AdminStoreListResponseDto;
 import com.example.Spot.global.feign.StoreAdminClient;
 import com.example.Spot.global.feign.dto.StorePageResponse;
+import com.example.Spot.global.feign.dto.StoreResponse;
 
 
 import lombok.RequiredArgsConstructor;

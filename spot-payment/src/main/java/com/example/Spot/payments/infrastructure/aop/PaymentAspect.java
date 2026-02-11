@@ -44,22 +44,17 @@ public class PaymentAspect {
         PaymentRequestDto.Confirm request = (PaymentRequestDto.Confirm) joinPoint.getArgs()[2];
 
         validatePaymentRequest(request);
-
-        paymentRepository
-            .findActivePaymentByOrderId(request.orderId())
-            .ifPresent(existingPayment -> {
-                throw new IllegalStateException(
-                    "[PaymentService] 이미 해당 주문에 대한 결제가 진행 중이거나 완료되었습니다. paymentId: " + existingPayment.getId()
-                );
-            });
+        
+        var existingActivePayment = paymentRepository.findActivePaymentByOrderId(request.orderId());
+        if (existingActivePayment.isPresent()) {
+            log.info("[멱등성 처리] 이미 진행 중인 결제가 존재합니다. 기존 ID 반환: {}", existingActivePayment.get().getId());
+            return existingActivePayment.get().getId();
+        }
 
         try {
             Object result = joinPoint.proceed();
-            
             UUID paymentId = (UUID) result;
-
             paymentHistoryService.recordPaymentReady(paymentId);
-
             return result;
         } catch (Exception e) {
             throw e;

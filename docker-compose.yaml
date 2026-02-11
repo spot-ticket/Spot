@@ -118,6 +118,42 @@ services:
     networks:
       - spot-network
 
+  temporal:
+    container_name: temporal
+    image: temporalio/auto-setup:1.29.3
+    ports: 
+      - "7233:7233"
+    environment:
+      - DB=postgres12
+      - POSTGRES_SEEDS=db
+      - DB_PORT=5432
+      - POSTGRES_USER=admin
+      - POSTGRES_PWD=secret
+      - DBNAME=spot_temporal
+      - VISIBILITY_DBNAME=spot_visibility
+      - SKIP_SCHEMA_SETUP=false
+      - ENABLE_ES=false
+      - SKIP_DEFAULT_NAMESPACE_CREATION=false
+      - LOG_LEVEL=warn
+    depends_on:
+      - db
+    networks:
+      - spot-network
+      
+  
+  temporal-ui:
+    container_name: temporal-ui
+    image: temporalio/ui:latest
+    ports:
+      - "8233:8080"
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+      - TEMPORAL_CORS_ORIGINS=http://localhost:8233
+    depends_on:
+      - temporal
+    networks:
+      - spot-network
+      
   # --- Application Services ---
   spot-gateway:
     build:
@@ -154,11 +190,13 @@ services:
       - DB_HOST=db
       - SPRING_DATA_REDIS_HOST=redis
       - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+      - SPRING_TEMPORAL_CONNECTION_TARGET=temporal:7233
       - LOGGING_LEVEL_ROOT=WARN
     depends_on:
       - db
       - redis
       - kafka
+      - temporal
     networks:
       - spot-network
     env_file:

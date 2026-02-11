@@ -153,6 +153,8 @@ public class TossPaymentClient implements PaymentGateway {
   private HttpHeaders createHeaders() {
     HttpHeaders headers = new HttpHeaders();
     headers.setContentType(MediaType.APPLICATION_JSON);
+//    String testKey = secretKey + "_INVALID";
+//    headers.setBasicAuth(testKey, "");
     headers.setBasicAuth(secretKey, "");
     return headers;
   }

@@ -1,6 +1,20 @@
 server:
   port: 8084
 
+spring:
+  application:
+    name: spot-payment
+  temporal:
+    workers-auto-discovery:
+      packages:
+        - "com.example.Spot"
+    workers:
+      - task-queue: PAYMENT_TASK_QUEUE
+        name: payment-worker
+    threads:
+      virtual:
+        enabled: true
+        
 feign:
   user:
     url: ${FEIGN_USER_URL:http://spot-user:8081}
@@ -82,7 +96,11 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,prometheus
+        include:
+          - health
+          - info
+          - metrics
+          - prometheus
 
   endpoint:
     health:

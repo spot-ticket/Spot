@@ -8,6 +8,7 @@ import com.example.Spot.payments.application.service.command.BillingAuthService;
 import com.example.Spot.payments.application.service.command.PaymentApprovalService;
 import com.example.Spot.payments.application.service.command.PaymentCancellationService;
 import com.example.Spot.payments.application.service.query.PaymentQueryService;
+import com.example.Spot.payments.domain.repository.PaymentRepository;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.example.Spot.payments.presentation.dto.response.PaymentResponseDto;
 
@@ -22,7 +23,7 @@ public class PaymentService {
     private final PaymentApprovalService paymentApprovalService;
     private final PaymentCancellationService paymentCancellationService;
     private final BillingAuthService billingAuthService;
-
+    private final PaymentRepository paymentRepository;
     private final PaymentQueryService paymentQueryService;
 
     // ******* //
@@ -94,5 +95,9 @@ public class PaymentService {
 
     public void validatePaymentStoreOwnership(UUID paymentId, Integer userId) {
         paymentQueryService.validatePaymentStoreOwnership(paymentId, userId);
+    }
+    
+    public boolean isAlreadyProcessed(UUID orderId) {
+        return paymentRepository.findActivePaymentByOrderId(orderId).isPresent();
     }
 }

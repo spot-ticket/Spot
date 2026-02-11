@@ -6,9 +6,6 @@ import java.util.Map;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
-import com.example.Spot.order.domain.entity.OrderEntity;
-import com.example.Spot.order.domain.entity.OrderItemEntity;
-import com.example.Spot.order.domain.repository.OrderItemRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,8 +14,10 @@ import org.springframework.stereotype.Service;
 
 import com.example.Spot.global.feign.dto.OrderResponse;
 import com.example.Spot.global.feign.dto.OrderStatsResponse;
+import com.example.Spot.order.domain.entity.OrderEntity;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.domain.repository.OrderItemOptionRepository;
+import com.example.Spot.order.domain.repository.OrderItemRepository;
 import com.example.Spot.order.domain.repository.OrderRepository;
 
 

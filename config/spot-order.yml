@@ -1,6 +1,20 @@
 server:
   port: 8082
 
+spring:
+  application:
+    name: spot-order
+  temporal:
+    workers-auto-discovery:
+      packages:
+        - "com.example.Spot"
+    workers:
+      - task-queue: ORDER_TASK_QUEUE
+        name: order-worker
+    threads:
+      virtual:
+        enabled: true
+        
 feign:
   user:
     url: ${FEIGN_USER_URL:http://spot-user:8081}
@@ -14,6 +28,8 @@ feign:
         connectTimeout: 100
         readTimeout: 500
         loggerLevel: BASIC
+        
+
 
 resilience4j:
   timelimiter:
@@ -61,7 +77,15 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,beans,mappings,env,configprops
+        include:
+          - health
+          - info
+          - metrics
+          - beans
+          - mappings
+          - env
+          - configprops
+          - prometheus
 
   endpoint:
     health:
