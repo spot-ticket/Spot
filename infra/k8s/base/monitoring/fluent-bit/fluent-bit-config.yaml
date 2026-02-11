@@ -81,8 +81,9 @@ data:
 
 
     [OUTPUT]
-        Name   stdout
-        Match  kube.*
+        Name          stdout
+        Match         kube.*
+        Format        json_lines
 
 
   parsers.conf: |-

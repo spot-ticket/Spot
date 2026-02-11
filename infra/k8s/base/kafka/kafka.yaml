@@ -28,7 +28,8 @@ spec:
       enableServiceLinks: false
       containers:
         - name: kafka
-          image: confluentinc/cp-kafka:7.5.0
+          image: apache/kafka:4.0.0
+          imagePullPolicy: IfNotPresent
           ports:
             - containerPort: 9092
             - containerPort: 29092
