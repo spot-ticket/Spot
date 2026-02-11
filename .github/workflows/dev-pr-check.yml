@@ -9,6 +9,7 @@ on:
       - '.github/actions/**'
       - '.github/workflows/dev-pr-check.yml'
       - '.github/workflows/_common-dev-pr-check.yml'
+      - 'pretty-logs.sh'
 
 jobs:
   detect-changes:
