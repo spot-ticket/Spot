@@ -12,9 +12,9 @@ import com.example.Spot.payments.application.service.PaymentService;
 import com.example.Spot.payments.domain.entity.PaymentEntity;
 import com.example.Spot.payments.infrastructure.event.subscribe.OrderCancelledEvent;
 import com.example.Spot.payments.infrastructure.event.subscribe.OrderCreatedEvent;
-import com.example.Spot.payments.infrastructure.producer.PaymentEventProducer;
 import com.example.Spot.payments.infrastructure.temporal.config.PaymentConstants;
-import com.example.Spot.payments.infrastructure.temporal.workflow.PaymentWorkflow;
+import com.example.Spot.payments.infrastructure.temporal.workflow.PaymentApproveWorkflow;
+import com.example.Spot.payments.infrastructure.temporal.workflow.PaymentCancelWorkflow;
 import com.example.Spot.payments.presentation.dto.request.PaymentRequestDto;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -30,7 +30,6 @@ public class PaymentListener {
 
     private final PaymentService paymentService;
     private final ObjectMapper objectMapper;
-    private final PaymentEventProducer paymentEventProducer;
     private final WorkflowClient workflowClient;
 
     @KafkaListener(topics = "${spring.kafka.topic.order.created}", groupId = "${spring.kafka.consumer.group.payment}")
@@ -60,8 +59,8 @@ public class PaymentListener {
                     .build();
 
             try {
-                PaymentWorkflow workflow = workflowClient.newWorkflowStub(PaymentWorkflow.class, options);
-                WorkflowClient.start(workflow::processPayment, paymentId);
+                PaymentApproveWorkflow workflow = workflowClient.newWorkflowStub(PaymentApproveWorkflow.class, options);
+                WorkflowClient.start(workflow::processApprove, paymentId);
                 log.info("[결제] 새 워크플로우 시작: orderId={}, paymentId={}", event.getOrderId(), paymentId);
             } catch (WorkflowExecutionAlreadyStarted e) {
                 log.info("[결제] 이미 진행 중인 워크플로우입니다. 스킵: orderId={}", event.getOrderId());
@@ -79,22 +78,27 @@ public class PaymentListener {
     @KafkaListener(topics = "${spring.kafka.topic.order.cancelled}", groupId = "${spring.kafka.consumer.group.payment}")
     public void handleOrderCancelled(String message, Acknowledgment ack) {
         try {
-            // 1. 이벤트 파싱
             OrderCancelledEvent event = objectMapper.readValue(message, OrderCancelledEvent.class);
             log.info("[결제] 주문 취소/거절 이벤트 수신: orderId={}, reason={}", event.getOrderId(), event.getReason());
             
-            // 2. 환불 서비스 호출
-            boolean isRefunded = paymentService.refundByOrderId(event.getOrderId());
+            WorkflowOptions options = WorkflowOptions.newBuilder()
+                    .setWorkflowId("cancel-wf-" + event.getOrderId())
+                    .setTaskQueue(PaymentConstants.PAYMENT_TASK_QUEUE)
+                    .setWorkflowIdReusePolicy(WorkflowIdReusePolicy.WORKFLOW_ID_REUSE_POLICY_REJECT_DUPLICATE)
+                    .build();
             
-            if (isRefunded) {
-                // 환불 성공 시 주문 서비스에게 이벤트 발행
-                paymentEventProducer.reservePaymentRefundedEvent(event.getOrderId());
-            } 
+            try {
+                PaymentCancelWorkflow workflow = workflowClient.newWorkflowStub(PaymentCancelWorkflow.class, options);
+                WorkflowClient.start(workflow::processCancel, event.getOrderId(), event.getReason());
+                log.info("[결제] 취소 워크플로우 시작: orderId={}", event.getOrderId());
+            } catch (WorkflowExecutionAlreadyStarted e) {
+                log.info("[결제] 이미 진행 중인 취소 워크플로우입니다: orderId={}", event.getOrderId());
+            }
+            
             ack.acknowledge();
-            log.info("[결제] 환불 및 보상 트랜잭션 완료: orderId={}", event.getOrderId());
 
         } catch (Exception e) {
-            log.error("[결제] 환불 처리 실패: {}", e.getMessage());
+            log.error("[결제] 취소 이벤트 처리 실패: {}", e.getMessage());
         }
     }
 }

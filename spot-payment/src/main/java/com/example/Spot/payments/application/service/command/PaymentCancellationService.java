@@ -36,7 +36,7 @@ public class PaymentCancellationService {
     private final PaymentKeyRepository paymentKeyRepository;
 
     @Transactional
-    public boolean refundByOrderId(UUID orderId) {
+    public boolean refundByOrderId(UUID orderId, String reason) {
         Optional<PaymentEntity> paymentOpt = paymentRepository.findActivePaymentByOrderId(orderId);
         
         if (paymentOpt.isEmpty()) {
@@ -47,7 +47,7 @@ public class PaymentCancellationService {
 
         PaymentRequestDto.Cancel cancelRequest = PaymentRequestDto.Cancel.builder()
                 .paymentId(payment.getId())
-                .cancelReason("보상 트랜잭션 수행")
+                .cancelReason(reason)
                 .build();
 
         executeCancel(cancelRequest);

@@ -1,0 +1,11 @@
+package com.example.Spot.payments.infrastructure.temporal.workflow;
+
+import io.temporal.workflow.WorkflowInterface;
+import io.temporal.workflow.WorkflowMethod;
+import java.util.UUID;
+
+@WorkflowInterface
+public interface PaymentApproveWorkflow {
+    @WorkflowMethod
+    void processApprove(UUID paymentId);
+}

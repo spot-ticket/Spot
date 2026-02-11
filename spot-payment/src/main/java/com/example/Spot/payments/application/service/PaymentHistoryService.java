@@ -49,6 +49,11 @@ public class PaymentHistoryService {
     }
 
     @Transactional
+    public void recordCancelFailure(UUID paymentId) {
+        createPaymentHistory(paymentId, PaymentHistoryEntity.PaymentStatus.CANCEL_FAILED);
+    }
+
+    @Transactional
     public void recordPaymentProgress(UUID paymentId) {
         PaymentHistoryEntity latestItem =
             paymentHistoryRepository
