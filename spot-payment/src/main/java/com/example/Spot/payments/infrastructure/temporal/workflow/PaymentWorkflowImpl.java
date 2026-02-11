@@ -39,19 +39,20 @@ public class PaymentWorkflowImpl implements PaymentWorkflow {
         Saga saga = new Saga(new Saga.Options.Builder().setContinueWithError(false).build());
         
         try {
+            saga.addCompensation(activities::recordStatus, paymentId, "ABORTED");
             activities.recordStatus(paymentId, "IN_PROGRESS");
-            activities.executePayment(paymentId);
             saga.addCompensation(activities::refundByPaymentId, paymentId);
+
+            activities.executePayment(paymentId);
             activities.publishSucceeded(paymentId);
             
         } catch (Exception e) {
-            log.error("[PaymentWorkflow] 최종 실패. ID: {}", paymentId);
+            log.error("[결제워크플로우] 결제 프로세스 중 에러 발생. ID: {}, 사유: {}", paymentId, e.getMessage());
             try {
                 saga.compensate();
             } catch (Exception ce) {
-                log.error("[Critical] 보상 트랜잭션 실패", ce);
+                log.error("[결제사가패턴] 보상 트랜잭션 실행 중 치명적 실패!", ce);            
             }
-            activities.recordStatus(paymentId, "ABORTED");
             activities.publishAuthRequired(paymentId, e.getMessage());
             throw e;
         }
