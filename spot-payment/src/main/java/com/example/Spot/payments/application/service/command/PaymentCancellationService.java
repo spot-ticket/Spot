@@ -8,7 +8,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.Spot.global.presentation.advice.ResourceNotFoundException;
-import com.example.Spot.payments.application.service.PaymentHistoryService;
 import com.example.Spot.payments.domain.entity.PaymentEntity;
 import com.example.Spot.payments.domain.entity.PaymentKeyEntity;
 import com.example.Spot.payments.domain.gateway.PaymentGateway;
@@ -28,7 +27,6 @@ import lombok.extern.slf4j.Slf4j;
 public class PaymentCancellationService {
 
     private final PaymentGateway paymentGateway;
-    private final PaymentHistoryService paymentHistoryService;
 
     @Value("${toss.payments.timeout}")
     private Integer timeout;
@@ -60,12 +58,8 @@ public class PaymentCancellationService {
                 .findByPaymentId(request.paymentId())
                 .orElseThrow(() -> new IllegalStateException(
                         "[PaymentCancellationService] 결제 키가 없어 취소할 수 없습니다."));
-
-        paymentHistoryService.recordCancelProgress(request.paymentId());
-
+        
         tossPaymentCancel(request.paymentId(), paymentKeyEntity.getPaymentKey(), request.cancelReason());
-
-        paymentHistoryService.recordCancelSuccess(request.paymentId());
 
         return PaymentResponseDto.Cancel.builder()
                 .paymentId(request.paymentId())
