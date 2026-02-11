@@ -3,6 +3,7 @@ package com.example.Spot.payments.application.service;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -14,6 +15,7 @@ import com.example.Spot.payments.domain.repository.PaymentKeyRepository;
 
 import lombok.RequiredArgsConstructor;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class PaymentHistoryService {
@@ -54,16 +56,18 @@ public class PaymentHistoryService {
                 .orElseThrow(() -> new ResourceNotFoundException("[PaymentService] 결제 이력을 찾을 수 없습니다."));
 
         if (latestItem.getStatus() != PaymentHistoryEntity.PaymentStatus.READY) {
-            throw new IllegalStateException("[PaymentService] 이미 처리된 결제입니다");
+            log.info("[멱등성 패스] 이미 처리 중이거나 완료된 결제입니다. 현재 상태: {}, paymentId: {}",
+                    latestItem.getStatus(), paymentId);
+            return;
+            
         }
 
         createPaymentHistory(paymentId, PaymentHistoryEntity.PaymentStatus.IN_PROGRESS);
     }
 
     @Transactional
-    public void recordFailure(UUID paymentId, Exception e) {
-        PaymentHistoryEntity paymentHistory =
-            createPaymentHistory(paymentId, PaymentHistoryEntity.PaymentStatus.ABORTED);
+    public void recordFailure(UUID paymentId) {
+        createPaymentHistory(paymentId, PaymentHistoryEntity.PaymentStatus.ABORTED);
     }
 
     @Transactional

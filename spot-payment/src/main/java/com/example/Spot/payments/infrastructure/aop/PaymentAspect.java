@@ -75,7 +75,7 @@ public class PaymentAspect {
             return result;
 
         } catch (Exception e) {
-            paymentHistoryService.recordFailure(paymentId, e);
+            paymentHistoryService.recordFailure(paymentId);
             throw e;
         }
     }
@@ -103,7 +103,7 @@ public class PaymentAspect {
             return result;
 
         } catch (Exception e) {
-            paymentHistoryService.recordFailure(request.paymentId(), e);
+            paymentHistoryService.recordFailure(request.paymentId());
             throw e;
         }
     }

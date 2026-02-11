@@ -54,21 +54,20 @@ public class PaymentApprovalService {
 
     @Ready
     public UUID ready(Integer userId, UUID orderId, PaymentRequestDto.Confirm request) {
-        PaymentEntity payment = createPayment(userId, orderId, request);
-        return payment.getId();
-    }
+        return paymentRepository.findByOrderId(orderId)
+                .map(PaymentEntity::getId)
+                .orElseGet(() -> {
+                    PaymentEntity payment = PaymentEntity.builder()
+                            .userId(userId)
+                            .orderId(orderId)
+                            .title(request.title())
+                            .content(request.content())
+                            .paymentMethod(request.paymentMethod())
+                            .totalAmount(request.paymentAmount())
+                            .build();
 
-    private PaymentEntity createPayment(Integer userId, UUID orderId, PaymentRequestDto.Confirm request) {
-        PaymentEntity payment = PaymentEntity.builder()
-                .userId(userId)
-                .orderId(orderId)
-                .title(request.title())
-                .content(request.content())
-                .paymentMethod(request.paymentMethod())
-                .totalAmount(request.paymentAmount())
-                .build();
-
-        return paymentRepository.save(payment);
+                    return paymentRepository.save(payment).getId();
+                });
     }
 
     @PaymentBillingApproveTrace

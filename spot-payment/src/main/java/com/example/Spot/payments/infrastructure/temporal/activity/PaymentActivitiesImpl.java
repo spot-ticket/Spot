@@ -38,7 +38,7 @@ public class PaymentActivitiesImpl implements PaymentActivities {
             if ("IN_PROGRESS".equals(status)) {
                 paymentHistoryService.recordPaymentProgress(paymentId);
             } else if ("ABORTED".equals(status)) {
-                paymentHistoryService.recordFailure(paymentId, new RuntimeException("Workflow terminated/failed"));
+                paymentHistoryService.recordFailure(paymentId);
             }
         } catch (Exception e) {
             log.info("[Activity] 상태 기록 중 알림: {}", e.getMessage());
