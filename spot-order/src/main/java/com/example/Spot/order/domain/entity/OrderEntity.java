@@ -1,5 +1,6 @@
 package com.example.Spot.order.domain.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,8 +39,6 @@ public class OrderEntity extends BaseEntity {
     // orderItems는 unique key에 포함할 수 없음.
 
     @Id
-    @GeneratedValue
-    @UuidGenerator
     @Column(columnDefinition = "UUID")
     private UUID id;
 
@@ -103,8 +102,9 @@ public class OrderEntity extends BaseEntity {
     private List<OrderItemEntity> orderItems = new ArrayList<>();
 
     @Builder
-    public OrderEntity(UUID storeId, Integer userId, String orderNumber,
-                       String request, boolean needDisposables, LocalDateTime pickupTime) {
+    public OrderEntity(UUID id, UUID storeId, Integer userId, String orderNumber,
+                       String request, boolean needDisposables, LocalDateTime pickupTime,
+                       OrderStatus orderStatus) {
         if (storeId == null) {
             throw new IllegalArgumentException("가게 ID는 필수입니다.");
         }
@@ -117,15 +117,15 @@ public class OrderEntity extends BaseEntity {
         if (pickupTime == null) {
             throw new IllegalArgumentException("픽업 시간은 필수입니다.");
         }
-
+        
+        this.id = id;
         this.storeId = storeId;
         this.userId = userId;
         this.orderNumber = orderNumber;
         this.request = request;
         this.needDisposables = needDisposables;
         this.pickupTime = pickupTime;
-
-        this.orderStatus = OrderStatus.PAYMENT_PENDING;
+        this.orderStatus = orderStatus != null ? orderStatus : OrderStatus.PAYMENT_PENDING;
     }
 
     public void addOrderItem(OrderItemEntity orderItem) {
@@ -184,6 +184,12 @@ public class OrderEntity extends BaseEntity {
         this.cancelledAt = LocalDateTime.now();
         this.reason = reason;
         this.cancelledBy = cancelledBy;
+    }
+
+    public BigDecimal getTotalAmount() {
+        return orderItems.stream()
+                .map(OrderItemEntity::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
     }
 
     public void startCooking() {

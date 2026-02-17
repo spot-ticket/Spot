@@ -1,5 +1,6 @@
 package com.example.Spot.order.presentation.dto.response;
 
+import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -111,6 +112,20 @@ public class OrderResponseDto {
                 .createdAt(dto.getCreatedAt())
                 .orderItems(dto.getOrderItems())
                 .totalAmount(dto.getTotalAmount())
+                .build();
+    }
+    public static OrderResponseDto of(UUID orderId, Integer userId, OrderCreateRequestDto request, OrderContextDto context, BigDecimal totalAmount) {
+        return OrderResponseDto.builder()
+                .id(orderId)
+                .userId(userId)
+                .storeId(request.getStoreId())
+                .storeName(context.getStore().getName())
+                .orderStatus(OrderStatus.PAYMENT_PENDING) // 시작 상태
+                .pickupTime(request.getPickupTime())
+                .needDisposables(request.getNeedDisposables())
+                .request(request.getRequest())
+                .totalAmount(totalAmount)
+                .createdAt(LocalDateTime.now())
                 .build();
     }
 }

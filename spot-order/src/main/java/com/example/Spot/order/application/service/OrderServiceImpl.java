@@ -1,8 +1,12 @@
 package com.example.Spot.order.application.service;
 
+import com.example.Spot.global.feign.MenuClient;
+import com.example.Spot.order.presentation.dto.response.OrderContextDto;
+import java.awt.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -66,6 +70,7 @@ public class OrderServiceImpl implements OrderService {
     private final StoreClient storeClient;
     private final OrderEventProducer orderEventProducer;
     private final WorkflowClient workflowClient;
+    private final MenuClient menuClient;
 
     // ******* //
     // 주문 조회 //
@@ -211,70 +216,22 @@ public class OrderServiceImpl implements OrderService {
     @Transactional
     @ValidateStoreAndMenu
     public OrderResponseDto createOrder(OrderCreateRequestDto requestDto, Integer userId) {
-
-        StoreResponse store = OrderValidationContext.getStoreResponse();
-
-        checkDuplicateOrder(userId, store.getId(), requestDto);
-
-        String orderNumber = generateOrderNumber();
-        OrderEntity order = OrderEntity.builder()
-                .storeId(store.getId())
-                .userId(userId)
-                .orderNumber(orderNumber)
-                .pickupTime(requestDto.getPickupTime())
-                .needDisposables(requestDto.getNeedDisposables())
-                .request(requestDto.getRequest())
-                .build();
-
-        for (OrderItemRequestDto itemDto : requestDto.getOrderItems()) {
-            MenuResponse menu = OrderValidationContext.getMenuResponse(itemDto.getMenuId());
-
-            OrderItemEntity orderItem = OrderItemEntity.builder()
-                    .menuId(menu.getId())
-                    .menuName(menu.getName())
-                    .menuPrice(BigDecimal.valueOf(menu.getPrice()))
-                    .quantity(itemDto.getQuantity())
-                    .build();
-
-            for (OrderItemOptionRequestDto optionDto : itemDto.getOptions()) {
-                MenuOptionResponse menuOption = OrderValidationContext.getMenuOptionResponse(optionDto.getMenuOptionId());
-
-                OrderItemOptionEntity orderItemOption = OrderItemOptionEntity.builder()
-                        .menuOptionId(menuOption.getId())
-                        .optionName(menuOption.getName())
-                        .optionDetail(menuOption.getDetail())
-                        .optionPrice(BigDecimal.valueOf(menuOption.getPrice()))
-                        .build();
-
-                orderItem.addOrderItemOption(orderItemOption);
-            }
-
-            order.addOrderItem(orderItem);
-        }
-
-        OrderEntity savedOrder = orderRepository.save(order);
-        OrderResponseDto responseDto = OrderResponseDto.from(savedOrder);
-
-        orderEventProducer.reserveOrderCreated(
-                savedOrder.getId(),
-                userId,
-                responseDto.getTotalAmount().longValue()
-        );
-
+        
+        OrderContextDto contextDto = fetchOrderContext(requestDto);
+        checkDuplicateOrder(userId, contextDto.getStore().getId(), requestDto);
+        UUID orderId = UUID.randomUUID();
+        BigDecimal totalAmount = contextDto.calculateTotalAmount(requestDto);
+        
         OrderWorkflow workflow = workflowClient.newWorkflowStub(OrderWorkflow.class,
                 WorkflowOptions.newBuilder()
-                        .setWorkflowId(savedOrder.getId().toString())
+                        .setWorkflowId(orderId.toString())
                         .setTaskQueue(OrderConstants.ORDER_TASK_QUEUE)
                         .build());
 
-        TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
-            @Override
-            public void afterCommit() {
-                WorkflowClient.start(workflow::processOrder, savedOrder.getId());
-            }
-        });
         
-        return responseDto;
+        WorkflowClient.start(workflow::processOrder, orderId, userId, requestDto, contextDto);
+        
+        return OrderResponseDto.of(orderId, userId, requestDto, contextDto, totalAmount);
     }
 
 
@@ -498,23 +455,7 @@ public class OrderServiceImpl implements OrderService {
             }
         }
     }
-
-    private String generateOrderNumber() {
-        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
-        String datePattern = "ORDER-" + date + "-%";
-
-        Optional<String> lastOrderNumber = orderRepository.findTopOrderNumberByDatePattern(datePattern);
-
-        int sequence = 1;
-        if (lastOrderNumber.isPresent()) {
-            String lastNumber = lastOrderNumber.get();
-            String lastSeq = lastNumber.substring(lastNumber.lastIndexOf('-') + 1);
-            sequence = Integer.parseInt(lastSeq) + 1;
-        }
-
-        return String.format("ORDER-%s-%04d", date, sequence);
-    }
-
+    
     private LocalDateTime[] getDateRange(LocalDateTime date) {
         LocalDateTime startOfDay = date.toLocalDate().atStartOfDay();
         LocalDateTime endOfDay = date.toLocalDate().atTime(23, 59, 59);
@@ -568,5 +509,34 @@ public class OrderServiceImpl implements OrderService {
                 }
             }
         });
+    }
+    
+    private OrderContextDto fetchOrderContext(OrderCreateRequestDto requestDto) {
+        StoreResponse store = storeClient.getStoreById(requestDto.getStoreId());
+        if (store == null) throw new IllegalArgumentException("존재하지 않는 가게입니다.");
+        
+        Map<UUID, MenuResponse> menuMap = new HashMap<>();
+        Map<UUID, MenuOptionResponse> optionMap = new HashMap<>();
+        
+        for (OrderItemRequestDto itemDto : requestDto.getOrderItems()) {
+            MenuResponse menu = menuClient.getMenuById(itemDto.getMenuId());
+            if (menu == null || menu.isHidden() || menu.isDeleted()) {
+                throw new IllegalArgumentException("판매 불가 메뉴입니다: " + itemDto.getMenuId());
+            }
+            menuMap.put(itemDto.getMenuId(), menu);
+
+            for (OrderItemOptionRequestDto optionDto : itemDto.getOptions()) {
+                MenuOptionResponse option = menuClient.getMenuOptionById(optionDto.getMenuOptionId());
+                if (option == null || option.isDeleted()) {
+                    throw new IllegalArgumentException("판매 불가 옵션입니다.");
+                }
+                optionMap.put(optionDto.getMenuOptionId(), option);
+            }
+        }
+            return OrderContextDto.builder()
+                    .store(store)
+                    .menuMap(menuMap)
+                    .optionMap(optionMap)
+                    .build();
     }
 }

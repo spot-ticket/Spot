@@ -1,5 +1,7 @@
 package com.example.Spot.order.infrastructure.temporal.workflow;
 
+import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
+import com.example.Spot.order.presentation.dto.response.OrderContextDto;
 import java.time.Duration;
 import java.util.UUID;
 
@@ -27,8 +29,10 @@ public class OrderWorkflowImpl implements OrderWorkflow {
     private boolean isRefundCompleted = false;
     
     @Override
-    public void processOrder(UUID orderId) {
+    public void processOrder(UUID orderId, Integer userId, OrderCreateRequestDto requestDto, OrderContextDto contextDto) {
         OrderActivity activities = Workflow.newActivityStub(OrderActivity.class, ACTIVITY_OPTIONS);
+        
+        activities.createOrderInDb(orderId, userId, requestDto, contextDto);
         
         boolean paidWithinTime = Workflow.await(Duration.ofMinutes(5),
                 () -> currentStatus == OrderStatus.PENDING || currentStatus.isFinalStatus());

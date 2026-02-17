@@ -1,5 +1,7 @@
 package com.example.Spot.global.feign.dto;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import java.util.UUID;
 
 import lombok.AllArgsConstructor;
@@ -11,6 +13,7 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class MenuOptionResponse {
 
     private UUID id;
@@ -18,5 +21,6 @@ public class MenuOptionResponse {
     private String name;
     private String detail;
     private Integer price;
+    @JsonProperty("isDeleted")
     private boolean isDeleted;
 }

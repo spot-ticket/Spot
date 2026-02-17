@@ -1,7 +1,22 @@
 package com.example.Spot.order.infrastructure.temporal.activity;
 
+import com.example.Spot.global.feign.dto.MenuOptionResponse;
+import com.example.Spot.global.feign.dto.MenuResponse;
+import com.example.Spot.global.feign.dto.StoreResponse;
+import com.example.Spot.order.domain.entity.OrderItemEntity;
+import com.example.Spot.order.domain.entity.OrderItemOptionEntity;
+import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
+import com.example.Spot.order.presentation.dto.request.OrderItemOptionRequestDto;
+import com.example.Spot.order.presentation.dto.request.OrderItemRequestDto;
+import com.example.Spot.order.presentation.dto.response.OrderContextDto;
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Optional;
 import java.util.UUID;
 
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -25,6 +40,72 @@ public class OrderActivityImpl implements OrderActivity {
     private final OrderRepository orderRepository;
     private final OrderEventProducer orderEventProducer;
 
+    @Override
+    public void createOrderInDb(UUID orderId, Integer userId, OrderCreateRequestDto requestDto, OrderContextDto contextDto) {
+        if (orderRepository.existsById(orderId)) {
+            return;
+        }
+
+        String orderNumber = generateOrderNumber();
+        BigDecimal totalAmount = BigDecimal.ZERO;
+
+        OrderEntity order = OrderEntity.builder()
+                .id(orderId)
+                .storeId(contextDto.getStore().getId())
+                .userId(userId)
+                .orderNumber(orderNumber)
+                .pickupTime(requestDto.getPickupTime())
+                .needDisposables(requestDto.getNeedDisposables())
+                .request(requestDto.getRequest())
+                .orderStatus(OrderStatus.PAYMENT_PENDING)
+                .build();
+
+        for (OrderItemRequestDto itemDto : requestDto.getOrderItems()) {
+            MenuResponse menu = contextDto.getMenuMap().get(itemDto.getMenuId());
+            BigDecimal itemPrice = BigDecimal.valueOf(menu.getPrice());
+
+            // 총액 합산 로직
+            totalAmount = totalAmount.add(itemPrice.multiply(BigDecimal.valueOf(itemDto.getQuantity())));
+
+            OrderItemEntity orderItem = OrderItemEntity.builder()
+                    .menuId(menu.getId())
+                    .menuName(menu.getName())
+                    .menuPrice(itemPrice)
+                    .quantity(itemDto.getQuantity())
+                    .build();
+
+            for (OrderItemOptionRequestDto optionDto : itemDto.getOptions()) {
+                MenuOptionResponse menuOption = contextDto.getOptionMap().get(optionDto.getMenuOptionId());
+                BigDecimal optionPrice = BigDecimal.valueOf(menuOption.getPrice());
+
+                // 옵션 총액 합산
+                totalAmount = totalAmount.add(optionPrice);
+
+                OrderItemOptionEntity orderItemOption = OrderItemOptionEntity.builder()
+                        .menuOptionId(menuOption.getId())
+                        .optionName(menuOption.getName())
+                        .optionDetail(menuOption.getDetail())
+                        .optionPrice(optionPrice)
+                        .build();
+
+                orderItem.addOrderItemOption(orderItemOption);
+            }
+            order.addOrderItem(orderItem);
+        }
+
+        orderRepository.save(order);
+
+        orderEventProducer.reserveOrderCreated(
+                orderId,
+                userId,
+                totalAmount.longValue()
+        );
+
+        log.info("주문 생성이 완료되었습니다. OrderID: {}, OrderNumber: {}", orderId, orderNumber);
+    }
+    
+    
+        
     @Override
     @Transactional
     public OrderStatus getOrderStatus(UUID orderId) {
@@ -74,5 +155,20 @@ public class OrderActivityImpl implements OrderActivity {
                 orderId, order.getOrderStatus());
         orderRepository.save(order);
     }
-    
+
+    private String generateOrderNumber() {
+        String date = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"));
+        String datePattern = "ORDER-" + date + "-%";
+
+        Optional<String> lastOrderNumber = orderRepository.findTopOrderNumberByDatePattern(datePattern);
+
+        int sequence = 1;
+        if (lastOrderNumber.isPresent()) {
+            String lastNumber = lastOrderNumber.get();
+            String lastSeq = lastNumber.substring(lastNumber.lastIndexOf('-') + 1);
+            sequence = Integer.parseInt(lastSeq) + 1;
+        }
+
+        return String.format("ORDER-%s-%04d", date, sequence);
+    }
 }
