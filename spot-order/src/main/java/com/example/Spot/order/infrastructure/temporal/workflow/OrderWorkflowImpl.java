@@ -45,9 +45,12 @@ public class OrderWorkflowImpl implements OrderWorkflow {
             }
             return;
         }
-
-        Workflow.await(Duration.ofMinutes(10), () -> currentStatus == OrderStatus.ACCEPTED || isTrulyFinalStatus(currentStatus));
-        if (handleCancelIfNecessary(orderId, activities)) {
+        
+        boolean acceptedWithinTime = Workflow.await(Duration.ofMinutes(10),
+                () -> currentStatus == OrderStatus.ACCEPTED || isTrulyFinalStatus(currentStatus));
+        if (!acceptedWithinTime && currentStatus == OrderStatus.PENDING) {
+            activities.cancelOrder(orderId, "점주 미수락으로 인한 자동 취소 . 환불");
+            waitForRefundAndFinalize(orderId, activities);
             return;
         }
         
