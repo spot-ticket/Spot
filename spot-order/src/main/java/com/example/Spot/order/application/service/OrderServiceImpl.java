@@ -2,10 +2,12 @@ package com.example.Spot.order.application.service;
 
 import com.example.Spot.global.feign.MenuClient;
 import com.example.Spot.order.domain.enums.CancelledBy;
+import com.example.Spot.order.domain.exception.InvalidOrderStatusTransitionException;
 import com.example.Spot.order.infrastructure.temporal.dto.OrderStatusUpdate;
 import com.example.Spot.order.infrastructure.temporal.workflow.OrderWorkflowImpl;
 import com.example.Spot.order.presentation.dto.response.OrderContextDto;
 import io.temporal.client.WorkflowNotFoundException;
+import jakarta.persistence.EntityNotFoundException;
 import java.awt.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -227,7 +229,6 @@ public class OrderServiceImpl implements OrderService {
         return OrderResponseDto.of(orderId, userId, requestDto, contextDto, totalAmount);
     }
 
-
     // *********** //
     // 주문 상태 변경 //
     // *********** //
@@ -239,10 +240,17 @@ public class OrderServiceImpl implements OrderService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public OrderResponseDto rejectOrder(UUID orderId, String reason) {
+        OrderEntity order = orderRepository.findById(orderId)
+                .orElseThrow(() -> new EntityNotFoundException("주문을 찾을 수 없습니다."));
+        if (order.getOrderStatus() != OrderStatus.PENDING) {
+            throw new InvalidOrderStatusTransitionException(order.getOrderStatus(), OrderStatus.REJECT_PENDING);
+        }
+        
         OrderWorkflow workflow = workflowClient.newWorkflowStub(OrderWorkflow.class, orderId.toString());
-        workflow.signalStatusChanged(new OrderStatusUpdate(OrderStatus.CANCEL_PENDING, null, reason, null));
-        return OrderResponseDto.fromId(orderId, OrderStatus.CANCEL_PENDING);
+        workflow.signalStatusChanged(new OrderStatusUpdate(OrderStatus.REJECT_PENDING, null, reason, null));
+        return OrderResponseDto.fromId(orderId, OrderStatus.REJECT_PENDING);
     }
 
     @Override

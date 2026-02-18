@@ -116,16 +116,6 @@ public class OrderActivityImpl implements OrderActivity {
             return;
         }
 
-        if (nextStatus == OrderStatus.CANCEL_PENDING) {
-            if (actor == null && order.getOrderStatus() != OrderStatus.PENDING) {
-                log.warn("이미 수락/조리 중인 주문은 '거절'할 수 없습니다. 상태: {}", order.getOrderStatus());
-                return;
-            }
-            
-            order.initiateCancel(reason, actor);
-            orderEventProducer.reserveOrderCancelled(order.getId(), reason);
-        }
-
         switch (nextStatus) {
             case PENDING -> {
                 order.completePayment();
@@ -138,10 +128,15 @@ public class OrderActivityImpl implements OrderActivity {
             case COOKING -> order.startCooking();
             case READY -> order.readyForPickup();
             case COMPLETED -> order.completeOrder();
-            case CANCEL_PENDING -> {
-                log.info("CANCEL_PENDING 처리 완료 (주체: {})", actor);
+            case REJECT_PENDING -> {
+                order.initiateReject(reason); 
+                orderEventProducer.reserveOrderCancelled(order.getId(), reason); // 환불 프로세스 시작
             }
-            default -> log.info("기타 상태 변경: {}", nextStatus);
+            case CANCEL_PENDING -> {
+                order.initiateCancel(reason, actor); 
+                orderEventProducer.reserveOrderCancelled(order.getId(), reason); // 환불 프로세스 시작
+            }
+            default -> log.info("상태 변경: {}", nextStatus);
         }
         
         log.info("Activity: 주문 상태 변경 완료 - orderId={}, changedStatus={}", orderId, order.getOrderStatus());
@@ -182,7 +177,13 @@ public class OrderActivityImpl implements OrderActivity {
         OrderEntity order = orderRepository.findByIdWithLock(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("주문 없음: " + orderId));
         
-        order.finalizeCancel();
+        if (order.getOrderStatus() == OrderStatus.REJECT_PENDING) {
+            order.finalizeReject();
+            log.info("주문 거절 확정 완료: {}", orderId);
+        } else if (order.getOrderStatus() == OrderStatus.CANCEL_PENDING) {
+            order.finalizeCancel();
+            log.info("주문 취소 확정 완료: {}", orderId);
+        }
     }
     
     @Override

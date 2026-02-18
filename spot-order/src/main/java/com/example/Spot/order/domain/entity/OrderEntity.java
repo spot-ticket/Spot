@@ -209,6 +209,13 @@ public class OrderEntity extends BaseEntity {
         this.orderStatus = OrderStatus.COMPLETED;
         this.pickedUpAt = LocalDateTime.now();
     }
+    
+    public void initiateReject(String reason) {
+        validateStatusTransition(OrderStatus.REJECT_PENDING);
+        this.orderStatus = OrderStatus.REJECT_PENDING;
+        this.reason = reason;
+        this.cancelledBy = null; 
+    }
 
     public void initiateCancel(String reason, CancelledBy cancelledBy) {
         validateStatusTransition(OrderStatus.CANCEL_PENDING);
@@ -217,26 +224,22 @@ public class OrderEntity extends BaseEntity {
         this.cancelledBy = cancelledBy;
     }
     
+    public void finalizeReject() {
+        validateStatusTransition(OrderStatus.REJECTED);
+        this.orderStatus = OrderStatus.REJECTED;
+        this.rejectedAt = LocalDateTime.now();
+    }
+
     public void finalizeCancel() {
-        OrderStatus finalStatus = (this.cancelledBy == null)
-                ? OrderStatus.REJECTED
-                : OrderStatus.CANCELLED;
-        
-        validateStatusTransition(finalStatus);
-        
-        this.orderStatus = finalStatus;
-        if (finalStatus == OrderStatus.REJECTED) {
-            this.rejectedAt = LocalDateTime.now();
-        } else {
-            this.cancelledAt = LocalDateTime.now();
-        }
+        validateStatusTransition(OrderStatus.CANCELLED);
+        this.orderStatus = OrderStatus.CANCELLED;
+        this.cancelledAt = LocalDateTime.now();
     }
     
     public void markAsRefundError() {
-        if (this.orderStatus != OrderStatus.CANCEL_PENDING) {
+        if (this.orderStatus != OrderStatus.CANCEL_PENDING && this.orderStatus != OrderStatus.REJECT_PENDING) {
             throw new IllegalStateException("환불 대기 상태가 아닌 주문은 에러 처리를 할 수 없습니다.");
         }
-        
         this.orderStatus = OrderStatus.REFUND_ERROR;
     }
     
