@@ -128,5 +128,12 @@ public class OrderResponseDto {
                 .createdAt(LocalDateTime.now())
                 .build();
     }
+
+    public static OrderResponseDto fromId(UUID orderId, OrderStatus status) {
+        return OrderResponseDto.builder()
+                .id(orderId)
+                .orderStatus(status)
+                .build();
+    }
 }
 

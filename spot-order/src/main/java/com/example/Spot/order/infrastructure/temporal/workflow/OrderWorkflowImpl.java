@@ -1,5 +1,6 @@
 package com.example.Spot.order.infrastructure.temporal.workflow;
 
+import com.example.Spot.order.infrastructure.temporal.dto.OrderStatusUpdate;
 import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 import com.example.Spot.order.presentation.dto.response.OrderContextDto;
 import java.time.Duration;
@@ -20,58 +21,50 @@ import io.temporal.workflow.Workflow;
 @WorkflowImpl(taskQueues = OrderConstants.ORDER_TASK_QUEUE)
 public class OrderWorkflowImpl implements OrderWorkflow {
 
+    private OrderStatus currentStatus = OrderStatus.PAYMENT_PENDING;
+    private Integer estimatedTime;
+    private String reason;
+    private boolean isRefundCompleted = false;
+
     private static final ActivityOptions ACTIVITY_OPTIONS = ActivityOptions.newBuilder()
             .setStartToCloseTimeout(Duration.ofSeconds(10))
             .setRetryOptions(RetryOptions.newBuilder().setMaximumAttempts(5).build())
             .build();
-    
-    private OrderStatus currentStatus = OrderStatus.PAYMENT_PENDING;
-    private boolean isRefundCompleted = false;
-    
+
     @Override
     public void processOrder(UUID orderId, Integer userId, OrderCreateRequestDto requestDto, OrderContextDto contextDto) {
         OrderActivity activities = Workflow.newActivityStub(OrderActivity.class, ACTIVITY_OPTIONS);
-        
         activities.createOrderInDb(orderId, userId, requestDto, contextDto);
-        
-        boolean paidWithinTime = Workflow.await(Duration.ofMinutes(5),
-                () -> currentStatus == OrderStatus.PENDING || currentStatus.isFinalStatus());
-        
-        if (!paidWithinTime && currentStatus == OrderStatus.PAYMENT_PENDING) {
-            activities.cancelOrder(orderId, "결제 시간 초과로 인한 자동 취소");
-            if (currentStatus == OrderStatus.CANCEL_PENDING) {
-                waitForRefundAndFinalize(orderId, activities);
-                return;
-            }
+
+        Workflow.await(Duration.ofMinutes(5),
+                () -> currentStatus == OrderStatus.PENDING || currentStatus.isFinalStatus() || currentStatus == OrderStatus.CANCEL_PENDING);
+        if (currentStatus == OrderStatus.PENDING) {
+            activities.updateOrderStatusInDb(orderId, OrderStatus.PENDING, null, null);
+        } else {
+            handleCancelIfNecessary(orderId, activities, "결제 단계 취소/타임아웃");
             return;
         }
-        
-        boolean acceptedWithinTime = Workflow.await(Duration.ofMinutes(10),
-                () -> currentStatus == OrderStatus.ACCEPTED || isTrulyFinalStatus(currentStatus));
-        if (!acceptedWithinTime && currentStatus == OrderStatus.PENDING) {
-            activities.cancelOrder(orderId, "점주 미수락으로 인한 자동 취소 . 환불");
-            waitForRefundAndFinalize(orderId, activities);
+
+        Workflow.await(Duration.ofMinutes(10),
+                () -> currentStatus == OrderStatus.ACCEPTED || currentStatus.isFinalStatus() || currentStatus == OrderStatus.CANCEL_PENDING);
+
+        if (currentStatus == OrderStatus.ACCEPTED) {
+            activities.updateOrderStatusInDb(orderId, OrderStatus.ACCEPTED, this.estimatedTime, null);
+        } else {
+            handleCancelIfNecessary(orderId, activities, "점주 미수락");
             return;
         }
-        
-        Workflow.await(() -> currentStatus == OrderStatus.COOKING || isTrulyFinalStatus(currentStatus));
-        if (handleCancelIfNecessary(orderId, activities)) {
-            return;
-        }
-        
-        Workflow.await(() -> currentStatus == OrderStatus.READY || isTrulyFinalStatus(currentStatus));
-        if (handleCancelIfNecessary(orderId, activities)) {
-            return;
-        }
-        
-        Workflow.await(() -> currentStatus == OrderStatus.COMPLETED || isTrulyFinalStatus(currentStatus));
-        if (handleCancelIfNecessary(orderId, activities)) {
-            return;
-        }
+
+        // 4. 조리 단계 (COOKING)
+        if (waitForStatusAndUpdate(orderId, OrderStatus.COOKING, activities)) return;
+        if (waitForStatusAndUpdate(orderId, OrderStatus.READY, activities)) return;
+        if (waitForStatusAndUpdate(orderId, OrderStatus.COMPLETED, activities)) return;
     }
-    
-    private boolean handleCancelIfNecessary(UUID orderId, OrderActivity activities) {
-        if (currentStatus == OrderStatus.CANCEL_PENDING) {
+
+    private boolean handleCancelIfNecessary(UUID orderId, OrderActivity activities, String defaultReason) {
+        if (currentStatus == OrderStatus.CANCEL_PENDING || currentStatus == OrderStatus.REJECTED) {
+            String finalReason = (this.reason != null) ? this.reason : defaultReason;
+            activities.cancelOrder(orderId, finalReason);
             waitForRefundAndFinalize(orderId, activities);
             return true;
         }
@@ -87,17 +80,25 @@ public class OrderWorkflowImpl implements OrderWorkflow {
         }
     }
 
+    private boolean waitForStatusAndUpdate(UUID orderId, OrderStatus targetStatus, OrderActivity activities) {
+        Workflow.await(() -> currentStatus == targetStatus || currentStatus == OrderStatus.CANCEL_PENDING || currentStatus.isFinalStatus());
+        if (currentStatus == targetStatus) {
+            activities.updateOrderStatusInDb(orderId, targetStatus, null, null);
+            return false;
+        }
+        handleCancelIfNecessary(orderId, activities, "진행 중 취소");
+        return true;
+    }
+
     @Override
-    public void signalStatusChanged(OrderStatus nextStatus) {
-        this.currentStatus = nextStatus;
+    public void signalStatusChanged(OrderStatusUpdate update) {
+        this.currentStatus = update.getStatus();
+        this.estimatedTime = update.getEstimatedTime();
+        this.reason = update.getReason();
     }
 
     @Override
     public void signalRefundCompleted() {
         this.isRefundCompleted = true;
-    }
-
-    private boolean isTrulyFinalStatus(OrderStatus status) {
-        return status == OrderStatus.COMPLETED || status == OrderStatus.CANCELLED || status == OrderStatus.REJECTED;
     }
 }

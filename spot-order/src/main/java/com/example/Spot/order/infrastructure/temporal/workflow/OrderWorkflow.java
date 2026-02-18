@@ -1,10 +1,10 @@
 package com.example.Spot.order.infrastructure.temporal.workflow;
 
-import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
-import com.example.Spot.order.presentation.dto.response.OrderContextDto;
 import java.util.UUID;
 
-import com.example.Spot.order.domain.enums.OrderStatus;
+import com.example.Spot.order.infrastructure.temporal.dto.OrderStatusUpdate;
+import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
+import com.example.Spot.order.presentation.dto.response.OrderContextDto;
 
 import io.temporal.workflow.SignalMethod;
 import io.temporal.workflow.WorkflowInterface;
@@ -17,8 +17,8 @@ public interface OrderWorkflow {
     void processOrder(UUID orderId, Integer userId, OrderCreateRequestDto requestDto, OrderContextDto contextDto);
     
     @SignalMethod
-    void signalStatusChanged(OrderStatus nextStatus);
-
+    void signalStatusChanged(OrderStatusUpdate update);
+    
     @SignalMethod
     void signalRefundCompleted();
 }

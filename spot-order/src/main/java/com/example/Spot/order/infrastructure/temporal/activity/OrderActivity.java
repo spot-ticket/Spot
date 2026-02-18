@@ -1,5 +1,7 @@
 package com.example.Spot.order.infrastructure.temporal.activity;
 
+import com.example.Spot.order.domain.entity.OrderEntity;
+import com.example.Spot.order.domain.repository.OrderRepository;
 import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 import com.example.Spot.order.presentation.dto.response.OrderContextDto;
 import java.util.UUID;
@@ -14,6 +16,9 @@ public interface OrderActivity {
     
     @ActivityMethod
     void createOrderInDb(UUID orderId, Integer userId, OrderCreateRequestDto requestDto, OrderContextDto contextDto);
+    
+    @ActivityMethod
+    void updateOrderStatusInDb(UUID orderId, OrderStatus nextStatus, Integer estimatedTime, String reason);
     
     @ActivityMethod
     OrderStatus getOrderStatus(UUID orderId);

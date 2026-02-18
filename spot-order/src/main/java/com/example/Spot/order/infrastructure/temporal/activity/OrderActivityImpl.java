@@ -18,6 +18,7 @@ import java.util.UUID;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
 import com.example.Spot.order.domain.entity.OrderEntity;
@@ -104,7 +105,40 @@ public class OrderActivityImpl implements OrderActivity {
         log.info("주문 생성이 완료되었습니다. OrderID: {}, OrderNumber: {}", orderId, orderNumber);
     }
     
-    
+    @Override
+    @Transactional(propagation = Propagation.REQUIRES_NEW) // 독립적인 트랜잭션 보장
+    public void updateOrderStatusInDb(UUID orderId, OrderStatus nextStatus, Integer estimatedTime, String reason) {
+        log.info("Activity: 주문 상태 변경 시작 - orderId={}, nextStatus={}", orderId, nextStatus);
+
+        OrderEntity order = orderRepository.findByIdWithLock(orderId)
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다: " + orderId));
+
+        if (!order.getOrderStatus().canTransitionTo(nextStatus)) {
+            log.warn("Activity: 유효하지 않은 상태 전환 시도 - current={}, next={}", order.getOrderStatus(), nextStatus);
+            return;
+        }
+
+        switch (nextStatus) {
+            case PENDING -> {
+                order.completePayment();
+                orderEventProducer.reserveOrderPending(order.getStoreId(), order.getId());
+            }
+            case ACCEPTED -> {
+                order.acceptOrder(estimatedTime);
+                orderEventProducer.reserveOrderAccepted(order.getUserId(), order.getId(), estimatedTime);
+            }
+            case COOKING -> order.startCooking();
+            case READY -> order.readyForPickup();
+            case COMPLETED -> order.completeOrder();
+            case CANCEL_PENDING -> {
+                order.initiateCancel(reason, null);
+                orderEventProducer.reserveOrderCancelled(order.getId(), reason);
+            }
+            default -> log.info("기타 상태 변경: {}", nextStatus);
+        }
+        
+        log.info("Activity: 주문 상태 변경 완료 - orderId={}, changedStatus={}", orderId, order.getOrderStatus());
+    }
         
     @Override
     @Transactional
