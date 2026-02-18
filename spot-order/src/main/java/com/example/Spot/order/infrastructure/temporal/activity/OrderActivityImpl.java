@@ -107,15 +107,23 @@ public class OrderActivityImpl implements OrderActivity {
     
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW) // 독립적인 트랜잭션 보장
-    public void updateOrderStatusInDb(UUID orderId, OrderStatus nextStatus, Integer estimatedTime, String reason) {
-        log.info("Activity: 주문 상태 변경 시작 - orderId={}, nextStatus={}", orderId, nextStatus);
-
+    public void updateOrderStatusInDb(UUID orderId, OrderStatus nextStatus, Integer estimatedTime, String reason, CancelledBy actor) {
         OrderEntity order = orderRepository.findByIdWithLock(orderId)
                 .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 주문입니다: " + orderId));
-
+        
         if (!order.getOrderStatus().canTransitionTo(nextStatus)) {
             log.warn("Activity: 유효하지 않은 상태 전환 시도 - current={}, next={}", order.getOrderStatus(), nextStatus);
             return;
+        }
+
+        if (nextStatus == OrderStatus.CANCEL_PENDING) {
+            if (actor == null && order.getOrderStatus() != OrderStatus.PENDING) {
+                log.warn("이미 수락/조리 중인 주문은 '거절'할 수 없습니다. 상태: {}", order.getOrderStatus());
+                return;
+            }
+            
+            order.initiateCancel(reason, actor);
+            orderEventProducer.reserveOrderCancelled(order.getId(), reason);
         }
 
         switch (nextStatus) {
@@ -131,8 +139,7 @@ public class OrderActivityImpl implements OrderActivity {
             case READY -> order.readyForPickup();
             case COMPLETED -> order.completeOrder();
             case CANCEL_PENDING -> {
-                order.initiateCancel(reason, null);
-                orderEventProducer.reserveOrderCancelled(order.getId(), reason);
+                log.info("CANCEL_PENDING 처리 완료 (주체: {})", actor);
             }
             default -> log.info("기타 상태 변경: {}", nextStatus);
         }

@@ -1,6 +1,7 @@
 package com.example.Spot.order.application.service;
 
 import com.example.Spot.global.feign.MenuClient;
+import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.infrastructure.temporal.dto.OrderStatusUpdate;
 import com.example.Spot.order.infrastructure.temporal.workflow.OrderWorkflowImpl;
 import com.example.Spot.order.presentation.dto.response.OrderContextDto;
@@ -233,14 +234,14 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponseDto acceptOrder(UUID orderId, Integer estimatedTime) {
         OrderWorkflow workflow = workflowClient.newWorkflowStub(OrderWorkflow.class, orderId.toString());
-        workflow.signalStatusChanged(new OrderStatusUpdate(OrderStatus.ACCEPTED, estimatedTime, null));
+        workflow.signalStatusChanged(new OrderStatusUpdate(OrderStatus.ACCEPTED, estimatedTime, null, null));
         return OrderResponseDto.fromId(orderId, OrderStatus.ACCEPTED);
     }
 
     @Override
     public OrderResponseDto rejectOrder(UUID orderId, String reason) {
         OrderWorkflow workflow = workflowClient.newWorkflowStub(OrderWorkflow.class, orderId.toString());
-        workflow.signalStatusChanged(new OrderStatusUpdate(OrderStatus.CANCEL_PENDING, null, reason));
+        workflow.signalStatusChanged(new OrderStatusUpdate(OrderStatus.CANCEL_PENDING, null, reason, null));
         return OrderResponseDto.fromId(orderId, OrderStatus.CANCEL_PENDING);
     }
 
@@ -259,7 +260,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponseDto completeOrder(UUID orderId) {
         OrderWorkflow workflow = workflowClient.newWorkflowStub(OrderWorkflow.class, orderId.toString());
-        workflow.signalStatusChanged(new OrderStatusUpdate(OrderStatus.COMPLETED, null, null));
+        workflow.signalStatusChanged(new OrderStatusUpdate(OrderStatus.COMPLETED, null, null, null));
         return OrderResponseDto.fromId(orderId, OrderStatus.COMPLETED);
     }
     
@@ -269,7 +270,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponseDto customerCancelOrder(UUID orderId, String reason) {
         OrderWorkflow workflow = workflowClient.newWorkflowStub(OrderWorkflow.class, orderId.toString());
-        workflow.signalStatusChanged(new OrderStatusUpdate(OrderStatus.CANCEL_PENDING, null, reason));
+        workflow.signalStatusChanged(new OrderStatusUpdate(OrderStatus.CANCEL_PENDING, null, reason, CancelledBy.CUSTOMER));
         log.info("고객 취소 시그널 전송 완료: orderId={}, reason={}", orderId, reason);
         return OrderResponseDto.fromId(orderId, OrderStatus.CANCEL_PENDING);
     }
@@ -277,7 +278,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponseDto storeCancelOrder(UUID orderId, String reason) {
         OrderWorkflow workflow = workflowClient.newWorkflowStub(OrderWorkflow.class, orderId.toString());
-        workflow.signalStatusChanged(new OrderStatusUpdate(OrderStatus.CANCEL_PENDING, null, reason));
+        workflow.signalStatusChanged(new OrderStatusUpdate(OrderStatus.CANCEL_PENDING, null, reason, CancelledBy.STORE));
         log.info("가게 취소 시그널 전송 완료: orderId={}, reason={}", orderId, reason);
         return OrderResponseDto.fromId(orderId, OrderStatus.CANCEL_PENDING);
     }
@@ -293,7 +294,7 @@ public class OrderServiceImpl implements OrderService {
     public OrderResponseDto completePayment(UUID orderId) {
         try {
             OrderWorkflow workflow = workflowClient.newWorkflowStub(OrderWorkflow.class, orderId.toString());
-            workflow.signalStatusChanged(new OrderStatusUpdate(OrderStatus.PENDING, null, null));
+            workflow.signalStatusChanged(new OrderStatusUpdate(OrderStatus.PENDING, null, null, null));
             log.info("결제 완료 시그널 전송: orderId={}", orderId);
         } catch (WorkflowNotFoundException e) {
             log.warn("이미 종료된 워크플로우입니다. orderId={}", orderId);
@@ -304,7 +305,7 @@ public class OrderServiceImpl implements OrderService {
     @Override
     public OrderResponseDto failPayment(UUID orderId) {
         OrderWorkflow workflow = workflowClient.newWorkflowStub(OrderWorkflow.class, orderId.toString());
-        workflow.signalStatusChanged(new OrderStatusUpdate(OrderStatus.PAYMENT_FAILED, null, "결제 승인 거절"));
+        workflow.signalStatusChanged(new OrderStatusUpdate(OrderStatus.PAYMENT_FAILED, null, "결제 승인 거절", null));
         return OrderResponseDto.fromId(orderId, OrderStatus.PAYMENT_FAILED);
     }
 
@@ -372,7 +373,7 @@ public class OrderServiceImpl implements OrderService {
     
     private void sendSignal(UUID orderId, OrderStatus status) {
         OrderWorkflow workflow = workflowClient.newWorkflowStub(OrderWorkflow.class, orderId.toString());
-        workflow.signalStatusChanged(new OrderStatusUpdate(status, null, null));
+        workflow.signalStatusChanged(new OrderStatusUpdate(status, null, null, null));
         log.info("시그널 전송 완료: orderId={}, status={}", orderId, status);
     }
     
