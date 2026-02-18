@@ -1,14 +1,5 @@
 package com.example.Spot.order.application.service;
 
-import com.example.Spot.global.feign.MenuClient;
-import com.example.Spot.order.domain.enums.CancelledBy;
-import com.example.Spot.order.domain.exception.InvalidOrderStatusTransitionException;
-import com.example.Spot.order.infrastructure.temporal.dto.OrderStatusUpdate;
-import com.example.Spot.order.infrastructure.temporal.workflow.OrderWorkflowImpl;
-import com.example.Spot.order.presentation.dto.response.OrderContextDto;
-import io.temporal.client.WorkflowNotFoundException;
-import jakarta.persistence.EntityNotFoundException;
-import java.awt.*;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.HashMap;
@@ -23,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.Spot.global.feign.MenuClient;
 import com.example.Spot.global.feign.PaymentClient;
 import com.example.Spot.global.feign.StoreClient;
 import com.example.Spot.global.feign.dto.MenuOptionResponse;
@@ -31,9 +23,10 @@ import com.example.Spot.global.feign.dto.StoreResponse;
 import com.example.Spot.order.domain.entity.OrderEntity;
 import com.example.Spot.order.domain.entity.OrderItemEntity;
 import com.example.Spot.order.domain.entity.OrderItemOptionEntity;
-
+import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.domain.exception.DuplicateOrderException;
+import com.example.Spot.order.domain.exception.InvalidOrderStatusTransitionException;
 import com.example.Spot.order.domain.repository.OrderItemOptionRepository;
 import com.example.Spot.order.domain.repository.OrderRepository;
 import com.example.Spot.order.infrastructure.aop.OrderValidationContext;
@@ -41,15 +34,19 @@ import com.example.Spot.order.infrastructure.aop.StoreOwnershipRequired;
 import com.example.Spot.order.infrastructure.aop.ValidateStoreAndMenu;
 import com.example.Spot.order.infrastructure.producer.OrderEventProducer;
 import com.example.Spot.order.infrastructure.temporal.config.OrderConstants;
+import com.example.Spot.order.infrastructure.temporal.dto.OrderStatusUpdate;
 import com.example.Spot.order.infrastructure.temporal.workflow.OrderWorkflow;
 import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemOptionRequestDto;
 import com.example.Spot.order.presentation.dto.request.OrderItemRequestDto;
+import com.example.Spot.order.presentation.dto.response.OrderContextDto;
 import com.example.Spot.order.presentation.dto.response.OrderResponseDto;
 import com.example.Spot.order.presentation.dto.response.OrderStatsResponseDto;
 
 import io.temporal.client.WorkflowClient;
+import io.temporal.client.WorkflowNotFoundException;
 import io.temporal.client.WorkflowOptions;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 
@@ -387,7 +384,9 @@ public class OrderServiceImpl implements OrderService {
     
     private OrderContextDto fetchOrderContext(OrderCreateRequestDto requestDto) {
         StoreResponse store = storeClient.getStoreById(requestDto.getStoreId());
-        if (store == null) throw new IllegalArgumentException("존재하지 않는 가게입니다.");
+        if (store == null) {
+            throw new IllegalArgumentException("존재하지 않는 가게입니다.");
+        }
         
         Map<UUID, MenuResponse> menuMap = new HashMap<>();
         Map<UUID, MenuOptionResponse> optionMap = new HashMap<>();

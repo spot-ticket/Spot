@@ -6,8 +6,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.hibernate.annotations.UuidGenerator;
-
 import com.example.Spot.global.common.BaseEntity;
 import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
@@ -18,7 +16,6 @@ import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;

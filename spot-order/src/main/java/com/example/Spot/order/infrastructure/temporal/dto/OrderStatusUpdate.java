@@ -2,6 +2,7 @@ package com.example.Spot.order.infrastructure.temporal.dto;
 
 import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
+
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

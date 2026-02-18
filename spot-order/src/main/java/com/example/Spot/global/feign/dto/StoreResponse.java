@@ -1,8 +1,9 @@
 package com.example.Spot.global.feign.dto;
 
+import java.util.UUID;
+
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import java.util.UUID;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

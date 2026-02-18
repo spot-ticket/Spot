@@ -1,6 +1,5 @@
 package com.example.Spot.order.presentation.dto.response;
 
-import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
@@ -10,6 +9,7 @@ import java.util.stream.Collectors;
 import com.example.Spot.order.domain.entity.OrderEntity;
 import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
+import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
 
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;

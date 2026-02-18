@@ -1,13 +1,11 @@
 package com.example.Spot.order.infrastructure.temporal.activity;
 
-import com.example.Spot.order.domain.entity.OrderEntity;
-import com.example.Spot.order.domain.enums.CancelledBy;
-import com.example.Spot.order.domain.repository.OrderRepository;
-import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
-import com.example.Spot.order.presentation.dto.response.OrderContextDto;
 import java.util.UUID;
 
+import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
+import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
+import com.example.Spot.order.presentation.dto.response.OrderContextDto;
 
 import io.temporal.activity.ActivityInterface;
 import io.temporal.activity.ActivityMethod;

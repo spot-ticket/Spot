@@ -30,7 +30,9 @@ public class OrderContextDto implements Serializable {
     public java.math.BigDecimal calculateTotalAmount(com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto request) {
         java.math.BigDecimal total = java.math.BigDecimal.ZERO;
 
-        if (request.getOrderItems() == null) return total;
+        if (request.getOrderItems() == null) {
+            return total;
+        }
 
         for (var item : request.getOrderItems()) {
             // 1. 메뉴 가격 계산

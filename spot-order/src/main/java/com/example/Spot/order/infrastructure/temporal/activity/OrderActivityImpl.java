@@ -1,32 +1,29 @@
 package com.example.Spot.order.infrastructure.temporal.activity;
 
-import com.example.Spot.global.feign.dto.MenuOptionResponse;
-import com.example.Spot.global.feign.dto.MenuResponse;
-import com.example.Spot.global.feign.dto.StoreResponse;
-import com.example.Spot.order.domain.entity.OrderItemEntity;
-import com.example.Spot.order.domain.entity.OrderItemOptionEntity;
-import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
-import com.example.Spot.order.presentation.dto.request.OrderItemOptionRequestDto;
-import com.example.Spot.order.presentation.dto.request.OrderItemRequestDto;
-import com.example.Spot.order.presentation.dto.response.OrderContextDto;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 import java.util.UUID;
 
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.example.Spot.global.feign.dto.MenuOptionResponse;
+import com.example.Spot.global.feign.dto.MenuResponse;
 import com.example.Spot.order.domain.entity.OrderEntity;
+import com.example.Spot.order.domain.entity.OrderItemEntity;
+import com.example.Spot.order.domain.entity.OrderItemOptionEntity;
 import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.domain.repository.OrderRepository;
 import com.example.Spot.order.infrastructure.producer.OrderEventProducer;
 import com.example.Spot.order.infrastructure.temporal.config.OrderConstants;
+import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
+import com.example.Spot.order.presentation.dto.request.OrderItemOptionRequestDto;
+import com.example.Spot.order.presentation.dto.request.OrderItemRequestDto;
+import com.example.Spot.order.presentation.dto.response.OrderContextDto;
 
 import io.temporal.spring.boot.ActivityImpl;
 import lombok.RequiredArgsConstructor;

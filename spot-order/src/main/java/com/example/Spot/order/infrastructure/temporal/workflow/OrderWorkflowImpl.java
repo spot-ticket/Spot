@@ -1,23 +1,23 @@
 package com.example.Spot.order.infrastructure.temporal.workflow;
 
-import com.example.Spot.order.domain.enums.CancelledBy;
-import com.example.Spot.order.infrastructure.temporal.dto.OrderStatusUpdate;
-import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
-import com.example.Spot.order.presentation.dto.response.OrderContextDto;
-import io.temporal.workflow.ChildWorkflowOptions;
-import io.temporal.workflow.ChildWorkflowStub;
 import java.time.Duration;
 import java.util.UUID;
 
 import org.springframework.stereotype.Component;
 
+import com.example.Spot.order.domain.enums.CancelledBy;
 import com.example.Spot.order.domain.enums.OrderStatus;
 import com.example.Spot.order.infrastructure.temporal.activity.OrderActivity;
 import com.example.Spot.order.infrastructure.temporal.config.OrderConstants;
+import com.example.Spot.order.infrastructure.temporal.dto.OrderStatusUpdate;
+import com.example.Spot.order.presentation.dto.request.OrderCreateRequestDto;
+import com.example.Spot.order.presentation.dto.response.OrderContextDto;
 
 import io.temporal.activity.ActivityOptions;
 import io.temporal.common.RetryOptions;
 import io.temporal.spring.boot.WorkflowImpl;
+import io.temporal.workflow.ChildWorkflowOptions;
+import io.temporal.workflow.ChildWorkflowStub;
 import io.temporal.workflow.Workflow;
 
 @Component
@@ -76,9 +76,15 @@ public class OrderWorkflowImpl implements OrderWorkflow {
         }
 
         // 4. 조리 단계 (COOKING)
-        if (waitForStatusAndUpdate(orderId, OrderStatus.COOKING, activities)) return;
-        if (waitForStatusAndUpdate(orderId, OrderStatus.READY, activities)) return;
-        if (waitForStatusAndUpdate(orderId, OrderStatus.COMPLETED, activities)) return;
+        if (waitForStatusAndUpdate(orderId, OrderStatus.COOKING, activities)) {
+            return;
+        }
+        if (waitForStatusAndUpdate(orderId, OrderStatus.READY, activities)) {
+            return;
+        }
+        if (waitForStatusAndUpdate(orderId, OrderStatus.COMPLETED, activities)) {
+            return;
+        }
     }
 
     private boolean handleCancelOrRejectIfNecessary(UUID orderId, OrderActivity activities, String defaultReason) {
