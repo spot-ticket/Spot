@@ -47,12 +47,17 @@ public class OrderWorkflowImpl implements OrderWorkflow {
             return;
         }
 
-        Workflow.await(Duration.ofMinutes(10),
+        boolean isAccepted = Workflow.await(Duration.ofSeconds(15),
                 () -> currentStatus == OrderStatus.ACCEPTED || currentStatus == OrderStatus.CANCEL_PENDING || currentStatus == OrderStatus.REJECT_PENDING || currentStatus.isFinalStatus());
 
-        if (currentStatus == OrderStatus.ACCEPTED) {
+        if (isAccepted && currentStatus == OrderStatus.ACCEPTED) {
             activities.updateOrderStatusInDb(orderId, OrderStatus.ACCEPTED, this.estimatedTime, null, null);
         } else {
+            if (!isAccepted) {
+                this.currentStatus = OrderStatus.CANCEL_PENDING;
+                this.reason = "타임아웃으로 인한 자동취소";
+                this.actor = CancelledBy.SYSTEM;
+            }
             handleCancelOrRejectIfNecessary(orderId, activities, "점주 미수락/거절");
             return;
         }
