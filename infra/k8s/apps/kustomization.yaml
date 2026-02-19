@@ -1,0 +1,43 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  # Spot Apps
+  - spot-ingress.yaml
+  - spot-gateway.yaml
+  - spot-user.yaml
+  - spot-store.yaml
+  - spot-order.yaml
+  - spot-payment.yaml
+
+  # Spot ServiceMonitors
+  - ../base/monitoring/servicemonitors/spot-gateway-servicemonitor.yaml
+  - ../base/monitoring/servicemonitors/spot-user-servicemonitor.yaml
+  - ../base/monitoring/servicemonitors/spot-order-servicemonitor.yaml
+  - ../base/monitoring/servicemonitors/spot-store-servicemonitor.yaml
+  - ../base/monitoring/servicemonitors/spot-payment-servicemonitor.yaml
+
+configMapGenerator:
+  - name: spot-app-config
+    namespace: spot
+    files:
+      - ../../../config/common.yml
+      - ../../../config/kafka-topics.yml
+      - ../../../config/spot-gateway.yml
+      - ../../../config/spot-user.yml
+      - ../../../config/spot-store.yml
+      - ../../../config/spot-order.yml
+      - ../../../config/spot-payment.yml
+    options:
+      disableNameSuffixHash: true
+
+secretGenerator:
+  - name: spot-secrets
+    namespace: spot
+    envs:
+      - ../../../.env
+    options:
+      disableNameSuffixHash: true
+
+generatorOptions:
+  disableNameSuffixHash: true
