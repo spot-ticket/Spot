@@ -1,8 +1,0 @@
-rootProject.name = "Spot"
-
-include("spot-user")
-include("spot-store")
-include("spot-order")
-include("spot-payment")
-include("spot-mono")
-include("spot-gateway")

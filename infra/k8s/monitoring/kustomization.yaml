@@ -27,5 +27,13 @@ configMapGenerator:
     files:
       - ../base/monitoring/grafana/dashboards/15661.json
 
+secretGenerator:
+  - name: spot-secrets
+    namespace: spot
+    envs:
+      - ../../../.env
+    options:
+      disableNameSuffixHash: true
+
 generatorOptions:
   disableNameSuffixHash: true

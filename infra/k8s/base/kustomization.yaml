@@ -28,5 +28,13 @@ configMapGenerator:
     options:
       disableNameSuffixHash: true
 
+secretGenerator:
+  - name: spot-secrets
+    namespace: spot
+    envs:
+      - ../../../.env
+    options:
+      disableNameSuffixHash: true
+
 generatorOptions:
   disableNameSuffixHash: true

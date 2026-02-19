@@ -85,6 +85,11 @@ create_cluster() {
     log_info "Waiting for cluster to be ready..."
     kubectl wait --for=condition=ready node --all --timeout=180s
 
+    log_info "Waiting for registry to be ready..."
+    until curl -sf "http://$REGISTRY_NAME:$REGISTRY_PORT/v2/" > /dev/null 2>&1; do
+        sleep 2
+    done
+
     log_info "Cluster created successfully!"
 }
 
@@ -134,8 +139,15 @@ install_strimzi() {
   helm install strimzi-operator strimzi/strimzi-kafka-operator \
     --namespace kafka \
     --create-namespace \
-    --set crds.enabled=true
-  
+    --set crds.enabled=true \
+    --set watchNamespaces={spot} \
+    --wait
+
+  log_info "Waiting for Strimzi operator to be ready..."
+  kubectl wait --for=condition=ready pod \
+    -l name=strimzi-cluster-operator \
+    -n kafka --timeout=180s
+
   log_info "Strimzi Operator installed successfully!"
 }
 
