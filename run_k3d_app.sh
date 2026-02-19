@@ -123,29 +123,6 @@ build_and_push_images() {
     done
 }
 
-install_prometheus() {
-    log_info "Installing Prometheus (kube-prometheus-stack) via Helm..."
-
-    kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
-
-    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts >/dev/null 2>&1 || true
-    helm repo update
-
-    VALUES_FILE="$SCRIPT_DIR/infra/k8s/base/monitoring/prometheus/value.yaml"
-    if [ ! -f "$VALUES_FILE" ]; then
-        log_error "Prometheus values file not found: $VALUES_FILE"
-        exit 1
-    fi
-
-    helm upgrade --install prom prometheus-community/kube-prometheus-stack \
-        -n monitoring \
-        -f "$VALUES_FILE" \
-        --wait \
-        --timeout 10m
-
-    log_info "Prometheus installed successfully!"
-}
-
 install_strimzi() {
   log_info "Installing Strimzi Kafka Operator via Helm..."
   
@@ -229,7 +206,6 @@ main() {
     cleanup_existing
     create_cluster
     build_and_push_images
-    install_prometheus
     install_strimzi
     deploy_all
     show_status
