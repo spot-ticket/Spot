@@ -126,27 +126,29 @@ build_and_push_images() {
 install_strimzi() {
   log_info "Installing Strimzi Kafka Operator via Helm..."
   
+  kubectl create namespace strimzi --dry-run=client -o yaml | kubectl apply -f -
   kubectl create namespace spot --dry-run=client -o yaml | kubectl apply -f -
-
+  
   helm repo add strimzi https://strimzi.io/charts/ >/dev/null 2>&1 || true
   helm repo update
 
-  helm install strimzi-operator strimzi/strimzi-kafka-operator \
-    --namespace kafka \
-    --create-namespace \
-    --set crds.enabled=true
+  helm upgrade --install strimzi-operator strimzi/strimzi-kafka-operator \
+    -n strimzi \
+    --set watchNamespaces={spot} \
+    --wait
   
   log_info "Strimzi Operator installed successfully!"
 }
 
-deploy_infra() {
-    log_info "Deploying infra resources (Kafka, Temporal)..."
+deploy_all() {
+    log_info "Deploying all resources using Kustomize..."
 
     # Ingress Controller 설치
     kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.14.3/deploy/static/provider/cloud/deploy.yaml
     kubectl wait --for=condition=ready pod -n ingress-nginx --selector=app.kubernetes.io/component=controller --timeout=120s
 
-    kustomize build "$SCRIPT_DIR/infra/k8s/base/" --load-restrictor LoadRestrictionsNone | kubectl apply -f -
+    # Kustomize 배포
+    kustomize build "$SCRIPT_DIR/infra/k8s/" --load-restrictor LoadRestrictionsNone | kubectl apply -f -
 
     log_info "Waiting for Kafka Cluster (KRaft)..."
     kubectl wait --for=condition=Ready kafka/spot-cluster -n spot --timeout=300s
@@ -156,20 +158,12 @@ deploy_infra() {
 
     log_info "Waiting for Kafka UI..."
     kubectl wait --for=condition=available deployment/kafka-ui -n spot --timeout=180s
-
+  
     log_info "Waiting for Temporal..."
     kubectl wait --for=condition=available deployment/temporal -n spot --timeout=180s
     kubectl wait --for=condition=available deployment/temporal-ui -n spot --timeout=180s
 
-    log_info "Infra deployed successfully!"
-}
-
-deploy_apps() {
-    log_info "Deploying Spot app resources..."
-
-    kustomize build "$SCRIPT_DIR/infra/k8s/apps/" --load-restrictor LoadRestrictionsNone | kubectl apply -f -
-
-    log_info "Spot apps deployed successfully!"
+    log_info "Infrastructure deployed successfully!"
 }
 
 
@@ -203,8 +197,7 @@ main() {
             exit 0
             ;;
         --deploy-only)
-            deploy_infra
-            deploy_apps
+            deploy_all
             exit 0
             ;;
     esac
@@ -214,8 +207,7 @@ main() {
     create_cluster
     build_and_push_images
     install_strimzi
-    deploy_infra
-    deploy_apps
+    deploy_all
     show_status
 }
 
