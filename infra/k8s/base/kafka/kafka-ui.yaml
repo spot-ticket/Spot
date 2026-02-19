@@ -20,9 +20,9 @@ spec:
             - containerPort: 8080
           env:
             - name: KAFKA_CLUSTERS_0_NAME
-              value: spot-cluster
+              value: kafka-cluster
             - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
-              value: 'spot-cluster-kafka-bootstrap:9092'
+              value: 'kafka-cluster-kafka-bootstrap:9092'
 
             - name: KAFKA_CLUSTERS_0_KAFKACONNECT_0_NAME
               value: "spot-connect"

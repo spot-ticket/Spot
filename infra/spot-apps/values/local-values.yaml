@@ -6,6 +6,17 @@ ingress:
     alb.ingress.kubernetes.io/scheme: null
     alb.ingress.kubernetes.io/target-type: null
     alb.ingress.kubernetes.io/group.name: null
+  subs:
+    - name: www
+      namespace: spot
+      serviceName: spot-gateway
+    - name: temporal
+      namespace: spot
+      serviceName: temporal-ui-svc
+    - name: grafana
+      namespace: monitoring
+      serviceName: grafana-service
+    # kafka.localhost는 spot-kafka 네임스페이스의 kafka-ingress.yaml이 담당
 
 # domain
 domain: localhost

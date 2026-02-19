@@ -2,13 +2,13 @@ apiVersion: kafka.strimzi.io/v1
 kind: KafkaConnect
 metadata:
   name: spot-connect
-  namespace: spot
+  namespace: spot-kafka
   annotations:
     strimzi.io/use-connector-resources: "true"
 spec:
   version: 4.0.0
   replicas: 1 # 2
-  bootstrapServers: spot-cluster-kafka-bootstrap:9092
+  bootstrapServers: kafka-cluster-kafka-bootstrap:9092
   image: spot-registry.localhost:5111/spot-connect-custom:latest
   
   groupId: spot-connect-group

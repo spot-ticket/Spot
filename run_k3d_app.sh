@@ -90,6 +90,10 @@ create_cluster() {
         sleep 2
     done
 
+    log_info "Creating Namespaces..."
+
+    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/namespace.yaml"
+
     log_info "Cluster created successfully!"
 }
 
@@ -130,8 +134,6 @@ build_and_push_images() {
 
 install_strimzi() {
   log_info "Installing Strimzi Kafka Operator via Helm..."
-  
-  kubectl create namespace spot --dry-run=client -o yaml | kubectl apply -f -
 
   helm repo add strimzi https://strimzi.io/charts/ >/dev/null 2>&1 || true
   helm repo update
@@ -161,7 +163,7 @@ deploy_infra() {
     kustomize build "$SCRIPT_DIR/infra/k8s/base/" --load-restrictor LoadRestrictionsNone | kubectl apply -f -
 
     log_info "Waiting for Kafka Cluster (KRaft)..."
-    kubectl wait --for=condition=Ready kafka/spot-cluster -n spot-kafka --timeout=300s
+    kubectl wait --for=condition=Ready kafka/kafka-cluster -n spot-kafka --timeout=300s
 
     log_info "Waiting for Kafka Connect..."
     kubectl wait --for=condition=Ready kafkaconnect/spot-connect -n spot-kafka --timeout=300s
@@ -179,7 +181,27 @@ deploy_infra() {
 deploy_apps() {
     log_info "Deploying Spot app resources..."
 
+    # ConfigMap, Secret 적용
     kustomize build "$SCRIPT_DIR/infra/k8s/apps/" --load-restrictor LoadRestrictionsNone | kubectl apply -f -
+
+    # ServiceMonitor 적용 (Prometheus Operator CRD가 있을 때만)
+    if kubectl get crd servicemonitors.monitoring.coreos.com &>/dev/null; then
+        kustomize build "$SCRIPT_DIR/infra/k8s/apps/monitors/" --load-restrictor LoadRestrictionsNone | kubectl apply -f -
+    else
+        log_warn "ServiceMonitor CRD not found. Skipping ServiceMonitors."
+    fi
+
+    # App 배포 (Helm)
+    log_info "Deploying Apps (Helm)..."
+
+    CHART_PATH="$SCRIPT_DIR/infra/spot-apps"
+
+    helm upgrade --install spot "$CHART_PATH" \
+        -n spot \
+        -f "$CHART_PATH/values/local-values.yaml" \
+        --set global.secretName=spot-secrets \
+        --wait \
+        --timeout 10m
 
     log_info "Spot apps deployed successfully!"
 }
@@ -217,6 +239,15 @@ main() {
         --deploy-only)
             deploy_infra
             deploy_apps
+            exit 0
+            ;;
+        --keep-cluster)
+            check_prerequisites
+            build_and_push_images
+            install_strimzi
+            deploy_infra
+            deploy_apps
+            show_status
             exit 0
             ;;
     esac

@@ -73,18 +73,14 @@ create_cluster() {
     log_info "Waiting for cluster to be ready..."
     kubectl wait --for=condition=ready node --all --timeout=180s
 
+    log_info "Creating Namespaces..."
+    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/namespace.yaml"
+
     log_info "Cluster created successfully!"
 }
 
 deploy_db() {
     log_info "Deploying DB resources (Postgres, Redis)..."
-
-    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/namespace.yaml"
-
-    kustomize build "$SCRIPT_DIR/infra/k8s/" --load-restrictor LoadRestrictionsNone \
-        | kubectl apply -f - \
-        --selector='app in (postgres,redis)' \
-        --prune=false 2>/dev/null || true
 
     kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/configmap.yaml"
     kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/postgres.yaml"
@@ -106,8 +102,6 @@ deploy_db() {
 
 deploy_monitoring() {
     log_info "Deploying monitoring stack (Loki, Grafana, Fluent-bit)..."
-
-    kubectl create namespace monitoring --dry-run=client -o yaml | kubectl apply -f -
 
     kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/monitoring/loki/loki-config.yaml"
     kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/monitoring/loki/loki.yaml"
@@ -139,10 +133,24 @@ restart_grafana_for_provisioning() {
     kubectl -n monitoring rollout status deployment/grafana-deploy --timeout=180s || true
 }
 
+install_prometheus() {
+    log_info "Installing kube-prometheus-stack via Helm..."
+
+    helm repo add prometheus-community https://prometheus-community.github.io/helm-charts >/dev/null 2>&1 || true
+    helm repo update
+
+    helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+        --namespace monitoring \
+        --create-namespace \
+        -f "$SCRIPT_DIR/infra/k8s/base/monitoring/prometheus/value.yaml" \
+        --wait \
+        --timeout 5m
+
+    log_info "kube-prometheus-stack installed successfully!"
+}
+
 install_argocd() {
     log_info "Installing ArgoCD..."
-
-    kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
 
     kubectl apply -n argocd --server-side -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
 
@@ -204,6 +212,7 @@ main() {
     cleanup_existing
     create_cluster
     deploy_db
+    install_prometheus
     install_argocd
     deploy_monitoring
     restart_grafana_for_provisioning

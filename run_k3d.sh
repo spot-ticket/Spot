@@ -1,2 +1,2 @@
 ./run_k3d_infra.sh
-./run_k3d_app.sh
+./run_k3d_app.sh --keep-cluster

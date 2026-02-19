@@ -1,0 +1,9 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
+resources:
+  - ../../base/monitoring/servicemonitors/spot-gateway-servicemonitor.yaml
+  - ../../base/monitoring/servicemonitors/spot-user-servicemonitor.yaml
+  - ../../base/monitoring/servicemonitors/spot-order-servicemonitor.yaml
+  - ../../base/monitoring/servicemonitors/spot-store-servicemonitor.yaml
+  - ../../base/monitoring/servicemonitors/spot-payment-servicemonitor.yaml
