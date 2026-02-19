@@ -67,9 +67,6 @@ cleanup_existing() {
         docker compose -f "$SCRIPT_DIR/docker-compose.yaml" down --remove-orphans 2>/dev/null || true
     fi
     
-    log_info "Starting essential infrastructure (DB, Redis) via Docker Compose..."
-    docker compose -f "$SCRIPT_DIR/docker-compose.yaml" up -d db redis
-
     if k3d cluster list | grep -q "$CLUSTER_NAME"; then
         log_info "Deleting existing k3d cluster: $CLUSTER_NAME"
         k3d cluster delete "$CLUSTER_NAME"
@@ -121,23 +118,6 @@ build_and_push_images() {
         done
         log_info "$service image pushed successfully!"
     done
-  }
-
-install_argocd() {
-    log_info "Installing ArgoCD..."
-
-    kubectl create namespace argocd --dry-run=client -o yaml | kubectl apply -f -
-
-    kubectl apply -n argocd --server-side -f https://raw.githubusercontent.com/argoproj/argo-cd/stable/manifests/install.yaml
-
-    log_info "Waiting for ArgoCD to be ready..."
-    kubectl wait --for=condition=available deployment/argocd-server -n argocd --timeout=300s
-
-    if [ -f "$SCRIPT_DIR/infra/argo/argocd-ingress.yaml" ]; then
-        kubectl apply -f "$SCRIPT_DIR/infra/argo/argocd-ingress.yaml"
-    fi
-
-    log_info "ArgoCD installed successfully!"
 }
 
 install_prometheus() {
@@ -190,10 +170,6 @@ deploy_all() {
     # Kustomize 배포
     kustomize build "$SCRIPT_DIR/infra/k8s/" --load-restrictor LoadRestrictionsNone | kubectl apply -f -
 
-#    log_info "Waiting for infrastructure to be ready..."
-#    kubectl wait --for=condition=available deployment/postgres -n spot --timeout=180s
-#    kubectl wait --for=condition=available deployment/redis -n spot --timeout=180s
-    
     log_info "Waiting for Kafka Cluster (KRaft)..."
     kubectl wait --for=condition=Ready kafka/spot-cluster -n spot --timeout=300s
 
@@ -208,37 +184,19 @@ deploy_all() {
     kubectl wait --for=condition=available deployment/temporal-ui -n spot --timeout=180s
 
     log_info "Infrastructure deployed successfully!"
-
-    log_info "Waiting for monitoring system to be ready..."
-    kubectl wait --for=condition=available deployment/loki-deploy -n monitoring --timeout=180s || true
-    kubectl wait --for=condition=available deployment/grafana-deploy -n monitoring --timeout=180s || true
-    kubectl rollout status daemonset/fluent-bit-daemon -n monitoring --timeout=180s || true
-
-    log_info "Monitoring System deployed successfully!"
 }
 
-restart_grafana_for_provisioning() {
-    log_info "Restarting Grafana to apply provisioning..."
-    kubectl -n monitoring rollout restart deployment/grafana-deploy || true
-    kubectl -n monitoring rollout status deployment/grafana-deploy --timeout=180s || true
-}
 
 show_status() {
     log_info "=== Cluster Status ==="
     kubectl get nodes
     kubectl get pods -n spot
-    kubectl get pods -n monitoring
 
     echo ""
     echo "Access points:"
-    echo "  - ArgoCD UI:   http://localhost:30090"
     echo "  - Gateway API: http://spot.localhost"
-    echo "  - Grafana UI:  http://grafana.localhost"
     echo ""
-    echo "ArgoCD credentials:"
     echo "  - Username: admin"
-    ARGOCD_PASSWORD=$(kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath="{.data.password}" 2>/dev/null | base64 -d || echo "Not available yet")
-    echo "  - Password: $ARGOCD_PASSWORD"
     echo ""
     echo "Useful commands:"
     echo "  - kubectl get pods -n spot          # Check application pods"
@@ -268,11 +226,9 @@ main() {
     cleanup_existing
     create_cluster
     build_and_push_images
-    install_argocd
     install_prometheus
     install_strimzi
     deploy_all
-    restart_grafana_for_provisioning
     show_status
 }
 
