@@ -2,11 +2,11 @@ apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
   name: kafka-nodes
-  namespace: spot-kafka
+  namespace: spot
   labels:
     strimzi.io/cluster: spot-cluster
 spec:
-  replicas: 1
+  replicas: 1 # 3
   roles:
     - broker
     - controller

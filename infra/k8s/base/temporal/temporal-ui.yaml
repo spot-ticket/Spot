@@ -23,7 +23,15 @@ spec:
               value: "temporal:7233"
             - name: TEMPORAL_CORS_ALLOW_ORIGINS
               value: "*"
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "100m"
+            limits:
+              memory: "512Mi"
+              cpu: "500m"
 ---
+# Service
 apiVersion: v1
 kind: Service
 metadata:
