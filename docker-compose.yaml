@@ -203,20 +203,13 @@ services:
       - "7233:7233"
     environment:
       - DB=postgres12
-      - POSTGRES_SEEDS=${DB_HOST}
+      - POSTGRES_SEEDS=db
       - DB_PORT=5432
-      - POSTGRES_USER=${SPRING_DATASOURCE_USERNAME}
-      - POSTGRES_PWD=${SPRING_DATASOURCE_PASSWORD}
+      - POSTGRES_USER=admin
+      - POSTGRES_PWD=secret
       - DBNAME=spot_temporal
       - VISIBILITY_DBNAME=spot_visibility
-      - SKIP_DB_CREATE=false
       - SKIP_SCHEMA_SETUP=false
-      
-      - POSTGRES_TLS_ENABLED=true
-      - POSTGRES_TLS_DISABLE_HOST_VERIFICATION=true
-      - SQL_TLS_ENABLED=true
-      - SQL_HOST_VERIFICATION=false
-       
       - ENABLE_ES=false
       - SKIP_DEFAULT_NAMESPACE_CREATION=false
       - LOG_LEVEL=warn
