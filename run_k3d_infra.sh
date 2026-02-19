@@ -127,12 +127,9 @@ deploy_monitoring() {
     log_info "Waiting for Fluent-bit to be ready..."
     kubectl rollout status daemonset/fluent-bit-daemon -n monitoring --timeout=180s
 
-<<<<<<< HEAD
     log_info "Applying Grafana dashboard ConfigMaps..."
     kustomize build "$SCRIPT_DIR/infra/k8s/monitoring/" --load-restrictor LoadRestrictionsNone | kubectl apply -f -
 
-=======
->>>>>>> 6a3cc48125ed20a5c7d3a2dccec61ddcf1d55a3b
     log_info "Monitoring stack deployed successfully!"
 }
 
