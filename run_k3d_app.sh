@@ -103,20 +103,23 @@ build_and_push_images() {
         sleep 2
     done
     
+    total=${#SERVICES[@]}
+    idx=0
     for service in "${SERVICES[@]}"; do
-        log_info "Building $service..."
+        idx=$((idx+1))
+        log_info "[$idx/$total] Building $service... "
         (cd "$SCRIPT_DIR/$service" && ./gradlew bootJar -x test)
-        
+
         docker build -t "$REGISTRY_NAME:$REGISTRY_PORT/$service:latest" "$SCRIPT_DIR/$service"
 
         n=0
         until [ $n -ge 3 ]; do
             docker push "$REGISTRY_NAME:$REGISTRY_PORT/$service:latest" && break
             n=$((n+1))
-            log_warn "Push failed for $service. Retrying ($n/3)..."
+            log_warn "[$idx/$total] Push failed for $service. Retrying ($n/3)..."
             sleep 2
         done
-        log_info "$service image pushed successfully!"
+        log_info "[$idx/$total] $service image pushed successfully!"
     done
 }
 
