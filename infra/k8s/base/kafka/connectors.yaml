@@ -2,9 +2,8 @@ apiVersion: kafka.strimzi.io/v1
 kind: KafkaConnector
 metadata:
   name: order-outbox-connector
-  namespace: spot
+  namespace: spot-kafka
   labels:
-    # 이전에 만든 KafkaConnect 리소스 이름(spot-connect)과 반드시 일치해야 함
     strimzi.io/cluster: spot-connect
 spec:
   class: io.debezium.connector.postgresql.PostgresConnector
@@ -43,11 +42,11 @@ spec:
 
 ---
 
-apiVersion: kafka.strimzi.io/v1
+apiVersion: kafka.strimzi.io/v1beta2
 kind: KafkaConnector
 metadata:
   name: payment-outbox-connector
-  namespace: spot
+  namespace: spot-kafka
   labels:
     strimzi.io/cluster: spot-connect
 spec:

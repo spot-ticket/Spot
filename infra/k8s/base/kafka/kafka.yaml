@@ -2,7 +2,7 @@ apiVersion: kafka.strimzi.io/v1
 kind: Kafka
 metadata:
   name: spot-cluster
-  namespace: spot
+  namespace: spot-kafka
   annotations:
     strimzi.io/node-pools: enabled
     strimzi.io/kraft: enabled

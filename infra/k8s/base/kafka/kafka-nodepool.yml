@@ -2,7 +2,7 @@ apiVersion: kafka.strimzi.io/v1
 kind: KafkaNodePool
 metadata:
   name: kafka-nodes
-  namespace: spot
+  namespace: spot-kafka
   labels:
     strimzi.io/cluster: spot-cluster
 spec:

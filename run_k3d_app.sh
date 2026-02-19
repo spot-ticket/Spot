@@ -140,7 +140,7 @@ install_strimzi() {
     --namespace kafka \
     --create-namespace \
     --set crds.enabled=true \
-    --set watchNamespaces={spot} \
+    --set "watchNamespaces={spot,spot-kafka}" \
     --wait
 
   log_info "Waiting for Strimzi operator to be ready..."
@@ -161,13 +161,13 @@ deploy_infra() {
     kustomize build "$SCRIPT_DIR/infra/k8s/base/" --load-restrictor LoadRestrictionsNone | kubectl apply -f -
 
     log_info "Waiting for Kafka Cluster (KRaft)..."
-    kubectl wait --for=condition=Ready kafka/spot-cluster -n spot --timeout=300s
+    kubectl wait --for=condition=Ready kafka/spot-cluster -n spot-kafka --timeout=300s
 
     log_info "Waiting for Kafka Connect..."
-    kubectl wait --for=condition=Ready kafkaconnect/spot-connect -n spot --timeout=300s
+    kubectl wait --for=condition=Ready kafkaconnect/spot-connect -n spot-kafka --timeout=300s
 
     log_info "Waiting for Kafka UI..."
-    kubectl wait --for=condition=available deployment/kafka-ui -n spot --timeout=180s
+    kubectl wait --for=condition=available deployment/kafka-ui -n spot-kafka --timeout=180s
 
     log_info "Waiting for Temporal..."
     kubectl wait --for=condition=available deployment/temporal -n spot --timeout=180s

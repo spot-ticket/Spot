@@ -13,6 +13,7 @@ resources:
   - ./kafka/connectors.yaml
   - ./kafka/kafka-ui.yaml
   - ./kafka/allow-kafka-ui-netpol.yaml
+  - ./kafka/kafka-ingress.yaml
 
   # Temporal
   - ./temporal/temporal.yaml
@@ -20,7 +21,7 @@ resources:
 
 configMapGenerator:
   - name: kafka-connect-init-config
-    namespace: spot
+    namespace: spot-kafka
     files:
       - ../../../connectors/order-outbox.json
       - ../../../connectors/payment-outbox.json
@@ -31,6 +32,12 @@ configMapGenerator:
 secretGenerator:
   - name: spot-secrets
     namespace: spot
+    envs:
+      - ../../../.env
+    options:
+      disableNameSuffixHash: true
+  - name: spot-secrets
+    namespace: spot-kafka
     envs:
       - ../../../.env
     options:
