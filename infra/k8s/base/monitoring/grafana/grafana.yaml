@@ -54,7 +54,9 @@ spec:
         - name: grafana-dashboards-15760
           configMap:
             name: grafana-dashboards-15760
-
+        - name: grafana-dashboards-kafka-consumer-lag
+          configMap:
+            name: grafana-dashboards-kafka-consumer-lag
 
       containers:
         - name: grafana
@@ -116,6 +118,10 @@ spec:
               subPath: 15661.json
               readOnly: true
 
+            - name: grafana-dashboards-kafka-consumer-lag
+              mountPath: /var/lib/grafana/dashboards/kafka-consumer-lag.json
+              subPath: kafka-consumer-lag.json
+              readOnly: true
 
 ---
 apiVersion: v1

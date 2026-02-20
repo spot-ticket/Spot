@@ -27,6 +27,11 @@ configMapGenerator:
     files:
       - ../base/monitoring/grafana/dashboards/15661.json
 
+  - name: grafana-dashboards-kafka-consumer-lag
+    namespace: monitoring
+    files:
+      - ../base/monitoring/grafana/dashboards/kafka-consumer-lag.json
+
 secretGenerator:
   - name: spot-secrets
     namespace: spot

@@ -101,16 +101,22 @@ deploy_db() {
 }
 
 deploy_monitoring() {
-    log_info "Deploying monitoring stack (Loki, Grafana, Fluent-bit)..."
+    log_info "Deploying monitoring stack (Loki, Fluent-bit)..."
 
     kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/monitoring/loki/loki-config.yaml"
     kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/monitoring/loki/loki.yaml"
 
+    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/monitoring/fluent-bit/fluent-bit-config.yaml"
+    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/monitoring/fluent-bit/fluent-bit.yaml"
+    
+    log_info "Applying Grafana dashboard ConfigMaps..."
+    kustomize build "$SCRIPT_DIR/infra/k8s/monitoring/" --load-restrictor LoadRestrictionsNone | kubectl apply -f -
+    
     kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/monitoring/grafana/grafana-config.yaml"
     kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/monitoring/grafana/grafana.yaml"
 
-    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/monitoring/fluent-bit/fluent-bit-config.yaml"
-    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/monitoring/fluent-bit/fluent-bit.yaml"
+    log_info "Applying ServiceMonitors and PodMonitors..."
+    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/monitoring/servicemonitors/"
 
     log_info "Waiting for Loki to be ready..."
     kubectl wait --for=condition=available deployment/loki-deploy -n monitoring --timeout=180s
@@ -120,9 +126,6 @@ deploy_monitoring() {
 
     log_info "Waiting for Fluent-bit to be ready..."
     kubectl rollout status daemonset/fluent-bit-daemon -n monitoring --timeout=180s
-
-    log_info "Applying Grafana dashboard ConfigMaps..."
-    kustomize build "$SCRIPT_DIR/infra/k8s/monitoring/" --load-restrictor LoadRestrictionsNone | kubectl apply -f -
 
     log_info "Monitoring stack deployed successfully!"
 }
@@ -139,7 +142,7 @@ install_prometheus() {
     helm repo add prometheus-community https://prometheus-community.github.io/helm-charts >/dev/null 2>&1 || true
     helm repo update
 
-    helm upgrade --install kube-prometheus-stack prometheus-community/kube-prometheus-stack \
+    helm upgrade --install prom prometheus-community/kube-prometheus-stack \
         --namespace monitoring \
         --create-namespace \
         -f "$SCRIPT_DIR/infra/k8s/base/monitoring/prometheus/value.yaml" \
@@ -220,4 +223,3 @@ main() {
 }
 
 main "$@"
- No newline at end of file
