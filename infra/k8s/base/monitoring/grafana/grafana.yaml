@@ -57,6 +57,9 @@ spec:
         - name: grafana-dashboards-kafka-consumer-lag
           configMap:
             name: grafana-dashboards-kafka-consumer-lag
+        - name: grafana-dashboards-temporal
+          configMap:
+            name: grafana-dashboards-temporal
 
       containers:
         - name: grafana
@@ -121,6 +124,11 @@ spec:
             - name: grafana-dashboards-kafka-consumer-lag
               mountPath: /var/lib/grafana/dashboards/kafka-consumer-lag.json
               subPath: kafka-consumer-lag.json
+              readOnly: true
+
+            - name: grafana-dashboards-temporal
+              mountPath: /var/lib/grafana/dashboards/temporal.json
+              subPath: temporal.json
               readOnly: true
 
 ---
