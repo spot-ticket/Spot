@@ -37,6 +37,12 @@ configMapGenerator:
     files:
       - ../base/monitoring/grafana/dashboards/temporal.json
 
+      
+  - name: grafana-dashboards-kafka
+    namespace: monitoring
+    files:
+      - ../base/monitoring/grafana/dashboards/kafka.json
+    
 secretGenerator:
   - name: spot-secrets
     namespace: spot

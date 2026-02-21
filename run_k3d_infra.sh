@@ -209,6 +209,10 @@ main() {
             show_status
             exit 0
             ;;
+        --deploy-only)
+            deploy_monitoring
+            exit 0
+            ;;
     esac
 
     check_prerequisites
