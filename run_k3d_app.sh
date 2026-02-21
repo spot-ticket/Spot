@@ -160,6 +160,7 @@ deploy_infra() {
     kubectl apply -f https://raw.githubusercontent.com/kubernetes/ingress-nginx/controller-v1.14.3/deploy/static/provider/cloud/deploy.yaml
     kubectl wait --for=condition=ready pod -n ingress-nginx --selector=app.kubernetes.io/component=controller --timeout=120s
 
+    kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/monitoring/prometheus/kafka-metrics-config.yml"
     kustomize build "$SCRIPT_DIR/infra/k8s/base/" --load-restrictor LoadRestrictionsNone | kubectl apply -f -
 
     log_info "Waiting for Kafka Cluster (KRaft)..."
