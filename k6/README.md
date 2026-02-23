@@ -29,7 +29,9 @@ k6/
 │   ├── smoke.js              # 스모크 테스트
 │   ├── load.js               # 부하 테스트
 │   ├── stress.js             # 스트레스 테스트
-│   └── spike.js              # 스파이크 테스트
+│   ├── spike.js             # 스트레스 테스트
+│   └── order-only.js        # 주문생성 테스트
+│
 │
 ├── logs/                      # 테스트 결과 로그
 └── run.sh                     # 실행 스크립트
@@ -85,6 +87,9 @@ OWNER_PASSWORD=your_password
 
 # 스파이크 테스트 (급격한 부하)
 ./run.sh spike
+
+# 주문생성 테스트 
+
 ```
 
 ### 4. 명령줄에서 설정 오버라이드
