@@ -76,6 +76,15 @@ create_cluster() {
     log_info "Creating Namespaces..."
     kubectl apply -f "$SCRIPT_DIR/infra/k8s/base/namespace.yaml"
 
+    kubectl apply --server-side -f \
+      https://raw.githubusercontent.com/cloudnative-pg/cloudnative-pg/release-1.24/releases/cnpg-1.24.0.yaml
+
+    log_info "Waiting for CNPG webhook to be ready..."
+    kubectl wait --for=condition=available deployment/cnpg-controller-manager \
+      -n cnpg-system --timeout=120s
+    kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=cloudnative-pg \
+      -n cnpg-system --timeout=120s
+
     log_info "Cluster created successfully!"
 }
 
@@ -94,10 +103,12 @@ deploy_db() {
     fi
 
     log_info "Waiting for DB to be ready..."
-    kubectl wait --for=condition=available deployment/postgres -n spot --timeout=180s
+    kubectl wait --for=condition=Ready cluster/postgres -n spot --timeout=180s
+    log_info "DB deployed successfully!"
+    log_info "Waiting for Redis to be ready..."
     kubectl wait --for=condition=available deployment/redis -n spot --timeout=180s
 
-    log_info "DB deployed successfully!"
+    log_info "Redis deployed successfully!"
 }
 
 deploy_monitoring() {

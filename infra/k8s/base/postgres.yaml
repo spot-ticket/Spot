@@ -1,69 +1,42 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
 metadata:
-  name: postgres-pvc
+  name: postgres
   namespace: spot
 spec:
-  accessModes:
-    - ReadWriteOnce
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:15
+  
+  postgresql:
+    parameters:
+      max_connections: "300"
+      max_replication_slots: "10"
+      max_wal_senders: "10"
+    pg_hba:
+      - host replication admin 0.0.0.0/0 md5
+
+  bootstrap:
+    initdb:
+      database: myapp_db
+      owner: admin
+      secret:
+        name: spot-secrets
+
+  storage:
+    size: 1Gi
+    pvcTemplate:
+      accessModes:
+        - ReadWriteOnce
+
   resources:
     requests:
-      storage: 1Gi
----
-apiVersion: apps/v1
-kind: Deployment
-metadata:
-  name: postgres
-  namespace: spot
-spec:
-  replicas: 1
-  selector:
-    matchLabels:
-      app: postgres
-  template:
-    metadata:
-      labels:
-        app: postgres
-    spec:
-      containers:
-        - name: postgres
-          image: postgres:15-alpine
-          args: ["-c", "max_connections=300"]
-          ports:
-            - containerPort: 5432
-          env:
-            - name: POSTGRES_DB
-              value: "myapp_db"
-            - name: POSTGRES_USER
-              value: "admin"
-            - name: POSTGRES_PASSWORD
-              valueFrom:
-                secretKeyRef:
-                  name: spot-secrets
-                  key: SPRING_DATASOURCE_PASSWORD
-          volumeMounts:
-            - name: postgres-storage
-              mountPath: /var/lib/postgresql/data
-          resources:
-            requests:
-              memory: "256Mi"
-              cpu: "250m"
-            limits:
-              memory: "512Mi"
-              cpu: "500m"
-      volumes:
-        - name: postgres-storage
-          persistentVolumeClaim:
-            claimName: postgres-pvc
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: postgres
-  namespace: spot
-spec:
-  selector:
-    app: postgres
-  ports:
-    - port: 5432
-      targetPort: 5432
+      memory: "256Mi"
+      cpu: "250m"
+    limits:
+      memory: "512Mi"
+      cpu: "500m"
+
+  # 이 섹션이 있으면 CNPG가 논리적 복제 기능을 준비합니다.
+  replicationSlots:
+    highAvailability:
+      enabled: true
