@@ -111,11 +111,56 @@ erDiagram
 
 ---
 
+## 결제 상태별 테이블 저장 순서
+
+```mermaid
+flowchart TD
+    Start(["결제 요청 수신"]) --> R1
+
+    subgraph READY_STEP["① READY"]
+        R1[("p_payment<br/> 결제 정보 신규 등록")]
+        R1 --> R2[("p_payment_history<br/>결제 정보 신규 상태 저장<br/>status=READY")]
+    end
+
+    READY_STEP --> IP[("p_payment_history<br/>결제 정보 상태 저장<br/>status=IN_PROGRESS")]
+
+    subgraph INPROGRESS_STEP["② IN_PROGRESS"]
+        IP --> WF["Toss API 호출<br/>POST /v1/billing/{billingKey}"]
+    end
+
+    INPROGRESS_STEP --> TOSS["Toss API 응답<br/>POST /v1/billing/{billingKey}"]
+
+    subgraph DONE_STEP["③ DONE"]
+        TOSS --> |성공| D1[("p_payment_history<br/>결제 정보 상태 저장<br/>status=DONE")]
+        D1 --> D2[("p_payment_key<br/>결제 후 얻은 Payment Key 저장")]
+        D2 --> D3[("p_payment_outbox<br/>결제 성공 저장")]
+    end
+
+    subgraph ABORTED_STEP["③ ABORTED (실패 시)"]
+        TOSS -->|실패| A1[("p_payment_history<br/>결제 정보 상태 저장<br/>status=ABORTED")]
+        A1 --> A2[("p_payment_outbox<br/>결제 실패 저장")]
+    end
+
+    style READY_STEP fill:#e8f4fd,stroke:#2196F3
+    style INPROGRESS_STEP fill:#fff8e1,stroke:#FF9800
+    style DONE_STEP fill:#e8f5e9,stroke:#4CAF50
+    style ABORTED_STEP fill:#fce4ec,stroke:#F44336
+```
+
+> `p_payment_history`는 상태가 바뀔 때마다 **행이 추가(INSERT)**됩니다. UPDATE가 아닌 append-only 구조로 전체 이력이 보존됩니다.
+
+---
+
 ## 결제 상태 흐름
 
 ```mermaid
 stateDiagram-v2
     [*] --> READY : 주문 생성 이벤트 수신
+
+    state FAILURE_HANDLING {
+        ABORTED
+        CANCEL_FAILED
+    }
 
     READY --> IN_PROGRESS : Temporal Workflow 시작
     IN_PROGRESS --> DONE : Toss API 결제 성공
@@ -127,11 +172,7 @@ stateDiagram-v2
 
     DONE --> PARTIAL_CANCELLED : 부분 취소
 
-    ABORTED --> [*]
-    CANCELLED --> [*]
-    CANCEL_FAILED --> [*]
-
-    note right of ABORTED
+    note right of FAILURE_HANDLING
         compensation 실행
         auth-required 이벤트 발행
     end note
@@ -280,6 +321,86 @@ graph LR
 
     Cleanup["PaymentOutboxCleanupService\n매일 03:00, 7일 이상 삭제"] -.->|cleanup| Outbox
 ```
+
+---
+
+## Resilience4j — Toss Payments 장애 격리
+
+`TossPaymentClient`의 모든 Toss API 호출에 **Circuit Breaker + Bulkhead + Retry** 3중 보호가 적용됩니다.
+
+### 적용 위치
+
+| 인스턴스명 | 적용 메서드 | Toss API |
+|-----------|------------|----------|
+| `toss_billing_payment` | `requestBillingPayment()` | `POST /v1/billing/{billingKey}` |
+| `toss_payment_cancel` | `cancelPayment()` | `POST /v1/payments/{paymentKey}/cancel` |
+| `toss_payment_partial_cancel` | `cancelPaymentPartial()` | `POST /v1/payments/{paymentKey}/cancel` |
+| `toss_billing_key_issue` | `issueBillingKey()` | `POST /v1/billing/authorizations/issue` |
+
+```java
+// TossPaymentClient.java 실제 적용 예시
+@CircuitBreaker(name = "toss_billing_payment")
+@Bulkhead(name = "toss_billing_payment", type = Bulkhead.Type.SEMAPHORE)
+@Retry(name = "toss_billing_payment")
+public TossPaymentResponse requestBillingPayment(...) { ... }
+```
+
+### 각 패턴의 역할
+
+```mermaid
+flowchart LR
+    Activity["PaymentActivities\n(Temporal)"] --> Retry
+
+    subgraph R4J["Resilience4j 3중 보호"]
+        direction LR
+        Retry["Retry\n실패 시 재시도"] --> CB["Circuit Breaker\n연속 실패 시 차단"]
+        CB --> BH["Bulkhead\n동시 요청 수 제한\n(Semaphore)"]
+    end
+
+    BH --> Toss["Toss Payments API"]
+
+    CB -->|OPEN 상태| Fallback["즉시 예외 반환\n(Temporal이 재시도 처리)"]
+```
+
+### Circuit Breaker 상태 전환
+
+```mermaid
+stateDiagram-v2
+    [*] --> CLOSED : 초기 상태
+
+    CLOSED --> OPEN : 실패율 임계치 초과
+    note right of CLOSED
+        Toss API 정상 호출
+        실패 횟수 카운팅
+    end note
+
+    OPEN --> HALF_OPEN : 대기 시간 경과 후 일부 요청 허용
+    note right of OPEN
+        모든 요청 즉시 차단
+        CallNotPermittedException 발생
+        → Temporal Activity가 재시도 스케줄링
+    end note
+
+    HALF_OPEN --> CLOSED : 테스트 요청 성공
+    HALF_OPEN --> OPEN : 테스트 요청 실패
+```
+
+### Temporal과의 연동
+
+Circuit Breaker가 `OPEN` 상태일 때 Toss API 호출이 차단되면,
+Temporal Activity가 예외를 받아 **자체 재시도 스케줄러**로 넘깁니다.
+
+```
+Toss API 장애 발생
+    → Circuit Breaker OPEN (즉시 차단)
+    → Temporal Activity 실패
+    → Temporal 재시도 (초기 10초 → 최대 1분 간격, 최대 6회)
+    → Circuit Breaker HALF_OPEN 전환 후 복구 감지
+    → 결제 재시도 성공
+```
+
+Resilience4j와 Temporal의 재시도가 **이중으로** 동작하여,
+단순 네트워크 순단은 Resilience4j Retry가, 장시간 장애는 Temporal이 처리합니다.
 
 ---
 
