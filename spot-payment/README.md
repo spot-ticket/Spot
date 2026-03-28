@@ -281,9 +281,9 @@ flowchart TD
 ```mermaid
 graph TD
     subgraph AOP["PaymentAspect (AOP)"]
-        R["@Ready\nPaymentApprovalService.ready()"]
-        T["@PaymentBillingApproveTrace\ncreatePaymentBillingApprove()"]
-        C["@Cancel\nPaymentCancellationService.executeCancel()"]
+        R["@Ready<br/>PaymentApprovalService.ready()"]
+        T["@PaymentBillingApproveTrace<br/>createPaymentBillingApprove()"]
+        C["@Cancel<br/>PaymentCancellationService.executeCancel()"]
     end
 
     R -->|중복 있음| R1["기존 paymentId 반환 (멱등성)"]
@@ -304,22 +304,21 @@ graph TD
 
 ```mermaid
 graph LR
-    subgraph Published["Payment Service → Kafka"]
-        E1["payment.succeeded\nPaymentSucceededEvent"]
-        E2["payment.refunded\nPaymentRefundedEvent"]
-        E3["payment-auth.required\nAuthRequiredEvent"]
+    subgraph Published["Payment 서버 → Kafka"]
+        E1["결제 처리 완료"]
+        E2["결제 환불 완료"]
     end
 
-    subgraph Subscribed["Kafka → Payment Service"]
-        E4["order.created\nOrderCreatedEvent"]
-        E5["order.cancelled\nOrderCancelledEvent"]
+    subgraph Subscribed["Kafka → Payment 서버"]
+        E4["결제 요청"]
+        E5["결제 취소 요청"]
     end
 
-    Outbox["p_payment_outbox\n(Outbox Pattern)"] --> E1 & E2 & E3
-    E4 --> L1["PaymentListener\n→ PaymentApproveWorkflow 시작"]
-    E5 --> L2["PaymentListener\n→ PaymentCancelWorkflow 시작"]
+    Outbox["p_payment_outbox<br/>(Outbox Pattern)"] --> E1 & E2
+    E4 --> L1["결제 로직 시작"]
+    E5 --> L2["결제 취소 로직 시작"]
 
-    Cleanup["PaymentOutboxCleanupService\n매일 03:00, 7일 이상 삭제"] -.->|cleanup| Outbox
+    Cleanup["매일 03:00, 7일 이상 지난<br/> 데이터 삭제"] -.->|cleanup| Outbox
 ```
 
 ---
@@ -349,17 +348,17 @@ public TossPaymentResponse requestBillingPayment(...) { ... }
 
 ```mermaid
 flowchart LR
-    Activity["PaymentActivities\n(Temporal)"] --> Retry
+    Activity["PaymentActivities<br/>(Temporal)"] --> Retry
 
-    subgraph R4J["Resilience4j 3중 보호"]
+    subgraph R4J["Resilience4j"]
         direction LR
-        Retry["Retry\n실패 시 재시도"] --> CB["Circuit Breaker\n연속 실패 시 차단"]
-        CB --> BH["Bulkhead\n동시 요청 수 제한\n(Semaphore)"]
+        Retry["Retry<br/>실패 시 재시도"] --> CB["Circuit Breaker<br/>연속 실패 시 차단"]
+        CB --> BH["Bulkhead<br/>동시 요청 수 제한"]
     end
 
     BH --> Toss["Toss Payments API"]
 
-    CB -->|OPEN 상태| Fallback["즉시 예외 반환\n(Temporal이 재시도 처리)"]
+    CB -->|OPEN 상태| Fallback["즉시 예외 반환<br/>(Temporal이 재시도 처리)"]
 ```
 
 ### Circuit Breaker 상태 전환
@@ -377,8 +376,6 @@ stateDiagram-v2
     OPEN --> HALF_OPEN : 대기 시간 경과 후 일부 요청 허용
     note right of OPEN
         모든 요청 즉시 차단
-        CallNotPermittedException 발생
-        → Temporal Activity가 재시도 스케줄링
     end note
 
     HALF_OPEN --> CLOSED : 테스트 요청 성공
